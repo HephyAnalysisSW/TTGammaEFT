@@ -12,7 +12,7 @@ Available gridpacks, pkl files, customize cards and STDOUTs stored at:
 #### Installation CMSSW_9_4_X
 
 ```
-cmsrel CMSSW_9_4_6_patch1cmsrel CMSSW_9_4_10
+cmsrel CMSSW_9_4_10
 cd CMSSW_9_4_10/src
 cmsenv
 git cms-init
