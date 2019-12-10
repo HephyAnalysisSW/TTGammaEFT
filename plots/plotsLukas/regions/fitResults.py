@@ -32,14 +32,14 @@ argParser.add_argument("--overwrite",            action="store_true",           
 argParser.add_argument("--postFit",              action="store_true",                            help="Apply pulls?")
 argParser.add_argument("--expected",             action="store_true",                            help="Run expected?")
 argParser.add_argument("--preliminary",          action="store_true",                            help="Run expected?")
-argParser.add_argument("--systOnly",             action="store_true",                            help="correlation matrix with systematics only?")
+#argParser.add_argument("--systOnly",             action="store_true",                            help="correlation matrix with systematics only?")
 argParser.add_argument("--year",                 action="store",      type=int, default=2016,    help="Which year?")
 argParser.add_argument("--carddir",              action='store',                default='limits/cardFiles/defaultSetup/observed',      help="which cardfile directory?")
 argParser.add_argument("--cardfile",             action='store',                default='',      help="which cardfile?")
 argParser.add_argument("--plotRegions",          action='store', nargs="*",     default=None,    help="which regions to plot?")
 argParser.add_argument("--plotChannels",         action='store', nargs="*",     default=None,    help="which regions to plot?")
 argParser.add_argument("--plotNuisances",        action='store', nargs="*",     default=None,    help="plot specific nuisances?")
-argParser.add_argument("--cores",          action="store", default=1,               type=int,                               help="Run on n cores in parallel")
+argParser.add_argument("--cores",                action="store", default=1,               type=int,                               help="Run on n cores in parallel")
 argParser.add_argument("--bkgOnly",              action='store_true',                            help="background fit?")
 argParser.add_argument("--sorted",               action='store_true',           default=False,   help="sort histogram for each bin?")
 argParser.add_argument("--plotRegionPlot",       action='store_true',           default=False,   help="plot RegionPlot")
@@ -67,8 +67,8 @@ if   args.year == 2016: lumi_scale = 35.92
 elif args.year == 2017: lumi_scale = 41.53
 elif args.year == 2018: lumi_scale = 59.74
 
-dirName  = "_".join( [ item for item in args.cardfile.split("_") if item not in ["addDYSF", "addMisIDSF", "misIDPOI", "incl"] ] )
-add      = [ item for item in args.cardfile.split("_") if item in ["addDYSF", "addMisIDSF", "misIDPOI", "incl"] ]
+dirName  = "_".join( [ item for item in args.cardfile.split("_") if not (item.startswith("add") or item == "incl") ] )
+add      = [ item for item in args.cardfile.split("_") if (item.startswith("add") or item == "incl")  ]
 add.sort()
 fit      = "_".join( ["postFit" if args.postFit else "preFit"] + add )
 
@@ -95,8 +95,6 @@ labelFormater   = lambda x: ", ".join( [x.split(" ")[2], x.split(" ")[0].replace
 crLabel         = Results.getBinLabels( labelFormater=labelFormater )
 nBins           = len(crLabel)
 
-#nuisances       = Results.getNuisancesList( systOnly=args.systOnly )
-
 if "misIDPOI" in args.cardfile:
     processes = processesMisIDPOI.keys()
 else:
@@ -109,8 +107,7 @@ else:
 ###
 
 # region plot, sorted/not sorted, w/ or w/o +-1sigma changes in one nuisance
-if args.plotRegionPlot:
-
+def plotRegions( sorted=True ):
     # get region histograms
     hists = Results.getRegionHistos( postFit=args.postFit, plotBins=plotBins, nuisances=args.plotNuisances, labelFormater=labelFormater )
     for h_key, h in hists.iteritems():
@@ -144,7 +141,7 @@ if args.plotRegionPlot:
     ratioHistModifications += [lambda h: h.GetXaxis().SetLabelOffset(0.035)]
 
     # get histo list
-    plots, ratioHistos = Results.getRegionHistoList( hists, processes=processes, noData=False, sorted=args.sorted )
+    plots, ratioHistos = Results.getRegionHistoList( hists, processes=processes, noData=False, sorted=sorted )
 
     # plot name
     if   args.plotRegions and args.plotChannels: plotName = "_".join( ["regions"] + args.plotRegions + args.plotChannels )
@@ -168,17 +165,20 @@ if args.plotRegionPlot:
         drawObjects       = drawObjects_,
         histModifications = histModifications,
         copyIndexPHP      = True,
+        extensions = ["png"], # pdfs are quite large for sorted histograms (disco plot)
     )
 
-# covariance matrix 2D plot
-if args.plotCovMatrix:
-    # get the results
-    covhist   = Results.getCovarianceHisto( postFit=args.postFit, labelFormater=labelFormater )
+    del hists
 
-    histModifications   = []
-    histModifications  += [lambda h:h.GetYaxis().SetLabelSize(12)]
-    histModifications  += [lambda h:h.GetXaxis().SetLabelSize(12)]
-    histModifications  += [lambda h:h.GetZaxis().SetLabelSize(0.03)]
+# covariance matrix 2D plot
+def plotCovariance():
+    # get the results
+    covhist = Results.getCovarianceHisto( postFit=args.postFit, labelFormater=labelFormater )
+
+    histModifications  = []
+    histModifications += [lambda h:h.GetYaxis().SetLabelSize(12)]
+    histModifications += [lambda h:h.GetXaxis().SetLabelSize(12)]
+    histModifications += [lambda h:h.GetZaxis().SetLabelSize(0.03)]
 
     canvasModifications  = []
     canvasModifications += [lambda c:c.SetLeftMargin(0.25)]
@@ -204,15 +204,16 @@ if args.plotCovMatrix:
         copyIndexPHP        = True,
     )
 
+    del covhist
 
 # correlation of nuisances 2D plot
-if args.plotCorrelations and args.postFit:
+def plotCorrelations( systOnly ):
     # get the results
-    corrhist     = Results.getCorrelationHisto( systOnly=args.systOnly )
+    corrhist     = Results.getCorrelationHisto( systOnly=systOnly )
     drawObjects_ = drawCoObjects( lumi_scale=lumi_scale, bkgOnly=args.bkgOnly, postFit=args.postFit, incl=("incl" in args.cardfile), preliminary=args.preliminary )
 
     addon = ""
-    if args.systOnly: addon += "_systOnly"
+    if systOnly:      addon += "_systOnly"
     if args.bkgOnly:  addon += "_bkgOnly"
 
     histModifications   = []
@@ -242,8 +243,25 @@ if args.plotCorrelations and args.postFit:
         copyIndexPHP        = True,
     )
 
-
+    del corrhist
 
 # impact plot
-if args.plotImpacts and args.postFit:
+def plotImpacts():
     Results.getImpactPlot( expected=args.expected, printPNG=True, cores=args.cores )
+
+
+
+# plot unsorted first to get fast results
+if args.plotRegionPlot:
+#    plotRegions( sorted=False )
+    plotRegions( sorted=True )
+if args.plotCovMatrix:
+    plotCovariance()
+if args.plotCorrelations and args.postFit:
+    plotCorrelations( systOnly=False )
+#    plotCorrelations( systOnly=True )
+if args.plotImpacts and args.postFit:
+    plotImpacts()
+# plot sorted later to get nice results
+#if args.plotRegionPlot:
+#    plotRegions( sorted=True )
