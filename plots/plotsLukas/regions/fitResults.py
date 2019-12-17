@@ -36,6 +36,7 @@ argParser.add_argument("--preliminary",          action="store_true",           
 argParser.add_argument("--year",                 action="store",      type=int, default=2016,    help="Which year?")
 argParser.add_argument("--carddir",              action='store',                default='limits/cardFiles/defaultSetup/observed',      help="which cardfile directory?")
 argParser.add_argument("--cardfile",             action='store',                default='',      help="which cardfile?")
+argParser.add_argument("--substituteCard",       action='store',                default=None,    help="which cardfile to substitute the plot with?")
 argParser.add_argument("--plotRegions",          action='store', nargs="*",     default=None,    help="which regions to plot?")
 argParser.add_argument("--plotChannels",         action='store', nargs="*",     default=None,    help="which regions to plot?")
 argParser.add_argument("--plotNuisances",        action='store', nargs="*",     default=None,    help="plot specific nuisances?")
@@ -76,11 +77,17 @@ plotDirectory = os.path.join(plot_directory, "fit", str(args.year), fit, dirName
 cardFile      = os.path.join( cache_directory, "analysis", str(args.year), args.carddir, args.cardfile+".txt" )
 logger.info("Plotting from cardfile %s"%cardFile)
 
-# initialize the combine results
+# replace the combineResults object by the substituted card object
 Results = CombineResults( cardFile=cardFile, plotDirectory=plotDirectory, year=args.year, bkgOnly=args.bkgOnly, isSearch=False )
+if args.substituteCard:
+    subCardFile = os.path.join( cache_directory, "analysis", str(args.year), args.carddir, args.substituteCard+".txt" )
+    subCardFile = Results.createRebinnedResults( subCardFile )
+    del Results
+    Results     = CombineResults( cardFile=subCardFile, plotDirectory=plotDirectory, year=args.year, bkgOnly=args.bkgOnly, isSearch=False )
 
 # get list of labels
 labels = [ ( i, label ) for i, label in enumerate(Results.getBinLabels( labelFormater=lambda x:x.split(" "))) ]
+print labels
 if args.plotRegions:  labels = filter( lambda (i,(ch, lab, reg)): reg in args.plotRegions, labels )
 if args.plotChannels: labels = filter( lambda (i,(ch, lab, reg)): ch in args.plotChannels, labels )
 
@@ -95,12 +102,12 @@ labelFormater   = lambda x: ", ".join( [x.split(" ")[2], x.split(" ")[0].replace
 crLabel         = Results.getBinLabels( labelFormater=labelFormater )
 nBins           = len(crLabel)
 
+
 if "misIDPOI" in args.cardfile:
     processes = processesMisIDPOI.keys()
 else:
     processes = [ cr for cr in args.cardfile.split("_") if (not args.plotRegions or (args.plotRegions and cr in args.plotRegions)) and cr in allRegions.keys() ]
     processes = allRegions[processes[0]]["processes"].keys()
-
 
 ###
 ### PLOTS
@@ -110,18 +117,22 @@ else:
 def plotRegions( sorted=True ):
     # get region histograms
     hists = Results.getRegionHistos( postFit=args.postFit, plotBins=plotBins, nuisances=args.plotNuisances, labelFormater=labelFormater )
+
+    hists["data"].style        = styles.errorStyle( ROOT.kBlack )
+    hists["data"].legendText   = "data"
+    hists["data"].legendOption = "p"
+
     for h_key, h in hists.iteritems():
         if "total" in h_key or h_key not in processes: continue
-        if h_key == "QCD_1p": hists[h_key].notInLegend = True
-        else:                 hists[h_key].legendText  = default_processes[h_key]["texName"]
+        hists[h_key].legendText  = default_processes[h_key]["texName"]
         hists[h_key].style = styles.fillStyle( default_processes[h_key]["color"], errors=False )
         hists[h_key].LabelsOption("v","X")
 
     # some settings and things like e.g. uncertainty boxes
     minMax             = 0.3
-    boxes, ratio_boxes = getUncertaintyBoxes( hists["total"] )
+    boxes, ratio_boxes = getUncertaintyBoxes( hists["total"], minMax )
 
-    drawObjects_       = drawObjects( nBins=nBins, isData=(not args.expected), lumi_scale=lumi_scale, postFit=args.postFit, cardfile=args.cardfile, preliminary=args.preliminary )
+    drawObjects_       = drawObjects( nBins=nBins, isData=(not args.expected), lumi_scale=lumi_scale, postFit=args.postFit, cardfile=args.substituteCard if args.substituteCard else args.cardfile, preliminary=args.preliminary )
     drawObjects_      += boxes 
     drawObjects_      += drawDivisions( crLabel, misIDPOI=("misIDPOI" in args.cardfile) ) 
     drawObjects_      += drawPTDivisions( crLabel, ptLabels )
@@ -143,12 +154,15 @@ def plotRegions( sorted=True ):
     # get histo list
     plots, ratioHistos = Results.getRegionHistoList( hists, processes=processes, noData=False, sorted=sorted )
 
+    addon = []
+    if args.substituteCard: addon += ["sub"] + [ cr for cr in args.substituteCard.split("_") if cr not in args.cardfile.split("_") ]
+    if args.plotNuisances:  addon += args.plotNuisances
+
     # plot name
-    if   args.plotRegions and args.plotChannels: plotName = "_".join( ["regions"] + args.plotRegions + args.plotChannels )
-    elif args.plotRegions:                       plotName = "_".join( ["regions"] + args.plotRegions )
-    elif args.plotChannels:                      plotName = "_".join( ["regions"] + args.plotChannels )
-    else:                                        plotName = "regions"
-    if args.plotNuisances:                       plotName += "_" + "_".join(args.plotNuisances)
+    if   args.plotRegions and args.plotChannels: plotName = "_".join( ["regions"] + addon + args.plotRegions + args.plotChannels )
+    elif args.plotRegions:                       plotName = "_".join( ["regions"] + addon + args.plotRegions )
+    elif args.plotChannels:                      plotName = "_".join( ["regions"] + addon + args.plotChannels )
+    else:                                        plotName = "_".join( ["regions"] + addon )
 
     plotting.draw(
         Plot.fromHisto( plotName,
@@ -249,19 +263,12 @@ def plotCorrelations( systOnly ):
 def plotImpacts():
     Results.getImpactPlot( expected=args.expected, printPNG=True, cores=args.cores )
 
-
-
-# plot unsorted first to get fast results
 if args.plotRegionPlot:
-#    plotRegions( sorted=False )
     plotRegions( sorted=True )
 if args.plotCovMatrix:
     plotCovariance()
 if args.plotCorrelations and args.postFit:
     plotCorrelations( systOnly=False )
-#    plotCorrelations( systOnly=True )
+    plotCorrelations( systOnly=True )
 if args.plotImpacts and args.postFit:
     plotImpacts()
-# plot sorted later to get nice results
-#if args.plotRegionPlot:
-#    plotRegions( sorted=True )
