@@ -92,8 +92,8 @@ elif args.year == 2018:
 
 if args.noData:
     if args.year == 2016:   lumi_scale = 35.92
-    elif args.year == 2017: lumi_scale = 41.86
-    elif args.year == 2018: lumi_scale = 58.83
+    elif args.year == 2017: lumi_scale = 41.53
+    elif args.year == 2018: lumi_scale = 59.74
     stack = Stack( mc )
 else:
     if args.year == 2016:   data_sample = Run2016
