@@ -47,6 +47,7 @@ argParser.add_argument("--plotRegionPlot",       action='store_true',           
 argParser.add_argument("--plotImpacts",          action='store_true',           default=False,   help="plot Impacts")
 argParser.add_argument("--plotCovMatrix",        action='store_true',           default=False,   help="plot covariance matrix")
 argParser.add_argument("--plotCorrelations",     action='store_true',           default=False,   help="plot Correlation matrix")
+argParser.add_argument("--bkgSubstracted",       action='store_true',           default=False,   help="plot region plot background substracted")
 args = argParser.parse_args()
 
 # logger
@@ -86,26 +87,23 @@ if args.substituteCard:
     Results     = CombineResults( cardFile=subCardFile, plotDirectory=plotDirectory, year=args.year, bkgOnly=args.bkgOnly, isSearch=False )
 
 # get list of labels
+labelFormater   = lambda x: ", ".join( [x.split(" ")[2], x.split(" ")[0].replace("mu","#mu").replace("tight","")] )
 labels = [ ( i, label ) for i, label in enumerate(Results.getBinLabels( labelFormater=lambda x:x.split(" "))) ]
 if args.plotRegions:  labels = filter( lambda (i,(ch, lab, reg)): reg in args.plotRegions, labels )
 if args.plotChannels: labels = filter( lambda (i,(ch, lab, reg)): ch in args.plotChannels, labels )
 
 crName    = [ cr for i, (lep, reg, cr) in labels ]
 plotBins  = [ i  for i, (lep, reg, cr) in labels ]
-
-# Get formated labels out of binLabels
-pTLabelFormater = lambda x: convLabel(x.split(" ")[1])
-ptLabels        = Results.getBinLabels( labelFormater=pTLabelFormater ) 
-
-labelFormater   = lambda x: ", ".join( [x.split(" ")[2], x.split(" ")[0].replace("mu","#mu").replace("tight","")] )
-crLabel         = Results.getBinLabels( labelFormater=labelFormater )
-nBins           = len(crLabel)
+crLabel   = map( lambda (i,(ch, lab, reg)): ", ".join( [ reg, ch.replace("mu","#mu").replace("tight","") ] ), labels )
+ptLabels  = map( lambda (i,(ch, lab, reg)): convLabel(lab), labels )
+nBins     = len(crLabel)
 
 
 if "misIDPOI" in args.cardfile:
     processes = processesMisIDPOI.keys()
 else:
-    processes = [ cr for cr in args.cardfile.split("_") if (not args.plotRegions or (args.plotRegions and cr in args.plotRegions)) and cr in allRegions.keys() ]
+    card = args.substituteCard if args.substituteCard else args.cardfile
+    processes = [ cr for cr in card.split("_") if (not args.plotRegions or (args.plotRegions and cr in args.plotRegions)) and cr in allRegions.keys() ]
     processes = allRegions[processes[0]]["processes"].keys()
 
 ###
@@ -115,11 +113,15 @@ else:
 # region plot, sorted/not sorted, w/ or w/o +-1sigma changes in one nuisance
 def plotRegions( sorted=True ):
     # get region histograms
-    hists = Results.getRegionHistos( postFit=args.postFit, plotBins=plotBins, nuisances=args.plotNuisances, labelFormater=labelFormater )
-
+    hists = Results.getRegionHistos( postFit=args.postFit, plotBins=plotBins, nuisances=args.plotNuisances, bkgSubstracted=args.bkgSubstracted, labelFormater=labelFormater )
+    
     hists["data"].style        = styles.errorStyle( ROOT.kBlack )
-    hists["data"].legendText   = "data"
-    hists["data"].legendOption = "p"
+    hists["data"].legendText   = "data" if not args.bkgSubstracted else "data (syst + total error)"
+    hists["data"].legendOption = "ep" if args.bkgSubstracted else "p"
+
+    if args.bkgSubstracted: 
+        hists["data_syst"].style        = styles.errorStyle( ROOT.kBlack )
+        hists["data_syst"].notInLegend  = True
 
     for h_key, h in hists.iteritems():
         if "total" in h_key or h_key not in processes: continue
@@ -127,12 +129,21 @@ def plotRegions( sorted=True ):
         hists[h_key].style = styles.fillStyle( default_processes[h_key]["color"], errors=False )
         hists[h_key].LabelsOption("v","X")
 
+    if args.bkgSubstracted:
+        hists["signal"].style      = styles.lineStyle( ROOT.kOrange+7, width=2, errors=False )
+        hists["signal"].legendText = "SM prediction (detector level)"
+
+#        hists["empty"]             = hists["data"].Clone()
+#        hists["empty"].style       = styles.fillStyle( ROOT.kGray+3, lineWidth=0, fillstyle=formatSettings(nBins)["hashcode"], errors=False )
+#        hists["empty"].legendText  = "syst. error"
+#        hists["empty"].Scale(0)
+
     # some settings and things like e.g. uncertainty boxes
-    minMax             = 0.3
-    boxes, ratio_boxes = getUncertaintyBoxes( hists["total"], minMax )
+    minMax             = 0.6
+    if not args.bkgSubstracted: boxes, ratio_boxes = getUncertaintyBoxes( hists["total"], minMax )
 
     drawObjects_       = drawObjects( nBins=nBins, isData=(not args.expected), lumi_scale=lumi_scale, postFit=args.postFit, cardfile=args.substituteCard if args.substituteCard else args.cardfile, preliminary=args.preliminary )
-    drawObjects_      += boxes 
+    if not args.bkgSubstracted: drawObjects_ += boxes 
     drawObjects_      += drawDivisions( crLabel, misIDPOI=("misIDPOI" in args.cardfile) ) 
     drawObjects_      += drawPTDivisions( crLabel, ptLabels )
 
@@ -151,34 +162,36 @@ def plotRegions( sorted=True ):
     ratioHistModifications += [lambda h: h.GetXaxis().SetLabelOffset(0.035)]
 
     # get histo list
-    plots, ratioHistos = Results.getRegionHistoList( hists, processes=processes, noData=False, sorted=sorted )
+    plots, ratioHistos = Results.getRegionHistoList( hists, processes=processes, noData=False, sorted=sorted, bkgSubstracted=args.bkgSubstracted )
+#    if args.bkgSubstracted: plots += [[hists["empty"]]]
 
     addon = []
-    if args.substituteCard: addon += ["sub"] + [ cr for cr in args.substituteCard.split("_") if cr not in args.cardfile.split("_") ]
+    if args.bkgSubstracted: addon += ["bkgSub"]
+    if args.substituteCard: addon += ["rebinned"] + [ cr for cr in args.substituteCard.split("_") if cr not in args.cardfile.split("_") ]
     if args.plotNuisances:  addon += args.plotNuisances
 
     # plot name
-    if   args.plotRegions and args.plotChannels: plotName = "_".join( ["regions"] + addon + args.plotRegions + args.plotChannels )
+    if   args.plotRegions and args.plotChannels: plotName = "_".join( ["regions"] + addon + args.plotRegions + [ch for ch in args.plotChannels if not "tight" in ch] )
     elif args.plotRegions:                       plotName = "_".join( ["regions"] + addon + args.plotRegions )
-    elif args.plotChannels:                      plotName = "_".join( ["regions"] + addon + args.plotChannels )
+    elif args.plotChannels:                      plotName = "_".join( ["regions"] + addon + [ch for ch in args.plotChannels if not "tight" in ch] )
     else:                                        plotName = "_".join( ["regions"] + addon )
 
     plotting.draw(
         Plot.fromHisto( plotName,
                 plots,
                 texX = "",
-                texY = "Number of Events",
+                texY = "Observed - Background" if args.bkgSubstracted else "Number of Events",
         ),
         logX = False, logY = True, sorting = False, 
         plot_directory    = plotDirectory,
-        legend            = [ (0.2, formatSettings(nBins)["legylower"], 0.9, 0.9), formatSettings(nBins)["legcolumns"] ],
+        legend            = [ (0.2, 0.86 if args.bkgSubstracted else formatSettings(nBins)["legylower"], 0.9, 0.9), formatSettings(nBins)["legcolumns"] ],
         widths            = { "x_width":formatSettings(nBins)["padwidth"], "y_width":formatSettings(nBins)["padheight"], "y_ratio_width":formatSettings(nBins)["padratio"] },
         yRange            = ( 0.7, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ),
-        ratio             = { "yRange": ((1-minMax)*0.99, (1+minMax)*1.01), "texY":"Data/MC", "histos":ratioHistos, "drawObjects":ratio_boxes, "histModifications":ratioHistModifications },
+        ratio             = { "yRange": ((1-minMax)*0.99, (1+minMax)*1.01), "texY":"Theory/Data" if args.bkgSubstracted else "Data/MC", "histos":ratioHistos, "drawObjects":ratio_boxes if not args.bkgSubstracted else [], "histModifications":ratioHistModifications },
         drawObjects       = drawObjects_,
         histModifications = histModifications,
         copyIndexPHP      = True,
-        extensions = ["png"], # pdfs are quite large for sorted histograms (disco plot)
+        extensions = ["png", "pdf", "root"] if args.bkgSubstracted else ["png"], # pdfs are quite large for sorted histograms (disco plot)
     )
 
     del hists
