@@ -191,10 +191,10 @@ if args.year == 2016:
     lumi_scale = 35.92
 elif args.year == 2017:
     tt = TT_pow_17
-    lumi_scale = 41.86
+    lumi_scale = 41.53
 elif args.year == 2018:
     tt = TT_pow_18
-    lumi_scale = 58.83
+    lumi_scale = 59.74
 
 mc = []
 
