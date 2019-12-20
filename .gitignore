@@ -12,4 +12,5 @@ py.py
 ME5_debug
 MG5_debug
 *.dat
+tmp*
 missing*.sh
