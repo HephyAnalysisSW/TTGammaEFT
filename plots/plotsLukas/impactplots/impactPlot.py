@@ -5,7 +5,8 @@ import ROOT
 import shutil
 import uuid
 
-from TTGammaEFT.Tools.user  import analysis_results, plot_directory, combineReleaseLocation, cache_directory
+from Analysis.Tools.CombineResults import CombineResults
+from TTGammaEFT.Tools.user         import analysis_results, plot_directory, combineReleaseLocation, cache_directory
 
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
@@ -27,44 +28,14 @@ logger = logger.get_logger(args.logLevel, logFile = None )
 import RootTools.core.logger as logger_rt
 logger_rt = logger_rt.get_logger(args.logLevel, logFile = None )
 
-def wrapper( cardDir, cardName ):
-    logger.info("Processing mass point %s"%cardName)
-    cardFile       = "%s_shapeCard.txt"%cardName
-    baseDir        = os.path.join( cache_directory, "analysis", str(args.year), "limits" )
-    limitDir       = os.path.join( baseDir, "cardFiles", args.label, "expected" if args.expected else "observed" )
-    cardFilePath   = os.path.join( limitDir, cardFile)
-    combineDirname = os.path.join( combineReleaseLocation, str(args.year), cardName )
-    logger.info("Creating %s"%combineDirname)
-    if not os.path.isdir(combineDirname): os.makedirs(combineDirname)
-    shutil.copyfile(cardFilePath,combineDirname+"/"+cardFile)
-    shutil.copyfile(cardFilePath.replace("shapeCard.txt", "shape.root"),combineDirname+"/"+cardFile.replace("shapeCard.txt", "shape.root"))
+dirName  = "_".join( [ item for item in args.cardfile.split("_") if item not in ["addDYSF", "addMisIDSF", "misIDPOI", "incl"] ] )
+add  = [ item for item in args.cardfile.split("_") if item in ["addDYSF", "addMisIDSF", "misIDPOI", "incl"] ]
+add.sort()
+fit  = "_".join( ["postFit"] + add )
 
-    scram = "echo ''"#eval `scramv1 runtime -sh`"
-    if args.bkgOnly:
-        prepWorkspace   = "text2workspace.py %s --X-allow-no-signal -m 125"%cardFile
-        robustFit       = "combineTool.py -M Impacts -d %s_shapeCard.root -m 125 --doInitialFit --robustFit 1 --rMin -0.01 --rMax 0.0"%cardName
-        impactFits      = "combineTool.py -M Impacts -d %s_shapeCard.root -m 125 --robustFit 1 --doFits --parallel %s --rMin -0.01 --rMax 0.0"%(cardName,str(args.cores))
-    else:
-        prepWorkspace   = "text2workspace.py %s -m 125"%cardFile
-        robustFit       = "combineTool.py -M Impacts -d %s_shapeCard.root -m 125 --doInitialFit --robustFit 1 --rMin -10 --rMax 10"%cardName
-        impactFits      = "combineTool.py -M Impacts -d %s_shapeCard.root -m 125 --robustFit 1 --doFits --parallel %s --rMin -10 --rMax 10"%(cardName,str(args.cores))
+plotDirectory = os.path.join(plot_directory, "fit", str(args.year), fit, dirName)
+cardFile      = os.path.join( cache_directory, "analysis", str(args.year), args.carddir, args.cardfile+".txt" )
+Results       = CombineResults( cardFile=cardFile, plotDirectory=plotDirectory, year=args.year, bkgOnly=False, isSearch=False )
+logger.info("Plotting from cardfile %s"%cardFile)
 
-    extractImpact   = "combineTool.py -M Impacts -d %s_shapeCard.root -m 125 -o impacts.json"%cardName
-    plotImpacts     = "plotImpacts.py -i impacts.json -o impacts"
-    combineCommand  = ";".join(["cd %s"%combineDirname,scram,prepWorkspace,robustFit,impactFits,extractImpact,plotImpacts])
-    logger.info("Will run the following command, might take a few hours:\n%s"%combineCommand)
-    
-    os.system(combineCommand)
-    
-    plotDir  = os.path.join( plot_directory, "impacts", str(args.year), "expected" if args.expected else "observed" )
-    plotName = cardName if not args.bkgOnly else cardName + "_bkgOnly"
-    if not os.path.isdir(plotDir): os.makedirs(plotDir)
-    shutil.copyfile(combineDirname+"/impacts.pdf", "%s/%s.pdf"%(plotDir,plotName))
-    logger.info("Copied result to %s"%plotDir)
-
-    if not args.keepDir:
-        logger.info("Removing directory in release location")
-        shutil.rmtree(combineDirname)
-
-
-wrapper( args.carddir, args.cardfile )
+Results.getImpactPlot( expected=args.expected, printPNG=True, cores=args.cores )
