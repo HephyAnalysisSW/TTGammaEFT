@@ -1,4 +1,4 @@
-#python nanoPostProcessing.py --writeToDPM --skim semilepGamma --year 2016 --processingEra TTGammaEFT_PP_2016_TTG_private_v22 --fileBasedSplitting --flagDYWJets --sample DYJetsToLL_M50_LO_ext1 DYJetsToLL_M50_LO_ext2 #SPLIT20
+a#python nanoPostProcessing.py --writeToDPM --skim semilepGamma --year 2016 --processingEra TTGammaEFT_PP_2016_TTG_private_v22 --fileBasedSplitting --flagDYWJets --sample DYJetsToLL_M50_LO_ext1 DYJetsToLL_M50_LO_ext2 #SPLIT20
 #python nanoPostProcessing.py --writeToDPM --skim semilepGamma --year 2016 --processingEra TTGammaEFT_PP_2016_TTG_private_v22 --fileBasedSplitting --flagDYWJets --sample DYJetsToLL_M10to50_LO #SPLIT20
 
 ##python nanoPostProcessing.py --writeToDPM --skim semilepGamma --year 2016 --processingEra TTGammaEFT_PP_2016_TTG_private_v22 --fileBasedSplitting --flagZWGamma --sample ZGTo2LG_ext #SPLIT10
