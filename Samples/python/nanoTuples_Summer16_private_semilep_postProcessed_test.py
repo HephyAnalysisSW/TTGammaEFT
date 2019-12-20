@@ -11,15 +11,15 @@ from TTGammaEFT.Samples.helpers import getMCSample
 
 # Data directory
 try:
-    data_directory = sys.modules['__main__'].data_directory
+    data_directory_ = sys.modules['__main__'].data_directory
 except:
-    from TTGammaEFT.Tools.user import dpm_directory as data_directory
-    data_directory += "postprocessed/"
+    from TTGammaEFT.Tools.user import dpm_directory as data_directory_
+    data_directory_ += "postprocessed/"
 try:
-    postprocessing_directory = sys.modules['__main__'].postprocessing_directory
+    postprocessing_directory_ = sys.modules['__main__'].postprocessing_directory
 except:
     from TTGammaEFT.Samples.default_locations import postprocessing_locations
-    postprocessing_directory = postprocessing_locations.MC2016_semilep
+    postprocessing_directory_ = postprocessing_locations.MC2016_semilep
 
 try:
     fromDPM = sys.modules['__main__'].fromEOS != "True"
@@ -27,7 +27,7 @@ except:
     fromDPM = True
 
 if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
-    postprocessing_directory = postprocessing_directory.replace("/semilep/", "/semilepGamma/")
+    postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
 
 # Redirector
 try:
@@ -45,7 +45,7 @@ else:
     import logging
     logger = logging.getLogger(__name__)
 
-logger.info( "Loading MC samples from directory %s", os.path.join( data_directory, postprocessing_directory ) )
+logger.info( "Loading MC samples from directory %s", os.path.join( data_directory_, postprocessing_directory_ ) )
 
 # Directories
 dirs = {}
@@ -55,7 +55,7 @@ dirs["TT_pow"]           = ["TTSingleLep_pow", "TTLep_pow"]
 dirs["TT_SemiLep"]       = ["TTSingleLep_pow"]
 dirs["TT_Lep"]           = ["TTLep_pow"]
 
-directories = { key : [ os.path.join( data_directory, postprocessing_directory, dir) for dir in dirs[key] ] for key in dirs.keys() }
+directories = { key : [ os.path.join( data_directory_, postprocessing_directory_, dir) for dir in dirs[key] ] for key in dirs.keys() }
 
 # Samples
 TT_pow_16          = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_pow"], noCheckProxy=True, fromDPM=fromDPM)

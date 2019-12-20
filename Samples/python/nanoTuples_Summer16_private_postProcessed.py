@@ -11,15 +11,15 @@ from TTGammaEFT.Samples.helpers import getMCSample
 
 # Data directory
 try:
-    data_directory = sys.modules['__main__'].data_directory
+    data_directory_ = sys.modules['__main__'].data_directory
 except:
-    from TTGammaEFT.Tools.user import dpm_directory as data_directory
-    data_directory += "postprocessed/"
+    from TTGammaEFT.Tools.user import dpm_directory as data_directory_
+    data_directory_ += "postprocessed/"
 try:
-    postprocessing_directory = sys.modules['__main__'].postprocessing_directory
+    postprocessing_directory_ = sys.modules['__main__'].postprocessing_directory
 except:
     from TTGammaEFT.Samples.default_locations import postprocessing_locations
-    postprocessing_directory = postprocessing_locations.MC2016
+    postprocessing_directory_ = postprocessing_locations.MC2016
 
 try:
     fromDPM = sys.modules['__main__'].fromEOS != "True"
@@ -27,7 +27,7 @@ except:
     fromDPM = True
 
 if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
-    postprocessing_directory = postprocessing_directory.replace("/dilep/", "/dilepGamma/")
+    postprocessing_directory_ = postprocessing_directory_.replace("/dilep/", "/dilepGamma/")
 
 # Redirector
 try:
@@ -45,7 +45,7 @@ else:
     import logging
     logger = logging.getLogger(__name__)
 
-logger.info( "Loading MC samples from directory %s", os.path.join( data_directory, postprocessing_directory ) )
+logger.info( "Loading MC samples from directory %s", os.path.join( data_directory_, postprocessing_directory_ ) )
 
 # Directories
 dirs = {}
@@ -125,7 +125,7 @@ dirs["all"]              = dirs["all_noOther"] + dirs["other"]
 
 dirs["W"]                = dirs["WJets"] + dirs["WG"]
 
-directories = { key : [ os.path.join( data_directory, postprocessing_directory, dir) for dir in dirs[key] ] for key in dirs.keys() }
+directories = { key : [ os.path.join( data_directory_, postprocessing_directory_, dir) for dir in dirs[key] ] for key in dirs.keys() }
 
 # Samples
 DY_LO_16           = getMCSample(name="DY_LO",            redirector=redirector, color=color.DY,              texName="DY (LO)",           directory=directories["DY_LO"], noCheckProxy=False, fromDPM=fromDPM)
