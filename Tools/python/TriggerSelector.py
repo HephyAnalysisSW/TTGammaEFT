@@ -8,8 +8,10 @@ class TriggerSelector:
         # https://indico.cern.ch/event/718554/contributions/3027981/attachments/1667626/2674497/leptontriggerreview.pdf
         if year == 2016:
             if singleLepton:
-                self.m  = [ "HLT_IsoMu24", "HLT_IsoTkMu24", "HLT_Mu50", "HLT_TkMu50", "HLT_Mu45_eta2p1" ] #HLT_TkMu50 off for ~3/fb, HLT_Mu45_eta2p1 off for ~12/fb
-                self.e  = [ "HLT_Ele27_WPTight_Gsf", "HLT_Ele105_CaloIdVT_GsfTrkIdT", "HLT_Ele115_CaloIdVT_GsfTrkIdT", "HLT_Photon175" ]
+#                self.m  = [ "HLT_IsoMu24", "HLT_IsoTkMu24", "HLT_Mu50", "HLT_TkMu50", "HLT_Mu45_eta2p1" ] #HLT_TkMu50 off for ~3/fb, HLT_Mu45_eta2p1 off for ~12/fb
+#                self.e  = [ "HLT_Ele27_WPTight_Gsf", "HLT_Ele105_CaloIdVT_GsfTrkIdT", "HLT_Ele115_CaloIdVT_GsfTrkIdT", "HLT_Photon175" ]
+                self.m  = [ "HLT_IsoMu24", "HLT_IsoTkMu24" ]
+                self.e  = [ "HLT_Ele27_WPTight_Gsf" ]
                 self.mm = None
                 self.em = None
                 self.ee = None
@@ -22,8 +24,10 @@ class TriggerSelector:
 
         elif year == 2017:
             if singleLepton:
-                self.m  = [ "HLT_IsoMu24", "HLT_IsoMu24_eta2p1", "HLT_IsoMu27", "HLT_Mu50", "HLT_OldMu100", "HLT_TkMu100" ]
-                self.e  = [ "HLT_Ele32_WPTight_Gsf", "HLT_Ele35_WPTight_Gsf", "HLT_Ele32_WPTight_Gsf_L1DoubleEG", "HLT_Ele115_CaloIdVT_GsfTrkIdT", "HLT_Photon200" ]
+#                self.m  = [ "HLT_IsoMu24", "HLT_IsoMu24_eta2p1", "HLT_IsoMu27", "HLT_Mu50", "HLT_OldMu100", "HLT_TkMu100" ]
+#                self.e  = [ "HLT_Ele32_WPTight_Gsf", "HLT_Ele35_WPTight_Gsf", "HLT_Ele32_WPTight_Gsf_L1DoubleEG", "HLT_Ele115_CaloIdVT_GsfTrkIdT", "HLT_Photon200" ]
+                self.m  = [ "HLT_IsoMu24" ]
+                self.e  = [ "HLT_Ele32_WPTight_Gsf", "HLT_Ele32_WPTight_Gsf_L1DoubleEG" ]
                 self.mm = None
                 self.em = None
                 self.ee = None
@@ -36,8 +40,10 @@ class TriggerSelector:
 
         elif year == 2018:
             if singleLepton:
-                self.m  = [ "HLT_IsoMu24", "HLT_IsoMu27", "HLT_Mu50", "HLT_OldMu100", "HLT_TkMu100" ]
-                self.e  = [ "HLT_Ele32_WPTight_Gsf", "HLT_Ele115_CaloIdVT_GsfTrkIdT", "HLT_Ele32_WPTight_Gsf_L1DoubleEG", "HLT_DoubleEle25_CaloIdL_MW", "HLT_Photon200" ]
+#                self.m  = [ "HLT_IsoMu24", "HLT_IsoMu27", "HLT_Mu50", "HLT_OldMu100", "HLT_TkMu100" ]
+#                self.e  = [ "HLT_Ele32_WPTight_Gsf", "HLT_Ele115_CaloIdVT_GsfTrkIdT", "HLT_Ele32_WPTight_Gsf_L1DoubleEG", "HLT_DoubleEle25_CaloIdL_MW", "HLT_Photon200" ]
+                self.m  = [ "HLT_IsoMu24" ]
+                self.e  = [ "HLT_Ele32_WPTight_Gsf" ]
                 self.mm = None
                 self.em = None
                 self.ee = None
