@@ -99,7 +99,7 @@ def getGenLeps( event, sample ):
 
 sequence = [getGenLeps]
 
-lumi_scale = 35.8
+lumi_scale = 35.92
 
 comparisonSamples = [ [ZG_16] ]
 

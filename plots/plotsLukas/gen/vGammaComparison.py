@@ -178,7 +178,7 @@ def getStatusPhotons( event, sample ):
 # Sequence
 sequence = []#getMinDR, getStatusPhotons]
 
-lumi_scale = 35.8
+lumi_scale = 35.92
 
 #comparisonSamples = [ [ttGamma_SingleLeptFromT_SM_1Line], [ttGamma_SingleLeptFromT_SM_central] ]
 #comparisonSamples = [ [ttGamma_SingleLeptFromTbar_SM_1Line], [ttGamma_SingleLeptFromTbar_SM_central] ]
