@@ -109,7 +109,6 @@ if args.year == 2016:
     if args.useEOS: postprocessing_directory = "2016/MC_v20/semilep/"
     from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed      import *
     if not args.noData:
-        del postprocessing_directory
         if args.useEOS: postprocessing_directory = "2016/Data_v20/semilep/"
         from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
 
@@ -117,7 +116,6 @@ elif args.year == 2017:
     if args.useEOS: postprocessing_directory = "2017/MC_v20/semilep/"
     from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed        import *
     if not args.noData:
-        del postprocessing_directory
         if args.useEOS: postprocessing_directory = "2017/Data_v20/semilep/"
         from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
 
@@ -125,7 +123,6 @@ elif args.year == 2018:
     if args.useEOS: postprocessing_directory = "2018/MC_v20/semilep/"
     from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed      import *
     if not args.noData:
-        del postprocessing_directory
         if args.useEOS: postprocessing_directory = "2018/Data_v20/semilep/"
         from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
 
@@ -717,8 +714,8 @@ elif args.leptonCategory:
 
 if args.noData:
     if args.year == 2016:   lumi_scale = 35.92
-    elif args.year == 2017: lumi_scale = 41.86
-    elif args.year == 2018: lumi_scale = 58.83
+    elif args.year == 2017: lumi_scale = 41.53
+    elif args.year == 2018: lumi_scale = 59.74
     stack = Stack( mc )
 else:
     if args.year == 2016:   data_sample = Run2016
