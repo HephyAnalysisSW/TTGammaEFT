@@ -26,7 +26,7 @@ from TTGammaEFT.Tools.user                       import cache_directory
 from TTGammaEFT.Tools.objectSelection            import *
 from TTGammaEFT.Tools.Variables                  import NanoVariables
 
-from Analysis.Tools.overlapRemovalTTG            import photonFromTopDecay, hasMesonMother, getParentIds, isIsolatedPhoton, getPhotonCategory, hasLeptonMother, getPhotonMother, getGenPartIdx
+from Analysis.Tools.overlapRemovalTTG            import photonFromTopDecay, hasMesonMother, getParentIds, isIsolatedPhoton, getPhotonCategory, hasLeptonMother, getPhotonMother, getAdvancedPhotonCategory
 from Analysis.Tools.puProfileCache               import puProfile
 from Analysis.Tools.L1PrefireWeight              import L1PrefireWeight
 from Analysis.Tools.mt2Calculator                import mt2Calculator
@@ -1094,13 +1094,12 @@ def filler( event ):
         gPart.sort(key=lambda x: x["index"])
         # match photon with gen-particle and get its photon category -> reco Photon categorization
         for g in allPhotons:
-            g["genPartIdx"] = getGenPartIdx( g, gPart, coneSize=0.4, ptCut=5., excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ] )
+#            g["genPartIdx"] = getGenPartIdx( g, gPart, coneSize=0.4, ptCut=5., excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ] )
             genMatch = filter( lambda p: p['index'] == g['genPartIdx'], gPart )[0] if g['genPartIdx'] >= 0 else None
-            g['photonCat']    = getPhotonCategory( genMatch, gPart )
+#            g['photonCat']    = getPhotonCategory( genMatch, gPart ) if g['genPartIdx'] != -2 else 4 # magic photons
+            g['photonCat']    = getAdvancedPhotonCategory( g, gPart, coneSize=0.2, ptCut=5., excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ] )
             g['leptonMother'] = hasLeptonMother( genMatch, gPart )
             g['mother']       = getPhotonMother( genMatch, gPart )
-            if genMatch == -2: # categorize conversions by hand as hadronic
-                g['photonCat'] = 1
     else:
         for g in allPhotons:
             g['photonCat']    = -1
