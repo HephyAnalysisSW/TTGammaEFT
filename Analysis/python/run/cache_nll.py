@@ -202,7 +202,7 @@ if 2016 in args.years:
         ttGSample["2l"][2016]  = TTG_16
 
 if 2017 in args.years:
-    lumi_scale[2017]       = 41.86
+    lumi_scale[2017]       = 41.53
     if "1l" in args.selections:
         mc["1l"][2017]         = [ DY_LO_17, TG_17, WJets_17, WG_17, TT_pow_17, singleTop_17, other_17 ]
         ttGSample["1l"][2017]  = TTG_17
@@ -211,7 +211,7 @@ if 2017 in args.years:
         ttGSample["2l"][2017]  = TTG_17
 
 if 2018 in args.years:
-    lumi_scale[2018]       = 58.83
+    lumi_scale[2018]       = 59.74
     if "1l" in args.selections:
         mc["1l"][2018]         = [ TT_pow_18, singleTop_18, DY_LO_18, other_18 ]
         ttGSample["1l"][2018]  = TTG_18
