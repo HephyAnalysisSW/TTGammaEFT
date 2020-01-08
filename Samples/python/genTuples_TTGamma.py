@@ -308,6 +308,19 @@ ZGamma_central_LO_0123j_93X_CUEP8M1          = FWLiteSample.fromDAS("ZGamma_cent
 ZGamma_central_LO_0123j_93X_CUEP8M1.xSection = 445.8
 ZGamma_central_LO_0123j_93X_CUEP8M1.nEvents  = 300000
 
+# TWZ dim6top
+tWZ0j_rwgt_dim6top_GEN                                    = FWLiteSample.fromDAS("tWZ0j_rwgt_dim6top", "/tWZ0j_rwgt_filter_dim6top/ttschida-tWZ0j_rwgt_filter_dim6top-81f8b37f98d19250d93137d623fc245d/USER", dbFile=dbFile, overwrite==ov, prefix='root://hephyse.oeaw.ac.at/')
+tWZ0j_rwgt_dim6top_GEN.reweight_pkl                       = "/afs/hephy.at/data/rschoefbeck01/gridpacks/dim6top/tWZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl"
+tWZ0j_rwgt_dim6top_GEN.xSection                           = 0.1080
+tWZ0j_rwgt_dim6top_GEN.nEvents                            = 1640034
+
+tWZ01j_rwgt_dim6top_GEN                                   = FWLiteSample.fromDAS("tWZ01j_rwgt_dim6top", "/tWZ01j_rwgt_filter_dim6top/ttschida-tWZ01j_rwgt_filter_dim6top-caa479f26b314574e6a3e9c0fc79c8e3/USER", dbFile=dbFile, overwrite==ov, prefix='root://hephyse.oeaw.ac.at/')
+tWZ01j_rwgt_dim6top_GEN.reweight_pkl                      = "/afs/hephy.at/data/rschoefbeck01/gridpacks/dim6top/tWZ01j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl"
+tWZ01j_rwgt_dim6top_GEN.xSection                          = 0.2059
+tWZ01j_rwgt_dim6top_GEN.nEvents                           = 584546
+
+
+
 
 SM = [
     ttGamma_Dilept_newCentral_1Line,
