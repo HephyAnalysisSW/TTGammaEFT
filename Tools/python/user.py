@@ -45,3 +45,11 @@ if os.environ["USER"] in ["ttschida"]:
     #gridpack_directory                  = "/afs/hephy.at/data/cms04/ttschida/TTGammaEFT/gridpacks/"   
     gridpack_directory                  = "/afs/hephy.at/data/cms04/ttschida/TTXPheno/gridpacks/"
     postprocessing_output_directory     = "/afs/hephy.at/data/cms04/ttschida/TTGammaEFT/Tuples/"
+
+if os.environ["USER"] in ["lgoldsch"]:
+    results_directory               = "/afs/hephy.at/data/rschoefbeck02/TTGammaEFT/results/"
+#    plot_directory                  = "/afs/cern.ch/user/l/lgoldsch/public/CMSSW_10_2_9/src/TTGammaEFT/plots/LukasG_plots" #  "/afs/hephy.at/user/l/lgoldschmied/www/plots"
+    plot_directory                  = "/afs/hephy.at/user/l/lgoldschmied/www/plots"
+    dpm_directory                   = "/dpm/oeaw.ac.at/home/cms/store/user/llechner/"
+    eos_directory                   = "/eos/cms/store/group/phys_susy/hephy/"
+    cache_directory                 = "/afs/hephy.at/data/llechner01/TTGammaEFT/cache/"
