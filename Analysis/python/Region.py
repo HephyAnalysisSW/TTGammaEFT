@@ -1,5 +1,6 @@
-allowedVars = [ "PhotonNoChgIsoNoSieie0_pt", "PhotonGood0_pt", "GenPhoton_pt[0]", "Jet_eta", "Jet_pt", "Jet_phi", "nPhotonGood", "m3", "(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)" ]
-texString  = { "nPhotonGood":"N_{#gamma}", "PhotonNoChgIsoNoSieie0_pt":"p_{T}(#gamma)", "PhotonGood0_pt":"p_{T}(#gamma)", "GenPhoton_pt[0]":"p_{T}(#gamma)", "Jet_eta":"#eta(jets)", "Jet_pt":"p_{T}(jets)", "Jet_phi":"#phi(jets)", "(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)":"chg Iso(#gamma_{0})", "m3":"M_{3}" }
+allowedVars = [ "mLtight0Gamma", "PhotonNoChgIsoNoSieie0_pt", "PhotonGood0_eta", "PhotonGood0_pt", "GenPhoton_pt[0]", "Jet_eta", "Jet_pt", "Jet_phi", "nPhotonGood", "m3", "(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)" ]
+texString   = { "nPhotonGood":"N_{#gamma}", "mLtight0Gamma":"M(l,#gamma)", "PhotonNoChgIsoNoSieie0_pt":"p_{T}(#gamma)", "PhotonGood0_eta":"#eta(#gamma)", "PhotonGood0_pt":"p_{T}(#gamma)", "GenPhoton_pt[0]":"p_{T}(#gamma)", "Jet_eta":"#eta(jets)", "Jet_pt":"p_{T}(jets)", "Jet_phi":"#phi(jets)", "(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)":"chg Iso(#gamma_{0})", "m3":"M_{3}" }
+
 aliases     = { "PhotonGood0_pt":"genLepZ_pt", "nPhotonGood":"genLepZ_cosThetaStar", "m3":"gen_m3", "PhotonNoChgIsoNoSieie0_pt":"" }
 
 class Region:

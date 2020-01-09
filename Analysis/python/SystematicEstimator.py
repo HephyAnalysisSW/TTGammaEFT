@@ -85,7 +85,6 @@ class SystematicEstimator:
 
     def cachedEstimate(self, region, channel, setup, save=True, overwrite=False, checkOnly=False):
         key =  self.uniqueKey(region, channel, setup)
-#        if (self.cache and self.cache.contains(key) and self.cache.get(key) > 0) and not overwrite:
         if (self.cache and self.cache.contains(key)) and not overwrite:
             res = self.cache.get(key)
             logger.debug( "Loading cached %s result for %r : %r"%(self.name, key, res) )
@@ -107,11 +106,11 @@ class SystematicEstimator:
             logger.debug( "Loading cached %s result for %r : %r"%(self.name, key, res) )
         elif self.tfCache and not checkOnly:
             logger.debug( "Calculating %s result for %r"%(self.name, key) )
-            res = self._transferFactor( region, channel, setup, overwrite=overwrite )
+            res = self._dataDrivenTransferFactor( region, channel, setup, overwrite=overwrite )
             _res = self.tfCache.add( key, res, overwrite=True )
             logger.debug( "Adding cached transfer factor for %r : %r" %(key, res) )
         elif not checkOnly:
-            res = self._transferFactor( region, channel, setup, overwrite=overwrite )
+            res = self._dataDrivenTransferFactor( region, channel, setup, overwrite=overwrite )
         else:
             res = u_float(-1,0)
         return res if res > 0 or checkOnly else u_float(0,0)
@@ -122,6 +121,10 @@ class SystematicEstimator:
         return
 
     def _transferFactor(self, region, channel, setup, overwrite=False):
+        """Estimate transfer factor for QCD in "region" using setup"""
+        return
+
+    def _dataDrivenTransferFactor(self, region, channel, setup, overwrite=False):
         """Estimate transfer factor for QCD in "region" using setup"""
         return
 

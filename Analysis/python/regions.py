@@ -1,7 +1,8 @@
 from math import pi
 
-from TTGammaEFT.Analysis.Region import Region
-from TTGammaEFT.Analysis.Region import texString
+from TTGammaEFT.Analysis.Region      import Region
+from TTGammaEFT.Analysis.Region      import texString
+from TTGammaEFT.Tools.cutInterpreter import mLgThresh
 
 def getRegionsFromThresholds(var, vals, gtLastThreshold = True):
     return [Region(var, (vals[i], vals[i+1])) for i in range(len(vals)-1)]
@@ -30,9 +31,9 @@ genTTGammaRegionsEFT  = getRegionsFromThresholds( "GenPhoton_pt[0]", thresholds 
 recoTTGammaRegionsEFT = getRegionsFromThresholds( "PhotonGood0_pt", thresholds )
 
 #differencial
-thresholds = [ 20, 120, 220, -999 ]
-genTTGammaRegions  = getRegionsFromThresholds( "GenPhoton_pt[0]", thresholds )
-recoTTGammaRegions = getRegionsFromThresholds( "PhotonGood0_pt", thresholds )
+gammaPT_thresholds = [ 20, 120, 220, -999 ]
+genTTGammaRegions  = getRegionsFromThresholds( "GenPhoton_pt[0]", gammaPT_thresholds )
+recoTTGammaRegions = getRegionsFromThresholds( "PhotonGood0_pt", gammaPT_thresholds )
 
 thresholdsSmall = [ 20, 120 ]
 genTTGammaRegionsSmall  = getRegionsFromThresholds( "GenPhoton_pt[0]", thresholdsSmall )
@@ -45,16 +46,28 @@ preFiringSumJetPtLog  = getRegionsFromThresholds( "Jet_pt",  [30, 40, 50, 60, 70
 preFiringSumJet       = getRegionsFromThresholds( "Jet_phi", [-pi, -pi*(4./5), -pi*(3./5), -pi*(2./5), -pi*(1./5), 0., pi*(1./5), pi*(2./5), pi*(3./5), pi*(4./5), pi], gtLastThreshold=False )
 
 pTG_thresh         = [ 20, 120, 220, -999 ]
+etaG_thresh        = [ -1.5, -0.5, 0.5, 1.5 ]
 regionsTTG         = getRegionsFromThresholds( "PhotonGood0_pt", pTG_thresh )
+regionsTTGEta      = getRegionsFromThresholds( "PhotonGood0_eta", etaG_thresh )
 inclRegionsTTG     = [Region( "PhotonGood0_pt", (20,-999) )]
 regionsTTGfake     = getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", pTG_thresh )
 inclRegionsTTGfake = [Region( "PhotonNoChgIsoNoSieie0_pt", (20,-999) )]
 noPhotonRegionTTG  = [Region( "nPhotonGood", (0,1) )]
 
-m3_thresh = [0, 140, 210, 280, 350, -999]
-#m3_thresh = [0, 70, 140, 210, 280, -999]
-m3Regions   = getRegionsFromThresholds( "m3", m3_thresh )
-m3PtRegions = getRegions2D( "PhotonGood0_pt", pTG_thresh, "m3", m3_thresh )
+pTG_thresh_fine    = [ 20, 70, 120, 170, 220, -999 ]
+etaG_thresh_fine   = [ -1.5, -0.9, -0.3, 0.3, 0.9, 1.5 ]
+regionsTTGFine     = getRegionsFromThresholds( "PhotonGood0_pt", pTG_thresh_fine )
+regionsTTGEtaFine  = getRegionsFromThresholds( "PhotonGood0_eta", etaG_thresh_fine )
+
+
+mlg_tresh = [ 0, mLgThresh, -999 ]
+mLgPtRegions = getRegions2D( "PhotonGood0_pt", pTG_thresh, "mLtight0Gamma", mlg_tresh )
+mLgRegions   = getRegionsFromThresholds( "mLtight0Gamma", mlg_tresh )
+
+m3_thresh    = [0, 140, 210, 280, 350, -999]
+m3Regions    = getRegionsFromThresholds( "m3", m3_thresh )
+m3PtRegions  = getRegions2D( "PhotonGood0_pt",  pTG_thresh,  "m3", m3_thresh )
+m3EtaRegions = getRegions2D( "PhotonGood0_eta", etaG_thresh, "m3", m3_thresh )
 
 chgIso_thresh = [0, 1.141, 4, 9, 16, -999]
 chgIsoRegions   = getRegionsFromThresholds( "(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)", chgIso_thresh )
@@ -70,7 +83,7 @@ photonBinRegions   = getRegionsFromThresholds( "PhotonGood0_pt", pTG_thresh )
 if __name__ == "__main__":
 #    print inclRegionsTTG[0].cutString()
 
-    for region in m3PtRegions:
+    for region in mLgPtRegions + mLgRegions:
         print str(region)
         print region.cutString()
         print type(region.vals)

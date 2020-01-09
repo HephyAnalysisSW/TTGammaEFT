@@ -44,8 +44,8 @@ yield_dirDB = DirDB( cache_dir )
 if not yield_dirDB: raise
 
 if args.year == 2016:   lumi_scale = 35.92
-elif args.year == 2017: lumi_scale = 41.86
-elif args.year == 2018: lumi_scale = 58.83
+elif args.year == 2017: lumi_scale = 41.53
+elif args.year == 2018: lumi_scale = 59.74
 
 selDir = args.selection
 addMisIDSF = False

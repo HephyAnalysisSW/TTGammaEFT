@@ -32,7 +32,7 @@ else:
 logger.info( "Loading data samples from directory %s", os.path.join(data_directory, postprocessing_directory ) )
 
 allSamples = [ 'SingleMuon' ]
-lumi       = 41.86
+lumi       = 41.53
 
 dirs = {}
 for ( run, version ) in [ ( 'B', '' ), ( 'C', '' ), ( 'D', '' ), ( 'E', '' ), ( 'F', '' ) ]:

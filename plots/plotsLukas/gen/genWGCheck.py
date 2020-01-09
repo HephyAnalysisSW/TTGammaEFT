@@ -130,7 +130,7 @@ def getGenJets( event, sample ):
 
 sequence = [getGenJets]
 
-lumi_scale = 35.8
+lumi_scale = 35.92
 
 comparisonSamples = [ [WG_NLO_16], [WG_16] ]
 

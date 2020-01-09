@@ -23,6 +23,10 @@ class MCBasedEstimate(SystematicEstimator):
         """Estimate transfer factor for QCD in "region" using setup"""
         return u_float(0, 0)
 
+    def _dataDrivenTransferFactor(self, region, channel, setup, overwrite=False):
+        """Estimate transfer factor for QCD in "region" using setup"""
+        return u_float(0, 0)
+
     def _estimate(self, region, channel, setup, overwrite=False):
 
         ''' Concrete implementation of abstract method 'estimate' as defined in Systematic

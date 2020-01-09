@@ -41,6 +41,7 @@ class Setup:
             "nJet":         default_nJet,
             "nBTag":        default_nBTag,
             "nPhoton":      default_nPhoton,
+            "MET":          default_MET,
             "invertLepIso": default_invLepIso,
             "addMisIDSF":   default_addMisIDSF,
             "m3Window":     default_m3Window,
@@ -117,11 +118,11 @@ class Setup:
                 self.lumi     = 35.92*1000
                 self.dataLumi = 35.92*1000
             elif year == 2017:
-                self.lumi     = 41.86*1000
-                self.dataLumi = 41.86*1000
+                self.lumi     = 41.53*1000
+                self.dataLumi = 41.53*1000
             elif year == 2018:
-                self.lumi     = 58.83*1000
-                self.dataLumi = 58.83*1000
+                self.lumi     = 59.74*1000
+                self.dataLumi = 59.74*1000
 
         else:
             mc           = [ ttg, tt, DY, zg, wjets, wg, other, qcd, gjets ]
@@ -189,7 +190,7 @@ class Setup:
         if   dataMC == "Data": _weightString = "weight"#*reweightHEM"
         elif dataMC == "MC":
             _weightString = "*".join([self.sys["weight"]] + (self.sys["reweight"] if self.sys["reweight"] else []))
-            if addMisIDSF: _weightString += "+%s*(%s0_photonCat==2)*(%f-1)" %(_weightString, photon, misIDSF_val[self.year])
+            if addMisIDSF: _weightString += "+%s*(%s0_photonCat==2)*(%f-1)" %(_weightString, photon, misIDSF_val[self.year].val)
         logger.debug("Using weight-string: %s", _weightString)
         return _weightString
 
@@ -202,6 +203,7 @@ class Setup:
     def selection(self, dataMC,
                         dileptonic=None, invertLepIso=None, addMisIDSF=None,
                         nJet=None, nBTag=None, nPhoton=None,
+                        MET=None,
                         zWindow=None, m3Window=None,
                         photonIso=None,
                         channel="all"):
@@ -218,6 +220,7 @@ class Setup:
         if not nJet:         nJet         = self.parameters["nJet"]
         if not nBTag:        nBTag        = self.parameters["nBTag"]
         if not nPhoton:      nPhoton      = self.parameters["nPhoton"]
+        if not MET:          MET          = self.parameters["MET"]
         if not zWindow:      zWindow      = self.parameters["zWindow"]
         if not m3Window:     m3Window     = self.parameters["m3Window"]
         if not photonIso:    photonIso    = self.parameters["photonIso"]
@@ -229,7 +232,7 @@ class Setup:
         assert m3Window in ["offM3", "onM3", "all"], "m3Window must be one of onM3, offM3, all. Got %r"%m3Window
         assert photonIso in [None, "lowSieie", "highSieie", "lowChgIso", "highChgIso", "lowChgIsolowSieie", "highChgIsolowSieie", "lowChgIsohighSieie", "highChgIsohighSieie"], "PhotonIso must be one of lowSieie, highSieie, lowChgIso, highChgIso, lowChgIsolowSieie, highChgIsolowSieie, lowChgIsohighSieie, highChgIsohighSieie. Got %r"%photonIso
         if self.sys['selectionModifier']:
-            assert self.sys['selectionModifier'] in jmeVariations, "Don't know about systematic variation %r, take one of %s"%(self.sys['selectionModifier'], ",".join(jmeVariations))
+            assert self.sys['selectionModifier'] in jmeVariations+metVariations, "Don't know about systematic variation %r, take one of %s"%(self.sys['selectionModifier'], ",".join(jmeVariations+metVariations))
 
         # default lepton selections
         tightLepton = "nLepTight1"
@@ -248,7 +251,7 @@ class Setup:
 
         #Postfix for variables (only for MC and if we have a jme variation)
         sysStr = ""
-        if dataMC == "MC" and self.sys['selectionModifier'] in jmeVariations:
+        if dataMC == "MC" and self.sys['selectionModifier'] in jmeVariations + metVariations:
             sysStr = "_" + self.sys['selectionModifier']
 
         res={"cuts":[], "prefixes":[]}
@@ -275,6 +278,7 @@ class Setup:
             if nJet[1]>=0:
                 njetsstr+= "&&"+"nJetGood"+sysStr+"<="+str(nJet[1])
                 if nJet[1]!=nJet[0]: prefix+=str(nJet[1])
+#                if nJet[1]!=nJet[0]: prefix+="To"+str(nJet[1])
             else:
                 prefix+="p"
             res["cuts"].append(njetsstr)
@@ -289,6 +293,7 @@ class Setup:
                 if sysStr: nbtstr+= "&&nBTagGood"+sysStr+"<="+str(nBTag[1])
                 else:      nbtstr+= "&&nBTagGood"+sysStr+"<="+str(nBTag[1])
                 if nBTag[1]!=nBTag[0]: prefix+=str(nBTag[1])
+#                if nBTag[1]!=nBTag[0]: prefix+="To"+str(nBTag[1])
             else:
                 prefix+="p"
             res["cuts"].append(nbtstr)
@@ -320,6 +325,17 @@ class Setup:
             else:
                 prefix+="p"
             res["cuts"].append(nphotonsstr)
+            res["prefixes"].append(prefix)
+
+        #MET cut
+        if MET and not (MET[0]==0 and MET[1]<0):
+            assert MET[0]>=0 and (MET[1]>=MET[0] or MET[1]<0), "Not a good MET selection: %r"%MET
+            metsstr = "MET_pt"+sysStr+">="+str(MET[0])
+            prefix   = "met"+str(MET[0])
+            if MET[1]>=0:
+                metsstr+= "&&"+"MET_pt"+sysStr+"<"+str(MET[1])
+                if MET[1]!=MET[0]: prefix+="To"+str(MET[1])
+            res["cuts"].append(metsstr)
             res["prefixes"].append(prefix)
 
         # remove default zwindow cut in qcd estimation for non photon regions
@@ -375,7 +391,7 @@ if __name__ == "__main__":
             print
             print channel
             print
-            res = setup.selection("MC", channel=channel, **setup.defaultParameters( update=dict["parameters"] ))
+            res = setup.selection("MC", channel=channel, **setup.defaultParameters( update={"MET":(0,30)} ))
             print res["cut"]
             print res["prefix"]
             print res["weightStr"]

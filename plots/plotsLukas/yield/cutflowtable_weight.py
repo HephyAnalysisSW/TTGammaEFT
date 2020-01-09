@@ -103,10 +103,10 @@ def calculation( arg ):
         lumi_scale = 35.92
     elif mode == "2017":
         TTG = TTG_17
-        lumi_scale = 41.86
+        lumi_scale = 41.53
     elif mode == "2018":
         TTG = TTG_18
-        lumi_scale = 58.83
+        lumi_scale = 59.74
 
     selCut = args.selection
     selCuts = [ cutInterpreter.cutString( "-".join( [ selCut, cat ] ) ) ]

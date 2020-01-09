@@ -67,8 +67,8 @@ from TTGammaEFT.Samples.genTuples_postProcessed import *
 
 combinedAnalysis = len(args.years) > 1
 lumi16 = 35.92
-lumi17 = 41.86
-lumi18 = 58.83
+lumi17 = 41.53
+lumi18 = 59.74
 
 if args.nJobs != 1:
     logger.info("Running batch mode! Setting args.cores to 1")

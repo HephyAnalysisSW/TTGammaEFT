@@ -8,27 +8,65 @@ def convPTLabel( lab ):
     rang = lab.split("_pt")[1].split("_")[0].split("To")
     if len(rang) > 1:
         low, high = rang[0], rang[1]
-        return "%s #leq p_{T}(#gamma) < %s GeV"%(low, high)
+        if low != "0":
+            return "%s #leq p_{T}(#gamma) < %s GeV"%(low, high)
+        else:
+            return "p_{T}(#gamma) < %s GeV"%(high)
     else:
         low = rang[0]
         return "p_{T}(#gamma) #geq %s GeV"%(low)
+
+def convEtaLabel( lab ):
+    # PhotonGood0_eta-1.5To1.5_m370To140
+    # PhotonNoChgIsoNoSieie0_pt20To120_(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)0To1
+    rang = lab.split("_eta")[1].split("_")[0].split("To")
+    if len(rang) > 1:
+        low, high = rang[0], rang[1]
+        if low != "0":
+            return "%s #leq #eta(#gamma) < %s"%(low, high)
+        else:
+            return "#eta(#gamma) < %s"%(high)
+    else:
+        low = rang[0]
+        return "#eta(#gamma) #geq %s"%(low)
 
 def convM3Label( lab ):
     # PhotonGood0_pt20To120_m370To140
     rang = lab.split("m3")[1].split("To")
     if len(rang) > 1:
         low, high = rang[0], rang[1]
-        return "%s #leq M_{3} < %s GeV"%(low, high)
+        if low != "0":
+            return "%s #leq M_{3} < %s GeV"%(low, high)
+        else:
+            return "M_{3} < %s GeV"%(high)
     else:
         low = rang[0]
         return "M_{3} #geq %s GeV"%(low)
+
+def convMlgLabel( lab ):
+    # mLtight0Gamma0To101.1876_PhotonGood0_pt120To220
+    # mLtight0Gamma101.1876_PhotonGood0_pt120To220
+    rang = lab.split("_")[0].split("mLtight0Gamma")[1].split("To")
+    if len(rang) > 1:
+        low, high = rang[0], rang[1]
+        print low, type(low)
+        if low != "0":
+            return "%s #leq M_{l,#gamma} < %s GeV"%(low, high)
+        else:
+            return "M_{l,#gamma} < %s GeV"%(high)
+    else:
+        low = rang[0]
+        return "M_{l,#gamma} #geq %s GeV"%(low)
 
 def convChgIsoLabel( lab ):
     # PhotonNoChgIsoNoSieie0_pt20To120_(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)0To1
     rang = lab.split("(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)")[1].split("To")
     if len(rang) > 1:
         low, high = rang[0], rang[1]
-        return "%s #leq chg.Iso(#gamma) < %s GeV"%(low, high)
+        if low != "0":
+            return "%s #leq chg.Iso(#gamma) < %s GeV"%(low, high)
+        else:
+            return "chg.Iso(#gamma) < %s GeV"%(high)
     else:
         low = rang[0]
         return "chg.Iso(#gamma) #geq %s GeV"%(low)
@@ -37,7 +75,10 @@ def convNPhotonLabel( lab ):
     rang = lab.split("nPhotonGood")[1].split("To")
     if len(rang) > 1 and not (rang[0]=="0" and rang[1]=="1"):
         low, high = rang[0], rang[1]
-        return "%s #leq N_{#gamma} < %s"%(low, high)
+        if low != "0":
+            return "%s #leq N_{#gamma} < %s"%(low, high)
+        else:
+            return "N_{#gamma} < %s"%(high)
     else:
         low = rang[0]
         return "N_{#gamma} = %s"%(low)
@@ -46,15 +87,31 @@ def convLabel( lab ):
     # summary function for all separate label formating functions
     if "nPhotonGood" in lab:
         return convNPhotonLabel( lab )
+    elif "eta" in lab:
+        label = convEtaLabel( lab )
+        if "m3" in lab:
+            label += ", " + convM3Label( lab )
+        if "pfRelIso" in lab:
+            label += ", " + convChgIsoLabel( lab )
+        if "mLtight0Gamma" in lab:
+            label += ", " + convMlgLabel( lab )
+        return label
     elif "pt" in lab:
         label = convPTLabel( lab )
         if "m3" in lab:
             label += ", " + convM3Label( lab )
         if "pfRelIso" in lab:
             label += ", " + convChgIsoLabel( lab )
+        if "mLtight0Gamma" in lab:
+            label += ", " + convMlgLabel( lab )
         return label
     elif "m3" in lab:
         label = convM3Label( lab )
+        if "pfRelIso" in lab:
+            label += ", " + convChgIsoLabel( lab )
+        return label
+    elif "mLtight0Gamma" in lab:
+        label = convMlgLabel( lab )
         if "pfRelIso" in lab:
             label += ", " + convChgIsoLabel( lab )
         return label
@@ -76,7 +133,7 @@ def drawDivisions( labels, misIDPOI=False ):
     lines2 = []
     done = False
     for i_reg, reg in enumerate(labels):
-        if i_reg != nBins-1 and ("SR" in labels[i_reg+1] or ("mis" in labels[i_reg+1] and misIDPOI)) and not done:
+        if i_reg != nBins-1 and ("SR" in labels[i_reg+1] or ("mis" in labels[i_reg+1] and misIDPOI)) and not ("SR" in labels[i_reg] or ("mis" in labels[i_reg] and misIDPOI)) and not done:
             if not any( [(("SR" in lab) or ("mis" in lab and misIDPOI)) for lab in labels] ) or all( ["SR" in lab for lab in labels] ): continue
             lines2.append( (min+(i_reg+1)*diff,  0., min+(i_reg+1)*diff, formatSettings(nBins)["legylower"]) )
             done = True
@@ -151,7 +208,7 @@ def setPTBinLabels( labels, names, fac=1. ):
     return setBinLabel
 
 
-def getUncertaintyBoxes( totalHist ):
+def getUncertaintyBoxes( totalHist, minMax=0.3 ):
     nBins = totalHist.GetNbinsX()
     boxes = []
     ratio_boxes = []
@@ -175,7 +232,7 @@ def getUncertaintyBoxes( totalHist ):
         # uncertainty box in ratio histogram
         r_min = max( [ 1-sys_rel, r_min ])
         r_max = min( [ 1+sys_rel, r_max ])
-        r_box = ROOT.TBox( totalHist.GetXaxis().GetBinLowEdge(ib),  max(0.11, 1-sys_rel), totalHist.GetXaxis().GetBinUpEdge(ib), min(1.9, 1+sys_rel) )
+        r_box = ROOT.TBox( totalHist.GetXaxis().GetBinLowEdge(ib),  max(1-minMax, 1-sys_rel), totalHist.GetXaxis().GetBinUpEdge(ib), min(1+minMax, 1+sys_rel) )
         r_box.SetLineColor(ROOT.kGray+3)
         r_box.SetFillStyle(formatSettings(nBins)["hashcode"])
         r_box.SetFillColor(ROOT.kGray+3)

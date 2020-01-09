@@ -104,8 +104,8 @@ cardname  = '_'.join( cardname )
 
 lumi = {}
 lumi[2016] = 35.92
-lumi[2017] = 41.86
-lumi[2018] = 58.83
+lumi[2017] = 41.53
+lumi[2018] = 59.74
 lumi_scale = sum( [ lumi[year] for year in args.years ])
 
 def getNllData( var1, var2 ):

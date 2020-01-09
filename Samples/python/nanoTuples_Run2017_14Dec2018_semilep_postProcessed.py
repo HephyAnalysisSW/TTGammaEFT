@@ -10,15 +10,15 @@ from TTGammaEFT.Samples.helpers import getDataSample, merge
 
 # Data directory
 try:
-    data_directory = sys.modules['__main__'].data_directory
+    data_directory_ = sys.modules['__main__'].data_directory
 except:
-    from TTGammaEFT.Tools.user import dpm_directory as data_directory
-    data_directory += "postprocessed/"
+    from TTGammaEFT.Tools.user import dpm_directory as data_directory_
+    data_directory_ += "postprocessed/"
 try:
-    postprocessing_directory = sys.modules['__main__'].postprocessing_directory
+    postprocessing_directory_ = sys.modules['__main__'].postprocessing_directory
 except:
     from TTGammaEFT.Samples.default_locations import postprocessing_locations
-    postprocessing_directory = postprocessing_locations.Run2017_semilep
+    postprocessing_directory_ = postprocessing_locations.Run2017_semilep
 
 try:
     fromDPM = sys.modules['__main__'].fromEOS != "True"
@@ -26,7 +26,7 @@ except:
     fromDPM = True
 
 if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
-    postprocessing_directory = postprocessing_directory.replace("/semilep/", "/semilepGamma/")
+    postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
 
 # Redirector
 try:
@@ -44,10 +44,10 @@ else:
     import logging
     logger = logging.getLogger(__name__)
 
-logger.info( "Loading data samples from directory %s", os.path.join(data_directory, postprocessing_directory ) )
+logger.info( "Loading data samples from directory %s", os.path.join(data_directory_, postprocessing_directory_ ) )
 
 allSamples = [ 'SingleMuon', 'SingleElectron' ]
-lumi       = 41.86
+lumi       = 41.53
 
 dirs = {}
 for ( run, version ) in [ ( 'B', '' ), ( 'C', '' ), ( 'D', '' ), ( 'E', '' ), ( 'F', '' ) ]:
@@ -61,7 +61,7 @@ for pd in allSamples:
     merge( pd, 'Run2017CDE', [ 'Run2017C', 'Run2017D', 'Run2017E' ], dirs )
 
 for key in dirs:
-    dirs[key] = [ os.path.join( data_directory, postprocessing_directory, dir ) for dir in dirs[key] ]
+    dirs[key] = [ os.path.join( data_directory_, postprocessing_directory_, dir ) for dir in dirs[key] ]
 
 allSamples_Data25ns  = []
 for pd in allSamples:

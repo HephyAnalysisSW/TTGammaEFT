@@ -49,8 +49,8 @@ logger    = logger.get_logger(   args.logLevel, logFile = None)
 logger_rt = logger_rt.get_logger(args.logLevel, logFile = None)
 
 if args.year == 2016:   lumi_scale = 35.92
-elif args.year == 2017: lumi_scale = 41.86
-elif args.year == 2018: lumi_scale = 58.83
+elif args.year == 2017: lumi_scale = 41.53
+elif args.year == 2018: lumi_scale = 59.74
 
 addMisIDSF = False
 addDYSF    = False

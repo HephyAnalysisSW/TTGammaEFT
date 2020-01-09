@@ -9,7 +9,7 @@ class color():
 color.data           = ROOT.kBlack
 color.DY             = ROOT.kAzure+4 #ROOT.kCyan+2
 color.ZGamma         = ROOT.kBlue+2
-color.WGamma         = ROOT.kBlue
+color.WGamma         = ROOT.kAzure-3
 color.VGamma         = ROOT.kAzure+3 #ROOT.kAzure
 color.TTG            = ROOT.kOrange
 color.Other          = ROOT.kOrange+2 #ROOT.kViolet+5
