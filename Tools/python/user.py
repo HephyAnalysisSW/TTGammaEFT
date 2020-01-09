@@ -36,6 +36,15 @@ if os.environ["USER"] in ["llechner"]:
     dpm_directory                       = "/dpm/oeaw.ac.at/home/cms/store/user/llechner/"
     eos_directory                       = "/eos/cms/store/group/phys_susy/hephy/"
 
+if os.environ["USER"] in ["ttschida"]:
+    plot_directory                      = "/afs/hephy.at/user/t/ttschida/www/HiggsWithoutHiggs/TTGammaEFT/"
+    dpm_directory                       = "/dpm/oeaw.ac.at/home/cms/store/user/llechner/"
+    results_directory                   = "/afs/hephy.at/data/cms04/ttschida/TTGammaEFT/results/"
+    tmp_directory                       = "/afs/hephy.at/data/cms04/ttschida/TTGammaEFT/tmp/"
+    cache_directory                     = "/afs/hephy.at/data/cms04/ttschida/TTGammaEFT/cache/"
+    #gridpack_directory                  = "/afs/hephy.at/data/cms04/ttschida/TTGammaEFT/gridpacks/"   
+    gridpack_directory                  = "/afs/hephy.at/data/cms04/ttschida/TTXPheno/gridpacks/"
+    postprocessing_output_directory     = "/afs/hephy.at/data/cms04/ttschida/TTGammaEFT/Tuples/"
 
 if os.environ["USER"] in ["lgoldsch"]:
     results_directory               = "/afs/hephy.at/data/rschoefbeck02/TTGammaEFT/results/"

@@ -32,6 +32,8 @@ special_cuts = {
     "all":               "(1)",
     "SF":                "(nGenElectron==2||nGenMuon==2)",
     "clean":             "nGenLepton==nGenAllLepton",
+    "trilepTWZ":         "nGenLepton==3",
+    "quadlepTWZ":        "nGenLepton==4",
   }
 
 continous_variables = [ ("met", "GenMET_pt"), ("pTG","GenPhoton_pt[0]"), ("pTAllG", "GenMGPhoton_pt[0]"), ("mll", "mll"), ("mllgamma", "mllgamma") ]

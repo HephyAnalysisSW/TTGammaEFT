@@ -78,7 +78,14 @@
 #python genPostProcessingSampleComp.py --noCleaning --overwrite --processingEra TTGammaEFT_PP_GEN_TTG_v14 --sample ttGamma_Had_noLHE_1Line_Herwig        #SPLIT5
 #python genPostProcessingSampleComp.py --noCleaning --overwrite --processingEra TTGammaEFT_PP_GEN_TTG_v14 --sample ttGamma_Dilept_noLHE_1Line_Herwig     #SPLIT5
 
-python genPostProcessingSampleComp.py --noCleaning --overwrite --processingEra TTGammaEFT_PP_GEN_TTG_v14 --sample ttGamma_NoFullyHad_noLHE_1Line_Herwig7 #SPLIT5
-python genPostProcessingSampleComp.py --noCleaning --overwrite --processingEra TTGammaEFT_PP_GEN_TTG_v14 --sample ttGamma_SemiLept_noLHE_1Line_Herwig7   #SPLIT5
-python genPostProcessingSampleComp.py --noCleaning --overwrite --processingEra TTGammaEFT_PP_GEN_TTG_v14 --sample ttGamma_Had_noLHE_1Line_Herwig7        #SPLIT5
-python genPostProcessingSampleComp.py --noCleaning --overwrite --processingEra TTGammaEFT_PP_GEN_TTG_v14 --sample ttGamma_Dilept_noLHE_1Line_Herwig7     #SPLIT5
+#python genPostProcessingSampleComp.py --noCleaning --overwrite --processingEra TTGammaEFT_PP_GEN_TTG_v14 --sample ttGamma_NoFullyHad_noLHE_1Line_Herwig7 #SPLIT5
+#python genPostProcessingSampleComp.py --noCleaning --overwrite --processingEra TTGammaEFT_PP_GEN_TTG_v14 --sample ttGamma_SemiLept_noLHE_1Line_Herwig7   #SPLIT5
+#python genPostProcessingSampleComp.py --noCleaning --overwrite --processingEra TTGammaEFT_PP_GEN_TTG_v14 --sample ttGamma_Had_noLHE_1Line_Herwig7        #SPLIT5
+#python genPostProcessingSampleComp.py --noCleaning --overwrite --processingEra TTGammaEFT_PP_GEN_TTG_v14 --sample ttGamma_Dilept_noLHE_1Line_Herwig7     #SPLIT5
+
+#python genPostProcessing.py --overwrite --processingEra TWZ_rwgt_dim6top_GEN --sample tWZ0j_rwgt_dim6top_GEN  --addReweights --interpolationOrder 2 #SPLIT100
+#python genPostProcessing.py --overwrite --processingEra TWZ_rwgt_dim6top_GEN --sample tWZ01j_rwgt_dim6top_GEN  --addReweights --interpolationOrder 2 #SPLIT100
+
+python genPostProcessing.py --processingEra TWZ_rwgt_dim6top_GEN --sample tWZ0j_rwgt_dim6top_GEN  --addReweights --interpolationOrder 2 #SPLIT100
+python genPostProcessing.py --processingEra TWZ_rwgt_dim6top_GEN --sample tWZ01j_rwgt_dim6top_GEN  --addReweights --interpolationOrder 2 #SPLIT100
+

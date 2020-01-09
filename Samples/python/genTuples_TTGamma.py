@@ -308,17 +308,24 @@ ZGamma_central_LO_0123j_93X_CUEP8M1          = FWLiteSample.fromDAS("ZGamma_cent
 ZGamma_central_LO_0123j_93X_CUEP8M1.xSection = 445.8
 ZGamma_central_LO_0123j_93X_CUEP8M1.nEvents  = 300000
 
-# TWZ dim6top
-tWZ0j_rwgt_dim6top_GEN                                    = FWLiteSample.fromDAS("tWZ0j_rwgt_dim6top", "/tWZ0j_rwgt_filter_dim6top/ttschida-tWZ0j_rwgt_filter_dim6top-81f8b37f98d19250d93137d623fc245d/USER", dbFile=dbFile, overwrite==ov, prefix='root://hephyse.oeaw.ac.at/')
+# TWZ dim6top GEN samples
+
+
+# computed from tWZ01j simulation w/ and w/o the filter
+# checked in 0j sample (which has no matching eff) to be consistent with 1640034/(30.*10**6)
+tWZ01j_filter_efficiency = (601438./(30*10**6))*(10**6/363784.) 
+
+tWZ0j_rwgt_dim6top_GEN                                    = FWLiteSample.fromDAS("tWZ0j_rwgt_dim6top", "/tWZ0j_rwgt_filter_dim6top/ttschida-tWZ0j_rwgt_filter_dim6top-81f8b37f98d19250d93137d623fc245d/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix='root://hephyse.oeaw.ac.at/')
 tWZ0j_rwgt_dim6top_GEN.reweight_pkl                       = "/afs/hephy.at/data/rschoefbeck01/gridpacks/dim6top/tWZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl"
-tWZ0j_rwgt_dim6top_GEN.xSection                           = 0.1080
+tWZ0j_rwgt_dim6top_GEN.xSection                           = 0.1080*tWZ01j_filter_efficiency
 tWZ0j_rwgt_dim6top_GEN.nEvents                            = 1640034
 
-tWZ01j_rwgt_dim6top_GEN                                   = FWLiteSample.fromDAS("tWZ01j_rwgt_dim6top", "/tWZ01j_rwgt_filter_dim6top/ttschida-tWZ01j_rwgt_filter_dim6top-caa479f26b314574e6a3e9c0fc79c8e3/USER", dbFile=dbFile, overwrite==ov, prefix='root://hephyse.oeaw.ac.at/')
-tWZ01j_rwgt_dim6top_GEN.reweight_pkl                      = "/afs/hephy.at/data/rschoefbeck01/gridpacks/dim6top/tWZ01j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl"
-tWZ01j_rwgt_dim6top_GEN.xSection                          = 0.2059
-tWZ01j_rwgt_dim6top_GEN.nEvents                           = 584546
 
+tWZ01j_rwgt_dim6top_GEN                                   = FWLiteSample.fromDAS("tWZ01j_rwgt_dim6top", "/tWZ01j_rwgt_filter_dim6top/ttschida-tWZ01j_rwgt_filter_dim6top-caa479f26b314574e6a3e9c0fc79c8e3/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix='root://hephyse.oeaw.ac.at/')
+# attention! the gridpack was simulated on the SM point, i.e. ref-point=0 despite the fact that it has ctZ etc WC
+tWZ01j_rwgt_dim6top_GEN.reweight_pkl                      = "/afs/hephy.at/data/rschoefbeck01/gridpacks/dim6top/tWZ01j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl"
+tWZ01j_rwgt_dim6top_GEN.xSection                          = 0.2059*tWZ01j_filter_efficiency
+tWZ01j_rwgt_dim6top_GEN.nEvents                           = 584546
 
 
 
