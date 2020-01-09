@@ -376,7 +376,7 @@ addPlots.append( Plot(
     texX      = 'N_{l}',
     texY      = 'Number of Events',
     attribute = TreeVariable.fromString( "nGenLepton/I" ),
-    binning   = [ 4, 0, 4 ],
+    binning   = [ 5, 0, 5 ],
 ))
 
 addPlots.append( Plot(
