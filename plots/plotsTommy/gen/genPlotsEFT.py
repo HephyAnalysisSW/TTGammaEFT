@@ -134,7 +134,8 @@ def get_reweight( param, sample_ ):
     def reweightNoRef( event, sample ):
         return event.weight
     
-    return reweightRef if checkReferencePoint( sample_ ) else reweightNoRef
+    return reweightRef   
+#    return reweightRef if checkReferencePoint( sample_ ) else reweightNoRef
 
 
 genLeptonVarString  = "pt/F,phi/F,eta/F,pdgId/I,motherPdgId/I,grandmotherPdgId/I"
@@ -368,7 +369,7 @@ addPlots.append( Plot(
     texX      = 'H_{T} (GeV)',
     texY      = 'Number of Events / 25 GeV',
     attribute = TreeVariable.fromString( "ht/F" ),
-    binning   = [ 120, 0, 3000 ],
+    binning   = [ 30, 0, 900 ],
 ))
 
 addPlots.append( Plot(
