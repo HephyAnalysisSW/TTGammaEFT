@@ -317,7 +317,7 @@ tWZ01j_filter_efficiency = (601438./(30*10**6))*(10**6/363784.)
 
 tWZ0j_rwgt_dim6top_GEN                                    = FWLiteSample.fromDAS("tWZ0j_rwgt_dim6top", "/tWZ0j_rwgt_filter_dim6top/ttschida-tWZ0j_rwgt_filter_dim6top-81f8b37f98d19250d93137d623fc245d/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix='root://hephyse.oeaw.ac.at/')
 tWZ0j_rwgt_dim6top_GEN.reweight_pkl                       = "/afs/hephy.at/data/rschoefbeck01/gridpacks/dim6top/tWZ0j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl"
-tWZ0j_rwgt_dim6top_GEN.xSection                           = 0.1080*tWZ01j_filter_efficiency
+tWZ0j_rwgt_dim6top_GEN.xSection                           = 0.4866*tWZ01j_filter_efficiency
 tWZ0j_rwgt_dim6top_GEN.nEvents                            = 1640034
 
 
