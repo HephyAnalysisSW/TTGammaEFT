@@ -2,7 +2,8 @@
 import ROOT
 import os, sys
 import pickle
-
+import time
+import argparse
 # RootTools
 from RootTools.core.standard          import *
 from RootTools.plot.helpers           import copyIndexPHP
@@ -21,18 +22,39 @@ import RootTools.core.logger as logger_rt
 logger    = logger.get_logger(   "INFO", logFile = None)
 logger_rt = logger_rt.get_logger("INFO", logFile = None)
 
-year                  = 2016
-overwrite             = False
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--year',      type=int, nargs='?', default= 2016)
+parser.add_argument('--overwrite', type = bool , nargs='?', default = False)
+args = parser.parse_args()
+if (args.year == 2016):
+    Lumi = 35.92
+if (args.year == 2017):
+    Lumi = 41.53
+if (args.year == 2018):
+    Lumi = 59.74
+
 endings               = [".png", ".pdf", ".root"]
 
-filename_unfoldMatrix = "histUnfoldMatix.pkl"
+filename_unfoldMatrix = "histUnfoldMatrix.pkl"
 filename_inputHisto   = "histInput.pkl"
+filename_datatruthHisto = "histTruth.pkl"
 
-if os.path.exists(filename_unfoldMatrix) and os.path.exists(filename_inputHisto) and not overwrite:
+numEvents = 0.
+xminGen   = 20
+xmaxGen   = 250
+nGen      = 10
+nReco     = 10#25
+xminReco  = 20
+xmaxReco  = 250
+
+
+if os.path.exists(filename_unfoldMatrix) and  os.path.exists(filename_inputHisto) and os.path.exists(filename_datatruthHisto) and not args.overwrite:
     # load pickled unfolding matrix
-    histUnfoldMatrix = pickle.load( file(filename_unfoldMatrix) )
-    histUnfoldInput =  pickle.load( file(filename_inputHisto) )
-    logger.info("Re-using pickled histogram!")
+     histUnfoldMatrix = pickle.load( file(filename_unfoldMatrix) )
+     histUnfoldInput =  pickle.load( file(filename_inputHisto) )
+     histDataTruth = pickle.load( file(filename_datatruthHisto) )
+     logger.info("Re-using pickled histogram!")
 
 else:
 
@@ -43,15 +65,16 @@ else:
 #    os.environ["gammaSkim"]="True"
     from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed import *
 
-    sample = TTG_16
-#    sample.files = sample.files[:1]
+    sample = TTGSemiLep_16
+    #sample.files = sample.files[:1]
 
     # add needed variables
-    NanoVars         = NanoVariables(year)
+    NanoVars         = NanoVariables(args.year)
     genVarString     = NanoVars.getVariableString(   "Gen",    postprocessed=True, data=False,             plot=True )
     photonVarString  = NanoVars.getVariableString(   "Photon", postprocessed=True, data=True, plot=True )
     photonVariables  = NanoVars.getVariables(        "Photon", postprocessed=True, data=True, plot=True )
     variables = [ TreeVariable.fromString("event/l"),
+                  TreeVariable.fromString("weight/F"),
                   TreeVariable.fromString('run/i'),
                   TreeVariable.fromString("luminosityBlock/i"),
     	          VectorTreeVariable.fromString('Photon[%s]'%photonVarString, nMax=100),
@@ -77,29 +100,25 @@ else:
         variables = variables,
 #        selectionString = cutInterpreter.cutString(selectionString),
     )
-
-    numEvents = 0.
-    xminGen   = 20
-    xmaxGen   = 250
-    nGen      = 10
-    nReco     = 25
-    xminReco  = 20 
-    xmaxReco  = 250
+   
     histUnfoldMatrix = ROOT.TH2D("unfolding matrix",    "unfolding matrix",    nGen, xminGen, xmaxGen, nReco, xminReco, xmaxReco )
     histUnfoldInput  = ROOT.TH1D("unfolding input rec", "unfolding input rec", nReco, xminReco, xmaxReco)
 #    histUnfoldMatrixSys = ROOT.TH2D("unfolding matrix sys",";ptgen;ptrec",nGen,xminGen,xmaxGen,nReco,xminReco,xmaxReco)
+    histDataTruth = ROOT.TH1D("DATA truth gen",";ptgen",nGen,xminGen,xmaxGen)
+    
 
     def selection(dic_typedata):
-        return dic_typedata["pdgId"] == 22 and dic_typedata["pt"] >= 20 and abs(dic_typedata["eta"]) < 5.
+        return dic_typedata["status"] == 1 and dic_typedata["pdgId"] == 22 and dic_typedata["pt"] >= 20 and abs(dic_typedata["eta"]) < 1.47
 
     r.start()
     while r.run():
+        weight = Lumi * r.event.weight
         allGoodGenPhotons = []
         for i in range(r.event.nGenPart):
-            p = {"pdgId": r.event.GenPart_pdgId[i], "pt": r.event.GenPart_pt[i],"eta": r.event.GenPart_eta[i]}
+            p = {"status": r.event.GenPart_status[i],"pdgId": r.event.GenPart_pdgId[i], "pt": r.event.GenPart_pt[i],"eta": r.event.GenPart_eta[i]}
             if selection(p): allGoodGenPhotons.append(p)
         if not allGoodGenPhotons: continue       
-        numEvents += 1
+        #numEvents += 1
         allGoodGenPhotons.sort(key = lambda x: -x["pt"])
         gen = allGoodGenPhotons[0]
         if r.event.nPhotonGood == 1 and r.event.nJetGood >= 4 and r.event.nBTagGood >= 1 and r.event.nLeptonTight == 1 and r.event.nLeptonVetoIsoCorr == 1:
@@ -107,16 +126,19 @@ else:
         else:
             reco = {"pdgId": 22, "pt": -1, "eta": -1}
 
-        histUnfoldMatrix.Fill( gen["pt"], reco["pt"] )
-        histUnfoldInput.Fill(  reco["pt"] )
-   
-    histUnfoldMatrix.Scale(1./numEvents)
+        histUnfoldMatrix.Fill( gen["pt"], reco["pt"], weight )
+        histUnfoldInput.Fill(  reco["pt"], weight )
+        histDataTruth.Fill(    gen["pt"], weight  )
+        
     pickle.dump( histUnfoldMatrix, file( filename_unfoldMatrix, "w" ) )
     pickle.dump( histUnfoldInput,  file( filename_inputHisto, "w" )   )
-
+    pickle.dump ( histDataTruth , file(  filename_datatruthHisto, "w"))
     del r
+        
+ 
+        
 
-plot_directory_ = os.path.join( plot_directory, 'unfolding', str(year) )
+plot_directory_ = os.path.join( plot_directory, 'unfolding', str(args.year))
 if not os.path.isdir( plot_directory_ ):
     os.makedirs( plot_directory_ )
     copyIndexPHP( plot_directory_ )
@@ -139,6 +161,40 @@ for ending in endings:
 
 # https://root.cern.ch/doc/v612/classTUnfold.html#adb3ade9e94eedc71e5258e1af589de62
 logger.info("regMode.....")
+
+HistEff =  ROOT.TH1D("Efficience",";eff",nGen,xminGen,xmaxGen)
+HistPur = ROOT.TH1D("Purity", "pur", nReco, xminReco, xmaxReco)
+
+for i in range(1,histUnfoldMatrix.GetNbinsX()+1):
+    pt =  histDataTruth.GetBinCenter(i)
+   # binX = histDataTruth.FindBin(pt)
+    binY = histUnfoldInput.FindBin(pt)
+    eff = histUnfoldMatrix.GetBinContent(i,binY)/ histDataTruth.GetBinContent(i)
+    HistEff.SetBinContent(i,eff)
+for i in range(1,histUnfoldMatrix.GetNbinsY()+1):
+    pt = histUnfoldInput.GetBinCenter(i)
+   # binX = histDataTruth.FindBin(pt)
+    binY = histUnfoldInput.FindBin(pt)
+    pur = histUnfoldMatrix.GetBinContent(i,binY)/ histUnfoldInput.GetBinContent(i)
+    HistPur.SetBinContent(i,pur)
+E1 = ROOT.TCanvas("eff","eff",800,1000)
+E1.SetRightMargin(0.15)
+HistEff.GetXaxis().SetTitle( "p^{gen}_{T}(#gamma) [GeV]" )
+HistEff.GetYaxis().SetTitle( "Efficiency" )
+E1.cd(1)
+HistEff.Draw()
+P1 =  ROOT.TCanvas("pur","pur",800,1000)
+P1.SetRightMargin(0.15)
+histUnfoldMatrix.GetXaxis().SetTitle( "p^{reco}_{T}(#gamma) [GeV]" )
+histUnfoldMatrix.GetYaxis().SetTitle( "Purrity" )
+
+HistPur.Draw()
+E1.SaveAs("Efficience.png")
+P1.SaveAs("Purity.png")
+E1.SaveAs("Efficience.pdf")
+P1.SaveAs("Purity.pdf")
+
+
 # regularization
 #regMode = ROOT.TUnfold.kRegModeNone
 #regMode = ROOT.TUnfold.kRegModeSize
