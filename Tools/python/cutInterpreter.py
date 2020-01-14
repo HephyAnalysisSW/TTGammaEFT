@@ -87,8 +87,9 @@ special_cuts = {
     "onZegInv":             "((abs(mLinvtight0Gamma-%s)<=%s&&nElectronTightInvIso==1)||(nElectronTightInvIso==0))"%(mZ, zMassRange),             # Cut Z-Window only for egamma
     "muInv":                "nMuonTightInvIso==1",
     "eInv":                 "nElectronTightInvIso==1",
-    "allInv":               "(1)",
+    "allInv":               "(nMuonTightInvIso==1||nElectronTightInvIso==1)",
 
+    "allNoIso":               "(nMuonTightNoIso==1||nElectronTightNoIso==1)",
     "muNoIso":                "nMuonTightNoIso==1",
     "eNoIso":                 "nElectronTightNoIso==1",
     

@@ -104,7 +104,6 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
     selDir        += "-"+args.selection
     logger.info( "Using selection string: %s"%args.selection )
 
-
 if args.small:           args.plot_directory += "_small"
 if args.noData:          args.plot_directory += "_noData"
 if args.signal:          args.plot_directory += "_signal_"+args.signal
@@ -811,6 +810,11 @@ elif args.invLeptonIso:
     preSelection = cutInterpreter.cutString( "-".join([ item if not "nBTag" in item else "nBTag0" for item in args.selection.split("-") ]) )
     for key, val in replaceSelection.items():
         preSelection.replace( key, val )
+elif "NoIso" in args.mode:
+    preSelection = cutInterpreter.cutString( args.selection )
+    preSelection = "&&".join( [ item for item in preSelection.split("&&") if not "nLeptonVeto" in item ] )
+    for lep in ["LeptonTight", "ElectronTight", "MuonTight"]:
+        preSelection = preSelection.replace( lep, lep+"NoIso")
 else:
     preSelection = cutInterpreter.cutString( args.selection )
 
