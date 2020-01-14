@@ -529,6 +529,7 @@ new_variables += [ 'LeptonGood1_'        + var for var in writeLeptonVariables ]
 new_variables += [ 'LeptonTight0_'       + var for var in writeLeptonVariables ]
 new_variables += [ 'LeptonTight1_'       + var for var in writeLeptonVariables ]
 new_variables += [ 'LeptonTightInvIso0_' + var for var in writeLeptonVariables ]
+new_variables += [ 'LeptonTightNoIso0_'  + var for var in writeLeptonVariables ]
 new_variables += [ 'MisIDElectron0_'     + var for var in writeLeptonVariables ]
 
 # Photons
@@ -1079,6 +1080,7 @@ def filler( event ):
     l0, l1         = ( selectedLeptons    + [None,None] )[:2]
     lt0, lt1       = ( tightLeptons       + [None,None] )[:2]
     ltinv0, ltinv1 = ( tightInvIsoLeptons + [None,None] )[:2]
+    ltno0, ltno1   = ( tightNoIsoLeptons  + [None,None] )[:2]
     # Dileptonic analysis
     fill_vector( event, "LeptonGood0",  writeLeptonVarList, l0 )
     fill_vector( event, "LeptonGood1",  writeLeptonVarList, l1 )
@@ -1086,6 +1088,7 @@ def filler( event ):
     fill_vector( event, "LeptonTight0", writeLeptonVarList, lt0 )
     fill_vector( event, "LeptonTight1", writeLeptonVarList, lt1 )
     fill_vector( event, "LeptonTightInvIso0", writeLeptonVarList, ltinv0 )
+    fill_vector( event, "LeptonTightNoIso0",  writeLeptonVarList, ltinv0 )
     # Store all Leptons
     fill_vector_collection( event, "Lepton", writeLeptonVarList, allLeptons )
 
