@@ -17,7 +17,7 @@ from TTGammaEFT.Tools.helpers         import splitList
 from TTGammaEFT.Tools.cutInterpreter  import cutInterpreter
 from TTGammaEFT.Tools.TriggerSelector import TriggerSelector
 from TTGammaEFT.Tools.Variables       import NanoVariables
-from TTGammaEFT.Tools.objectSelection import isBJet, photonSelector, vidNestedWPBitMapNamingListPhoton, eleSelector, filterGenElectrons, filterGenMuons, filterGenTaus
+from TTGammaEFT.Tools.objectSelection import isBJet, photonSelector, vidNestedWPBitMapNamingListPhoton, muonSelector, eleSelector, filterGenElectrons, filterGenMuons, filterGenTaus
 
 # Colors
 from TTGammaEFT.Samples.color         import color
@@ -30,7 +30,10 @@ from Analysis.Tools.mt2Calculator     import mt2Calculator
 from Analysis.Tools.overlapRemovalTTG import getParentIds
 from Analysis.Tools.runUtils          import prepareTokens, useToken
 
-from TTGammaEFT.Analysis.SetupHelpers    import misIDSF_val, DYSF_val
+from TTGammaEFT.Analysis.Setup        import Setup
+from TTGammaEFT.Analysis.EstimatorList   import EstimatorList
+from TTGammaEFT.Analysis.SetupHelpers import *
+from TTGammaEFT.Analysis.regions      import *
 
 # Default Parameter
 loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET']
@@ -57,8 +60,8 @@ argParser.add_argument('--replaceZG',          action='store_true', default=Fals
 argParser.add_argument('--mode',               action='store',      default="None", type=str, choices=["mu", "e", "all", "eetight", "mumutight", "SFtight", "muetight", "muInv", "eInv", "muNoIso", "eNoIso"], help="plot lepton mode" )
 argParser.add_argument('--nJobs',              action='store',      default=1,      type=int, choices=[1,2,3,4,5],                     help="Maximum number of simultaneous jobs.")
 argParser.add_argument('--job',                action='store',      default=0,      type=int, choices=[0,1,2,3,4],                     help="Run only job i")
-argParser.add_argument('--noHEMweight',        action='store_true', default=False,                                                     help="remove HEMWeight" )
-argParser.add_argument('--noBadEEJetVeto',     action='store_true', default=False,                                                     help="remove BadEEJetVeto" )
+argParser.add_argument('--addHEMWeight',       action='store_true', default=False,                                                     help="remove HEMWeight" )
+argParser.add_argument('--addBadEEJetVeto',    action='store_true', default=False,                                                     help="remove BadEEJetVeto" )
 argParser.add_argument('--noQCDDD',            action='store_true', default=False,                                                     help="no data driven QCD" )
 argParser.add_argument('--useEOS',             action='store_true', default=False,                                                     help="use lxplus with EOS space" )
 args = argParser.parse_args()
@@ -69,25 +72,38 @@ import RootTools.core.logger as logger_rt
 logger    = logger.get_logger(   args.logLevel, logFile = None)
 logger_rt = logger_rt.get_logger(args.logLevel, logFile = None)
 
-ptSels = ["lowPT", "medPT", "highPT"]
-ptLabels = {"lowPT":"20ptG120", "medPT":"120ptG220", "highPT":"220ptGinf"}
+ptSels    = ["lowPT", "medPT", "highPT"]
+ptLabels  = {"lowPT":"20ptG120", "medPT":"120ptG220", "highPT":"220ptGinf"}
+ptRegions = {"lowPT":regionsTTG20To120[0], "medPT":regionsTTG120To220[0], "highPT":regionsTTG220[0]}
 
 categoryPlot = args.categoryPhoton != "None"
 
 # Selection Manipulation
-if args.year == 2017 and not args.noBadEEJetVeto:
+if args.year == 2017 and args.addBadEEJetVeto:
     args.selection += "-BadEEJetVeto"
-selectionQCDcache = "-".join( [ item for item in args.selection.split("-") if item != "addMisIDSF" and item != "addDYSF" ] )
 
 addMisIDSF = args.invLeptonIso # always true for QCD plots
-addDYSF = args.invLeptonIso #always true for QCD plots
-selDir = args.selection
+addDYSF    = args.invLeptonIso #always true for QCD plots
+selDir     = args.selection
 if args.selection.count("addMisIDSF"):
     addMisIDSF = True
     args.selection = "-".join( [ item for item in args.selection.split("-") if item != "addMisIDSF" ] )
 if args.selection.count("addDYSF"):
     addDYSF = True
     args.selection = "-".join( [ item for item in args.selection.split("-") if item != "addDYSF" ] )
+regionPlot = False
+if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
+    logger.info( "Plotting region from SetupHelpers: %s"%args.selection )
+
+    regionPlot = True
+    setup = Setup( year=args.year, photonSelection=False, checkOnly=True, runOnLxPlus=False ) #photonselection always false for qcd estimate
+    setup = setup.sysClone( parameters=allRegions[args.selection]["parameters"] )
+
+    selection      = setup.selection( "MC", channel="all", **setup.defaultParameters() )
+    args.selection = selection["prefix"]
+    selDir        += "-"+args.selection
+    logger.info( "Using selection string: %s"%args.selection )
+
 
 if args.small:           args.plot_directory += "_small"
 if args.noData:          args.plot_directory += "_noData"
@@ -126,7 +142,7 @@ elif args.year == 2018:
         if args.useEOS: postprocessing_directory = "2018/Data_v20/semilep/"
         from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
 
-cache_dir = os.path.join(cache_directory, "qcdHistos")
+cache_dir = os.path.join(cache_directory, "qcdHistos", str(args.year))
 dirDB     = MergingDirDB(cache_dir)
 
 # Text on the plots
@@ -166,8 +182,8 @@ def drawPlots( plots, mode, dataMCScale ):
             sc = "dy_"
         else:
             sc = ""
-        if args.noHEMweight:
-            sc += "noHEM_"
+        if args.addHEMWeight:
+            sc += "HEM_"
         sc += "log" if log else "lin"
         plot_directory_ = os.path.join( plot_directory, 'analysisPlots', str(args.year), args.plot_directory, selDir, mode, sc )
 
@@ -393,6 +409,9 @@ read_variables_MC += [ VectorTreeVariable.fromString('GenPart[%s]'%genVarString,
 #recoPhotonSel_medium_noSieie = photonSelector( 'medium', year=args.year, removedCuts=["sieie"] )
 recoPhotonSel_medium         = photonSelector( 'medium', year=args.year )
 recoEleSel_veto              = eleSelector( 'veto' )
+recoElectronSel_tight        = eleSelector( "tight" )
+recoMuonSel_tight            = muonSelector( "tight" )
+
 
 def calcGenWdecays( event, sample ):
     if sample.name == "data": return
@@ -459,6 +478,27 @@ def calcVetoElectrons( event, sample ):
                 ele["pfRelIso03_all"] = min( ele["pfRelIso03_all"], g["pfRelIso03_all"] )
         vetoNewElectrons = filter( lambda l: (l["pfRelIso03_all"]<0.198+0.506/l["pt"] and l["eta"]+l["deltaEtaSC"]<=1.479) or (l["pfRelIso03_all"]<0.203+0.963/l["pt"] and l["eta"]+l["deltaEtaSC"]>1.479), vetoNoIsoElectrons )
         event.weight *= int( len(vetoNewElectrons)+event.nMuonVeto==1 )
+
+def calcNoIsoLeptons( event, sample ):
+
+    allLeptons = getCollection( event, 'Lepton', leptonVarList, 'nLepton' )
+    allLeptons.sort( key = lambda j: -j['pt'] )
+
+    tightNoIsoElectrons = list( filter( lambda l: recoElectronSel_tight(l, removedCuts=["pfRelIso03_all"]), allElectrons ) )
+    tightNoIsoMuons     = list( filter( lambda l: recoMuonSel_tight(l,     removedCuts=["pfRelIso04_all"]), allMuons ) )
+    tightNoIsoLeptons   = tightNoIsoElectrons + tightNoIsoMuons
+    tightNoIsoLeptons.sort( key = lambda l: -l['pt'] )
+
+    tightNoIsoLepton = ( tightNoIsoLeptons + { var:-999 for var in leptonVarList } )[0]
+
+    for var in leptonVarList:
+        if tightNoIsoLepton:
+            setattr( event, "LeptonTightNoIso0_" + var, tightNoIsoLepton[var] )
+        else:
+            try:
+                setattr( event, "LeptonTightNoIso0_" + var, -999 )
+            except:
+                setattr( event, "LeptonTightNoIso0_" + var, 0 )
 
 def printGen( event, sample ):
     if sample.name != "data":
@@ -584,6 +624,8 @@ def printWeight( event, sample ):
 #sequence = [calcGenWdecays, calcVetoElectrons, misIDelectrons, allmisIDelectrons, mt2lg ]# printWeight ]#clean_Jets ]
 #sequence = [misIDelectrons]# printWeight ]#clean_Jets ]
 sequence = []
+sequence += [calcNoIsoLeptons]
+
 
 # Sample definition
 if args.year == 2016:
@@ -732,10 +774,9 @@ stack.extend( [ [s] for s in signals ] )
 #sampleWeight = lambda event, sample: (misIDSF_val[args.year] if event.nPhotonGood>0 and event.PhotonGood0_photonCat==2 and addMisIDSF else 1.)*(DYSF_val[args.year] if "DY" in sample.name and addDYSF else 1.)*event.reweightHEM*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
 sampleWeight = lambda event, sample: (misIDSF_val[args.year] if event.nPhotonGood>0 and event.PhotonGood0_photonCat==2 and addMisIDSF else 1.)*(DYSF_val[args.year] if "DY" in sample.name and addDYSF else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
 # no misIDSF included in weightString!!
-if args.noHEMweight:
-    weightString = "reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"
-else:
-    weightString = "reweightHEM*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"
+weightString = "reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"
+if args.addHEMWeight:
+    weightString += "*reweightHEM"
 
 for sample in mc + signals:
     sample.read_variables = read_variables_MC
@@ -750,21 +791,28 @@ if args.small:
         sample.reduceFiles( factor=20 )
         sample.scale /= sample.normalization
 
-if args.noHEMweight:
-    weight_ = lambda event, sample: event.weight
-else:
+weight_ = lambda event, sample: event.weight
+if args.addHEMWeight:
     weight_ = lambda event, sample: event.weight*event.reweightHEM
 
-# Use some defaults (set defaults before you create/import list of Plots!!)
-#preSelection = "&&".join( [ cutInterpreter.cutString( args.selection ), "overlapRemoval==1"] )
-# what to do with the leptonVeto in invIso case?
-if args.invLeptonIso:
-    selection  = "-".join( [ item.replace("nLepTight1", "nInvLepTight1").replace("nLepVeto1","nNoIsoLepTight1").replace("offZeg","offZegInv").replace("onZeg","onZegInv") if not "nBTag" in item else "nBTag0" for item in args.selection.split("-") ] )
-#    selection  = "-".join( [ item.replace("nLepTight1", "nInvLepTight1") if not "nBTag" in item else "nBTag0" for item in args.selection.replace("nLepVeto1-","nNoIsoLepTight1-").split("-") ] )
+replaceSelection = {
+    "nLeptonVetoIsoCorr": "nLeptonTightNoIso",
+    "nLeptonTight":       "nLeptonTightInvIso",
+    "nMuonTight":         "nMuonTightInvIso",
+    "nElectronTight":     "nElectronTightInvIso",
+    "mLtight0Gamma":      "mLinvtight0Gamma",
+}
+
+if args.invLeptonIso and regionPlot:
+    selection_MC_CR = setup.selection("MC",   channel="all", **setup.defaultParameters( update=QCD_updates ))
+    preSelection    = selection_MC_CR["cut"]
+
+elif args.invLeptonIso:
+    preSelection = cutInterpreter.cutString( "-".join([ item if not "nBTag" in item else "nBTag0" for item in args.selection.split("-") ]) )
+    for key, val in replaceSelection.items():
+        preSelection.replace( key, val )
 else:
-    selection = args.selection
-#selection = "-".join( [ item.replace("nLepTight1", "nInvLepTight1") for item in args.selection.replace("nLepVeto1-","").split("-") ] ) if args.invLeptonIso else args.selection
-preSelection = "&&".join( [ cutInterpreter.cutString( selection ) ] )#, "weight<15" ] )
+    preSelection = cutInterpreter.cutString( args.selection )
 
 Plot.setDefaults(   stack=stack, weight=staticmethod( weight_ ), selectionString=preSelection, addOverFlowBin=None if args.invLeptonIso else "upper" )
 Plot2D.setDefaults( stack=stack, weight=staticmethod( weight_ ), selectionString=preSelection )
@@ -853,6 +901,83 @@ add2DPlots.append( Plot2D(
     binning   = [10, -1.5, 1.5, 20, -pi, pi],
     read_variables = read_variables,
 ))
+
+# plotList
+noIsoPlots = []
+
+noIsoPlots.append( Plot(
+    name      = 'LeptonTightNoIso0_pt',
+    texX      = 'p_{T}(l_{noIso}) (GeV)',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.LeptonTightNoIso0_pt,
+    binning   = [ 20, 0, 120 ],
+))
+
+noIsoPlots.append( Plot(
+    name      = 'LeptonTightNoIso0_eta',
+    texX      = '#eta(l_{noIso})',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.LeptonTightNoIso0_eta,
+    binning   = [ 30, -3, 3 ],
+))
+
+noIsoPlots.append( Plot(
+    name      = 'LeptonTightNoIso0_phi',
+    texX      = '#phi(l_{noIso})',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.LeptonTightNoIso0_phi,
+    binning   = [ 10, -pi, pi ],
+))
+
+noIsoPlots.append( Plot(
+    name      = 'LeptonTightNoIso0_pfRelIso03_chg',
+    texX      = 'charged relIso_{0.3}(l_{noIso})',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.LeptonTightNoIso0_pfRelIso03_chg,
+    binning   = [ 20, 0, 0.4 ],
+))
+
+noIsoPlots.append( Plot(
+    name      = 'LeptonTightNoIso0_pfRelIso03_all',
+    texX      = 'relIso_{0.3}(l_{noIso})',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.LeptonTightNoIso0_pfRelIso03_all,
+    binning   = [ 20, 0, 1.4 ],
+))
+
+noIsoPlots.append( Plot(
+    name      = 'LeptonTightNoIso0_pfRelIso03_n',
+    texX      = 'neutral relIso_{0.3}(l_{noIso})',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.LeptonTightNoIso0_pfRelIso03_all - event.LeptonTightNoIso0_pfRelIso03_chg,
+    binning   = [ 20, 0, 1.4 ],
+))
+
+noIsoPlots.append( Plot(
+    name      = 'LeptonTightNoIso0_pfIso03_chg',
+    texX      = 'charged Iso_{0.3}(l_{noIso})',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.LeptonTightNoIso0_pfRelIso03_chg * event.LeptonTightNoIso0_pt,
+    binning   = [ 20, 0, 20 ],
+))
+
+noIsoPlots.append( Plot(
+    name      = 'LeptonTightNoIso0_pfIso03_all',
+    texX      = 'Iso_{0.3}(l_{noIso})',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.LeptonTightNoIso0_pfRelIso03_all * event.LeptonTightNoIso0_pt,
+    binning   = [ 20, 0, 20 ],
+))
+
+noIsoPlots.append( Plot(
+    name      = 'LeptonTightNoIso0_pfIso03_n',
+    texX      = 'neutral Iso_{0.3}(l_{noIso})',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: (event.LeptonTightNoIso0_pfRelIso03_all - event.LeptonTightNoIso0_pfRelIso03_chg) * event.LeptonTightNoIso0_pt,
+    binning   = [ 20, 0, 20 ],
+))
+
+
 
 # plotList
 addPlots = []
@@ -969,121 +1094,6 @@ addPlots.append( Plot(
     binning   = [ 20, 0, 1.4 ],
 ))
 
-
-
-#addPlots.append( Plot(
-#    name      = 'allmisIDElectron0_pt',
-#    texX      = 'p_{T}(e_{misID}) (GeV)',
-#    texY      = 'Number of Events',
-#    attribute = lambda event, sample: event.allmisIDElectron0_pt,
-#    binning   = [ 20, 0, 120 ],
-#))
-
-#addPlots.append( Plot(
-#    name      = 'allmisIDElectron0_eta',
-#    texX      = '#eta(e_{misID})',
-#    texY      = 'Number of Events',
-#    attribute = lambda event, sample: event.allmisIDElectron0_eta,
-#    binning   = [ 30, -3, 3 ],
-#))
-
-#addPlots.append( Plot(
-#    name      = 'allmisIDElectron0_phi',
-#    texX      = '#phi(e_{misID})',
-#    texY      = 'Number of Events',
-#    attribute = lambda event, sample: event.allmisIDElectron0_phi,
-#    binning   = [ 10, -pi, pi ],
-#))
-
-#addPlots.append( Plot(
-#    name      = 'allmisIDElectron0_lostHits',
-#    texX      = 'lost hits(e_{misID})',
-#    texY      = 'Number of Events',
-#    attribute = lambda event, sample: event.allmisIDElectron0_lostHits,
-#    binning   = [ 4, 0, 4 ],
-#))
-
-#addPlots.append( Plot(
-#    name      = 'allmisIDElectron0_dr03EcalRecHitSumEt',
-#    texX      = '#DeltaR_{0.3} EcalRecHitSumEt (e_{misID})',
-#    texY      = 'Number of Events',
-#    attribute = lambda event, sample: event.allmisIDElectron0_dr03EcalRecHitSumEt,
-#    binning   = [ 20, 0, 4 ],
-#))
-
-#addPlots.append( Plot(
-#    name      = 'allmisIDElectron0_dr03HcalDepth1TowerSumEt',
-#    texX      = '#DeltaR_{0.3} HcalDepth1TowerSumEt (e_{misID})',
-#    texY      = 'Number of Events',
-#    attribute = lambda event, sample: event.allmisIDElectron0_dr03HcalDepth1TowerSumEt,
-#    binning   = [ 20, 0, 4 ],
-#))
-
-#addPlots.append( Plot(
-#    name      = 'allmisIDElectron0_dr03TkSumPt',
-#    texX      = '#DeltaR_{0.3} TkSumPt (e_{misID})',
-#    texY      = 'Number of Events',
-#    attribute = lambda event, sample: event.allmisIDElectron0_dr03TkSumPt,
-#    binning   = [ 20, 0, 4 ],
-#))
-
-#addPlots.append( Plot(
-#    name      = 'allmisIDElectron0_r9',
-#    texX      = 'R9(e_{misID})',
-#    texY      = 'Number of Events',
-#    attribute = lambda event, sample: event.allmisIDElectron0_r9,
-#    binning   = [ 20, 0, 1 ],
-#))
-
-#addPlots.append( Plot(
-#    name      = 'allmisIDElectron0_hoe',
-#    texX      = 'H/E(e_{misID})',
-#    texY      = 'Number of Events',
-#    attribute = lambda event, sample: event.allmisIDElectron0_hoe,
-#    binning   = [ 20, 0, 0.2 ],
-#))
-
-#addPlots.append( Plot(
-#    name      = 'allmisIDElectron0_eInvMinusPInv',
-#    texX      = '1/E - 1/p (e_{misID})',
-#    texY      = 'Number of Events',
-#    attribute = lambda event, sample: event.allmisIDElectron0_eInvMinusPInv,
-#    binning   = [ 50, -0.3, 0.3 ],
-#))
-
-#addPlots.append( Plot(
-#    name      = 'allmisIDElectron0_sieie',
-#    texX      = '#sigma_{i#etai#eta}(e_{misID})',
-#    texY      = 'Number of Events',
-#    attribute = lambda event, sample: event.allmisIDElectron0_sieie,
-#    binning   = [ 20, 0, 0.02 ],
-#))
-
-#addPlots.append( Plot(
-#    name      = 'allmisIDElectron0_pfRelIso03_chg',
-#    texX      = 'charged relIso_{0.3}(e_{misID})',
-#    texY      = 'Number of Events',
-#    attribute = lambda event, sample: event.allmisIDElectron0_pfRelIso03_chg,
-#    binning   = [ 20, 0, 0.4 ],
-#))
-
-#addPlots.append( Plot(
-#    name      = 'allmisIDElectron0_pfRelIso03_all',
-#    texX      = 'relIso_{0.3}(e_{misID})',
-#    texY      = 'Number of Events',
-#    attribute = lambda event, sample: event.allmisIDElectron0_pfRelIso03_all,
-#    binning   = [ 20, 0, 1.4 ],
-#))
-
-#addPlots.append( Plot(
-#    name      = 'allmisIDElectron0_pfRelIso03_n',
-#    texX      = 'neutral relIso_{0.3}(e_{misID})',
-#    texY      = 'Number of Events',
-#    attribute = lambda event, sample: event.allmisIDElectron0_pfRelIso03_all - event.allmisIDElectron0_pfRelIso03_chg,
-#    binning   = [ 20, 0, 1.4 ],
-#))
-
-
 # Loop over channels
 yields   = {}
 allPlots = {}
@@ -1098,7 +1108,6 @@ else:
 
 filterCutData = getFilterCut( args.year, isData=True, skipBadChargedCandidate=True )
 filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )
-#tr            = TriggerSelector( args.year, singleLepton="nLepTight" in args.selection ) #use single lepton trigger also for DY CR
 tr            = TriggerSelector( args.year, singleLepton=True ) #single lepton trigger also for DY CR
 triggerCutMc  = tr.getSelection( "MC" )
 
@@ -1118,7 +1127,7 @@ cat_genL     = [ "(nGenWElectron+nGenWMuon+nGenWTau)==1&&(nGenWElectron+nGenWMuo
 cat_genTau_l = [ "(nGenWElectron+nGenWMuon+nGenWTau)==1&&nGenWTau==1&&nGenWTauJets==0" ]
 cat_genTau_q = [ "(nGenWElectron+nGenWMuon+nGenWTau)==1&&nGenWTau==1&&nGenWTauJets==1" ]
 
-if args.invLeptonIso:
+if args.invLeptonIso and not regionPlot:
     if args.year == 2016:
         qcd   = QCD_16
         gjets = GJets_16
@@ -1176,7 +1185,7 @@ for index, mode in enumerate( allModes ):
     else:
         plots += getYieldPlots( index ) 
     plots += addPlots
-#    if not args.leptonCategory and not categoryPlot and not args.invLeptonIso: plots += add2DPlots
+    plots += noIsoPlots
     if not "NoChgIso" in args.selection and not "NoSieie" in args.selection:
         plots = [ plot for plot in plots if not "NoChgIso" in plot.name and not "NoSieie" in plot.name ]
     if args.invLeptonIso:
@@ -1186,7 +1195,7 @@ for index, mode in enumerate( allModes ):
 
     # Define 2l selections
     isoleptonSelection    = cutInterpreter.cutString( mode )
-    invIsoleptonSelection = isoleptonSelection.replace("Tight","TightInvIso")
+    invIsoleptonSelection = cutInterpreter.cutString( mode + "Inv" )
     leptonSelection       = invIsoleptonSelection if args.invLeptonIso and not categoryPlot and not args.leptonCategory else isoleptonSelection
 
     if not args.noData:
@@ -1212,25 +1221,17 @@ for index, mode in enumerate( allModes ):
         all_noTT.setSelectionString(  [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] )
     else:
         for sample in mc + signals:
-            if (sample.name.startswith("DY") and args.replaceZG) or "QCD" in sample.name: #no ZG sample
+            if (sample.name.startswith("DY") and args.replaceZG): #no ZG sample
                 sample.setSelectionString( [ filterCutMc, leptonSelection, triggerCutMc ] )
             else:
                 sample.setSelectionString( [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] )
-#        for sample in mc + signals: sample.setSelectionString( [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] )
 
-    if args.invLeptonIso:
+    if args.invLeptonIso and not regionPlot:
         preSelectionSR = "&&".join( [ cutInterpreter.cutString( args.selection ), filterCutMc, isoleptonSelection,    triggerCutMc ] )#, "overlapRemoval==1"  ] )
-        preSelectionCR = "&&".join( [ cutInterpreter.cutString( selection ),      filterCutMc, invIsoleptonSelection, triggerCutMc ] )#, "overlapRemoval==1"  ] )
-
-        print "SR", preSelectionSR
-        print "CR", preSelectionCR
-#        preSelectionSR = "&&".join( [ cutInterpreter.cutString( args.selection ), "weight<15", filterCutMc, isoleptonSelection,    triggerCutMc, "overlapRemoval==1"  ] )
-#        preSelectionCR = "&&".join( [ cutInterpreter.cutString( selection ),      "weight<15", filterCutMc, invIsoleptonSelection, triggerCutMc, "overlapRemoval==1"  ] )
+        preSelectionCR = "&&".join( [ preSelection,                               filterCutMc, invIsoleptonSelection, triggerCutMc ] )#, "overlapRemoval==1"  ] )
 
         yield_QCD_CR  = u_float( qcd.getYieldFromDraw(   selectionString=preSelectionCR, weightString="weight*%f*%s"%(lumi_scale,weightString) ) )
-#        yield_QCD_CR += u_float( gjets.getYieldFromDraw( selectionString=preSelectionCR, weightString="weight*%f*%s"%(lumi_scale,weightString) ) )
         yield_QCD_SR  = u_float( qcd.getYieldFromDraw(   selectionString=preSelectionSR, weightString="weight*%f*%s"%(lumi_scale,weightString) ) )
-#        yield_QCD_SR += u_float( gjets.getYieldFromDraw( selectionString=preSelectionSR, weightString="weight*%f*%s"%(lumi_scale,weightString) ) )
 
         transFacQCD = {}
         transFacQCD["incl"] = yield_QCD_SR / yield_QCD_CR if yield_QCD_CR.val != 0 else u_float({"val":0, "sigma":0})
@@ -1238,18 +1239,28 @@ for index, mode in enumerate( allModes ):
         if not "nPhoton0" in args.selection and transFacQCD["incl"].val > 0:
             for pt in ptSels:
                 yield_QCD_CR  = u_float( qcd.getYieldFromDraw(   selectionString=preSelectionCR + "&&" + cutInterpreter.cutString( pt ), weightString="weight*%f*%s"%(lumi_scale,weightString) ) )
-#                yield_QCD_CR += u_float( gjets.getYieldFromDraw( selectionString=preSelectionCR + "&&" + cutInterpreter.cutString( pt ), weightString="weight*%f*%s"%(lumi_scale,weightString) ) )
+                yield_QCD_CR += u_float( gjets.getYieldFromDraw( selectionString=preSelectionCR + "&&" + cutInterpreter.cutString( pt ), weightString="weight*%f*%s"%(lumi_scale,weightString) ) )
                 yield_QCD_SR  = u_float( qcd.getYieldFromDraw(   selectionString=preSelectionSR + "&&" + cutInterpreter.cutString( pt ), weightString="weight*%f*%s"%(lumi_scale,weightString) ) )
-#                yield_QCD_SR += u_float( gjets.getYieldFromDraw( selectionString=preSelectionSR + "&&" + cutInterpreter.cutString( pt ), weightString="weight*%f*%s"%(lumi_scale,weightString) ) )
+                yield_QCD_SR += u_float( gjets.getYieldFromDraw( selectionString=preSelectionSR + "&&" + cutInterpreter.cutString( pt ), weightString="weight*%f*%s"%(lumi_scale,weightString) ) )
 
                 transFacQCD[ptLabels[pt]] = yield_QCD_SR / yield_QCD_CR if yield_QCD_CR.val != 0 else u_float({"val":0, "sigma":0})
+        else:
+            for pt in ptSels:
+                transFacQCD[ptLabels[pt]] = transFacQCD["incl"]
+
+    elif args.invLeptonIso:
+        # get cached transferfactors
+        estimators      = EstimatorList( setup, processes=["QCD-DD"] )
+        estimate        = getattr(estimators, "QCD-DD")
+        estimate.isData = False
+        estimate.initCache(setup.defaultCacheDir())
+
+        transFacQCD["incl"] = estimate.cachedTransferFactor( mode, setup, checkOnly=True)
+        for pt in ptSels:
+            transFacQCD[ptLabels[pt]] = transFacQCD["incl"]
 
     plotting.fill( plots, read_variables=read_variables, sequence=sequence )
-#    for plot in plots:
-#        if isinstance( plot, Plot2D ):
-#            print "max",plot.histos[1][0].GetMaximum()
 
-#    if not args.leptonCategory and not categoryPlot and not args.invLeptonIso:
     if mode == "all" and args.selection.count("nLepTight2"):
         qcdModes = ["eetight", "mumutight", "muetight"]
     elif mode == "SFtight" and args.selection.count("nLepTight2"):
@@ -1262,41 +1273,32 @@ for index, mode in enumerate( allModes ):
     if not args.invLeptonIso and not args.noQCDDD:
         for plot in plots:
 #            if "nBJet" in plot.name or "nElectron" in plot.name or "nMuon" in plot.name or "yield" in plot.name: continue
-            if "nBJet" in plot.name: continue
+#            if "nBJet" in plot.name: continue
             if plot.name in invPlotNames.values(): continue
-            if categoryPlot:
-                for i_cat, cat in enumerate(photonCats):
-                    for m in qcdModes:
-                        res = "_".join( ["qcdHisto_noHEM" if args.noHEMweight else "qcdHisto", selectionQCDcache+cat, plot.name, str(args.year), m, "small" if args.small else "full"] + map( str, plot.binning ) )
-                        if dirDB.contains(res) and not args.noQCDDD:
-                            logger.info( "Adding QCD histogram from cache for plot %s and selection %s"%(plot.name, selectionQCDcache+cat) )
-                            qcdHist = copy.deepcopy(dirDB.get(res))
-                            for h in plot.histos[0]:
-                                if "cat%i"%i_cat in h.GetName():
-                                    h.Add(qcdHist)
-                        else:
-                            logger.info( "No QCD histogram found for plot %s and selection %s"%(plot.name, selectionQCDcache+cat) )
-            else:
-                if "category" in plot.name: continue
-                for i_m, m in enumerate(qcdModes):
-                    res = "_".join( ["qcdHisto_noHEM" if args.noHEMweight else "qcdHisto", selectionQCDcache, plot.name, str(args.year), m, "small" if args.small else "full"] + map( str, plot.binning ) )
-                    if dirDB.contains(res) and not args.noQCDDD:
-                        logger.info( "Adding QCD histogram from cache for plot %s"%plot.name )
-                        if i_m == 0:
-                            qcdHist = copy.deepcopy(dirDB.get(res))
-                        else:
-                            qcdHist.Add( copy.deepcopy(dirDB.get(res)) )
+            if "category" in plot.name: continue
+
+            print "_".join( ["qcdHisto" if not args.addHEMWeight else "qcdHisto_hemWeight", args.selection, plot.name, str(args.year), mode, "small" if args.small else "full"] + map( str, plot.binning ) )
+            print qcdModes
+            for i_m, m in enumerate(qcdModes):
+                res = "_".join( ["qcdHisto" if not args.addHEMWeight else "qcdHisto_hemWeight", args.selection, plot.name, str(args.year), m, "small" if args.small else "full"] + map( str, plot.binning ) )
+
+                if dirDB.contains(res) and not args.noQCDDD:
+                    logger.info( "Adding QCD histogram from cache for plot %s"%plot.name )
+                    if i_m == 0:
+                        qcdHist = copy.deepcopy(dirDB.get(res))
                     else:
-                        logger.info( "No QCD histogram found for plot %s"%plot.name )
-                        qcdHist = None
-                if qcdHist:
-                    if not args.leptonCategory:
-                        qcdHist.SetName( "datadrivenQCD_" + qcdHist.GetName() )
-                        plot.histos[0] = [ h if not "QCD" in h.GetName() else qcdHist for h in plot.histos[0] ]
-                    else:
-                        for h in plot.histos[0]:
-                            if all_noTT.name in h.GetName():
-                                h.Add(qcdHist)
+                        qcdHist.Add( copy.deepcopy(dirDB.get(res)) )
+                else:
+                    logger.info( "No QCD histogram found for plot %s"%plot.name )
+                    qcdHist = None
+            if qcdHist:
+                if args.leptonCategory:
+                    for h in plot.histos[0]:
+                        if all_noTT.name in h.GetName():
+                            h.Add(qcdHist)
+                else:
+                    qcdHist.SetName( "datadrivenQCD_" + qcdHist.GetName() )
+                    plot.histos[0] = [ h if not "QCD" in h.GetName() else qcdHist for h in plot.histos[0] ]
     # Get normalization yields from yield histogram
     for plot in plots:
         if "yield" in plot.name:

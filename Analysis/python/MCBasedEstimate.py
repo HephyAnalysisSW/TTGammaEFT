@@ -19,11 +19,11 @@ class MCBasedEstimate(SystematicEstimator):
         super(MCBasedEstimate, self).__init__(name, cacheDir=cacheDir)
         self.process = process
         
-    def _transferFactor(self, region, channel, setup, overwrite=False):
+    def _transferFactor(self, channel, setup, overwrite=False):
         """Estimate transfer factor for QCD in "region" using setup"""
         return u_float(0, 0)
 
-    def _dataDrivenTransferFactor(self, region, channel, setup, overwrite=False):
+    def _dataDrivenTransferFactor(self, channel, setup, overwrite=False):
         """Estimate transfer factor for QCD in "region" using setup"""
         return u_float(0, 0)
 

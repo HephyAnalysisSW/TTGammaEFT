@@ -264,7 +264,7 @@ def wrapper():
 
         # Only if WJets CR is used
         default_WJets_unc    = 0.1
-        if any( [name=="WJets3" or name=="WJets4p" for name in args.useRegions] ) and not with1pCR:
+        if any( ["WJets3" in name or "WJets4p" in name for name in args.useRegions] ) and not with1pCR:
             c.addFreeParameter('WJets', 1, '[0,2]')
         else:
             c.addUncertainty( "WJets_norm", shapeString )

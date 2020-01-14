@@ -17,13 +17,18 @@ from TTGammaEFT.Tools.cutInterpreter  import cutInterpreter
 from TTGammaEFT.Tools.TriggerSelector import TriggerSelector
 from TTGammaEFT.Tools.Variables       import NanoVariables
 
-from TTGammaEFT.Analysis.SetupHelpers import *
+from TTGammaEFT.Analysis.Setup         import Setup
+from TTGammaEFT.Analysis.EstimatorList import EstimatorList
+from TTGammaEFT.Analysis.SetupHelpers  import *
+from TTGammaEFT.Analysis.regions       import *
 
 from Analysis.Tools.metFilters        import getFilterCut
 from Analysis.Tools.u_float           import u_float
-from Analysis.Tools.MergingDirDB             import MergingDirDB
+from Analysis.Tools.MergingDirDB      import MergingDirDB
 
-addSF = False
+from helpers                          import splitList
+
+addSF = True
 # Default Parameter
 loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET']
 photonCatChoices = [ "None", "PhotonGood0", "PhotonGood1", "PhotonMVA0", "PhotonNoChgIso0", "PhotonNoChgIsoNoSieie0", "PhotonNoSieie0" ]
@@ -34,7 +39,7 @@ import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument('--logLevel',           action='store',      default='INFO', nargs='?', choices=loggerChoices,                  help="Log level for logging")
 #argParser.add_argument('--plot_directory',     action='store',      default='102X_TTG_ppv1_v1')
-argParser.add_argument('--plotFile',           action='store',      default='all_noPhoton')
+argParser.add_argument('--plotFile',           action='store',      default='all_1l')
 argParser.add_argument('--selection',          action='store',      default='dilepOS-nLepVeto2-pTG20-nPhoton1p-offZSFllg-offZSFll-mll40')
 argParser.add_argument('--small',              action='store_true',                                                                    help='Run only on a small subset of the data?', )
 argParser.add_argument('--overwrite',          action='store_true',                                                                    help='overwrite cache entry?', )
@@ -44,8 +49,8 @@ argParser.add_argument('--mode',               action='store',      default="Non
 argParser.add_argument('--nJobs',              action='store',      default=1,      type=int, choices=[1,2,3,4,5],                     help="Maximum number of simultaneous jobs.")
 argParser.add_argument('--job',                action='store',      default=0,      type=int, choices=[0,1,2,3,4],                     help="Run only job i")
 argParser.add_argument("--runOnLxPlus",        action="store_true",                                                                    help="Change the global redirector of samples")
-argParser.add_argument('--noBadEEJetVeto',     action='store_true',                                                                    help='remove BadEEJetVeto', )
-#argParser.add_argument('--noHEMweight',        action='store_true',                                                                    help='remove HEMweight', )
+argParser.add_argument('--addBadEEJetVeto',    action='store_true',                                                                    help='remove BadEEJetVeto', )
+argParser.add_argument('--addHEMweight',       action='store_true',                                                                    help='remove HEMweight', )
 args = argParser.parse_args()
 
 # Logging
@@ -58,11 +63,24 @@ else:
     import logging
     logger = logging.getLogger(__name__)
 
+if args.checkOnly: args.overwrite = False
 
-if args.year == 2017 and not args.noBadEEJetVeto:
+regionPlot = False
+if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
+    logger.info( "Plotting region from SetupHelpers: %s"%args.selection )
+
+    regionPlot = True
+    setup = Setup( year=args.year, photonSelection=False, checkOnly=args.checkOnly, runOnLxPlus=False ) #photonselection always false for qcd estimate
+    setup = setup.sysClone( parameters=allRegions[args.selection]["parameters"] )
+
+    selection      = setup.selection( "MC", channel="all", **setup.defaultParameters() )
+    args.selection = selection["prefix"]
+    logger.info( "Using selection string: %s"%args.selection )
+
+if args.year == 2017 and args.addBadEEJetVeto:
     args.selection += "-BadEEJetVeto"
 
-cache_dir = os.path.join(cache_directory, "qcdHistos")
+cache_dir = os.path.join(cache_directory, "qcdHistos", str(args.year))
 dirDB = MergingDirDB(cache_dir)
 if not dirDB: raise
 
@@ -299,22 +317,22 @@ sequence = []
 
 # Sample definition
 if args.year == 2016 and not args.checkOnly:
-    mc = [ TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
+    mc          = [ TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
     data_sample = Run2016
-    qcd   = QCD_16
-    gjets = GJets_16
+    qcd         = QCD_16
+    gjets       = GJets_16
 
 elif args.year == 2017 and not args.checkOnly:
-    mc = [ TTG_priv_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
+    mc          = [ TTG_priv_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
     data_sample = Run2017
-    qcd   = QCD_17
-    gjets = GJets_17
+    qcd         = QCD_17
+    gjets       = GJets_17
 
 elif args.year == 2018 and not args.checkOnly:
-    mc = [ TTG_priv_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
+    mc          = [ TTG_priv_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
     data_sample = Run2018
-    qcd   = QCD_18
-    gjets = GJets_18
+    qcd         = QCD_18
+    gjets       = GJets_18
 
 
 if not args.checkOnly:
@@ -329,59 +347,47 @@ else:
 
 
 sampleWeight = lambda event, sample: (event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)+((misIDSF_val[args.year].val-1)*(event.nPhotonGood>0)*(event.PhotonGood0_photonCat==2)*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)
-#if args.noHEMweight:
-#    weightString = "reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"
-#else:
-#    weightString = "reweightHEM*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"
-weightString = "reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"
+if args.addHEMweight:
+    weightString = "reweightHEM*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"
+else:
+    weightString = "reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"
+
 weightStringMisIDSF = "(%s)+(%s*%f*((nPhotonGood>0)*(PhotonGood0_photonCat==2)))"%(weightString,weightString,(misIDSF_val[args.year].val-1))
 
 for sample in mc:
     sample.read_variables = read_variables_MC
+    sample.weight         = sampleWeight
     sample.scale          = lumi_scale
     if addSF:
         if "DY" in sample.name:
-            sample.scale     *= DYSF_val[args.year].val
+            sample.scale *= DYSF_val[args.year].val
         elif "WJets" in sample.name:
-            sample.scale     *= WJetsSF_val[args.year].val
+            sample.scale *= WJetsSF_val[args.year].val
         elif "TT_pow" in sample.name:
-            sample.scale     *= TTSF_val[args.year].val
+            sample.scale *= TTSF_val[args.year].val
         elif "ZG" in sample.name:
-            sample.scale     *= ZGSF_val[args.year].val
+            sample.scale *= ZGSF_val[args.year].val
         elif "WG" in sample.name:
-            sample.scale     *= WGSF_val[args.year].val
-    sample.weight         = sampleWeight
+            sample.scale *= WGSF_val[args.year].val
 
 if args.small and not args.checkOnly:
     for sample in stack.samples:
-        sample.normalization=1.
+        sample.normalization = 1.
         sample.reduceFiles( factor=20 )
         sample.scale /= sample.normalization
 
-if args.noHEMweight:
-    weight_ = lambda event, sample: event.weight
-else:
+weight_ = lambda event, sample: event.weight
+if args.addHEMweight:
     weight_ = lambda event, sample: event.weight*event.reweightHEM
 
-selection        = [ item if not "nBTag" in item else "nBTag0" for item in args.selection.split("-") ]
-preSelection     = "&&".join( [ cutInterpreter.cutString( "-".join(selection) ) ] )
+#if "nPhoton0" in args.selection:
+#    ptSels = ["lowPT", "medPT", "highPT"]
+#elif "NoChgIsoNoSieiePhoton" in args.selection:
+#    ptSels = ["lowhadPT", "medhadPT", "highhadPT"]
+#else:
+#    ptSels = ["lowPT", "medPT", "highPT"]
 
-selection        = [ item if not "nBTag" in item else "nBTag0" for item in args.selection.split("-") ]
-selection        = [ item if not "nJet" in item else "nJet2" for item in selection ]
-preSelectionTFCR = "&&".join( [ cutInterpreter.cutString( "-".join(selection) ) ] )
-
-selection        = [ item if not "nJet" in item else "nJet2" for item in args.selection.split("-") ]
-preSelectionTFSR = "&&".join( [ cutInterpreter.cutString( "-".join(selection) ) ] )
-
-if "nPhoton0" in args.selection:
-    catSel = None
-    ptSels = ["lowPT", "medPT", "highPT"]
-elif "NoChgIsoNoSieiePhoton" in args.selection:
-    catSel = "photonhadcat" 
-    ptSels = ["lowhadPT", "medhadPT", "highhadPT"]
-else:
-    catSel = "photoncat" 
-    ptSels = ["lowPT", "medPT", "highPT"]
+#ptRegions = {"lowPT":regionsTTG20To120[0], "medPT":regionsTTG120To220[0], "highPT":regionsTTG220[0]}
 
 replaceSelection = {
     "nLeptonVetoIsoCorr": "nLeptonTightNoIso",
@@ -391,9 +397,32 @@ replaceSelection = {
     "mLtight0Gamma":      "mLinvtight0Gamma",
 }
 
-for key, val in replaceSelection.items():
-    preSelectionTFCR = preSelectionTFCR.replace( key, val )
-    preSelection     = preSelection.replace( key, val )
+if regionPlot:
+    selection    = setup.selection("MC",   channel="all", **setup.defaultParameters( update=QCD_updates ))
+    if args.year == 2017 and args.addBadEEJetVeto: selection["prefix"] += "-BadEEJetVeto"
+    preSelection = "&&".join( [ cutInterpreter.cutString( selection["prefix"] ) ] )
+
+else:
+    selection        = [ item if not "nBTag" in item else "nBTag0" for item in args.selection.split("-") ]
+    preSelection     = "&&".join( [ cutInterpreter.cutString( "-".join(selection) ) ] )
+
+    selection        = [ item if not "nBTag"   in item else "nBTag0"   for item in args.selection.split("-") ]
+    selection        = [ item if not "nJet"    in item else "nJet2"    for item in selection ]
+    selection        = [ item if not "nPhoton" in item else "nPhoton0" for item in selection ]
+    preSelectionTFCR = "&&".join( [ cutInterpreter.cutString( "-".join(selection) ) ] )
+
+    selection        = [ item if not "nJet"    in item else "nJet2"    for item in args.selection.split("-") ]
+    selection        = [ item if not "nPhoton" in item else "nPhoton0" for item in selection ]
+    preSelectionTFSR = "&&".join( [ cutInterpreter.cutString( "-".join(selection) ) ] )
+
+    for key, val in replaceSelection.items():
+        preSelection     = preSelection.replace( key, val )
+        preSelectionTFCR = preSelectionTFCR.replace( key, val )
+
+filterCutData = getFilterCut( args.year, isData=True,  skipBadChargedCandidate=True )
+filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )
+tr            = TriggerSelector( args.year, singleLepton=True )
+triggerCutMc  = tr.getSelection( "MC" )
 
 Plot.setDefaults( stack=stack, weight=staticmethod( weight_ ), selectionString=preSelection, addOverFlowBin="upper" )
 # Import plots list (AFTER setDefaults!!)
@@ -417,11 +446,6 @@ else:
     allModes = [ 'mu', 'e' ] if not args.selection.count("nLepTight2") else ["mumutight","muetight","eetight"]
     if args.nJobs != 1:
         allModes = splitList( allModes, args.nJobs)[args.job]
-
-filterCutData = getFilterCut( args.year, isData=True, skipBadChargedCandidate=True )
-filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )
-tr            = TriggerSelector( args.year, singleLepton=True )
-triggerCutMc  = tr.getSelection( "MC" )
 
 invPlotNames = { 
                 "leptonTightInvIso0_pt":              "leptonTight0_pt",
@@ -460,22 +484,24 @@ for index, mode in enumerate( allModes ):
     plots  = []
     plots += plotList
     plots += getYieldPlots()
-#    plots += addPlots
+    plots += addPlots
 
+    # some plots make no sense to create histos from
     plots = [ plot for plot in plots if plot.name not in invPlotNames.values() ]
     plots = [ plot for plot in plots if not ("nBJet" in plot.name and "ptG" in plot.name) ]
     if bSelection and "p" in bSelection[0]: #remove bjet plots if more than 1 bjet bin in plots (can not be modeled by data driven QCD estimate)
         plots = [ plot for plot in plots if not "nBJet" in plot.name ]
 
     for plot in plots:
-        if plot.name in invPlotNames.keys(): plot.name = invPlotNames[plot.name]
+        if plot.name in invPlotNames.keys():
+            plot.name = invPlotNames[plot.name]
 
     if not args.overwrite:
         allPlots = []
         for plot in plots:
-            if dirDB.contains("_".join( ["qcdHisto_noHEM" if args.noHEMweight else "qcdHisto", args.selection, plot.name, str(args.year), mode, "small" if args.small else "full"] + map( str, plot.binning ) )):
+            if dirDB.contains("_".join( ["qcdHisto" if not args.addHEMweight else "qcdHisto_hemWeight", args.selection, plot.name, str(args.year), mode, "small" if args.small else "full"] + map( str, plot.binning ) )):
                 if not "yield" in plot.name: continue
-                qcdYield =  dirDB.get("_".join( ["qcdHisto_noHEM" if args.noHEMweight else "qcdHisto", args.selection, plot.name, str(args.year), mode, "small" if args.small else "full"] + map( str, plot.binning ) )).Integral()
+                qcdYield =  dirDB.get("_".join( ["qcdHisto" if not args.addHEMweight else "qcdHisto_hemWeight", args.selection, plot.name, str(args.year), mode, "small" if args.small else "full"] + map( str, plot.binning ) )).Integral()
                 print("QCD estimate for plot %s in year %i, selection %s, mode %s: %f"%(plot.name, args.year, args.selection, mode, float(qcdYield)))
             else:
                 print("Plot for year %i and selection %s and mode %s not cached!"%(args.year, args.selection, mode))
@@ -487,102 +513,84 @@ for index, mode in enumerate( allModes ):
     isoleptonSelection = cutInterpreter.cutString( mode )
     leptonSelection    = cutInterpreter.cutString( mode + "Inv" )
 
+    # Transfer factor
+    if regionPlot:
+        # get cached transferfactors
+        estimators      = EstimatorList( setup, processes=["QCD-DD"] )
+        estimate        = getattr(estimators, "QCD-DD")
+        estimate.isData = False
+        estimate.initCache(setup.defaultCacheDir())
+
+        transFacQCD = estimate.cachedTransferFactor(mode, setup, save=True, overwrite=False, checkOnly=False)
+        transFacQCD = transFacQCD.val
+        logger.info("Calculated transfer factor for inclusive region: %f"%transFacQCD)
+
+    else:
+        preSelectionSRData = "&&".join( [ preSelectionTFSR, filterCutData, isoleptonSelection ] )
+        preSelectionCRData = "&&".join( [ preSelectionTFCR, filterCutData, leptonSelection    ] )
+        preSelectionSRMC   = "&&".join( [ preSelectionTFSR, filterCutMc,   isoleptonSelection, triggerCutMc, "overlapRemoval==1"  ] )
+        preSelectionCRMC   = "&&".join( [ preSelectionTFCR, filterCutMc,   leptonSelection,    triggerCutMc, "overlapRemoval==1"  ] )
+
+        # Calculate yields for Data
+        data_sample.setSelectionString( "(1)" )
+        data_sample.setWeightString( "(1)" )
+        yield_data_CR  = data_sample.getYieldFromDraw( selectionString=preSelectionCRData, weightString="weight" )["val"]
+        yield_data_SR  = data_sample.getYieldFromDraw( selectionString=preSelectionSRData, weightString="weight" )["val"]
+        yield_mc_CR    = 0
+        yield_mc_SR    = 0
+
+        for sample in mc:
+            sample.setSelectionString( "(1)" )
+            sample.setWeightString( "(1)" )
+            y_CR = sample.getYieldFromDraw( selectionString=preSelectionCRMC, weightString="weight*%f*%s"%(sample.scale,weightStringMisIDSF) )["val"]
+            y_SR = sample.getYieldFromDraw( selectionString=preSelectionSRMC, weightString="weight*%f*%s"%(sample.scale,weightStringMisIDSF) )["val"]
+
+            if addSF:
+                if "DY" in sample.name:
+                    y_CR *= DYSF_val[setup.year] #add DY SF
+                    y_SR *= DYSF_val[setup.year] #add DY SF
+                elif "WJets" in sample.name:
+                    y_CR *= WJetsSF_val[setup.year] #add WJets SF
+                    y_SR *= WJetsSF_val[setup.year] #add WJets SF
+                elif "TT_pow" in sample.name:
+                    y_CR *= TTSF_val[setup.year] #add TT SF
+                    y_SR *= TTSF_val[setup.year] #add TT SF
+                elif "ZG" in sample.name:
+                    y_CR *= ZGSF_val[setup.year] #add ZGamma SF
+                    y_SR *= ZGSF_val[setup.year] #add ZGamma SF
+                elif "WG" in sample.name:
+                    y_CR *= WGSF_val[setup.year] #add WGamma SF
+                    y_SR *= WGSF_val[setup.year] #add WGamma SF
+
+            yield_mc_CR += y_CR
+            yield_mc_SR += y_SR
+
+        transFacQCD = (yield_data_SR - yield_mc_SR) / (yield_data_CR - yield_mc_CR) if yield_mc_CR != yield_data_CR else 0.
+        if transFacQCD < 0: transFacQCD = 0
+        logger.info( "Inclusive TF: %f"%transFacQCD )
+
+#        for pt in ptSels:
+#                if transFacQCD != 0:
+#                    preSelectionSRMC_pt = "&&".join( [ preSelectionTFSR, cutInterpreter.cutString(pt), filterCutMc, isoleptonSelection, triggerCutMc, "overlapRemoval==1" ] )
+#                    yield_mc_SR_pt      = 0
+#                    for sample in mc:
+#                        sample.setSelectionString( "(1)" )
+#                        sample.setWeightString( "(1)" )
+#                        yield_mc_SR_pt += sample.getYieldFromDraw( selectionString=preSelectionSRMC_pt, weightString="weight*%f*%s"%(sample.scale,weightStringMisIDSF) )["val"]
+#                    transFacQCD[pt] = transFacQCD * yield_mc_SR_pt / yield_mc_SR
+#                    if transFacQCD[pt] < 0: transFacQCD[pt] = 0
+#                else:
+#                    transFacQCD[pt] = 0.
+#                logger.info( "Pt %s TF: %f"%(pt,transFacQCD[pt]) )
+
     data_sample.setSelectionString( [ filterCutData, leptonSelection ] )
     for sample in mc + signals:
         sample.setSelectionString( [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] )
 
-#    plotting.fill( plots, read_variables=read_variables, sequence=sequence )
-
-    # Transfer factor
-    preSelectionSRData = "&&".join( [ preSelectionTFSR, filterCutData, isoleptonSelection ] )
-    preSelectionCRData = "&&".join( [ preSelectionTFCR, filterCutData, leptonSelection    ] )
-    preSelectionSRMC   = "&&".join( [ preSelectionTFSR, filterCutMc,   isoleptonSelection, triggerCutMc, "overlapRemoval==1"  ] )
-    preSelectionCRMC   = "&&".join( [ preSelectionTFCR, filterCutMc,   leptonSelection,    triggerCutMc, "overlapRemoval==1"  ] )
-
-    # Calculate yields for Data
-    data_sample.setSelectionString( "(1)" )
-    data_sample.setWeightString( "(1)" )
-    yield_data_CR  = data_sample.getYieldFromDraw( selectionString=preSelectionCRData, weightString="(1)" )["val"]
-    yield_data_SR  = data_sample.getYieldFromDraw( selectionString=preSelectionSRData, weightString="(1)" )["val"]
-    yield_mc_CR    = 0
-    yield_mc_SR    = 0
-
-    print "yield data CR", yield_data_CR
-    print "yield data SR", yield_data_SR
-
-    print "CR sel", preSelectionCRMC
-    print "SR sel", preSelectionSRMC
-    print "weightstring", weightStringMisIDSF
-    for sample in mc:
-        sample.setSelectionString( "(1)" )
-        sample.setWeightString( "(1)" )
-        print "scale", sample.scale
-        y = sample.getYieldFromDraw( selectionString=preSelectionCRMC, weightString="weight*%f*%s"%(sample.scale,weightStringMisIDSF) )["val"]
-        yield_mc_CR += y #sample.getYieldFromDraw( selectionString=preSelectionCRMC, weightString="weight*%f*%s"%(sample.scale,weightStringMisIDSF) )["val"]
-        print sample.name, "CR", y
-        sample.setSelectionString( "(1)" )
-        sample.setWeightString( "(1)" )
-        y = sample.getYieldFromDraw( selectionString=preSelectionSRMC, weightString="weight*%f*%s"%(sample.scale,weightStringMisIDSF) )["val"]
-        yield_mc_SR += y #sample.getYieldFromDraw( selectionString=preSelectionSRMC, weightString="weight*%f*%s"%(sample.scale,weightStringMisIDSF) )["val"]
-        print sample.name, "SR", y
-
-    print "yield MC CR", yield_mc_CR
-    print "yield MC SR", yield_mc_SR
-
-    transFacQCD = {}
-    transFacQCD["incl"] = (yield_data_SR - yield_mc_SR) / (yield_data_CR - yield_mc_CR) if yield_mc_CR != yield_data_CR else 0.
-    if transFacQCD["incl"] < 0: transFacQCD["incl"] = 0
-    logger.info( "Inclusive TF: %f"%transFacQCD["incl"] )
-
-    print "transferFactor", transFacQCD["incl"]
-
-    # Transfer factor for photon category plots
-    yield_mc_SR_cat = {}
-    for i in range(4):
-        if catSel and transFacQCD["incl"] != 0:
-            preSelectionSRMC_cat = "&&".join( [ preSelectionTFSR, cutInterpreter.cutString(catSel+str(i)), filterCutMc, isoleptonSelection, triggerCutMc, "overlapRemoval==1" ] )
-            yield_mc_SR_cat[i]   = 0
-            for sample in mc:
-                sample.setSelectionString( "(1)" )
-                sample.setWeightString( "(1)" )
-                yield_mc_SR_cat[i] += sample.getYieldFromDraw( selectionString=preSelectionSRMC_cat, weightString="weight*%f*%s"%(sample.scale,weightStringMisIDSF) )["val"]
-            transFacQCD["incl_cat"+str(i)] = transFacQCD["incl"] * yield_mc_SR_cat[i] / yield_mc_SR
-            if transFacQCD["incl_cat"+str(i)] < 0: transFacQCD["incl_cat"+str(i)] = 0
-        else:
-            transFacQCD["incl_cat"+str(i)] = 0.
-        logger.info( "Inclusive TF cat %i: %f"%(i,transFacQCD["incl_cat"+str(i)]) )
-
-    if transFacQCD["incl"] > 0:
-        for pt in ptSels:
-            if transFacQCD["incl"] != 0:
-                preSelectionSRMC_pt = "&&".join( [ preSelectionTFSR, cutInterpreter.cutString(pt), filterCutMc, isoleptonSelection, triggerCutMc, "overlapRemoval==1" ] )
-                yield_mc_SR_pt      = 0
-                for sample in mc:
-                    sample.setSelectionString( "(1)" )
-                    sample.setWeightString( "(1)" )
-                    yield_mc_SR_pt += sample.getYieldFromDraw( selectionString=preSelectionSRMC_pt, weightString="weight*%f*%s"%(sample.scale,weightStringMisIDSF) )["val"]
-                transFacQCD[pt] = transFacQCD["incl"] * yield_mc_SR_pt / yield_mc_SR
-                if transFacQCD[pt] < 0: transFacQCD[pt] = 0
-            else:
-                transFacQCD[pt] = 0.
-            logger.info( "Pt %s TF: %f"%(pt,transFacQCD[pt]) )
-
-            # Transfer factor for photon category plots
-            for i in range(4):
-                if catSel and transFacQCD["incl_cat"+str(i)] != 0:
-                    preSelectionSRMC_ptcat = "&&".join( [ preSelectionTFSR, cutInterpreter.cutString('-'.join([catSel+str(i),pt])), filterCutMc, isoleptonSelection, triggerCutMc, "overlapRemoval==1"  ] )
-                    yield_mc_SR_ptcat      = 0
-                    for sample in mc:
-                        sample.setSelectionString( "(1)" )
-                        sample.setWeightString( "(1)" )
-                        yield_mc_SR_ptcat += sample.getYieldFromDraw( selectionString=preSelectionSRMC_ptcat, weightString="weight*%f*%s"%(sample.scale,weightStringMisIDSF) )["val"]
-                    transFacQCD[pt+"_cat"+str(i)] = transFacQCD["incl_cat"+str(i)] * yield_mc_SR_ptcat / yield_mc_SR_cat[i]
-                else:
-                    transFacQCD[pt+"_cat"+str(i)] = 0.
-                logger.info( "Pt %s TF cat %i: %f"%(pt,i,transFacQCD[pt+"_cat"+str(i)]) )
+    plotting.fill( plots, read_variables=read_variables, sequence=sequence )
 
     for plot in plots:
-        qcdHist = copy.deepcopy(plot.histos[1][0])
+        qcdHist  = copy.deepcopy(plot.histos[1][0])
         dataHist = copy.deepcopy(plot.histos[1][0])
         for h in plot.histos[0]:
             qcdHist.Add( h, -1 )
@@ -592,34 +600,18 @@ for index, mode in enumerate( allModes ):
             if qcdHist.GetBinContent(i+1) < 0:
                 qcdHist.SetBinContent(i+1, 0)
 
-        if catSel:
-            qcdHist_cat0 = copy.deepcopy(qcdHist)
-            qcdHist_cat1 = copy.deepcopy(qcdHist)
-            qcdHist_cat2 = copy.deepcopy(qcdHist)
-            qcdHist_cat3 = copy.deepcopy(qcdHist)
+#        if "20ptG120" in plot.name:
+#            fac = "lowPT"
+#        elif "120ptG220" in plot.name:
+#            fac = "medPT"
+#        elif "220ptGinf" in plot.name:
+#            fac = "highPT"
+#        else:
+#            fac = "incl"
 
-        if "20ptG120" in plot.name:
-            fac = "lowPT"
-        elif "120ptG220" in plot.name:
-            fac = "medPT"
-        elif "220ptGinf" in plot.name:
-            fac = "highPT"
-        else:
-            fac = "incl"
+#        qcdHist.Scale( transFacQCD[fac] )
+        qcdHist.Scale( transFacQCD )
 
-        qcdHist.Scale( transFacQCD[fac] )
-        if catSel:
-            qcdHist_cat0.Scale( transFacQCD[fac+"_cat0"] )
-            qcdHist_cat1.Scale( transFacQCD[fac+"_cat1"] )
-            qcdHist_cat2.Scale( transFacQCD[fac+"_cat2"] )
-            qcdHist_cat3.Scale( transFacQCD[fac+"_cat3"] )
-
-        cacheName = "_".join( ["qcdHisto_noHEM" if args.noHEMweight else "qcdHisto", args.selection, plot.name, str(args.year), mode, "small" if args.small else "full"] + map( str, plot.binning ) )
+        cacheName = "_".join( ["qcdHisto" if not args.addHEMweight else "qcdHisto_hemWeight", args.selection, plot.name, str(args.year), mode, "small" if args.small else "full"] + map( str, plot.binning ) )
         logger.info( "Adding QCD plot for %s for mode %s"%(plot.name, mode) )
         dirDB.add( cacheName, qcdHist, overwrite=True )
-        if catSel:
-            dirDB.add( cacheName.replace( args.selection, args.selection + "-" + catSel + "0" ), qcdHist_cat0, overwrite=True )
-            dirDB.add( cacheName.replace( args.selection, args.selection + "-" + catSel + "1" ), qcdHist_cat1, overwrite=True )
-            dirDB.add( cacheName.replace( args.selection, args.selection + "-" + catSel + "2" ), qcdHist_cat2, overwrite=True )
-            dirDB.add( cacheName.replace( args.selection, args.selection + "-" + catSel + "3" ), qcdHist_cat3, overwrite=True )
-

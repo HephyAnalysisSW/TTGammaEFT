@@ -5,7 +5,7 @@ from math import sqrt
 import json
 
 # Framework imports
-from Analysis.Tools.MergingDirDB             import MergingDirDB
+from Analysis.Tools.MergingDirDB      import MergingDirDB
 from Analysis.Tools.u_float           import u_float
 from TTGammaEFT.Tools.user            import cache_directory
 from TTGammaEFT.Analysis.SetupHelpers import allChannels
@@ -99,18 +99,18 @@ class SystematicEstimator:
             res = u_float(-1,0)
         return res if res > 0 or checkOnly else u_float(0,0)
 
-    def cachedTransferFactor(self, region, channel, setup, save=True, overwrite=False, checkOnly=False):
-        key =  self.uniqueKey(str(region), channel, setup)
+    def cachedTransferFactor(self, channel, setup, save=True, overwrite=False, checkOnly=False):
+        key =  self.uniqueKey("region", channel, setup)
         if (self.tfCache and self.tfCache.contains(key)) and not overwrite:
             res = self.tfCache.get(key)
             logger.debug( "Loading cached %s result for %r : %r"%(self.name, key, res) )
         elif self.tfCache and not checkOnly:
             logger.debug( "Calculating %s result for %r"%(self.name, key) )
-            res = self._dataDrivenTransferFactor( region, channel, setup, overwrite=overwrite )
+            res = self._dataDrivenTransferFactor( channel, setup, overwrite=overwrite )
             _res = self.tfCache.add( key, res, overwrite=True )
             logger.debug( "Adding cached transfer factor for %r : %r" %(key, res) )
         elif not checkOnly:
-            res = self._dataDrivenTransferFactor( region, channel, setup, overwrite=overwrite )
+            res = self._dataDrivenTransferFactor( channel, setup, overwrite=overwrite )
         else:
             res = u_float(-1,0)
         return res if res > 0 or checkOnly else u_float(0,0)
@@ -129,7 +129,7 @@ class SystematicEstimator:
         return
 
     def TransferFactorStatistic(self, region, channel, setup):
-        ref  = self.cachedTransferFactor(region, channel, setup)
+        ref  = self.cachedTransferFactor(channel, setup)
         up   = u_float(ref.val + ref.sigma)
         down = u_float(ref.val - ref.sigma)
         return abs(0.5*(up-down)/ref) if ref > 0 else max(up,down)
