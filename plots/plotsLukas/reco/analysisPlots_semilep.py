@@ -1195,7 +1195,8 @@ for index, mode in enumerate( allModes ):
 
     # Define 2l selections
     isoleptonSelection    = cutInterpreter.cutString( mode )
-    invIsoleptonSelection = cutInterpreter.cutString( mode + "Inv" )
+    if args.invLeptonIso:
+        invIsoleptonSelection = cutInterpreter.cutString( mode + "Inv" )
     leptonSelection       = invIsoleptonSelection if args.invLeptonIso and not categoryPlot and not args.leptonCategory else isoleptonSelection
 
     if not args.noData:
