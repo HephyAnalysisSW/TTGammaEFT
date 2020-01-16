@@ -36,9 +36,14 @@ args = argParser.parse_args()
 
 # Samples
 from TTGammaEFT.Samples.genTuples_TWZ_postProcessed import *
+from TTGammaEFT.Samples.genTuples_TWW_postProcessed import *
+from TTGammaEFT.Samples.genTuples_TTW_postProcessed import *
 
+signalSample = ttW01j_rwgt_dim6top_GEN_SIM
+#signalSample = tWZ01j_rwgt_filter_yt_GEN_SIM
+#signalSample = tWW1j_rwgt_yt_GEN_SIM
 #signalSample = tWZ0j_rwgt_dim6top_GEN
-signalSample = tWZ01j_rwgt_dim6top_GEN
+#signalSample = tWZ01j_rwgt_dim6top_GEN
 subdir       = signalSample.name
 
 # Logger
@@ -69,7 +74,28 @@ if args.parameters:
             'color': colors[i_param],
             })
 
+# activates the given parameters at the same time
+#if args.parameters:
+#    coeffs = args.parameters[::2]
+#    str_vals = args.parameters[1::2]
+#    vals = list( map( float, str_vals ))
+     
+#    legendText = ""
+#    WC = {}
+#    for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
+#        legendText = legendText + ' = '.join([coeff,str_val]).replace("c", "C_{").replace(" =", "} =").replace("I", "}^{[Im]") + " "
+#        WC[coeff] = val
+
+#    params.append( {
+#            'legendText': legendText,
+#            'WC': WC,
+#            'color': colors[0]
+#            })
+
 params.append( {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack} )
+
+# Yt SM cu value is 2/3 and not 0
+#params.append( {'legendText':'SM', 'WC':{'cu': 0.6666666}, 'color':ROOT.kBlack} )
 
 if args.parameters: wcString = "_".join(args.parameters).replace('.','p').replace('-','m')
 else: wcString = "SM"
@@ -128,7 +154,7 @@ def getYieldPlot( index ):
 def get_reweight( param, sample_ ):
     
     def reweightRef( event, sample ):
-       # print param['WC'], w.get_weight_string( **param['WC'] )
+        #print param['WC'], w.get_weight_string( **param['WC'] )
         return w.get_weight_func( **param['WC'] )( event, sample ) * event.ref_weight
     
     def reweightNoRef( event, sample ):
@@ -295,7 +321,7 @@ addPlots.append( Plot(
 
 addPlots.append( Plot(
     name      = 'genJet0_eta',
-    texX      = '#eta(l_{0})',
+    texX      = '#eta(j_{0})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenJet_eta[0],
     binning   = [ 20, -6, 6 ],
@@ -311,7 +337,7 @@ addPlots.append( Plot(
 
 addPlots.append( Plot(
     name      = 'genJet1_eta',
-    texX      = '#eta(l_{1})',
+    texX      = '#eta(j_{1})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenJet_eta[1],
     binning   = [ 20, -6, 6 ],
@@ -326,7 +352,7 @@ addPlots.append( Plot(
 
 addPlots.append( Plot(
     name      = 'genJet2_eta',
-    texX      = '#eta(l_{2})',
+    texX      = '#eta(j_{2})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenJet_eta[2],
     binning   = [ 20, -6, 6 ],
@@ -342,7 +368,7 @@ addPlots.append( Plot(
 
 addPlots.append( Plot(
     name      = 'genJet3_eta',
-    texX      = '#eta(l_{3})',
+    texX      = '#eta(j_{3})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenJet_eta[3],
     binning   = [ 20, -6, 6 ],
