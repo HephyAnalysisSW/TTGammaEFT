@@ -19,7 +19,7 @@ TT          = ["TT_pow_gen","TT_pow_had", "TTG_had"]
 WG          = ["WG_gen","WG_had"]
 ZG          = ["ZG_gen","ZG_had"]
 VG          = ["WG_gen","WG_had","ZG_gen","ZG_had"]
-other_misID = ["WJets_misID","other_misID","WG_misID","ZG_misID"]
+other_misID = ["WJ_misID","other_misID","WG_misID","ZG_misID"]
 other       = ["other_gen","other_had"]
 WJets       = ["WJets_gen","WJets_had"]
 QCD         = ["QCD-DD"]
@@ -90,6 +90,14 @@ signalRegions = {}
 # Signal Regions Settings
 # processes.keys() will be the proc visible in the combine card
 # processes.values() is a list of processes that will be combined for the entry in combine
+signalRegions["SR2"]  = { "parameters": { "zWindow":"all", "nJet":(2,2), "nBTag":(1,-1), "nPhoton":(1,1) },
+                          "channels":   lepChannels,
+                          "regions":    regionsTTG,
+                          "inclRegion": inclRegionsTTG,
+                          "noPhotonCR": False,
+                          "processes":  processes,
+                         }
+
 signalRegions["SR3"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
                           "channels":   lepChannels,
                           "regions":    regionsTTG,
@@ -242,14 +250,14 @@ VGSF_val[2017] = u_float( 0.95, 0.1 )
 VGSF_val[2018] = u_float( 0.95, 0.1 )
 
 WGSF_val = {}
-WGSF_val[2016] = u_float( 1.0, 0.09 )
-WGSF_val[2017] = u_float( 1.0, 0.09 )
-WGSF_val[2018] = u_float( 1.0, 0.09 )
+WGSF_val[2016] = u_float( 0.8, 0.09 )
+WGSF_val[2017] = u_float( 0.8, 0.09 )
+WGSF_val[2018] = u_float( 0.8, 0.09 )
 
 ZGSF_val = {}
-ZGSF_val[2016] = u_float( 1.0, 0.16 )
-ZGSF_val[2017] = u_float( 1.0, 0.16 )
-ZGSF_val[2018] = u_float( 1.0, 0.16 )
+ZGSF_val[2016] = u_float( 0.8, 0.16 )
+ZGSF_val[2017] = u_float( 0.8, 0.16 )
+ZGSF_val[2018] = u_float( 0.8, 0.16 )
 
 # all processes are all samples + them splitted in photon categories
 allProcesses            = copy.copy(default_sampleList)
@@ -547,6 +555,52 @@ QCD_updates              = { "invertLepIso":True,               "nBTag":(0,0),  
 QCDTF_updates            = {}
 QCDTF_updates["CR"]      = { "invertLepIso":True, "nJet":(2,2), "nBTag":(0,0), "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
 QCDTF_updates["SR"]      = {                      "nJet":(2,2),                "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+
+customQCDTF_updates                = {}
+customQCDTF_updates["2Jets"]       = {}
+customQCDTF_updates["2Jets"]["CR"] = { "invertLepIso":True, "nJet":(2,2), "nBTag":(0,0), "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+customQCDTF_updates["2Jets"]["SR"] = {                      "nJet":(2,2),                "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+customQCDTF_updates["3Jets"]       = {}
+customQCDTF_updates["3Jets"]["CR"] = { "invertLepIso":True, "nJet":(3,3), "nBTag":(0,0), "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+customQCDTF_updates["3Jets"]["SR"] = {                      "nJet":(3,3),                "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+customQCDTF_updates["4Jets"]       = {}
+customQCDTF_updates["4Jets"]["CR"] = { "invertLepIso":True, "nJet":(4,4), "nBTag":(0,0), "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+customQCDTF_updates["4Jets"]["SR"] = {                      "nJet":(4,4),                "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+customQCDTF_updates["5Jets"]       = {}
+customQCDTF_updates["5Jets"]["CR"] = { "invertLepIso":True, "nJet":(5,5), "nBTag":(0,0), "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+customQCDTF_updates["5Jets"]["SR"] = {                      "nJet":(5,5),                "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+customQCDTF_updates["0Photon"]       = {}
+customQCDTF_updates["0Photon"]["CR"] = { "invertLepIso":True, "nJet":(2,2), "nBTag":(0,0), "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+customQCDTF_updates["0Photon"]["SR"] = {                      "nJet":(2,2),                "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+customQCDTF_updates["1Photon"]       = {}
+customQCDTF_updates["1Photon"]["CR"] = { "invertLepIso":True, "nJet":(2,2), "nBTag":(0,0), "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "addMisIDSF":True }
+customQCDTF_updates["1Photon"]["SR"] = {                      "nJet":(2,2),                "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "addMisIDSF":True }
+
+customQCDTF_updates["2J0P"]       = {}
+customQCDTF_updates["2J0P"]["CR"] = { "invertLepIso":True, "nJet":(2,2), "nBTag":(0,0), "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+customQCDTF_updates["2J0P"]["SR"] = {                      "nJet":(2,2),                "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+customQCDTF_updates["3J0P"]       = {}
+customQCDTF_updates["3J0P"]["CR"] = { "invertLepIso":True, "nJet":(3,3), "nBTag":(0,0), "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+customQCDTF_updates["3J0P"]["SR"] = {                      "nJet":(3,3),                "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+customQCDTF_updates["4J0P"]       = {}
+customQCDTF_updates["4J0P"]["CR"] = { "invertLepIso":True, "nJet":(4,4), "nBTag":(0,0), "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+customQCDTF_updates["4J0P"]["SR"] = {                      "nJet":(4,4),                "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+customQCDTF_updates["5J0P"]       = {}
+customQCDTF_updates["5J0P"]["CR"] = { "invertLepIso":True, "nJet":(5,5), "nBTag":(0,0), "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+customQCDTF_updates["5J0P"]["SR"] = {                      "nJet":(5,5),                "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+
+customQCDTF_updates["2J1P"]       = {}
+customQCDTF_updates["2J1P"]["CR"] = { "invertLepIso":True, "nJet":(2,2), "nBTag":(0,0), "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "addMisIDSF":True }
+customQCDTF_updates["2J1P"]["SR"] = {                      "nJet":(2,2),                "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "addMisIDSF":True }
+customQCDTF_updates["3J1P"]       = {}
+customQCDTF_updates["3J1P"]["CR"] = { "invertLepIso":True, "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "addMisIDSF":True }
+customQCDTF_updates["3J1P"]["SR"] = {                      "nJet":(3,3),                "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "addMisIDSF":True }
+customQCDTF_updates["4J1P"]       = {}
+customQCDTF_updates["4J1P"]["CR"] = { "invertLepIso":True, "nJet":(4,4), "nBTag":(0,0), "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "addMisIDSF":True }
+customQCDTF_updates["4J1P"]["SR"] = {                      "nJet":(4,4),                "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "addMisIDSF":True }
+customQCDTF_updates["5J1P"]       = {}
+customQCDTF_updates["5J1P"]["CR"] = { "invertLepIso":True, "nJet":(5,5), "nBTag":(0,0), "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "addMisIDSF":True }
+customQCDTF_updates["5J1P"]["SR"] = {                      "nJet":(5,5),                "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "addMisIDSF":True }
 
 QCD_cutReplacements = {
                         "mLtight0Gamma":     "mLinvtight0Gamma",

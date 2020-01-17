@@ -29,10 +29,12 @@ for name, cr in crs.items():
     if not est and not "processes" in cr: est = default_sampleList
     elif not est:                         est = [ e for eList in cr["processes"].values() for e in eList["process"] ] + ["Data"]
 
+    if not "2" in name: continue
+
     for estimator in est:
         opt = option if not "DD" in estimator else option + " --noSystematics"
         title = " --title est%s_%s"%(year[2:], estimator) if submitCMD.count("submit") else ""
-        if not "DD" in estimator: continue # safe time for qcd estimate
+#        if not "DD" in estimator: continue # safe time for qcd estimate
 
         photonRegions = cr["inclRegion"] + cr["regions"] if not cr["noPhotonCR"] else cr["regions"]
 

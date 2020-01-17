@@ -187,11 +187,17 @@ class Setup:
         return res
 
     def weightString(self, dataMC, photon="PhotonGood0", addMisIDSF=False):
-        if   dataMC == "Data": _weightString = "weight"#*reweightHEM"
-        elif dataMC == "MC":
-            _weightString = "*".join([self.sys["weight"]] + (self.sys["reweight"] if self.sys["reweight"] else []))
-            if addMisIDSF and photon: _weightString += "+%s*(%s0_photonCat==2)*(%f-1)" %(_weightString, photon, misIDSF_val[self.year].val)
+        _weightString = {}
+        _weightString["Data"] = "weight" 
+        _weightString["MC"] = "*".join([self.sys["weight"]] + (self.sys["reweight"] if self.sys["reweight"] else []))
+        if addMisIDSF and photon: _weightString["MC"] += "+%s*(%s0_photonCat==2)*(%f-1)" %(_weightString["MC"], photon, misIDSF_val[self.year].val)
+
+        if   dataMC == "DataMC": return _weightString
+
+        if   dataMC == "Data": _weightString = _weightString["Data"]
+        elif dataMC == "MC":   _weightString = _weightString["MC"]
         logger.debug("Using weight-string: %s", _weightString)
+
         return _weightString
 
     def preselection(self, dataMC , channel="all"):
@@ -226,7 +232,7 @@ class Setup:
         if not photonIso:    photonIso    = self.parameters["photonIso"]
 
         #Consistency checks
-        assert dataMC in ["Data","MC"], "dataMC = Data or MC, got %r."%dataMC
+        assert dataMC in ["Data","MC","DataMC"], "dataMC = Data or MC or DataMC, got %r."%dataMC
         assert channel in allChannels, "channel must be one of "+",".join(allChannels)+". Got %r."%channel
         assert zWindow in ["offZeg", "onZeg", "onZSFllTight", "all"], "zWindow must be one of onZeg, offZeg, onZSFllTight, all. Got %r"%zWindow
         assert m3Window in ["offM3", "onM3", "all"], "m3Window must be one of onM3, offM3, all. Got %r"%m3Window
@@ -378,8 +384,9 @@ class Setup:
 #        if dataMC=="Data" and self.year == 2018:
 #            res["cuts"].append("reweightHEM>0")
 
-        res["cuts"].append( getFilterCut(isData=(dataMC=="Data"), year=self.year, skipBadChargedCandidate=True) )
-        res["cuts"].extend(self.externalCuts)
+        if dataMC != "DataMC":
+            res["cuts"].append( getFilterCut(isData=(dataMC=="Data"), year=self.year, skipBadChargedCandidate=True) )
+            res["cuts"].extend(self.externalCuts)
 
         return {"cut":"&&".join(res["cuts"]), "prefix":"-".join(res["prefixes"]), "weightStr": self.weightString(dataMC,photon=str(photonCutVar[1:]) if addMisIDSF else None,addMisIDSF=addMisIDSF and self.isPhotonSelection)}
 

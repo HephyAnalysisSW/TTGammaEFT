@@ -27,12 +27,12 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         super(DataDrivenQCDEstimate, self).__init__(name, cacheDir=cacheDir)
 
 #    def _transferFactor(self, region, channel, setup, overwrite=False):
-    def _transferFactor(self, channel, setup, overwrite=False):
+    def _transferFactor(self, channel, setup, qcdUpdates=None, overwrite=False):
 
         logger.info( "Calculating QCD transfer factor" )
 
         selection_MC_SR = setup.selection("MC",   channel=channel, **setup.defaultParameters())
-        selection_MC_CR = setup.selection("MC",   channel=channel, **setup.defaultParameters( update=QCD_updates ))
+        selection_MC_CR = setup.selection("MC",   channel=channel, **setup.defaultParameters( update=qcdUpdates if qcdUpdates else QCD_updates ))
 
         # currently we don't need a region dependence of the TF, if you do, uncomment here
 
@@ -90,15 +90,15 @@ class DataDrivenQCDEstimate(SystematicEstimator):
 
 
 #    def _dataDrivenTransferFactor(self, region, channel, setup, overwrite=False):
-    def _dataDrivenTransferFactor(self, channel, setup, overwrite=False):
+    def _dataDrivenTransferFactor(self, channel, setup, qcdUpdates=None, overwrite=False):
 
         print( "Calculating data-driven QCD transfer factor" )
 
-        selection_MC_CR     = setup.selection("MC",   channel=channel, **setup.defaultParameters( update=QCDTF_updates["CR"] ))
+        selection_MC_CR     = setup.selection("MC",   channel=channel, **setup.defaultParameters( update=qcdUpdates["CR"] if qcdUpdates else QCDTF_updates["CR"] ))
         print selection_MC_CR
-        selection_Data_CR   = setup.selection("Data", channel=channel, **setup.defaultParameters( update=QCDTF_updates["CR"] ))
-        selection_MC_SR     = setup.selection("MC",   channel=channel, **setup.defaultParameters( update=QCDTF_updates["SR"] ))
-        selection_Data_SR   = setup.selection("Data", channel=channel, **setup.defaultParameters( update=QCDTF_updates["SR"] ))
+        selection_Data_CR   = setup.selection("Data", channel=channel, **setup.defaultParameters( update=qcdUpdates["CR"] if qcdUpdates else QCDTF_updates["CR"] ))
+        selection_MC_SR     = setup.selection("MC",   channel=channel, **setup.defaultParameters( update=qcdUpdates["SR"] if qcdUpdates else QCDTF_updates["SR"] ))
+        selection_Data_SR   = setup.selection("Data", channel=channel, **setup.defaultParameters( update=qcdUpdates["SR"] if qcdUpdates else QCDTF_updates["SR"] ))
 #        selection_Data_full = setup.selection("Data", channel=channel, **setup.defaultParameters( update=QCDTF_updates["SRDenom"] ))
 #        selection_Data_part = setup.selection("Data", channel=channel, **setup.defaultParameters())
 
@@ -201,6 +201,9 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                 elif s == "TT_pow":
                     y_CR *= TTSF_val[setup.year] #add TT SF
                     y_SR *= TTSF_val[setup.year] #add TT SF
+                elif s == "TTG":
+                    y_CR *= SSMSF_val[setup.year] #add TTG SF
+                    y_SR *= SSMSF_val[setup.year] #add TTG SF
                 elif s == "ZG":
                     y_CR *= ZGSF_val[setup.year] #add ZGamma SF
                     y_SR *= ZGSF_val[setup.year] #add ZGamma SF
