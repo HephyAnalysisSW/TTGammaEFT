@@ -57,7 +57,7 @@ argParser.add_argument('--categoryPhoton',     action='store',      default="Non
 argParser.add_argument('--leptonCategory',     action='store_true', default=False,                                                     help="plot in terms of lepton category" )
 argParser.add_argument('--invLeptonIso',       action='store_true', default=False,                                                     help="plot QCD estimation plots with inv lepton iso and nBTag==0" )
 argParser.add_argument('--replaceZG',          action='store_true', default=False,                                                     help="Plot DY instead of ZGamma" )
-argParser.add_argument('--mode',               action='store',      default="None", type=str, choices=["mu", "e", "all", "eetight", "mumutight", "SFtight", "muetight", "muInv", "eInv", "muNoIso", "eNoIso"], help="plot lepton mode" )
+argParser.add_argument('--mode',               action='store',      default="None", type=str, choices=["mu", "e", "all", "eetight", "mumutight", "SFtight", "muetight", "muInv", "eInv", "allNoIso", "muNoIso", "eNoIso"], help="plot lepton mode" )
 argParser.add_argument('--nJobs',              action='store',      default=1,      type=int, choices=[1,2,3,4,5],                     help="Maximum number of simultaneous jobs.")
 argParser.add_argument('--job',                action='store',      default=0,      type=int, choices=[0,1,2,3,4],                     help="Run only job i")
 argParser.add_argument('--addHEMWeight',       action='store_true', default=False,                                                     help="remove HEMWeight" )
@@ -118,8 +118,8 @@ if args.useEOS:
     useToken("hephy")
 
 # Samples
-os.environ["gammaSkim"]="True" if ("hoton" in args.selection or "pTG" in args.selection) and not args.invLeptonIso else "False"
-#os.environ["gammaSkim"]="False"
+#os.environ["gammaSkim"]="True" if ("hoton" in args.selection or "pTG" in args.selection) and not args.invLeptonIso and not "NoIso" in args.mode else "False"
+os.environ["gammaSkim"]="False"
 if args.year == 2016:
     if args.useEOS: postprocessing_directory = "2016/MC_v20/semilep/"
     from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed      import *
@@ -411,6 +411,9 @@ recoEleSel_veto              = eleSelector( 'veto' )
 recoElectronSel_tight        = eleSelector( "tight" )
 recoMuonSel_tight            = muonSelector( "tight" )
 
+recoElectronSel_veto        = eleSelector( "veto" )
+recoMuonSel_veto            = muonSelector( "veto" )
+
 
 def calcGenWdecays( event, sample ):
     if sample.name == "data": return
@@ -482,13 +485,23 @@ def calcNoIsoLeptons( event, sample ):
 
     allLeptons = getCollection( event, 'Lepton', leptonVarList, 'nLepton' )
     allLeptons.sort( key = lambda j: -j['pt'] )
+    allElectrons = filter( lambda l: abs(l["pdgId"])==11, allLeptons )
+    allMuons     = filter( lambda l: abs(l["pdgId"])==13, allLeptons )
 
     tightNoIsoElectrons = list( filter( lambda l: recoElectronSel_tight(l, removedCuts=["pfRelIso03_all"]), allElectrons ) )
     tightNoIsoMuons     = list( filter( lambda l: recoMuonSel_tight(l,     removedCuts=["pfRelIso04_all"]), allMuons ) )
     tightNoIsoLeptons   = tightNoIsoElectrons + tightNoIsoMuons
     tightNoIsoLeptons.sort( key = lambda l: -l['pt'] )
 
-    tightNoIsoLepton = ( tightNoIsoLeptons + { var:-999 for var in leptonVarList } )[0]
+    tightNoIsoLepton = ( tightNoIsoLeptons + [None] )[0]
+
+    vetoNoIsoElectrons = list( filter( lambda l: recoElectronSel_veto(l, removedCuts=["pfRelIso03_all"]), allElectrons ) )
+    vetoNoIsoMuons     = list( filter( lambda l: recoMuonSel_veto(l,     removedCuts=["pfRelIso04_all"]), allMuons ) )
+    vetoNoIsoLeptons   = vetoNoIsoElectrons + vetoNoIsoMuons
+    vetoNoIsoLeptons.sort( key = lambda l: -l['pt'] )
+
+    if "NoIso" in args.mode:
+        event.weight *= int( len(vetoNoIsoLeptons)==1 )
 
     for var in leptonVarList:
         if tightNoIsoLepton:
@@ -641,7 +654,8 @@ if args.year == 2016:
             mc = [ TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, rest_16 ]
         else:
             mc = [ TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
-        if not args.invLeptonIso: mc += [ QCD_16 ]
+        if not (args.invLeptonIso or "NoIso" in args.mode): mc += [ QCD_16 ]
+#        if not (args.invLeptonIso): mc += [ QCD_16 ]
 elif args.year == 2017:
     if args.onlyTTG and not categoryPlot and not args.leptonCategory:
         mc = [ TTG_priv_17, QCD_17 ]
@@ -656,7 +670,7 @@ elif args.year == 2017:
             mc = [ TTG_priv_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, rest_17 ]
         else:
             mc = [ TTG_priv_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
-        if not args.invLeptonIso: mc += [ QCD_17 ]
+        if not (args.invLeptonIso or "NoIso" in args.mode): mc += [ QCD_17 ]
 elif args.year == 2018:
     if args.onlyTTG and not categoryPlot and not args.leptonCategory:
         mc = [ TTG_priv_18, QCD_18 ]
@@ -671,7 +685,7 @@ elif args.year == 2018:
             mc = [ TTG_priv_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, rest_18 ]
         else:
             mc = [ TTG_priv_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
-        if not args.invLeptonIso: mc += [ QCD_18 ]
+        if not (args.invLeptonIso or "NoIso" in args.mode): mc += [ QCD_18 ]
 
 if categoryPlot:
     all_cat0 = all
@@ -770,8 +784,16 @@ else:
     stack                      = Stack( mc, data_sample )
 
 stack.extend( [ [s] for s in signals ] )
-#sampleWeight = lambda event, sample: (misIDSF_val[args.year] if event.nPhotonGood>0 and event.PhotonGood0_photonCat==2 and addMisIDSF else 1.)*(DYSF_val[args.year] if "DY" in sample.name and addDYSF else 1.)*event.reweightHEM*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
-sampleWeight = lambda event, sample: (misIDSF_val[args.year] if event.nPhotonGood>0 and event.PhotonGood0_photonCat==2 and addMisIDSF else 1.)*(DYSF_val[args.year] if "DY" in sample.name and addDYSF else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+
+if addMisIDSF and addDYSF:
+    sampleWeight = lambda event, sample: (misIDSF_val[args.year].val if event.nPhotonGood>0 and event.PhotonGood0_photonCat==2 else 1.)*(DYSF_val[args.year].val if "DY" in sample.name else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+elif addDYSF:
+    sampleWeight = lambda event, sample: (DYSF_val[args.year].val if "DY" in sample.name else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+elif addMisIDSF:
+    sampleWeight = lambda event, sample: (misIDSF_val[args.year].val if event.nPhotonGood>0 and event.PhotonGood0_photonCat==2 else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+else:
+    sampleWeight = lambda event, sample: event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+
 # no misIDSF included in weightString!!
 weightString = "reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"
 if args.addHEMWeight:
@@ -803,8 +825,8 @@ replaceSelection = {
 }
 
 if args.invLeptonIso and regionPlot:
-    selection_MC_CR = setup.selection("MC",   channel="all", **setup.defaultParameters( update=QCD_updates ))
-    preSelection    = selection_MC_CR["cut"]
+    selection_CR = setup.selection("DataMC",   channel="all", **setup.defaultParameters( update=QCD_updates ))
+    preSelection = selection_CR["cut"]
 
 elif args.invLeptonIso:
     preSelection = cutInterpreter.cutString( "-".join([ item if not "nBTag" in item else "nBTag0" for item in args.selection.split("-") ]) )
@@ -815,6 +837,7 @@ elif "NoIso" in args.mode:
     preSelection = "&&".join( [ item for item in preSelection.split("&&") if not "nLeptonVeto" in item ] )
     for lep in ["LeptonTight", "ElectronTight", "MuonTight"]:
         preSelection = preSelection.replace( lep, lep+"NoIso")
+    print preSelection
 else:
     preSelection = cutInterpreter.cutString( args.selection )
 
@@ -981,6 +1004,21 @@ noIsoPlots.append( Plot(
     binning   = [ 20, 0, 20 ],
 ))
 
+noIsoPlots.append( Plot(
+    name      = 'LeptonTightNoIso0_pfRelIso04_all',
+    texX      = 'relIso_{0.4}(l_{noIso})',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.LeptonTightNoIso0_pfRelIso04_all,
+    binning   = [ 20, 0, 1.4 ],
+))
+
+noIsoPlots.append( Plot(
+    name      = 'LeptonTightNoIso0_pfIso04_all',
+    texX      = 'Iso_{0.4}(l_{noIso})',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.LeptonTightNoIso0_pfRelIso04_all * event.LeptonTightNoIso0_pt,
+    binning   = [ 20, 0, 20 ],
+))
 
 
 # plotList
@@ -1240,6 +1278,7 @@ for index, mode in enumerate( allModes ):
 
         transFacQCD = {}
         transFacQCD["incl"] = yield_QCD_SR / yield_QCD_CR if yield_QCD_CR.val != 0 else u_float({"val":0, "sigma":0})
+#        transFacQCD["incl"] = transFacQCD["incl"].val
 
         if not "nPhoton0" in args.selection and transFacQCD["incl"].val > 0:
             for pt in ptSels:
@@ -1249,6 +1288,7 @@ for index, mode in enumerate( allModes ):
                 yield_QCD_SR += u_float( gjets.getYieldFromDraw( selectionString=preSelectionSR + "&&" + cutInterpreter.cutString( pt ), weightString="weight*%f*%s"%(lumi_scale,weightString) ) )
 
                 transFacQCD[ptLabels[pt]] = yield_QCD_SR / yield_QCD_CR if yield_QCD_CR.val != 0 else u_float({"val":0, "sigma":0})
+#                transFacQCD[ptLabels[pt]] = transFacQCD[ptLabels[pt]].val
         else:
             for pt in ptSels:
                 transFacQCD[ptLabels[pt]] = transFacQCD["incl"]
@@ -1260,7 +1300,10 @@ for index, mode in enumerate( allModes ):
         estimate.isData = False
         estimate.initCache(setup.defaultCacheDir())
 
+        transFacQCD = {}
         transFacQCD["incl"] = estimate.cachedTransferFactor( mode, setup, checkOnly=True)
+        transFacQCD["incl"] = estimate.cachedTransferFactor( mode, setup, checkOnly=True)
+#        transFacQCD["incl"] = transFacQCD["incl"].val
         for pt in ptSels:
             transFacQCD[ptLabels[pt]] = transFacQCD["incl"]
 
