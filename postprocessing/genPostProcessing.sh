@@ -89,4 +89,10 @@
 #python genPostProcessing.py --processingEra TWZ_rwgt_dim6top_GEN --sample tWZ0j_rwgt_dim6top_GEN  --addReweights --interpolationOrder 2 #SPLIT100
 #python genPostProcessing.py --processingEra TWZ_rwgt_dim6top_GEN --sample tWZ01j_rwgt_dim6top_GEN  --addReweights --interpolationOrder 2 #SPLIT100
 
-python genPostProcessing.py --overwrite --processingEra TWZ_rwgt_dim6top_GEN --sample tWZ0j_rwgt_dim6top_GEN  --addReweights --interpolationOrder 2 #SPLIT100
+#python genPostProcessing.py --overwrite --processingEra TWZ_rwgt_dim6top_GEN --sample tWZ0j_rwgt_dim6top_GEN --addReweights --interpolationOrder 2 #SPLIT100
+#python genPostProcessing.py --processingEra TWZ_rwgt_dim6top_GEN --sample tWZ0j_rwgt_dim6top_GEN  --addReweights --interpolationOrder 2 #SPLIT100
+
+#python genPostProcessing.py --overwrite --processingEra TWW_rwgt_yt_GEN_SIM --sample tWW1j_rwgt_yt_GEN_SIM --addReweights --interpolationOrder 2 #SPLIT100
+
+#python genPostProcessing.py --overwrite --processingEra TWZ_rwgt_yt_GEN_SIM --sample tWZ01j_rwgt_filter_yt_GEN_SIM --addReweights --interpolationOrder 2 #SPLIT100
+python genPostProcessing.py --overwrite --processingEra TTW_rwgt_dim6top_GEN_SIM --sample ttW01j_rwgt_dim6top_GEN_SIM --addReweights --interpolationOrder 2 #SPLIT100

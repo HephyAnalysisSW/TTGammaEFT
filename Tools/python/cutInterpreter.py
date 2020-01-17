@@ -87,8 +87,9 @@ special_cuts = {
     "onZegInv":             "((abs(mLinvtight0Gamma-%s)<=%s&&nElectronTightInvIso==1)||(nElectronTightInvIso==0))"%(mZ, zMassRange),             # Cut Z-Window only for egamma
     "muInv":                "nMuonTightInvIso==1",
     "eInv":                 "nElectronTightInvIso==1",
-    "allInv":               "(1)",
+    "allInv":               "(nMuonTightInvIso==1||nElectronTightInvIso==1)",
 
+    "allNoIso":               "(nMuonTightNoIso==1||nElectronTightNoIso==1)",
     "muNoIso":                "nMuonTightNoIso==1",
     "eNoIso":                 "nElectronTightNoIso==1",
     
@@ -150,7 +151,7 @@ special_cuts = {
   }
 
 continous_variables = [ ("glDR","photonLepdR"), ("mT", "mT"), ("metSig", "METSig"), ("mll", "mll"), ("mllgamma", "mllgamma"), ("mlgamma", "mLtight0Gamma"), ("met", "MET_pt"), ("pTG","PhotonGood0_pt"), ("pTj","Jet_pt[0]"), ("etaj","abs(Jet_eta[0])") ]
-discrete_variables  = [ ("nAllJet", "nJet"), ("nJet", "nJetGood"), ("nBTag", "nBTagGood"), ("nLepNoCorrVeto","nLeptonVeto"), ("nLepVeto","nLeptonVetoIsoCorr"), ("nNoIsoLepTight","nLeptonTightNoIso"), ("nInvLepTight","nLeptonTightInvIso"), ("nLepTight","nLeptonTight"), ("nLep","nLeptonGood"), ("nPhoton","nPhotonGood") ]
+discrete_variables  = [ ("nAllJet", "nJet"), ("nJet", "nJetGood"), ("nBTag", "nBTagGood"), ("nLepNoCorrVeto","nLeptonVeto"), ("nLepVeto","nLeptonVetoIsoCorr"), ("nNoIsoLepTight","nLeptonTightNoIso"), ("nInvLepTight","nLeptonTightInvIso"), ("nLepTight","nLeptonTight"), ("nLep","nLeptonGood"), ("nPhoton","nPhotonGood"), ("nHadPhoton","nPhotonNoChgIsoNoSieie") ]
 cutInterpreter = CutInterpreter( continous_variables, discrete_variables, special_cuts)
 
 if __name__ == "__main__":

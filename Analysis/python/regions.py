@@ -54,6 +54,10 @@ regionsTTGfake     = getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", pTG_
 inclRegionsTTGfake = [Region( "PhotonNoChgIsoNoSieie0_pt", (20,-999) )]
 noPhotonRegionTTG  = [Region( "nPhotonGood", (0,1) )]
 
+regionsTTG20To120  = getRegionsFromThresholds( "PhotonGood0_pt", ( 20,   120 ) )
+regionsTTG120To220 = getRegionsFromThresholds( "PhotonGood0_pt", ( 120,  220 ) )
+regionsTTG220      = getRegionsFromThresholds( "PhotonGood0_pt", ( 220, -999 ) )
+
 pTG_thresh_fine    = [ 20, 70, 120, 170, 220, -999 ]
 etaG_thresh_fine   = [ -1.5, -0.9, -0.3, 0.3, 0.9, 1.5 ]
 regionsTTGFine     = getRegionsFromThresholds( "PhotonGood0_pt", pTG_thresh_fine )

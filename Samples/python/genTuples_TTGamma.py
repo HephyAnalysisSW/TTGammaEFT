@@ -327,7 +327,23 @@ tWZ01j_rwgt_dim6top_GEN.reweight_pkl                      = "/afs/hephy.at/data/
 tWZ01j_rwgt_dim6top_GEN.xSection                          = 0.2059*tWZ01j_filter_efficiency
 tWZ01j_rwgt_dim6top_GEN.nEvents                           = 584546
 
+# TWW Yt GENSIM sample
+tWW1j_rwgt_yt_GEN_SIM                                     = FWLiteSample.fromDAS("tWW1j_rwgt", "/tWW1j_rwgt/ttschida-tWW1j_rwgt_RAWSIMoutput-9cf7eb9ed7748fc2adb21552c72dfa0f/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix='root://hephyse.oeaw.ac.at/')
+tWW1j_rwgt_yt_GEN_SIM.reweight_pkl                        = "/afs/hephy.at/data/cms04/ttschida/gridpacks/Yt/tWW1j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl"
+tWW1j_rwgt_yt_GEN_SIM.xSection                            = 0.02523
+tWW1j_rwgt_yt_GEN_SIM.nEvents                             = 991000
 
+# TWZ filter Yt GENSIM sample
+tWZ01j_rwgt_filter_yt_GEN_SIM                             = FWLiteSample.fromDAS("tWZ01j_rwgt_filter_2", "/tWZ01j_rwgt_filter_2/ttschida-tWZ01j_rwgt_filter_2_RAWSIMoutput-d21de898ad3d5a9f1861cf5edf14f0e3/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix='root://hephyse.oeaw.ac.at/')
+tWZ01j_rwgt_filter_yt_GEN_SIM.reweight_pkl                = "/afs/hephy.at/data/cms04/ttschida/gridpacks/Yt/tWZ01j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl"
+tWZ01j_rwgt_filter_yt_GEN_SIM.xSection                    = 0.2279*tWZ01j_filter_efficiency
+tWZ01j_rwgt_filter_yt_GEN_SIM.nEvents                     = 601438
+
+# TTW dim6top GENSIM sample
+ttW01j_rwgt_dim6top_GEN_SIM                               = FWLiteSample.fromDAS("ttW01j_rwgt_dim6top", "/ttW01j_rwgt_dim6top/ttschida-ttW01j_rwgt_dim6top_RAWSIMoutput-922d23f892763d51c751153fd8c3e4fd/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix='root://hephyse.oeaw.ac.at/')
+ttW01j_rwgt_dim6top_GEN_SIM.reweight_pkl                  = "/afs/hephy.at/data/cms04/ttschida/gridpacks/dim6top/ttW01j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl"
+ttW01j_rwgt_dim6top_GEN_SIM.xSection                      = 0.8324
+ttW01j_rwgt_dim6top_GEN_SIM.nEvents                       = 498853
 
 SM = [
     ttGamma_Dilept_newCentral_1Line,

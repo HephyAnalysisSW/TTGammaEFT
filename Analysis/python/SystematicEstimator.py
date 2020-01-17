@@ -5,7 +5,7 @@ from math import sqrt
 import json
 
 # Framework imports
-from Analysis.Tools.MergingDirDB             import MergingDirDB
+from Analysis.Tools.MergingDirDB      import MergingDirDB
 from Analysis.Tools.u_float           import u_float
 from TTGammaEFT.Tools.user            import cache_directory
 from TTGammaEFT.Analysis.SetupHelpers import allChannels
@@ -41,7 +41,6 @@ class SystematicEstimator:
             except: pass
 
             cacheDirName       = os.path.join(cacheDir, self.name)
-            print cacheDirName
             self.cache = MergingDirDB(cacheDirName)
             if not self.cache: raise
 
@@ -71,11 +70,13 @@ class SystematicEstimator:
             if self.helperCache: self.helperCache.add(s, yieldFromDraw, overwrite=True)
             return yieldFromDraw
 
-    def uniqueKey(self, region, channel, setup):
+    def uniqueKey(self, region, channel, setup, qcdUpdates={}):
         sysForKey = setup.sys.copy()
         sysForKey["reweight"] = "TEMP"
         reweightKey = '["' + '", "'.join(sorted([i for i in setup.sys['reweight']])) + '"]' # little hack to preserve order of list when being dumped into json
-        return region, channel, json.dumps(sysForKey, sort_keys=True).replace('"TEMP"',reweightKey), json.dumps(setup.parameters, sort_keys=True), json.dumps(setup.lumi, sort_keys=True)
+        key = region, channel, json.dumps(sysForKey, sort_keys=True).replace('"TEMP"',reweightKey), json.dumps(setup.parameters, sort_keys=True), json.dumps(setup.lumi, sort_keys=True)
+        if qcdUpdates: key += tuple(json.dumps(qcdUpdates, sort_keys=True))
+        return key
 
     def replace(self, i, r):
         try:
@@ -99,18 +100,18 @@ class SystematicEstimator:
             res = u_float(-1,0)
         return res if res > 0 or checkOnly else u_float(0,0)
 
-    def cachedTransferFactor(self, region, channel, setup, save=True, overwrite=False, checkOnly=False):
-        key =  self.uniqueKey(str(region), channel, setup)
+    def cachedTransferFactor(self, channel, setup, qcdUpdates=None, save=True, overwrite=False, checkOnly=False):
+        key =  self.uniqueKey("region", channel, setup, qcdUpdates=qcdUpdates)
         if (self.tfCache and self.tfCache.contains(key)) and not overwrite:
             res = self.tfCache.get(key)
             logger.debug( "Loading cached %s result for %r : %r"%(self.name, key, res) )
         elif self.tfCache and not checkOnly:
             logger.debug( "Calculating %s result for %r"%(self.name, key) )
-            res = self._dataDrivenTransferFactor( region, channel, setup, overwrite=overwrite )
+            res = self._dataDrivenTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=overwrite )
             _res = self.tfCache.add( key, res, overwrite=True )
             logger.debug( "Adding cached transfer factor for %r : %r" %(key, res) )
         elif not checkOnly:
-            res = self._dataDrivenTransferFactor( region, channel, setup, overwrite=overwrite )
+            res = self._dataDrivenTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=overwrite )
         else:
             res = u_float(-1,0)
         return res if res > 0 or checkOnly else u_float(0,0)
@@ -129,7 +130,7 @@ class SystematicEstimator:
         return
 
     def TransferFactorStatistic(self, region, channel, setup):
-        ref  = self.cachedTransferFactor(region, channel, setup)
+        ref  = self.cachedTransferFactor(channel, setup)
         up   = u_float(ref.val + ref.sigma)
         down = u_float(ref.val - ref.sigma)
         return abs(0.5*(up-down)/ref) if ref > 0 else max(up,down)

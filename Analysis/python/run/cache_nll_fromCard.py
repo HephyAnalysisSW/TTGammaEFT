@@ -30,6 +30,8 @@ from Analysis.Tools.MergingDirDB        import MergingDirDB
 #from TTGammaEFT.Analysis.regions        import simpleStringToCutString
 #from TTGammaEFT.Analysis.Region         import aliases
 
+from helpers import chunks, splitList
+
 # Default Parameter
 loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET']
 
@@ -140,14 +142,6 @@ def isInDatabase( pointDict ):
     resCheck.update( { key:val for key, val in pointDict.iteritems() } )
     return dirDB.contains( resCheck )
 
-def chunks( l, n ):
-    # split list in chuncs
-    for i in range( 0, len(l), n ):
-        yield l[i:i + n]
-
-def splitList( l, n ):
-    k, m = divmod(len(l), n)
-    return list(l[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in xrange(n))
 
 binDict = dict(zip( args.variables, [dict(zip( ["nBins", "min", "max"], var )) for var in chunks(args.binning, 3) ] ))
 

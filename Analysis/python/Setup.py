@@ -187,11 +187,17 @@ class Setup:
         return res
 
     def weightString(self, dataMC, photon="PhotonGood0", addMisIDSF=False):
-        if   dataMC == "Data": _weightString = "weight"#*reweightHEM"
-        elif dataMC == "MC":
-            _weightString = "*".join([self.sys["weight"]] + (self.sys["reweight"] if self.sys["reweight"] else []))
-            if addMisIDSF: _weightString += "+%s*(%s0_photonCat==2)*(%f-1)" %(_weightString, photon, misIDSF_val[self.year].val)
+        _weightString = {}
+        _weightString["Data"] = "weight" 
+        _weightString["MC"] = "*".join([self.sys["weight"]] + (self.sys["reweight"] if self.sys["reweight"] else []))
+        if addMisIDSF and photon: _weightString["MC"] += "+%s*(%s0_photonCat==2)*(%f-1)" %(_weightString["MC"], photon, misIDSF_val[self.year].val)
+
+        if   dataMC == "DataMC": return _weightString
+
+        if   dataMC == "Data": _weightString = _weightString["Data"]
+        elif dataMC == "MC":   _weightString = _weightString["MC"]
         logger.debug("Using weight-string: %s", _weightString)
+
         return _weightString
 
     def preselection(self, dataMC , channel="all"):
@@ -226,7 +232,7 @@ class Setup:
         if not photonIso:    photonIso    = self.parameters["photonIso"]
 
         #Consistency checks
-        assert dataMC in ["Data","MC"], "dataMC = Data or MC, got %r."%dataMC
+        assert dataMC in ["Data","MC","DataMC"], "dataMC = Data or MC or DataMC, got %r."%dataMC
         assert channel in allChannels, "channel must be one of "+",".join(allChannels)+". Got %r."%channel
         assert zWindow in ["offZeg", "onZeg", "onZSFllTight", "all"], "zWindow must be one of onZeg, offZeg, onZSFllTight, all. Got %r"%zWindow
         assert m3Window in ["offM3", "onM3", "all"], "m3Window must be one of onM3, offM3, all. Got %r"%m3Window
@@ -299,23 +305,24 @@ class Setup:
             res["cuts"].append(nbtstr)
             res["prefixes"].append(prefix)
 
-        #photonIso of leading photon
-        if not photonIso or photonIso == "lowChgIsolowSieie":
-            photonCutVar = "nPhotonGood"
-            photonPrefix = "nPhoton"
-            # no special photon iso cut needed
-        else:
-            photonCutVar = "nPhotonNoChgIsoNoSieie"
-            photonPrefix = "nPhotonNoChgIsoNoSieie"
-                
-            res["prefixes"].append( photonIso )
-            preselphotonIso = cutInterpreter.cutString( photonIso )
-            res["cuts"].append( preselphotonIso )
-
-
         #photon cut
-        photonSel = nPhoton and not (nPhoton[0]==0 and nPhoton[1]<0)
+        photonSel = nPhoton and not (nPhoton[0]==0 and nPhoton[1]<=0)
+
         if photonSel:
+            #photonIso of leading photon
+            if not photonIso or photonIso == "lowChgIsolowSieie":
+                photonCutVar = "nPhotonGood"
+                photonPrefix = "nPhoton"
+                # no special photon iso cut needed
+            else:
+                photonCutVar = "nPhotonNoChgIsoNoSieie"
+                photonPrefix = "nHadPhoton"
+                
+                res["prefixes"].append( photonIso )
+                preselphotonIso = cutInterpreter.cutString( photonIso )
+                res["cuts"].append( preselphotonIso )
+
+            #photon cut
             assert nPhoton[0]>=0 and (nPhoton[1]>=nPhoton[0] or nPhoton[1]<0), "Not a good nPhoton selection: %r"%nPhoton
             nphotonsstr = photonCutVar+">="+str(nPhoton[0])
             prefix   = photonPrefix+str(nPhoton[0])
@@ -326,6 +333,12 @@ class Setup:
                 prefix+="p"
             res["cuts"].append(nphotonsstr)
             res["prefixes"].append(prefix)
+        else:
+            addMisIDSF   = False
+
+        if not photonSel or (photonCutVar=="nPhotonNoChgIsoNoSieie"):
+            # remove default zwindow cut in qcd estimation for non photon regions
+            zWindow = "all"
 
         #MET cut
         if MET and not (MET[0]==0 and MET[1]<0):
@@ -338,12 +351,8 @@ class Setup:
             res["cuts"].append(metsstr)
             res["prefixes"].append(prefix)
 
-        # remove default zwindow cut in qcd estimation for non photon regions
-        if (nPhoton and (nPhoton[0]==0 and nPhoton[1]==0)) or (photonCutVar=="nPhotonNoChgIsoNoSieie"):
-            zWindow = "all"
-
         #Z window
-        if zWindow != "all":
+        if not "all" in zWindow:
             res["prefixes"].append( zWindow )
             preselZWindow = cutInterpreter.cutString( zWindow )
             res["cuts"].append( preselZWindow )
@@ -355,10 +364,10 @@ class Setup:
             res["cuts"].append( preselM3Window )
 
         #badEEVeto
-        if self.year == 2017 and photonSel:
-            res["prefixes"].append("BadEEJetVeto")
-            badEEStr = cutInterpreter.cutString( "BadEEJetVeto" )
-            res["cuts"].append( badEEStr )
+#        if self.year == 2017 and photonSel:
+#            res["prefixes"].append("BadEEJetVeto")
+#            badEEStr = cutInterpreter.cutString( "BadEEJetVeto" )
+#            res["cuts"].append( badEEStr )
 
         if dataMC == "MC":
             res["cuts"].append( "overlapRemoval==1" )
@@ -375,10 +384,11 @@ class Setup:
 #        if dataMC=="Data" and self.year == 2018:
 #            res["cuts"].append("reweightHEM>0")
 
-        res["cuts"].append( getFilterCut(isData=(dataMC=="Data"), year=self.year, skipBadChargedCandidate=True) )
-        res["cuts"].extend(self.externalCuts)
+        if dataMC != "DataMC":
+            res["cuts"].append( getFilterCut(isData=(dataMC=="Data"), year=self.year, skipBadChargedCandidate=True) )
+            res["cuts"].extend(self.externalCuts)
 
-        return {"cut":"&&".join(res["cuts"]), "prefix":"-".join(res["prefixes"]), "weightStr": self.weightString(dataMC,photon=str(photonCutVar[1:]),addMisIDSF=addMisIDSF and self.isPhotonSelection)}
+        return {"cut":"&&".join(res["cuts"]), "prefix":"-".join(res["prefixes"]), "weightStr": self.weightString(dataMC,photon=str(photonCutVar[1:]) if addMisIDSF else None,addMisIDSF=addMisIDSF and self.isPhotonSelection)}
 
 if __name__ == "__main__":
     setup = Setup( year=2016 )
