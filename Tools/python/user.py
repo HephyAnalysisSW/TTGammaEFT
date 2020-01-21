@@ -17,7 +17,7 @@ if os.environ["USER"] in ["schoef", "rschoefbeck", "schoefbeck"]:
     dpm_directory                       = "/dpm/oeaw.ac.at/home/cms/store/user/llechner/"
     eos_directory                       = "/eos/cms/store/group/phys_susy/hephy/"
 
-if os.environ["USER"] in ["llechner"]:
+if os.environ["USER"] in ["llechner"]: #Heplx, Lxplus
     tmp_directory                       = "/afs/hephy.at/data/llechner01/Top_tmp/"
     results_directory                   = "/afs/hephy.at/data/llechner01/TTGammaEFT/results/"
 
@@ -35,6 +35,24 @@ if os.environ["USER"] in ["llechner"]:
 
     dpm_directory                       = "/dpm/oeaw.ac.at/home/cms/store/user/llechner/"
     eos_directory                       = "/eos/cms/store/group/phys_susy/hephy/"
+
+if os.environ["USER"] in ["lukas.lechner"]: #CBE cluster
+    tmp_directory                       = "/mnt/hephy/cms/lukas.lechner/tmp/TTGammaEFT/"
+    results_directory                   = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/results/"
+
+    mva_directory                       = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/mva/"
+    plot_directory                      = "/users/lukas.lechner/www/TTGammaEFT/"
+
+    postprocessing_output_directory     = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/nanoTuples/"
+    gridpack_directory                  = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/gridpacks/"
+
+    analysis_results                    = results_directory
+    cache_directory                     = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache/"
+    combineReleaseLocation              = "/users/lukas.lechner/CMSSW_10_2_18/src/"
+    cardfileLocation                    = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/results/cardfiles/"
+
+    dpm_directory                       = "/dpm/oeaw.ac.at/home/cms/store/user/llechner/"
+    eos_directory                       = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/"
 
 if os.environ["USER"] in ["ttschida"]:
     plot_directory                      = "/afs/hephy.at/user/t/ttschida/www/HiggsWithoutHiggs/TTGammaEFT/"

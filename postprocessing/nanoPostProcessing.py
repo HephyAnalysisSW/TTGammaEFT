@@ -31,6 +31,9 @@ from Analysis.Tools.puProfileCache               import puProfile
 from Analysis.Tools.L1PrefireWeight              import L1PrefireWeight
 from Analysis.Tools.mt2Calculator                import mt2Calculator
 
+# environment
+hostname   = os.getenv("HOSTNAME").lower()
+
 # central configuration
 targetLumi = 1000 #pb-1 Which lumi to normalize to
 
@@ -50,7 +53,6 @@ def get_parser():
     argParser.add_argument('--job',                         action='store',                     type=int,                           default=0,                          help="Run only job i")
     argParser.add_argument('--minNJobs',                    action='store',         nargs='?',  type=int,                           default=1,                          help="Minimum number of simultaneous jobs.")
     argParser.add_argument('--writeToDPM',                  action='store_true',                                                                                        help="Write output to DPM?")
-    argParser.add_argument('--runOnLxPlus',                 action='store_true',                                                                                        help="Change the global redirector of samples to run on lxplus")
     argParser.add_argument('--fileBasedSplitting',          action='store_true',                                                                                        help="Split njobs according to files")
     argParser.add_argument('--processingEra',               action='store',         nargs='?',  type=str,                           default='TTGammaEFT_PP_v1',         help="Name of the processing era")
     argParser.add_argument('--skim',                        action='store',         nargs='?',  type=str,                           default='dilep',                    help="Skim conditions to be applied for post-processing")
@@ -148,7 +150,7 @@ if options.small:
     options.job = 0
     options.nJobs = 1 # set high to just run over 1 input file
 
-if options.runOnLxPlus:
+if "lxplus" in hostname:
     # Set the redirector in the samples repository to the global redirector
     from Samples.Tools.config import redirector_global as redirector
 
@@ -221,8 +223,12 @@ if options.writeToDPM:
 else:
     # User specific
     from TTGammaEFT.Tools.user import postprocessing_output_directory as user_directory
-    directory  = os.path.join( user_directory, options.processingEra ) 
-    output_directory = os.path.join( directory, options.skim+postfix, sampleDir )
+    directory        = os.path.join( user_directory, options.processingEra ) 
+    output_directory = os.path.join( '/tmp/%s'%os.environ['USER'], str(uuid.uuid4()) )
+    targetPath       = os.path.join( directory, options.skim+postfix, sampleDir )
+    if not os.path.exists( targetPath ):
+        try:    os.makedirs( targetPath )
+        except: pass
 
 # Single file post processing
 if options.fileBasedSplitting or options.nJobs > 1:
@@ -1627,17 +1633,46 @@ if options.writeToDPM:
                         raise Exception("Corrupt rootfile at target! File not copied: %s"%source )
 
     # Clean up.
-    if not options.runOnLxPlus:
+    if "heplx" in hostname:
         # not needed on condor, container will be removed automatically
         subprocess.call( [ 'rm', '-rf', output_directory ] ) # Let's risk it.
 
 else:
-    if checkRootFile( outputFilePath, checkForObjects=["Events"] ) and deepCheckRootFile( outputFilePath ) and deepCheckWeight( outputFilePath ):
-        logger.info( "Target: File check ok!" )
-    else:
-        logger.info( "Corrupt rootfile! Removing file: %s"%outputFilePath )
-        os.remove( outputFilePath )
-        raise Exception("Corrupt rootfile! File not copied: %s"%outputFilePath )
+    for dirname, subdirs, files in os.walk( output_directory ):
+        logger.debug( 'Found directory: %s',  dirname )
+
+        for fname in files:
+            if not fname.endswith(".root") or fname.startswith("nanoAOD_") or "_for_" in fname: continue # remove that for copying log files
+
+            source  = os.path.abspath( os.path.join( dirname, fname ) )
+            target  = os.path.join( targetPath, fname )
+
+            if checkRootFile( source, checkForObjects=["Events"] ) and deepCheckRootFile( source ) and deepCheckWeight( source ):
+                logger.info( "Source: File check ok!" )
+            else:
+                raise Exception("Corrupt rootfile at source! File not copied: %s"%source )
+
+            cmd = [ 'cp', source, target ]
+            logger.info( "Issue copy command: %s", " ".join( cmd ) )
+            subprocess.call( cmd )
+
+            if checkRootFile( target, checkForObjects=["Events"] ) and deepCheckRootFile( target ) and deepCheckWeight( target ):
+                logger.info( "Target: File check ok!" )
+            else:
+                logger.info( "Corrupt rootfile at target! Trying again: %s"%target )
+                logger.info( "2nd try: Issue copy command: %s", " ".join( cmd ) )
+                subprocess.call( cmd )
+
+                # Many files are corrupt after copying, a 2nd try fixes that
+                if checkRootFile( target, checkForObjects=["Events"] ) and deepCheckRootFile( target ) and deepCheckWeight( target ):
+                    logger.info( "2nd try successfull!" )
+                else:
+                    # if not successful, the corrupt root file needs to be deleted from DPM
+                    cmd = [ 'rm', target ]
+                    logger.info( "2nd try: No success, removing file: %s"%target )
+                    logger.info( "Issue rm command: %s", " ".join( cmd ) )
+#                    subprocess.call( cmd )
+                    raise Exception("Corrupt rootfile at target! File not copied: %s"%source )
 
 # There is a double free corruption due to stupid ROOT memory management which leads to a non-zero exit code
 # Thus the job is resubmitted on condor even if the output is ok
