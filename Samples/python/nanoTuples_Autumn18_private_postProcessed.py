@@ -24,7 +24,7 @@ except:
 try:
     fromDPM = sys.modules['__main__'].fromEOS != "True"
 except:
-    fromDPM = True
+    fromDPM = not "clip" in os.getenv("HOSTNAME").lower()
 
 if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
     postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
@@ -52,10 +52,9 @@ dirs['DY_LO']            = ["DYJetsToLL_M50_LO", "DYJetsToLL_M10to50_LO"]
 
 dirs['TT_pow']           = ["TTLep_pow", "TTSingleLep_pow"]#, "TTHad_pow" ]
 
-dirs['TTGLep']           = ["TTGLep"]
-dirs['TTG']              = ["TTGLep", "TTGSemiTbar", "TTGSemiT", "TTGHad"]
-dirs['TTG_priv']         = ["TTGLep_priv", "TTGSemi_priv", "TTGHad_priv"]
-dirs["TTG_NoFullyHad_priv"] = ["TTGNoFullyHad_priv"]
+dirs['TTGLep']           = ["TTGLep_LO"]
+dirs['TTGSemiLep']       = ["TTGSemiLep_LO"]
+dirs["TTG"]              = ["TTGLep_LO", "TTGSingleLep_LO", "TTGHad_LO"]
 
 dirs['singleTop']        = ["T_tWch", "TBar_tWch", "TToLeptons_sch_amcatnlo", "T_tch_pow", "TBar_tch_pow"]
 
@@ -77,7 +76,7 @@ dirs['ZZZ']              = ["ZZZ"]
 dirs['ZGToLLG']          = ["ZGToLLG"]
 dirs['ZG_lowMLL']        = ["ZGToLLG_lowMLL"] # no lepton pt cut
 dirs['TG']               = ["TGJets"]
-#dirs["WJets"]            = ["W1JetsToLNu", "W2JetsToLNu", "W3JetsToLNu", "W4JetsToLNu"]
+dirs["WJets"]            = ["W1JetsToLNu", "W2JetsToLNu", "W3JetsToLNu", "W4JetsToLNu"]
 dirs['WJets']            = ["WJetsToLNu"]
 dirs['WG']               = ["WGToLNuG"]
 dirs['WG_NLO']           = ["WGToLNuG_amcatnlo_ext1"]
@@ -99,7 +98,7 @@ dirs['other']           += dirs['VV']
 dirs['other']           += dirs['WW']   + dirs['WZ']  + dirs['ZZ']
 dirs['other']           += dirs['GluGlu']
 
-dirs['all_noOther']      = dirs['TTG_priv'] + dirs['TT_pow'] + dirs['DY_LO'] + dirs['singleTop'] + dirs['ZG_lowMLL'] #dirs['ZGToLLG']
+dirs['all_noOther']      = dirs['TTG'] + dirs['TT_pow'] + dirs['DY_LO'] + dirs['singleTop'] + dirs['ZG_lowMLL']
 dirs['all']              = dirs['all_noOther'] + dirs['other']
 
 directories = { key : [ os.path.join( data_directory_, postprocessing_directory_, dir) for dir in dirs[key] ] for key in dirs.keys() }
@@ -108,12 +107,9 @@ directories = { key : [ os.path.join( data_directory_, postprocessing_directory_
 DY_LO_18           = getMCSample(name="DY_LO",            redirector=redirector, color=color.DY,              texName="DY (LO)",           directory=directories['DY_LO'], noCheckProxy=False, fromDPM=fromDPM)
 TT_pow_18          = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories['TT_pow'], noCheckProxy=True, fromDPM=fromDPM)
 singleTop_18       = getMCSample(name="singleTop",        redirector=redirector, color=color.T,               texName="single-t",          directory=directories['singleTop'], noCheckProxy=True, fromDPM=fromDPM)
-#TTG_18             = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories['TTG'], noCheckProxy=True, fromDPM=fromDPM)
-#TTGLep_18          = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories['TTGLep'], noCheckProxy=True, fromDPM=fromDPM)
-TTG_priv_18        = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories['TTG_priv'], noCheckProxy=True, fromDPM=fromDPM)
-
-#TTG_NoFullyHad_priv_18 = getMCSample(name="TTG",          redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories['TTG_NoFullyHad_priv'], noCheckProxy=True, fromDPM=fromDPM)
-
+TTG_18             = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories['TTG'], noCheckProxy=True, fromDPM=fromDPM)
+TTGLep_18          = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories['TTGLep'], noCheckProxy=True, fromDPM=fromDPM)
+TTGSemiLep_18      = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories['TTGSemiLep'], noCheckProxy=True, fromDPM=fromDPM)
 WJets_18           = getMCSample(name="WJets",            redirector=redirector, color=color.W,               texName="W+jets",            directory=directories['WJets'], noCheckProxy=True, fromDPM=fromDPM)
 ZG_18              = getMCSample(name="ZG",               redirector=redirector, color=color.ZGamma,          texName="Z#gamma",           directory=directories['ZG_lowMLL'], noCheckProxy=True, fromDPM=fromDPM)
 TG_18              = getMCSample(name="TG",               redirector=redirector, color=color.TGamma,          texName="t#gamma",           directory=directories['TG'], noCheckProxy=True, fromDPM=fromDPM)

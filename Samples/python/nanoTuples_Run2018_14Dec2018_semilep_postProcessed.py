@@ -23,10 +23,10 @@ except:
 try:
     fromDPM = sys.modules['__main__'].fromEOS != "True"
 except:
-    fromDPM = True
+    fromDPM = not "clip" in os.getenv("HOSTNAME").lower()
 
-if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
-    postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
+#if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
+#    postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
 
 # Redirector
 try:

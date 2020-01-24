@@ -24,7 +24,7 @@ except:
 try:
     fromDPM = sys.modules['__main__'].fromEOS != "True"
 except:
-    fromDPM = True
+    fromDPM = not "clip" in os.getenv("HOSTNAME").lower()
 
 # Redirector
 try:

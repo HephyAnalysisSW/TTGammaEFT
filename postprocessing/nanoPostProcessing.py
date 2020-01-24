@@ -2,6 +2,7 @@
 
 # standard imports
 import ROOT
+ROOT.gROOT.SetBatch(True)
 import sys
 import os
 import subprocess
@@ -26,7 +27,7 @@ from TTGammaEFT.Tools.user                       import cache_directory
 from TTGammaEFT.Tools.objectSelection            import *
 from TTGammaEFT.Tools.Variables                  import NanoVariables
 
-from Analysis.Tools.overlapRemovalTTG            import photonFromTopDecay, hasMesonMother, getParentIds, isIsolatedPhoton, getPhotonCategory, hasLeptonMother, getPhotonMother, getAdvancedPhotonCategory
+from Analysis.Tools.overlapRemovalTTG            import *
 from Analysis.Tools.puProfileCache               import puProfile
 from Analysis.Tools.L1PrefireWeight              import L1PrefireWeight
 from Analysis.Tools.mt2Calculator                import mt2Calculator
@@ -79,6 +80,9 @@ def get_parser():
     return argParser
 
 options = get_parser().parse_args()
+
+if "clip" in hostname.lower():
+    options.writeToDPM = False
 
 # B-Tagger
 tagger = 'DeepCSV'
@@ -136,7 +140,8 @@ if isDiLepGamma:
 elif isDiLep:
     skimConds += [dilepCond, addCond]
 elif isSemiLepGamma:
-    skimConds += [semilepCond, gammaCond, addCond]  #performance: ~1.5k events left (1 ttbar semilep file)
+#    skimConds += [semilepCond, gammaCond, addCond]  #performance: ~1.5k events left (1 ttbar semilep file)
+    skimConds += [semilepNoIsoCond, gammaCond, addCond] #performance: ~75k events left (1 ttbar semilep file)
 elif isSemiLep:
     skimConds += [semilepNoIsoCond, addCond] #performance: ~75k events left (1 ttbar semilep file)
 else:
@@ -154,19 +159,23 @@ if "lxplus" in hostname:
     # Set the redirector in the samples repository to the global redirector
     from Samples.Tools.config import redirector_global as redirector
 
+#if "clip" in hostname:
+    # Set the redirector in the samples repository to the global redirector
+#    from Samples.Tools.config import redirector_clip_local as redirector
+
 if options.year == 2016:
     from Samples.nanoAOD.Summer16_private_legacy_v1 import *
-    from Samples.nanoAOD.Summer16_private           import *
+#    from Samples.nanoAOD.Summer16_private           import *
 #    from Samples.nanoAOD.Run2016_14Dec2018          import *
     from Samples.nanoAOD.Run2016_17Jul2018_private  import *
 elif options.year == 2017:
     from Samples.nanoAOD.Fall17_private_legacy_v1   import *
-    from Samples.nanoAOD.Fall17_private             import *
+#    from Samples.nanoAOD.Fall17_private             import *
 #    from Samples.nanoAOD.Run2017_14Dec2018          import *
     from Samples.nanoAOD.Run2017_31Mar2018_private  import *
 elif options.year == 2018:
     from Samples.nanoAOD.Autumn18_private_legacy_v1 import *
-    from Samples.nanoAOD.Autumn18_private           import *
+#    from Samples.nanoAOD.Autumn18_private           import *
 #    from Samples.nanoAOD.Run2018_14Dec2018          import *
     from Samples.nanoAOD.Run2018_17Sep2018_private  import *
 
@@ -242,6 +251,7 @@ if options.fileBasedSplitting or options.nJobs > 1:
 
 # Directories
 outputFilePath    = os.path.join( output_directory, sample.name + '.root' )
+targetFilePath    = os.path.join( targetPath, sample.name + '.root' )
 filename, ext = os.path.splitext( outputFilePath )
 
 if os.path.exists( output_directory ) and options.overwrite:
@@ -290,14 +300,14 @@ if not options.overwrite and options.writeToDPM:
         logger.info( "Processing." )
 
 elif not options.overwrite and not options.writeToDPM:
-    if os.path.isfile(outputFilePath):
-        logger.info( "Output file %s found.", outputFilePath)
-        if checkRootFile( outputFilePath, checkForObjects=["Events"] ) and deepCheckRootFile( outputFilePath ) and deepCheckWeight( outputFilePath ):
+    if os.path.isfile(targetFilePath):
+        logger.info( "Output file %s found.", targetFilePath)
+        if checkRootFile( targetFilePath, checkForObjects=["Events"] ) and deepCheckRootFile( targetFilePath ) and deepCheckWeight( targetFilePath ):
             logger.info( "File already processed. Source: File check ok! Skipping." ) # Everything is fine, no overwriting
             sys.exit(0)
         else:
             logger.info( "File corrupt. Removing file from target." )
-            os.remove( outputFilePath )
+            os.remove( targetFilePath )
             if options.checkOnly: sys.exit(0)
             logger.info( "Reprocessing." )
     else:
@@ -506,6 +516,10 @@ new_variables += [ 'Bj1_' + var for var in writeBJetVariables ]
 # Leptons
 new_variables += [ 'nLepton/I' ] 
 new_variables += [ 'nLeptonVeto/I']
+new_variables += [ 'nLeptonVetoNoIso/I']
+new_variables += [ 'nLeptonVetoInvIso/I']
+new_variables += [ 'nLeptonVetoInvIsoLoose/I']
+new_variables += [ 'nLeptonVetoInvIsoTight/I']
 new_variables += [ 'nLeptonVetoIsoCorr/I']
 new_variables += [ 'nLeptonMedium/I' ] 
 new_variables += [ 'nLeptonGood/I' ] 
@@ -518,6 +532,10 @@ new_variables += [ 'nLeptonTightInvIsoVeto/I']
 
 new_variables += [ 'nElectron/I',            'nMuon/I']
 new_variables += [ 'nElectronVeto/I',        'nMuonVeto/I']
+new_variables += [ 'nElectronVetoNoIso/I',   'nMuonVetoNoIso/I']
+new_variables += [ 'nElectronVetoInvIso/I',   'nMuonVetoInvIso/I']
+new_variables += [ 'nElectronVetoInvIsoLoose/I',   'nMuonVetoInvIsoLoose/I']
+new_variables += [ 'nElectronVetoInvIsoTight/I',   'nMuonVetoInvIsoTight/I']
 new_variables += [ 'nElectronVetoIsoCorr/I']
 new_variables += [ 'nElectronMedium/I',      'nMuonMedium/I']
 new_variables += [ 'nElectronGood/I',        'nMuonGood/I']
@@ -593,6 +611,12 @@ if options.addPreFiringFlag: new_variables += [ 'unPreFirableEvent/I' ]
 
 new_variables += [ "reweightHEM/F" ]
 if isMC:
+    new_variables += [ 'GenPhotonATLASUnfold0_' + var for var in writeGenVariables ]
+    new_variables += [ 'nGenElectronATLASUnfold/I', 'nGenMuonATLASUnfold/I', 'nGenLeptonATLASUnfold/I', 'nGenPhotonATLASUnfold/I', 'nGenBJetATLASUnfold/I', 'nGenJetsATLASUnfold/I' ]
+
+    new_variables += [ 'GenPhotonCMSUnfold0_' + var for var in writeGenVariables ]
+    new_variables += [ 'nGenElectronCMSUnfold/I', 'nGenMuonCMSUnfold/I', 'nGenLeptonCMSUnfold/I', 'nGenPhotonCMSUnfold/I', 'nGenBJetCMSUnfold/I', 'nGenJetsCMSUnfold/I' ]
+
     new_variables += [ 'GenElectron[%s]' %writeGenVarString ]
     new_variables += [ 'GenMuon[%s]'     %writeGenVarString ]
     new_variables += [ 'GenPhoton[%s]'   %writeGenVarString ]
@@ -656,6 +680,14 @@ genPhotonSel_GJ_OR  = genPhotonSelector( 'overlapGJets' )
 genLeptonSel = genLeptonSelector()
 genPhotonSel = genPhotonSelector()
 genJetSel    = genJetSelector()
+# ATLAS Unfolding
+genLeptonSel_ATLASUnfold = genLeptonSelector( "ATLASUnfolding" )
+genPhotonSel_ATLASUnfold = genPhotonSelector( "ATLASUnfolding" )
+genJetSel_ATLASUnfold    = genJetSelector(    "ATLASUnfolding" )
+# CMS Unfolding
+genLeptonSel_CMSUnfold = genLeptonSelector( "CMSUnfolding" )
+genPhotonSel_CMSUnfold = genPhotonSelector( "CMSUnfolding" )
+genJetSel_CMSUnfold    = genJetSelector(    "CMSUnfolding" )
 # Electron Selection
 recoElectronSel_veto    = eleSelector( "veto" )
 recoElectronSel_medium  = eleSelector( "medium" )
@@ -810,7 +842,7 @@ def filler( event ):
         event.weight = lumiScaleFactor*r.genWeight if lumiScaleFactor is not None else 0
 
         # GEN Particles
-        gPart = getParticles( r, collVars=readGenVarList, coll="GenPart" )
+        gPart = getParticles( r, collVars=readGenVarList,    coll="GenPart" )
         gJets = getParticles( r, collVars=readGenJetVarList, coll="GenJet" )
 
         # Gen Leptons in ttbar/gamma decays
@@ -830,9 +862,6 @@ def filler( event ):
 
         GenTauElectron = filter( lambda l: abs(l['pdgId']) == 11, GenLepTauMother )
         GenTauMuon     = filter( lambda l: abs(l['pdgId']) == 13, GenLepTauMother )
-
-        gPart.sort( key = lambda p: -p['pt'] )
-        gJets.sort( key = lambda p: -p['pt'] )
 
         # Overlap removal flags for ttgamma/ttbar and Zgamma/DY
         GenPhoton                  = filterGenPhotons( gPart, status='last' )
@@ -898,7 +927,68 @@ def filler( event ):
         GenTauElectron = filter( lambda l: abs(l['pdgId']) == 11, GenLepTauMother )
         GenTauMuon     = filter( lambda l: abs(l['pdgId']) == 13, GenLepTauMother )
 
-        gPart.sort( key = lambda p: -p['pt'] )
+        # ATLAS Unfolding
+        GenMuon                                    = filterGenMuons( gPart, status='last' )
+        GenElectron                                = filterGenElectrons( gPart, status='last' )
+        GenLepton                                  = GenMuon + GenElectron
+        GenLeptonATLASUnfold                       = filter( lambda l: not hasMesonMother( getParentIds( l, gPart ) ), GenLepton )
+        GenLeptonATLASUnfold, GenPhotonATLASUnfold = addParticlesInCone( GenLeptonATLASUnfold, GenPhoton, coneSize=0.1 ) # add photons in cone of 0.1 to leptons
+        GenLeptonATLASUnfold                       = filter( lambda l: genLeptonSel_ATLASUnfold(l), GenLeptonATLASUnfold )
+
+        GenPhotonATLASUnfold = filter( lambda g: not hasMesonMother( getParentIds( g, gPart ) ), GenPhotonATLASUnfold )
+        GenPhotonATLASUnfold = filter( lambda g: genPhotonSel_ATLASUnfold(g), GenPhotonATLASUnfold )
+
+        GenJetATLASUnfold    = filter( lambda j: genJetSel_ATLASUnfold(j), gJets                   )
+        GenBJetATLASUnfold   = filter( lambda j: genJetSel_ATLASUnfold(j), filterGenBJets( gJets ) )
+
+        # ATLAS Unfolding cleaning
+        GenJetATLASUnfold    = deltaRCleaning( GenJetATLASUnfold,    GenPhotonATLASUnfold, dRCut=0.4 )
+        GenJetATLASUnfold    = deltaRCleaning( GenJetATLASUnfold,    GenLeptonATLASUnfold, dRCut=0.4 )
+        GenBJetATLASUnfold   = deltaRCleaning( GenBJetATLASUnfold,   GenPhotonATLASUnfold, dRCut=0.4 )
+        GenBJetATLASUnfold   = deltaRCleaning( GenBJetATLASUnfold,   GenLeptonATLASUnfold, dRCut=0.4 )
+        GenPhotonATLASUnfold = deltaRCleaning( GenPhotonATLASUnfold, GenLeptonATLASUnfold, dRCut=1.0 )
+
+        GenPhotonATLASUnfold.sort( key = lambda p: -p['pt'] )
+        genP0 = ( GenPhotonATLASUnfold[:1] + [None] )[0]
+        fill_vector( event, "GenPhotonATLASUnfold0",  writeGenVarList, genP0 )
+
+        event.nGenElectronATLASUnfold = len( filter( lambda l: abs( l["pdgId"] ) == 11, GenLeptonATLASUnfold ) )
+        event.nGenMuonATLASUnfold     = len( filter( lambda l: abs( l["pdgId"] ) == 13, GenLeptonATLASUnfold ) )
+        event.nGenLeptonATLASUnfold   = len(GenLeptonATLASUnfold)
+        event.nGenPhotonATLASUnfold   = len(GenPhotonATLASUnfold)
+        event.nGenBJetATLASUnfold     = len(GenBJetATLASUnfold)
+        event.nGenJetsATLASUnfold     = len(GenJetATLASUnfold)
+
+        # CMS Unfolding
+        GenLeptonCMSUnfold                     = filter( lambda l: not hasMesonMother( getParentIds( l, gPart ) ), GenLepton )
+        GenLeptonCMSUnfold, GenPhotonCMSUnfold = addParticlesInCone( GenLeptonCMSUnfold, GenPhoton, coneSize=0.1 ) # add photons in cone of 0.1 to leptons
+        GenLeptonCMSUnfold                     = filter( lambda l: genLeptonSel_CMSUnfold(l), GenLeptonCMSUnfold )
+
+        # Isolated in CMS
+        GenPhotonCMSUnfold = filter( lambda g: isIsolatedPhoton( g, gPart, coneSize=0.1,  ptCut=5, excludedPdgIds=[12,-12,14,-14,16,-16] ), GenPhotonCMSUnfold )
+        GenPhotonCMSUnfold = filter( lambda g: not hasMesonMother( getParentIds( g, gPart ) ), GenPhotonCMSUnfold )
+        GenPhotonCMSUnfold = filter( lambda g: genPhotonSel_CMSUnfold(g), GenPhotonCMSUnfold )
+
+        GenJetCMSUnfold    = filter( lambda j: genJetSel_CMSUnfold(j), gJets                   )
+        GenBJetCMSUnfold   = filter( lambda j: genJetSel_CMSUnfold(j), filterGenBJets( gJets ) )
+
+        # CMS Unfolding cleaning
+        GenJetCMSUnfold    = deltaRCleaning( GenJetCMSUnfold,    GenPhotonCMSUnfold, dRCut=0.1 )
+        GenJetCMSUnfold    = deltaRCleaning( GenJetCMSUnfold,    GenLeptonCMSUnfold, dRCut=0.4 )
+        GenBJetCMSUnfold   = deltaRCleaning( GenBJetCMSUnfold,   GenPhotonCMSUnfold, dRCut=0.1 )
+        GenBJetCMSUnfold   = deltaRCleaning( GenBJetCMSUnfold,   GenLeptonCMSUnfold, dRCut=0.4 )
+        GenPhotonCMSUnfold = deltaRCleaning( GenPhotonCMSUnfold, GenLeptonCMSUnfold, dRCut=0.1 )
+
+        GenPhotonCMSUnfold.sort( key = lambda p: -p['pt'] )
+        genP0 = ( GenPhotonCMSUnfold[:1] + [None] )[0]
+        fill_vector( event, "GenPhotonCMSUnfold0",  writeGenVarList, genP0 )
+
+        event.nGenElectronCMSUnfold = len( filter( lambda l: abs( l["pdgId"] ) == 11, GenLeptonCMSUnfold ) )
+        event.nGenMuonCMSUnfold     = len( filter( lambda l: abs( l["pdgId"] ) == 13, GenLeptonCMSUnfold ) )
+        event.nGenLeptonCMSUnfold   = len(GenLeptonCMSUnfold)
+        event.nGenPhotonCMSUnfold   = len(GenPhotonCMSUnfold)
+        event.nGenBJetCMSUnfold     = len(GenBJetCMSUnfold)
+        event.nGenJetsCMSUnfold     = len(GenJetCMSUnfold)
 
         # Split gen particles
         # still needs improvement with filterGen function
@@ -910,11 +1000,18 @@ def filler( event ):
         GenBJet     = list( filter( lambda j: genJetSel(j),    filterGenBJets( gJets )                    ) )
 
         # Store
+        GenElectron.sort( key = lambda p: -p['pt'] )
+        GenMuon.sort(     key = lambda p: -p['pt'] )
+        GenPhoton.sort(   key = lambda p: -p['pt'] )
+        GenBJet.sort(     key = lambda p: -p['pt'] )
+        GenJet.sort(      key = lambda p: -p['pt'] )
+        GenTop.sort(      key = lambda p: -p['pt'] )
+
         fill_vector_collection( event, "GenElectron", writeGenVarList,    GenElectron[:20] )
         fill_vector_collection( event, "GenMuon",     writeGenVarList,    GenMuon[:20]     )
         fill_vector_collection( event, "GenPhoton",   writeGenVarList,    GenPhoton[:20]   )
         fill_vector_collection( event, "GenBJet",     writeGenJetVarList, GenBJet[:20]     )
-        fill_vector_collection( event, "GenJets",      writeGenJetVarList, GenJet[:20]      )
+        fill_vector_collection( event, "GenJets",     writeGenJetVarList, GenJet[:20]      )
         fill_vector_collection( event, "GenTop",      writeGenVarList,    GenTop[:20]      )
         
         event.nGenElectron = len(GenElectron)
@@ -988,6 +1085,29 @@ def filler( event ):
     vetoLeptons   = vetoElectrons + vetoMuons
     vetoLeptons.sort( key = lambda l: -l['pt'] )
 
+    vetoNoIsoElectrons = list( filter( lambda l: recoElectronSel_veto(l, removedCuts=["pfRelIso03_all"]), allElectrons ) )
+    vetoNoIsoMuons     = list( filter( lambda l: recoMuonSel_veto(l,     removedCuts=["pfRelIso04_all"]), allMuons ) )
+    vetoNoIsoLeptons   = vetoNoIsoElectrons + vetoNoIsoMuons
+    vetoNoIsoLeptons.sort( key = lambda l: -l['pt'] )
+
+    # veto leptons with inverted veto rel iso cut
+    vetoInvIsoElectrons = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt"], l["eta"]+l["deltaEtaSC"], id="veto" ), vetoNoIsoElectrons) )
+    vetoInvIsoMuons     = list( filter( lambda l: l["pfRelIso04_all"]>muonRelIsoCutVeto, vetoNoIsoMuons ) )
+    vetoInvIsoLeptons   = vetoInvIsoElectrons + vetoInvIsoMuons
+    vetoInvIsoLeptons.sort( key = lambda l: -l['pt'] )
+
+    # veto leptons with inverted loose rel iso cut
+    vetoInvIsoElectronsLoose = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt"], l["eta"]+l["deltaEtaSC"], id="loose" ), vetoNoIsoElectrons) )
+    vetoInvIsoMuonsLoose    = list( filter( lambda l: l["pfRelIso04_all"]>muonRelIsoCutLoose, vetoNoIsoMuons ) )
+    vetoInvIsoLeptonsLoose  = vetoInvIsoElectronsLoose + vetoInvIsoMuonsLoose
+    vetoInvIsoLeptonsLoose.sort( key = lambda l: -l['pt'] )
+
+    # veto leptons with inverted tight rel iso cut
+    vetoInvIsoElectronsTight = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt"], l["eta"]+l["deltaEtaSC"], id="tight" ), vetoNoIsoElectrons) )
+    vetoInvIsoMuonsTight     = list( filter( lambda l: l["pfRelIso04_all"]>muonRelIsoCut, vetoNoIsoMuons ) )
+    vetoInvIsoLeptonsTight   = vetoInvIsoElectronsTight + vetoInvIsoMuonsTight
+    vetoInvIsoLeptonsTight.sort( key = lambda l: -l['pt'] )
+
     mediumElectrons = list( filter( lambda l: recoElectronSel_medium(l), allElectrons ) )
     mediumMuons     = list( filter( lambda l: recoMuonSel_medium(l),     allMuons ) )
     mediumLeptons   = mediumElectrons + mediumMuons
@@ -1021,16 +1141,16 @@ def filler( event ):
     tightInvIsoLeptons.sort( key = lambda l: -l['pt'] )
 
     # tight leptons with inverted loose rel iso cut
-    looseInvIsoElectrons = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt"], l["eta"]+l["deltaEtaSC"], id="loose" ), tightNoIsoElectrons) )
-    looseInvIsoMuons     = list( filter( lambda l: l["pfRelIso04_all"]>muonRelIsoCutVeto, tightNoIsoMuons ) )
-    looseInvIsoLeptons   = tightInvIsoElectrons + tightInvIsoMuons
-    looseInvIsoLeptons.sort( key = lambda l: -l['pt'] )
+    tightInvIsoElectronsLoose = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt"], l["eta"]+l["deltaEtaSC"], id="loose" ), tightNoIsoElectrons) )
+    tightInvIsoMuonsLoose     = list( filter( lambda l: l["pfRelIso04_all"]>muonRelIsoCutLoose, tightNoIsoMuons ) )
+    tightInvIsoLeptonsLoose   = tightInvIsoElectronsLoose + tightInvIsoMuonsLoose
+    tightInvIsoLeptonsLoose.sort( key = lambda l: -l['pt'] )
 
     # tight leptons with inverted veto rel iso cut
-    vetoInvIsoElectrons = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt"], l["eta"]+l["deltaEtaSC"], id="veto" ), tightNoIsoElectrons) )
-    vetoInvIsoMuons     = list( filter( lambda l: l["pfRelIso04_all"]>muonRelIsoCutVeto, tightNoIsoMuons ) )
-    vetoInvIsoLeptons   = tightInvIsoElectrons + tightInvIsoMuons
-    vetoInvIsoLeptons.sort( key = lambda l: -l['pt'] )
+    tightInvIsoElectronsVeto = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt"], l["eta"]+l["deltaEtaSC"], id="veto" ), tightNoIsoElectrons) )
+    tightInvIsoMuonsVeto     = list( filter( lambda l: l["pfRelIso04_all"]>muonRelIsoCutVeto, tightNoIsoMuons ) )
+    tightInvIsoLeptonsVeto   = tightInvIsoElectronsVeto + tightInvIsoMuonsVeto
+    tightInvIsoLeptonsVeto.sort( key = lambda l: -l['pt'] )
 
     # Store lepton number
     event.nLepton           = len(allLeptons)
@@ -1040,6 +1160,22 @@ def filler( event ):
     event.nLeptonVeto       = len(vetoLeptons)
     event.nElectronVeto     = len(vetoElectrons)
     event.nMuonVeto         = len(vetoMuons)
+
+    event.nLeptonVetoNoIso   = len(vetoNoIsoLeptons)
+    event.nElectronVetoNoIso = len(vetoNoIsoElectrons)
+    event.nMuonVetoNoIso     = len(vetoNoIsoMuons)
+
+    event.nLeptonVetoInvIso   = len(vetoInvIsoLeptons)
+    event.nElectronVetoInvIso = len(vetoInvIsoElectrons)
+    event.nMuonVetoInvIso     = len(vetoInvIsoMuons)
+
+    event.nLeptonVetoInvIsoLoose   = len(vetoInvIsoLeptonsLoose)
+    event.nElectronVetoInvIsoLoose = len(vetoInvIsoElectronsLoose)
+    event.nMuonVetoInvIsoLoose     = len(vetoInvIsoMuonsLoose)
+
+    event.nLeptonVetoInvIsoTight   = len(vetoInvIsoLeptonsTight)
+    event.nElectronVetoInvIsoTight = len(vetoInvIsoElectronsTight)
+    event.nMuonVetoInvIsoTight     = len(vetoInvIsoMuonsTight)
 
     event.nLeptonVetoIsoCorr   = len(vetoCorrIsoElectrons) + len(vetoMuons)
     event.nElectronVetoIsoCorr = len(vetoCorrIsoElectrons)
@@ -1069,13 +1205,13 @@ def filler( event ):
     event.nElectronTightInvIso = len(tightInvIsoElectrons)
     event.nMuonTightInvIso     = len(tightInvIsoMuons)
 
-    event.nLeptonTightInvIsoLoose   = len(looseInvIsoLeptons)
-    event.nElectronTightInvIsoLoose = len(looseInvIsoElectrons)
-    event.nMuonTightInvIsoLoose     = len(looseInvIsoMuons)
+    event.nLeptonTightInvIsoLoose   = len(tightInvIsoLeptonsLoose)
+    event.nElectronTightInvIsoLoose = len(tightInvIsoElectronsLoose)
+    event.nMuonTightInvIsoLoose     = len(tightInvIsoMuonsLoose)
 
-    event.nLeptonTightInvIsoVeto   = len(vetoInvIsoLeptons)
-    event.nElectronTightInvIsoVeto = len(vetoInvIsoElectrons)
-    event.nMuonTightInvIsoVeto     = len(vetoInvIsoMuons)
+    event.nLeptonTightInvIsoVeto   = len(tightInvIsoLeptonsVeto)
+    event.nElectronTightInvIsoVeto = len(tightInvIsoElectronsVeto)
+    event.nMuonTightInvIsoVeto     = len(tightInvIsoMuonsVeto)
 
     # Select one tight and one medium lepton, the tight is included in the medium collection
     selectedLeptons           = leptons2l[:2]
@@ -1094,7 +1230,7 @@ def filler( event ):
     fill_vector( event, "LeptonTight0", writeLeptonVarList, lt0 )
     fill_vector( event, "LeptonTight1", writeLeptonVarList, lt1 )
     fill_vector( event, "LeptonTightInvIso0", writeLeptonVarList, ltinv0 )
-    fill_vector( event, "LeptonTightNoIso0",  writeLeptonVarList, ltinv0 )
+    fill_vector( event, "LeptonTightNoIso0",  writeLeptonVarList, ltno0 )
     # Store all Leptons
     fill_vector_collection( event, "Lepton", writeLeptonVarList, allLeptons )
 
@@ -1105,15 +1241,16 @@ def filler( event ):
         for g in allPhotons:
 #            g["genPartIdx"] = getGenPartIdx( g, gPart, coneSize=0.4, ptCut=5., excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ] )
             genMatch = filter( lambda p: p['index'] == g['genPartIdx'], gPart )[0] if g['genPartIdx'] >= 0 else None
-#            g['photonCat']    = getPhotonCategory( genMatch, gPart ) if g['genPartIdx'] != -2 else 4 # magic photons
-            g['photonCat']    = getAdvancedPhotonCategory( g, gPart, coneSize=0.2, ptCut=5., excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ] )
+            g['photonCat']    = getPhotonCategory( genMatch, gPart ) if g['genPartIdx'] != -2 else 4 # magic photons
+            g['photonCatMagic']    = getAdvancedPhotonCategory( g, gPart, coneSize=0.2, ptCut=5., excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ] )
             g['leptonMother'] = hasLeptonMother( genMatch, gPart )
             g['mother']       = getPhotonMother( genMatch, gPart )
     else:
         for g in allPhotons:
-            g['photonCat']    = -1
-            g['leptonMother'] = -1
-            g['mother']       = -1
+            g['photonCat']      = -1
+            g['photonCatMagic'] = -1
+            g['leptonMother']   = -1
+            g['mother']         = -1
 
     mediumPhotons                = list( filter( lambda g: recoPhotonSel_medium(g),                                          allPhotons ) )
     mvaPhotons                   = list( filter( lambda g: recoPhotonSel_mva(g),                                             allPhotons ) )

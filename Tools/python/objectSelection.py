@@ -219,8 +219,9 @@ def jetSelector( year ):
         raise (NotImplementedError, "Don't know what cut to use for year %s"%year)
 
 #muonRelIsoCut = 0.12
-muonRelIsoCut     = 0.15
-muonRelIsoCutVeto = 0.25
+muonRelIsoCut      = 0.15
+muonRelIsoCutLoose = 0.20
+muonRelIsoCutVeto  = 0.25
 def muonSelector( lepton_selection ):
     # According to AN-2017/197
     if lepton_selection == 'tight':
@@ -477,20 +478,58 @@ def photonSelector( selection, year=None ):
 
 
 # Gen Selectors
-def genJetSelector():
-    # According to AN-2017/197
-    def func(j):
-        if j["pt"]       <= 30:  return False
-        if abs(j["eta"]) >= 2.4: return False
-        return True
+def genJetSelector( selection=None ):
+
+    if selection == 'ATLASUnfolding':
+        def func(j):
+            if j["pt"]       < 25:  return False
+            if abs(j["eta"]) > 2.5: return False
+            return True
+        return func
+
+    elif selection == 'CMSUnfolding':
+        def func(j):
+            if j["pt"]       < 30:  return False
+            if abs(j["eta"]) > 2.4: return False
+            return True
+        return func
+
+    else:
+        # According to AN-2017/197
+        def func(j):
+            if j["pt"]       <= 25:  return False
+            if abs(j["eta"]) >= 2.5: return False
+            return True
     return func
 
-def genLeptonSelector():
-    # According to AN-2017/197
-    def func(l):
-        if l["pt"]       <= 15:  return False
-        if abs(l["eta"]) >= 2.4: return False
-        return True
+def genLeptonSelector( selection=None ):
+
+    if selection == 'ATLASUnfolding':
+        def func(l):
+            if abs(l["pdgId"]) not in [11,13]: return False
+            if l["pt"]       < 25:  return False
+            if abs(l["eta"]) > 2.5: return False
+            return True
+        return func
+
+    elif selection == 'CMSUnfolding':
+        def func(l):
+            if abs(l["pdgId"]) not in [11,13]: return False
+            if abs(l["pdgId"]) == 11:
+                if l["pt"]       < 35:         return False
+                if abs(l["eta"]) > 2.1:        return False
+            if abs(l["pdgId"]) == 13:
+                if l["pt"]       < 30:         return False
+                if abs(l["eta"]) > 2.4:        return False
+            return True
+        return func
+
+    else:
+        # According to AN-2017/197
+        def func(l):
+            if l["pt"]       <= 25:  return False
+            if abs(l["eta"]) >= 2.5: return False
+            return True
     return func
 
 def genPhotonSelector( photon_selection=None ):
@@ -527,11 +566,25 @@ def genPhotonSelector( photon_selection=None ):
             return True
         return func
 
+    elif photon_selection == 'ATLASUnfolding':
+        def func(g):
+            if g["pt"]       < 20:   return False
+            if abs(g["eta"]) > 2.37: return False
+            return True
+        return func
+
+    elif photon_selection == 'CMSUnfolding':
+        def func(g):
+            if g["pt"]       < 20:     return False
+            if abs(g["eta"]) > 1.4442: return False
+            return True
+        return func
+
     else:
         # general gen-photon selection
         def func(g):
-            if g["pt"]       < 13:    return False
-            if abs(g["eta"]) > 1.479: return False
+            if g["pt"]       < 13:  return False
+            if abs(g["eta"]) > 5.0: return False
             return True
         return func
 

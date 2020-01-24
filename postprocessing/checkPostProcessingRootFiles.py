@@ -3,12 +3,17 @@ import os
 import ROOT
 import subprocess
 
+from helpers                 import *
+
 # RootTools
-from RootTools.core.standard                     import *
+from RootTools.core.standard import *
 
 # User specific
-from TTGammaEFT.Tools.user import dpm_directory
+from TTGammaEFT.Tools.user   import dpm_directory, postprocessing_output_directory
 redirector        = 'root://hephyse.oeaw.ac.at/'
+
+# environment
+hostname   = os.getenv("HOSTNAME").lower()
 
 def get_parser():
     ''' Argument parser for post-processing module.
@@ -16,7 +21,6 @@ def get_parser():
     import argparse
     argParser = argparse.ArgumentParser(description = "Argument parser for nanoPostProcessing")
     argParser.add_argument('--file',       action='store', type=str, default='nanoPostProcessing_Summer16', help="postprocessing sh file to check")
-    argParser.add_argument('--semilep',    action='store_true', help="check semiLep samples?")
     argParser.add_argument('--createExec', action='store_true', help="create .sh file with missing files?")
     argParser.add_argument('--overwrite',  action='store_true', help="overwrite existing missingFiles.sh file?")
     return argParser
@@ -37,31 +41,6 @@ else:
 if args.file.endswith(".sh"):
     args.file = args.file.rstrip(".sh")
 
-def filterEmpty( strList ):
-    return list( filter ( bool, strList ) )
-
-def getDataDictList( filepath ):
-    ''' Read postprocessing sh file and format it to dictionary
-    '''
-    with open( filepath, 'r' ) as f:
-        ppLines = f.readlines()
-
-    ppLines = [ line for line in ppLines if line.startswith('python') ]
-
-    dictList = []
-    for line in ppLines:
-        skim    = filterEmpty( line.split("--skim ")[1].split(" ") )[0]
-        year    = filterEmpty( line.split("--year ")[1].split(" ") )[0]
-        dir     = filterEmpty( line.split("--processingEra ")[1].split(" ") )[0]
-        sample  = filterEmpty( line.split("--sample ")[1].split(" ") )[0]
-        command = line
-        if not filterEmpty( line.split("--sample ")[1].split(" ") )[1].startswith("--") and not filterEmpty( line.split("--sample ")[1].split(" ") )[1].startswith("#SPLIT"):
-            sample += "_comb"
-        nFiles = filterEmpty( line.split("#SPLIT")[1].split(" ") )[0].split("\n")[0]
-        dictList.append( { "skim":skim, "year":int(year), "dir":dir, "sample":sample, "nFiles":int(nFiles), "command":command} )
-
-    return dictList
-
 # Load File
 logger.info( "Now running on pp file %s" %args.file )
 file          = os.path.expandvars( "$CMSSW_BASE/src/TTGammaEFT/postprocessing/%s.sh" % args.file )
@@ -73,10 +52,16 @@ for ppEntry in dictList:
     logger.debug("Checking sample %s" %sample)
 
     # Check whether file exists on DPM, no check if root file is ok implemented for now
-    dirPath = os.path.join( dpm_directory, 'postprocessed', ppEntry["dir"], ppEntry["skim"], sample  )
-    p = subprocess.Popen( ["dpns-ls -l %s" %dirPath], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
+    if "clip" in hostname.lower():
+        dirPath   = os.path.join( postprocessing_output_directory, ppEntry["dir"], ppEntry["skim"], sample  )
+        files     = os.listdir(dirPath) if os.path.exists(dirPath) else []
+        rootFiles = filter( lambda file: file.endswith(".root") and not file.startswith("nanoAOD"), files )
+        rootFiles = [ item.split(".root")[0] for item in rootFiles ]
+    else:
+        dirPath = os.path.join( dpm_directory, 'postprocessed', ppEntry["dir"], ppEntry["skim"], sample  )
+        p = subprocess.Popen( ["dpns-ls -l %s" %dirPath], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
+        rootFiles = [ line[:-1].split()[-1].split(".root")[0] for line in p.stdout.readlines() if line[:-1].split()[-1].endswith(".root") and not line[:-1].split()[-1].startswith("nanoAOD") ]
 
-    rootFiles = [ line[:-1].split()[-1].split(".root")[0] for line in p.stdout.readlines() if line[:-1].split()[-1].endswith(".root") and not line[:-1].split()[-1].startswith("nanoAOD") ]
     if not rootFiles:
         logger.info("Sample %s not processed" %sample)
         if args.createExec:
@@ -101,6 +86,6 @@ for ppEntry in dictList:
 if args.createExec:
     with open( "missingFiles.sh", 'w' if args.overwrite else "a" ) as f:
         for line in execCommand:
-            f.write(line.split("\n")[0] + "\n")
+            f.write(line + "\n")
         f.write("\n")
 
