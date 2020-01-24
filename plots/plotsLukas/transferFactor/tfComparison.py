@@ -25,7 +25,7 @@ CRChoices     = allRegions.keys()
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",          action="store",  default="INFO",             choices=loggerChoices,      help="Log level for logging")
-argParser.add_argument("--plot_directory",    action="store",  default="102X_TTG_ppv1_v1")
+argParser.add_argument("--plot_directory",    action="store",  default="102X_TTG_ppv22_v1")
 argParser.add_argument("--year",              action="store",  default=2016,     type=int, choices=[2016, 2017, 2018], help="Which year?")
 argParser.add_argument("--mode",              action="store",  default="e",      type=str, choices=["e", "mu"],        help="Which lepton selection?")
 args = argParser.parse_args()
@@ -37,7 +37,7 @@ import RootTools.core.logger as logger_rt
 logger_rt = logger_rt.get_logger( args.logLevel, logFile = None )
 
 extensions_ = ["pdf", "png", "root"]
-plot_directory_ = os.path.join( plot_directory, 'transferFactor', args.plot_directory, args.mode )
+plot_directory_ = os.path.join( plot_directory, 'transferFactor', str(args.year), args.plot_directory, args.mode )
 
 if args.year == 2016:   lumi_scale = 35.92
 elif args.year == 2017: lumi_scale = 41.53
@@ -81,11 +81,11 @@ for b in range(2):
         hists2D["%ib"%b].GetYaxis().SetBinLabel( j-1, str(j) )
 
     hists["%ib"%b]["nGUsed"] = ROOT.TH1F("hist%ib_nGUsed"%(b), "hist%ib_nGUsed"%(b), 2, 0, 2)
-    hists["%ib"%b]["nGUsed"].style = styles.lineStyle( ROOT.kBlack, width=3, errors=True )
+    hists["%ib"%b]["nGUsed"].style = styles.lineStyle( ROOT.kBlack, width=3, errors=False )
     hists["%ib"%b]["nGUsed"].legendText = "used TF (%s)"%args.mode.replace("mu","#mu")
 
     hists["%ib"%b]["nJUsed"] = ROOT.TH1F("hist%ib_nJUsed"%(b), "hist%ib_nJUsed"%(b), 3, 2, 5)
-    hists["%ib"%b]["nJUsed"].style = styles.lineStyle( ROOT.kBlack, width=3, errors=True )
+    hists["%ib"%b]["nJUsed"].style = styles.lineStyle( ROOT.kBlack, width=3, errors=False )
     hists["%ib"%b]["nJUsed"].legendText = "used TF (%s)"%args.mode.replace("mu","#mu")
 
     hists2D["%ib"%b].GetYaxis().SetBinLabel( j-1, str(j) )
@@ -153,7 +153,7 @@ def draw2DPlots( plot ):
                     plot_directory = plot_directory_,
                     extensions = extensions_,
                     logX = False, logY = False, logZ = False,
-                    zRange = (0.0, "auto"),
+                    zRange = (0.0, 1.4),
                     drawObjects = drawObjects( lumi_scale ),
                     copyIndexPHP = True,
                 )

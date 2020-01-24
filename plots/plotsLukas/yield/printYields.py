@@ -111,9 +111,9 @@ if "dilep" in args.selection:
     if args.year == 2016:
             mc = [ TTG_16, DY_LO_16, TT_pow_16, singleTop_16, ZG_16, other_16 ]
     elif args.year == 2017:
-            mc = [ TTG_priv_17, DY_LO_17, TT_pow_17, singleTop_17, ZG_17, other_17 ]
+            mc = [ TTG_17, DY_LO_17, TT_pow_17, singleTop_17, ZG_17, other_17 ]
     elif args.year == 2018:
-            mc = [ TTG_priv_18, DY_LO_18, TT_pow_18, singleTop_18, ZG_18, other_18 ]
+            mc = [ TTG_18, DY_LO_18, TT_pow_18, singleTop_18, ZG_18, other_18 ]
 
     weightString   = "reweightL1Prefire*reweightPU*reweightLepton2lSF*reweightLeptonTracking2lSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"
 
@@ -125,12 +125,12 @@ elif "nLepTight1" in args.selection:
             qcd   = QCD_16
             gjets = GJets_16
     elif args.year == 2017:
-        mc = [ TTG_priv_17, TT_pow_17, DY_LO_17, singleTop_17, WJets_17, TG_17, WG_NLO_17, ZG_17, other_17 ]
+        mc = [ TTG_17, TT_pow_17, DY_LO_17, singleTop_17, WJets_17, TG_17, WG_NLO_17, ZG_17, other_17 ]
         if addQCD:
             qcd   = QCD_17
             gjets = GJets_17
     elif args.year == 2018:
-        mc = [ TTG_priv_18, TT_pow_18, DY_LO_18, singleTop_18, WJets_18, TG_18, WG_NLO_18, ZG_18, other_18 ]
+        mc = [ TTG_18, TT_pow_18, DY_LO_18, singleTop_18, WJets_18, TG_18, WG_NLO_18, ZG_18, other_18 ]
         if addQCD:
             qcd   = QCD_18
             gjets = GJets_18

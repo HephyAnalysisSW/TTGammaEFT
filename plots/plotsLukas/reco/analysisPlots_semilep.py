@@ -118,8 +118,7 @@ if args.useEOS:
     useToken("hephy")
 
 # Samples
-#os.environ["gammaSkim"]="True" if ("hoton" in args.selection or "pTG" in args.selection) and not args.invLeptonIso and not "NoIso" in args.mode else "False"
-os.environ["gammaSkim"]="False"
+os.environ["gammaSkim"]="True" if ("hoton" in args.selection or "pTG" in args.selection) and not args.invLeptonIso and not "NoIso" in args.mode else "False"
 if args.year == 2016:
     if args.useEOS: postprocessing_directory = "2016/MC_v20/semilep/"
     from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed      import *
@@ -177,6 +176,8 @@ def drawPlots( plots, mode, dataMCScale ):
             sc = "lep_"
         elif args.invLeptonIso:
             sc = "invIso_"
+        elif "NoIso" in args.mode:
+            sc = "noIso_"
         elif args.replaceZG:
             sc = "dy_"
         else:
@@ -184,7 +185,7 @@ def drawPlots( plots, mode, dataMCScale ):
         if args.addHEMWeight:
             sc += "HEM_"
         sc += "log" if log else "lin"
-        plot_directory_ = os.path.join( plot_directory, 'analysisPlots', str(args.year), args.plot_directory, selDir, mode, sc )
+        plot_directory_ = os.path.join( plot_directory, 'analysisPlots', str(args.year), args.plot_directory, selDir, mode.replace("NoIso",""), sc )
 
         for plot in plots:
             # get the right labeling on the plots
@@ -347,6 +348,7 @@ read_variables  = ["weight/F",
                    "nLepton/I", "nElectron/I", "nMuon/I",
                    "nLeptonGood/I", "nElectronGood/I", "nMuonGood/I",
                    "nLeptonTight/I", "nElectronTight/I", "nMuonTight/I",
+                   "nLeptonTightNoIso/I", "nElectronTightNoIso/I", "nMuonTightNoIso/I",
                    "nLeptonVeto/I", "nElectronVeto/I", "nMuonVeto/I",
                    "Photon[%s]" %photonVarString,
                    "nPhoton/I",
@@ -380,6 +382,7 @@ read_variables += map( lambda var: "LeptonGood0_"             + var, leptonVaria
 read_variables += map( lambda var: "LeptonGood1_"             + var, leptonVariables )
 read_variables += map( lambda var: "LeptonTight0_"            + var, leptonVariables )
 read_variables += map( lambda var: "LeptonTight1_"            + var, leptonVariables )
+read_variables += map( lambda var: "LeptonTightNoIso0_"       + var, leptonVariables )
 read_variables += map( lambda var: "Bj0_"                     + var, bJetVariables )
 read_variables += map( lambda var: "Bj1_"                     + var, bJetVariables )
 
@@ -512,6 +515,21 @@ def calcNoIsoLeptons( event, sample ):
             except:
                 setattr( event, "LeptonTightNoIso0_" + var, 0 )
 
+def vetoNoIsoLeptons( event, sample ):
+
+    allLeptons = getCollection( event, 'Lepton', leptonVarList, 'nLepton' )
+    allLeptons.sort( key = lambda j: -j['pt'] )
+    allElectrons = filter( lambda l: abs(l["pdgId"])==11, allLeptons )
+    allMuons     = filter( lambda l: abs(l["pdgId"])==13, allLeptons )
+
+    vetoNoIsoElectrons = list( filter( lambda l: recoElectronSel_veto(l, removedCuts=["pfRelIso03_all"]), allElectrons ) )
+    vetoNoIsoMuons     = list( filter( lambda l: recoMuonSel_veto(l,     removedCuts=["pfRelIso04_all"]), allMuons ) )
+    vetoNoIsoLeptons   = vetoNoIsoElectrons + vetoNoIsoMuons
+    vetoNoIsoLeptons.sort( key = lambda l: -l['pt'] )
+
+    if "NoIso" in args.mode:
+        event.weight *= int( len(vetoNoIsoLeptons)==1 )
+
 def printGen( event, sample ):
     if sample.name != "data":
         print sample.name, "e", event.nGenWElectron, "mu", event.nGenWMuon, "tau", event.nGenWTau, "W", event.nGenW
@@ -635,8 +653,10 @@ def printWeight( event, sample ):
 #sequence = [calcGenWdecays]# printWeight ]#clean_Jets ]
 #sequence = [calcGenWdecays, calcVetoElectrons, misIDelectrons, allmisIDelectrons, mt2lg ]# printWeight ]#clean_Jets ]
 #sequence = [misIDelectrons]# printWeight ]#clean_Jets ]
+#sequence += [calcNoIsoLeptons]
 sequence = []
-sequence += [calcNoIsoLeptons]
+if "NoIso" in args.mode:
+    sequence += [vetoNoIsoLeptons]
 
 
 # Sample definition
@@ -658,33 +678,33 @@ if args.year == 2016:
 #        if not (args.invLeptonIso): mc += [ QCD_16 ]
 elif args.year == 2017:
     if args.onlyTTG and not categoryPlot and not args.leptonCategory:
-        mc = [ TTG_priv_17, QCD_17 ]
+        mc = [ TTG_17, QCD_17 ]
     elif categoryPlot:
         all = all_noQCD_17 #all_17 if args.addOtherBg else all_noOther_17
     elif args.leptonCategory:
         all_noTT = all_noTT_17 #if args.addOtherBg else all_noOther_noTT_17
         TTbar    = TT_pow_17
-        TTG      = TTG_priv_17
+        TTG      = TTG_17
     else:
         if args.replaceZG:
-            mc = [ TTG_priv_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, rest_17 ]
+            mc = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, rest_17 ]
         else:
-            mc = [ TTG_priv_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
+            mc = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
         if not (args.invLeptonIso or "NoIso" in args.mode): mc += [ QCD_17 ]
 elif args.year == 2018:
     if args.onlyTTG and not categoryPlot and not args.leptonCategory:
-        mc = [ TTG_priv_18, QCD_18 ]
+        mc = [ TTG_18, QCD_18 ]
     elif categoryPlot:
         all = all_noQCD_18 #all_18 if args.addOtherBg else all_noOther_18
     elif args.leptonCategory:
         all_noTT = all_noTT_18 #if args.addOtherBg else all_noOther_noTT_18
         TTbar    = TT_pow_18
-        TTG      = TTG_priv_18
+        TTG      = TTG_18
     else:
         if args.replaceZG:
-            mc = [ TTG_priv_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, rest_18 ]
+            mc = [ TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, rest_18 ]
         else:
-            mc = [ TTG_priv_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
+            mc = [ TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
         if not (args.invLeptonIso or "NoIso" in args.mode): mc += [ QCD_18 ]
 
 if categoryPlot:
@@ -824,6 +844,13 @@ replaceSelection = {
     "mLtight0Gamma":      "mLinvtight0Gamma",
 }
 
+replaceNoIsoSelection = {
+    "nLeptonVetoIsoCorr": "nLeptonTightNoIso",
+    "nLeptonTight":       "nLeptonTightNoIso",
+    "nMuonTight":         "nMuonTightNoIso",
+    "nElectronTight":     "nElectronTightNoIso",
+}
+
 if args.invLeptonIso and regionPlot:
     selection_CR = setup.selection("DataMC",   channel="all", **setup.defaultParameters( update=QCD_updates ))
     preSelection = selection_CR["cut"]
@@ -835,8 +862,8 @@ elif args.invLeptonIso:
 elif "NoIso" in args.mode:
     preSelection = cutInterpreter.cutString( args.selection )
     preSelection = "&&".join( [ item for item in preSelection.split("&&") if not "nLeptonVeto" in item ] )
-    for lep in ["LeptonTight", "ElectronTight", "MuonTight"]:
-        preSelection = preSelection.replace( lep, lep+"NoIso")
+    for key, val in replaceNoIsoSelection.items():
+        preSelection = preSelection.replace( key, val )
     print preSelection
 else:
     preSelection = cutInterpreter.cutString( args.selection )
@@ -1227,7 +1254,8 @@ for index, mode in enumerate( allModes ):
     else:
         plots += getYieldPlots( index ) 
     plots += addPlots
-    plots += noIsoPlots
+    if "NoIso" in args.mode:
+        plots += noIsoPlots
     if not "NoChgIso" in args.selection and not "NoSieie" in args.selection:
         plots = [ plot for plot in plots if not "NoChgIso" in plot.name and not "NoSieie" in plot.name ]
     if args.invLeptonIso:

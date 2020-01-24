@@ -195,14 +195,14 @@ if args.year == 2016:
 elif args.year == 2017:
     from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed    import *
     from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
-    mc = [ TTG_priv_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
+    mc = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
     qcd = QCD_17
     dy  = DY_LO_17
 
 elif args.year == 2018:
     from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed  import *
     from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
-    mc = [ TTG_priv_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
+    mc = [ TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
     qcd = QCD_18
     dy  = DY_LO_18
 
