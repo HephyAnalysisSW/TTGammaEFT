@@ -19,7 +19,7 @@ TT          = ["TT_pow_gen","TT_pow_had", "TTG_had"]
 WG          = ["WG_gen","WG_had"]
 ZG          = ["ZG_gen","ZG_had"]
 VG          = ["WG_gen","WG_had","ZG_gen","ZG_had"]
-other_misID = ["WJ_misID","other_misID","WG_misID","ZG_misID"]
+other_misID = ["WJets_misID","other_misID","WG_misID","ZG_misID"]
 other       = ["other_gen","other_had"]
 WJets       = ["WJets_gen","WJets_had"]
 QCD         = ["QCD-DD"]
@@ -96,6 +96,7 @@ signalRegions["SR2"]  = { "parameters": { "zWindow":"all", "nJet":(2,2), "nBTag"
                           "inclRegion": inclRegionsTTG,
                           "noPhotonCR": False,
                           "processes":  processes,
+                          "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 2 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                          }
 
 signalRegions["SR3"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
@@ -104,6 +105,7 @@ signalRegions["SR3"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag"
                           "inclRegion": inclRegionsTTG,
                           "noPhotonCR": False,
                           "processes":  processes,
+                          "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                          }
 
 signalRegions["SR4p"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
@@ -112,6 +114,7 @@ signalRegions["SR4p"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag
                           "inclRegion": inclRegionsTTG,
                           "noPhotonCR": False,
                           "processes":  processes,
+                          "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                          }
 
 signalRegions["SR3Fine"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
@@ -120,6 +123,7 @@ signalRegions["SR3Fine"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nB
                               "inclRegion": inclRegionsTTG,
                               "noPhotonCR": False,
                               "processes":  processes,
+                              "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                              }
 
 signalRegions["SR4pFine"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
@@ -128,22 +132,25 @@ signalRegions["SR4pFine"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "n
                               "inclRegion": inclRegionsTTG,
                               "noPhotonCR": False,
                               "processes":  processes,
+                              "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                              }
 
 signalRegions["SR3M3"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
-                          "channels":   lepChannels,
-                          "regions":    m3PtRegions,
-                          "inclRegion": m3Regions,
-                          "noPhotonCR": False,
-                          "processes":  processes,
+                            "channels":   lepChannels,
+                            "regions":    m3PtRegions,
+                            "inclRegion": m3Regions,
+                            "noPhotonCR": False,
+                            "processes":  processes,
+                            "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                          }
 
 signalRegions["SR4pM3"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
-                          "channels":   lepChannels,
-                          "regions":    m3PtRegions,
-                          "inclRegion": m3Regions,
-                          "noPhotonCR": False,
-                          "processes":  processes,
+                            "channels":   lepChannels,
+                            "regions":    m3PtRegions,
+                            "inclRegion": m3Regions,
+                            "noPhotonCR": False,
+                            "processes":  processes,
+                            "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                          }
 
 signalRegions["SR3Eta"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
@@ -152,6 +159,7 @@ signalRegions["SR3Eta"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBT
                              "inclRegion": inclRegionsTTG,
                              "noPhotonCR": False,
                              "processes":  processes,
+                             "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                             }
 
 signalRegions["SR4pEta"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
@@ -160,6 +168,7 @@ signalRegions["SR4pEta"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nB
                              "inclRegion": inclRegionsTTG,
                              "noPhotonCR": False,
                              "processes":  processes,
+                             "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                             }
 
 signalRegions["SR3EtaFine"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
@@ -168,6 +177,7 @@ signalRegions["SR3EtaFine"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), 
                                  "inclRegion": inclRegionsTTG,
                                  "noPhotonCR": False,
                                  "processes":  processes,
+                                 "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                                }
 
 signalRegions["SR4pEtaFine"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
@@ -176,6 +186,7 @@ signalRegions["SR4pEtaFine"] = { "parameters": { "zWindow":"all", "nJet":(4,-1),
                                  "inclRegion": inclRegionsTTG,
                                  "noPhotonCR": False,
                                  "processes":  processes,
+                                 "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                                 }
 
 signalRegions["SR3EtaM3"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
@@ -184,6 +195,7 @@ signalRegions["SR3EtaM3"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "n
                                "inclRegion": m3Regions,
                                "noPhotonCR": False,
                                "processes":  processes,
+                               "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                               }
 
 signalRegions["SR4pEtaM3"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
@@ -192,6 +204,7 @@ signalRegions["SR4pEtaM3"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "
                                "inclRegion": m3Regions,
                                "noPhotonCR": False,
                                "processes":  processes,
+                               "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                               }
 
 default_SR = signalRegions["SR4pM3"]
@@ -210,9 +223,9 @@ default_m3Window     = "all"
 default_photonIso    = "lowChgIsolowSieie"
 
 SSMSF_val = {}
-SSMSF_val[2016] = u_float( 0.8, 0.07 )
-SSMSF_val[2017] = u_float( 0.8, 0.07 )
-SSMSF_val[2018] = u_float( 0.8, 0.07 )
+SSMSF_val[2016] = u_float( 0.73, 0.06 )
+SSMSF_val[2017] = u_float( 0.73, 0.06 )
+SSMSF_val[2018] = u_float( 0.73, 0.06 )
 
 QCDSF_val = {}
 QCDSF_val[2016] = u_float( 1.0, 0.05 )
@@ -220,44 +233,44 @@ QCDSF_val[2017] = u_float( 1.0, 0.05 )
 QCDSF_val[2018] = u_float( 1.0, 0.05 )
 
 WJetsSF_val = {}
-WJetsSF_val[2016] = u_float( 1.05, 0.13 )
-WJetsSF_val[2017] = u_float( 1.05, 0.13 )
-WJetsSF_val[2018] = u_float( 1.05, 0.13 )
+WJetsSF_val[2016] = u_float( 1.03, 0.20 )
+WJetsSF_val[2017] = u_float( 0.74, 0.07 )
+WJetsSF_val[2018] = u_float( 1.25, 0.18 )
 
 TTSF_val = {}
-TTSF_val[2016] = u_float( 0.95, 0.04 )
+TTSF_val[2016] = u_float( 0.99, 0.04 )
 TTSF_val[2017] = u_float( 0.95, 0.04 )
-TTSF_val[2018] = u_float( 0.95, 0.04 )
+TTSF_val[2018] = u_float( 0.98, 0.08 )
 
 misIDSF_val = {}
-misIDSF_val[2016] = u_float( 2.18, 0.30 )
+misIDSF_val[2016] = u_float( 2.39, 0.39 )
 misIDSF_val[2017] = u_float( 2.03, 0.20 )
-misIDSF_val[2018] = u_float( 1.43, 0.14 )
+misIDSF_val[2018] = u_float( 1.55, 0.24 )
 
 fakeSF_val = {}
-fakeSF_val[2016] = u_float( 0.92, 0.09 )
-fakeSF_val[2017] = u_float( 0.92, 0.09 )
-fakeSF_val[2018] = u_float( 0.92, 0.09 )
+fakeSF_val[2016] = u_float( 1.00, 0.09 )
+fakeSF_val[2017] = u_float( 1.00, 0.09 )
+fakeSF_val[2018] = u_float( 1.00, 0.09 )
 
 DYSF_val = {}
-DYSF_val[2016] = u_float( 1.0, 0.05 )
+DYSF_val[2016] = u_float( 1.12, 0.04 )
 DYSF_val[2017] = u_float( 1.0, 0.05 )
-DYSF_val[2018] = u_float( 1.0, 0.05 )
+DYSF_val[2018] = u_float( 1.05, 0.04 )
 
 VGSF_val = {}
-VGSF_val[2016] = u_float( 0.95, 0.1 )
-VGSF_val[2017] = u_float( 0.95, 0.1 )
-VGSF_val[2018] = u_float( 0.95, 0.1 )
+VGSF_val[2016] = u_float( 0.82, 0.11 )
+VGSF_val[2017] = u_float( 0.80, 0.09 )
+VGSF_val[2018] = u_float( 1.40, 0.16 )
 
 WGSF_val = {}
-WGSF_val[2016] = u_float( 0.8, 0.09 )
-WGSF_val[2017] = u_float( 0.8, 0.09 )
-WGSF_val[2018] = u_float( 0.8, 0.09 )
+WGSF_val[2016] = u_float( 0.79, 0.10 ) #2020 01 20
+WGSF_val[2017] = u_float( 0.80, 0.09 )
+WGSF_val[2018] = u_float( 1.41, 0.15 )
 
 ZGSF_val = {}
-ZGSF_val[2016] = u_float( 0.8, 0.16 )
-ZGSF_val[2017] = u_float( 0.8, 0.16 )
-ZGSF_val[2018] = u_float( 0.8, 0.16 )
+ZGSF_val[2016] = u_float( 0.4, 0.6 )  #2020 01 20
+ZGSF_val[2017] = u_float( 0.7, 0.16 )
+ZGSF_val[2018] = u_float( 0.4, 0.6 )
 
 # all processes are all samples + them splitted in photon categories
 allProcesses            = copy.copy(default_sampleList)
@@ -456,6 +469,22 @@ controlRegions["VG4p"] = { "parameters": { "zWindow":"offZeg", "nJet":(4,-1), "n
                            "processes":  processes,
                          }
 
+controlRegions["VG3MET"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1), "MET":(50,-1) },
+                              "channels":   lepChannels,
+                              "regions":    mLgPtRegions,
+                              "inclRegion": mLgRegions,
+                              "noPhotonCR": False,
+                              "processes":  processes,
+                            }
+
+controlRegions["VG4pMET"] = { "parameters": { "zWindow":"offZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1), "MET":(50,-1)  },
+                              "channels":   lepChannels,
+                              "regions":    mLgPtRegions,
+                              "inclRegion": mLgRegions,
+                              "noPhotonCR": False,
+                              "processes":  processes,
+                            }
+
 
 # both VG + misID
 controlRegions["VGmis2"]  = { "parameters": { "zWindow":"all", "nJet":(2,2), "nBTag":(0,0), "nPhoton":(1,1) },
@@ -540,6 +569,23 @@ controlRegions["misDY4p"] = { "parameters": { "zWindow":"onZeg", "nJet":(4,-1), 
                             }
 
 
+controlRegions["misDY3MET"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1), "MET":(50,-1) },
+                                 "channels":   ["e"],
+                                 "regions":    regionsTTG,
+                                 "inclRegion": inclRegionsTTG,
+                                 "noPhotonCR": False,
+                                 "processes":  processes,
+                               }
+
+controlRegions["misDY4pMET"] = { "parameters": { "zWindow":"onZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1), "MET":(50,-1) },
+                                 "channels":   ["e"],
+                                 "regions":    regionsTTG,
+                                 "inclRegion": inclRegionsTTG,
+                                 "noPhotonCR": False,
+                                 "processes":  processes,
+                               }
+
+
 # nPhoton1p nBTag2 nJet2 offZeg m(e,gamma) CR for misID ScaleFactor TTbar
 controlRegions["misTT2"] = { "parameters": { "zWindow":"offZeg", "nJet":(2,2), "nBTag":(2,2), "nPhoton":(1,1) },
                              "channels":   lepChannels,
@@ -589,18 +635,21 @@ customQCDTF_updates["5J0P"]       = {}
 customQCDTF_updates["5J0P"]["CR"] = { "invertLepIso":True, "nJet":(5,5), "nBTag":(0,0), "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
 customQCDTF_updates["5J0P"]["SR"] = {                      "nJet":(5,5),                "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
 
+
+
+
 customQCDTF_updates["2J1P"]       = {}
-customQCDTF_updates["2J1P"]["CR"] = { "invertLepIso":True, "nJet":(2,2), "nBTag":(0,0), "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "addMisIDSF":True }
-customQCDTF_updates["2J1P"]["SR"] = {                      "nJet":(2,2),                "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "addMisIDSF":True }
+customQCDTF_updates["2J1P"]["CR"] = { "invertLepIso":True, "nJet":(2,2), "nBTag":(0,0), "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"offZeg", "addMisIDSF":True }
+customQCDTF_updates["2J1P"]["SR"] = {                      "nJet":(2,2),                "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"offZeg", "addMisIDSF":True }
 customQCDTF_updates["3J1P"]       = {}
-customQCDTF_updates["3J1P"]["CR"] = { "invertLepIso":True, "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "addMisIDSF":True }
-customQCDTF_updates["3J1P"]["SR"] = {                      "nJet":(3,3),                "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "addMisIDSF":True }
+customQCDTF_updates["3J1P"]["CR"] = { "invertLepIso":True, "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"offZeg", "addMisIDSF":True }
+customQCDTF_updates["3J1P"]["SR"] = {                      "nJet":(3,3),                "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"offZeg", "addMisIDSF":True }
 customQCDTF_updates["4J1P"]       = {}
-customQCDTF_updates["4J1P"]["CR"] = { "invertLepIso":True, "nJet":(4,4), "nBTag":(0,0), "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "addMisIDSF":True }
-customQCDTF_updates["4J1P"]["SR"] = {                      "nJet":(4,4),                "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "addMisIDSF":True }
+customQCDTF_updates["4J1P"]["CR"] = { "invertLepIso":True, "nJet":(4,4), "nBTag":(0,0), "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"offZeg", "addMisIDSF":True }
+customQCDTF_updates["4J1P"]["SR"] = {                      "nJet":(4,4),                "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"offZeg", "addMisIDSF":True }
 customQCDTF_updates["5J1P"]       = {}
-customQCDTF_updates["5J1P"]["CR"] = { "invertLepIso":True, "nJet":(5,5), "nBTag":(0,0), "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "addMisIDSF":True }
-customQCDTF_updates["5J1P"]["SR"] = {                      "nJet":(5,5),                "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "addMisIDSF":True }
+customQCDTF_updates["5J1P"]["CR"] = { "invertLepIso":True, "nJet":(5,5), "nBTag":(0,0), "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"offZeg", "addMisIDSF":True }
+customQCDTF_updates["5J1P"]["SR"] = {                      "nJet":(5,5),                "nPhoton":(1,1), "MET":(0,-1), "m3Window":"all", "zWindow":"offZeg", "addMisIDSF":True }
 
 QCD_cutReplacements = {
                         "mLtight0Gamma":     "mLinvtight0Gamma",

@@ -4,7 +4,7 @@ import os, time, copy
 from TTGammaEFT.Analysis.SetupHelpers import *
 from TTGammaEFT.Analysis.regions      import *
 
-year = "2016"
+year = "2017"
 
 #submitCMD = "submitBatch.py --dpm "
 submitCMD = "echo "
@@ -12,7 +12,7 @@ submitCMD = "echo "
 
 option  = ""
 option += " --year " + year
-option += " --overwrite"
+#option += " --overwrite"
 #option += " --checkOnly"
 
 crs       = allRegions

@@ -17,11 +17,11 @@ class SumEstimate(SystematicEstimator):
     def __init__(self, name, cacheDir=None):
         super(SumEstimate, self).__init__(name, cacheDir=cacheDir)
 
-    def _estimate(self, region, channel, setup, overwrite=False):
+    def _estimate(self, region, channel, setup, signalAddon=None, overwrite=False):
         if channel=='all':
             # 'all' is the total of all contributions
-            return sum([self.cachedEstimate(region, c, setup) for c in lepChannels])
+            return sum([self.cachedEstimate(region, c, setup, signalAddon=signalAddon) for c in lepChannels])
         if channel=='SFtight':
-            return sum([self.cachedEstimate(region, c, setup) for c in dilepChannels])
+            return sum([self.cachedEstimate(region, c, setup, signalAddon=signalAddon) for c in dilepChannels])
         else:
             raise NotImplementedError("Run sum_estimates.py first")

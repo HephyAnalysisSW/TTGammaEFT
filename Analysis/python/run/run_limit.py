@@ -139,6 +139,7 @@ if args.addDYSF:     regionNames.append("addDYSF")
 if args.addVGSF:     regionNames.append("addVGSF")
 if args.addWGSF:     regionNames.append("addWGSF")
 if args.addZGSF:     regionNames.append("addZGSF")
+if args.addSSM:      regionNames.append("addSSM")
 if args.addMisIDSF:  regionNames.append("addMisIDSF")
 if args.addFakeSF:   regionNames.append("addFakeSF")
 if args.inclRegion:  regionNames.append("incl")
@@ -152,35 +153,31 @@ baseDir       = os.path.join( cache_directory, "analysis",  str(args.year), "lim
 limitDir      = os.path.join( baseDir, "cardFiles", args.label, "expected" if args.expected else "observed" )
 if not os.path.exists( limitDir ): os.makedirs( limitDir )
 
-cacheFileName   = os.path.join( limitDir, "calculatedLimits" )
+cacheFileName   = os.path.join( baseDir, "calculatedLimits" )
 limitCache      = MergingDirDB( cacheFileName )
 
-cacheFileName   = os.path.join( limitDir, "calculatedSignifs" )
+cacheFileName   = os.path.join( baseDir, "calculatedSignifs" )
 signifCache     = MergingDirDB( cacheFileName )
 
-cacheFileName   = os.path.join( limitDir, "systematics", "systematics" )
+cacheFileName   = os.path.join( baseDir, "systematics", "scale" )
 scaleUncCache   = MergingDirDB( cacheFileName )
 
-cacheFileName   = os.path.join( limitDir, "systematics", "isr" )
-isrUncCache     = MergingDirDB( cacheFileName )
-
-cacheFileName   = os.path.join( limitDir, "systematics", "scale" )
-scaleUncCache   = MergingDirDB( cacheFileName )
-
-cacheFileName   = os.path.join( limitDir, "systematics", "pdf" )
+cacheFileName   = os.path.join( baseDir, "systematics", "pdf" )
 pdfUncCache     = MergingDirDB( cacheFileName )
 
-def getScaleUnc( name, r, channel ):
-    if scaleUncCache.contains( (name, r, channel) ): max( 0.01, scaleUncCache.get( (name, r, channel) ) )
-    else:                                            return 0.01
 
-def getPDFUnc( name, r, channel ):
-    if pdfUncCache.contains( (name, r, channel) ): return max( 0.02, PDFUncCaches[process].get( (name, r, channel) ) )
-    else:                                          return 0.02
+def getScaleUnc(name, r, niceName, channel):
+    scaleUnc = scaleUncCache.get({"name": name, "region":r, "channel":channel, "PDFset":'scale'})
+    scaleUnc = scaleUnc.val if scaleUnc else 0
+    return max(0.01, scaleUnc)
+#    return min(max(0.01, scaleUnc),0.10)
 
-def getISRUnc( name, r, channel ):
-    if isrUncCache.contains( (name,r,channel) ): return abs( isrUncCache.get( (name, r, channel) ) )
-    else:                                        return 0.02
+def getPDFUnc(name, r, niceName, channel):
+    PDFUnc = pdfUncCache.get({"name": name, "region":r, "channel":channel, "PDFset":'NNPDF30'})
+    PDFUnc = PDFUnc.val if PDFUnc else 0
+    return max(0.01, PDFUnc)
+#    return min(max(0.01, PDFUnc),0.10)
+
 
 def wrapper():
     c = cardFileWriter.cardFileWriter()

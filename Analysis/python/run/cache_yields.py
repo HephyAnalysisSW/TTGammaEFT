@@ -179,14 +179,14 @@ if args.year == 2016:
 #        gjets = GJets_16
 
 elif args.year == 2017:
-    mc = [ TTG_priv_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17]#, QCD_17 ]
+    mc = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17]#, QCD_17 ]
 #    if not args.noQCD:
 #        all   = all_noQCD_17
 #        qcd   = QCD_17
 #        gjets = GJets_17
 
 elif args.year == 2018:
-    mc = [ TTG_priv_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18]#, QCD_18 ]
+    mc = [ TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18]#, QCD_18 ]
 #    if not args.noQCD:
 #        all   = all_noQCD_18
 #        qcd   = QCD_18

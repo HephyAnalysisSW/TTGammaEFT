@@ -60,9 +60,12 @@ class Setup:
         os.environ["gammaSkim"] = str(photonSelection)
         if year == 2016 and not checkOnly:
             #define samples
-            from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed  import TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, QCD_16, GJets_16, rest_16
+            from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed  import TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, QCD_16, GJets_16, rest_16, TTG_TuneUp_16, TTG_TuneDown_16, TTG_erdOn_16
             from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import Run2016
             ttg         = TTG_16
+            ttg_TuneUp   = TTG_TuneUp_16
+            ttg_TuneDown = TTG_TuneDown_16
+            ttg_erdOn    = TTG_erdOn_16
             tt          = TT_pow_16
             DY          = DY_LO_16
             zg          = ZG_16
@@ -75,26 +78,30 @@ class Setup:
 
         elif year == 2017 and not checkOnly:
             #define samples
-            #os.environ["gammaSkim"]="False" #always false for QCD estimate
-            from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed    import TTG_priv_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, QCD_17, GJets_17, rest_17
+            from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed    import TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, QCD_17, GJets_17, rest_17, TTG_TuneUp_17, TTG_TuneDown_17, TTG_erdOn_17
             from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import Run2017
-            ttg         = TTG_priv_17
-            tt          = TT_pow_17
-            DY          = DY_LO_17
-            zg          = ZG_17
-            wg          = WG_17
-            wjets       = WJets_17
-            other       = rest_17 #other_17
-            qcd         = QCD_17
-            gjets       = GJets_17
-            data        = Run2017
+            ttg          = TTG_17
+            ttg_TuneUp   = TTG_TuneUp_17
+            ttg_TuneDown = TTG_TuneDown_17
+            ttg_erdOn    = TTG_erdOn_17
+            tt           = TT_pow_17
+            DY           = DY_LO_17
+            zg           = ZG_17
+            wg           = WG_17
+            wjets        = WJets_17
+            other        = rest_17 #other_17
+            qcd          = QCD_17
+            gjets        = GJets_17
+            data         = Run2017
 
         elif year == 2018 and not checkOnly:
             #define samples
-            #os.environ["gammaSkim"]="False" #always false for QCD estimate
-            from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed  import TTG_priv_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, QCD_18, GJets_18, rest_18
+            from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed  import TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, QCD_18, GJets_18, rest_18, TTG_TuneUp_18, TTG_TuneDown_18, TTG_erdOn_18
             from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import Run2018
-            ttg         = TTG_priv_18
+            ttg         = TTG_18
+            ttg_TuneUp   = TTG_TuneUp_18
+            ttg_TuneDown = TTG_TuneDown_18
+            ttg_erdOn    = TTG_erdOn_18
             tt          = TT_pow_18
             DY          = DY_LO_18
             zg          = ZG_18
@@ -126,6 +133,7 @@ class Setup:
 
         else:
             mc           = [ ttg, tt, DY, zg, wjets, wg, other, qcd, gjets ]
+            mc          += [ ttg_TuneUp, ttg_TuneDown, ttg_erdOn ]
             self.processes = {}
             self.processes.update( { sample.name:          sample for sample in mc } )
             self.processes.update( { sample.name+"_gen":   sample for sample in mc } )
@@ -249,7 +257,7 @@ class Setup:
             channel += "Inv"
             zWindow += "Inv"
             tightLepton = "nInvLepTight1"
-            vetoLepton = "nNoIsoLepTight1"
+            vetoLepton = "nInvLeptVetoTight1"
 
         if dileptonic:
             tightLepton = "nLepTight2-OStight"

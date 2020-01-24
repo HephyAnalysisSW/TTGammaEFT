@@ -43,7 +43,7 @@ class DataObservation():
         else:                          return str(region), channel, json.dumps(setup.sys, sort_keys=True), json.dumps(setup.parameters, sort_keys=True), json.dumps(setup.lumi, sort_keys=True)
 
     # alias for cachedObservation to make it easier to call the same function as for the mc"s
-    def cachedEstimate(self, region, channel, setup, save=True, overwrite=False, checkOnly=False):
+    def cachedEstimate(self, region, channel, setup, signalAddon=None, save=True, overwrite=False, checkOnly=False):
         return self.cachedObservation(region, channel, setup, overwrite=overwrite)
 
     def cachedObservation(self, region, channel, setup, save=True, overwrite=False):

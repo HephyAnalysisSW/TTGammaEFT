@@ -14,7 +14,7 @@ submitCMD = "echo "
 
 option  = ""
 option += " --year " + year
-option += " --overwrite"
+#option += " --overwrite"
 #option += " --checkOnly"
 
 crs       = allRegions

@@ -61,9 +61,9 @@ if not estimate:
 setup            = setup.sysClone( parameters=parameters )
 
 def wrapper(arg):
-        r,channel,setup = arg
-        logger.debug("Running estimate for region %s, channel %s in setup %s for estimator %s"%(r,channel, args.controlRegion if args.controlRegion else "None", args.selectEstimator if args.selectEstimator else "None"))
-        res = estimate.cachedEstimate(r, channel, setup, save=True, overwrite=args.overwrite, checkOnly=(args.checkOnly or args.createExecFile))
+        r,channel,setup,addon = arg
+        logger.info("Running estimate for region %s, channel %s in setup %s for estimator %s"%(r,channel, args.controlRegion if args.controlRegion else "None", args.selectEstimator if args.selectEstimator else "None"))
+        res = estimate.cachedEstimate(r, channel, setup, signalAddon=addon, save=True, overwrite=args.overwrite, checkOnly=(args.checkOnly or args.createExecFile))
         return (estimate.uniqueKey(r, channel, setup), res )
 
 estimate.initCache(setup.defaultCacheDir())
@@ -72,10 +72,12 @@ jobs=[]
 for channel in channels:
     for (i, r) in enumerate(allPhotonRegions):
         if args.selectRegion != i: continue
-        jobs.append((r, channel, setup))
+        jobs.append((r, channel, setup, None))
         if not estimate.isData and not args.noSystematics and not "DD" in args.selectEstimator:
-            jobs.extend(estimate.getBkgSysJobs(r, channel, setup))
-
+            if "TTG" in args.selectEstimator:
+                jobs.extend(estimate.getSigSysJobs(r, channel, setup))
+            else:
+                jobs.extend(estimate.getBkgSysJobs(r, channel, setup))
 
 if args.cores==1:
     results = map(wrapper, jobs)

@@ -254,14 +254,14 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         return transferFac if transferFac > 0 else u_float(0, 0)
 
     #Concrete implementation of abstract method "estimate" as defined in Systematic
-    def _estimate(self, region, channel, setup, overwrite=False):
+    def _estimate(self, region, channel, setup, signalAddon=None, overwrite=False):
 
         #Sum of all channels for "all"
         if channel=="all":
-            estimate     = sum([ self.cachedEstimate(region, c, setup) for c in lepChannels])
+            estimate     = sum([ self.cachedEstimate(region, c, setup, signalAddon=signalAddon) for c in lepChannels])
 
         elif channel=="SFtight":
-            estimate     = sum([ self.cachedEstimate(region, c, setup) for c in dilepChannels])
+            estimate     = sum([ self.cachedEstimate(region, c, setup, signalAddon=signalAddon) for c in dilepChannels])
 
         else:
 

@@ -42,7 +42,8 @@ class SystematicEstimator:
 
             cacheDirName       = os.path.join(cacheDir, self.name)
             self.cache = MergingDirDB(cacheDirName)
-            if not self.cache: raise
+            if not self.cache:
+                raise Exeption("Cache not initiated!")
 
             if self.name.count("DD"):
                 helperCacheDirName = os.path.join(cacheDir, self.name+"_helper")
@@ -70,12 +71,13 @@ class SystematicEstimator:
             if self.helperCache: self.helperCache.add(s, yieldFromDraw, overwrite=True)
             return yieldFromDraw
 
-    def uniqueKey(self, region, channel, setup, qcdUpdates={}):
+    def uniqueKey(self, region, channel, setup, signalAddon=None, qcdUpdates={}):
         sysForKey = setup.sys.copy()
         sysForKey["reweight"] = "TEMP"
         reweightKey = '["' + '", "'.join(sorted([i for i in setup.sys['reweight']])) + '"]' # little hack to preserve order of list when being dumped into json
         key = region, channel, json.dumps(sysForKey, sort_keys=True).replace('"TEMP"',reweightKey), json.dumps(setup.parameters, sort_keys=True), json.dumps(setup.lumi, sort_keys=True)
-        if qcdUpdates: key += tuple(json.dumps(qcdUpdates, sort_keys=True))
+        if qcdUpdates:  key += tuple(json.dumps(qcdUpdates, sort_keys=True))
+        if signalAddon: key += tuple(signalAddon)
         return key
 
     def replace(self, i, r):
@@ -84,18 +86,18 @@ class SystematicEstimator:
           else:                   return i
         except:                   return i
 
-    def cachedEstimate(self, region, channel, setup, save=True, overwrite=False, checkOnly=False):
-        key =  self.uniqueKey(region, channel, setup)
+    def cachedEstimate(self, region, channel, setup, signalAddon=None, save=True, overwrite=False, checkOnly=False):
+        key =  self.uniqueKey(region, channel, setup, signalAddon=signalAddon)
         if (self.cache and self.cache.contains(key)) and not overwrite:
             res = self.cache.get(key)
             logger.debug( "Loading cached %s result for %r : %r"%(self.name, key, res) )
         elif self.cache and not checkOnly:
             logger.debug( "Calculating %s result for %r"%(self.name, key) )
-            res = self._estimate( region, channel, setup, overwrite=overwrite )
+            res = self._estimate( region, channel, setup, signalAddon=signalAddon, overwrite=overwrite )
             _res = self.cache.add( key, res, overwrite=True )
             logger.debug( "Adding cached %s result for %r : %r" %(self.name, key, res) )
         elif not checkOnly:
-            res = self._estimate( region, channel, setup, overwrite=overwrite)
+            res = self._estimate( region, channel, setup, signalAddon=signalAddon, overwrite=overwrite)
         else:
             res = u_float(-1,0)
         return res if res > 0 or checkOnly else u_float(0,0)
@@ -117,7 +119,7 @@ class SystematicEstimator:
         return res if res > 0 or checkOnly else u_float(0,0)
 
     @abc.abstractmethod
-    def _estimate(self, region, channel, setup, overwrite=False):
+    def _estimate(self, region, channel, setup, signalAddon=None, overwrite=False):
         """Estimate yield in "region" using setup"""
         return
 
@@ -134,6 +136,17 @@ class SystematicEstimator:
         up   = u_float(ref.val + ref.sigma)
         down = u_float(ref.val - ref.sigma)
         return abs(0.5*(up-down)/ref) if ref > 0 else max(up,down)
+
+    def TuneSystematic(self, region, channel, setup):
+        up   = self.cachedEstimate(region, channel, setup, signalAddon="TuneUp")
+        down = self.cachedEstimate(region, channel, setup, signalAddon="TuneDown")
+        ref  = self.cachedEstimate(region, channel, setup)
+        return abs(0.5*(up-down)/ref) if ref > 0 else max(up,down)
+
+    def ErdOnSystematic(self, region, channel, setup):
+        ref  = self.cachedEstimate(region, channel, setup)
+        up   = self.cachedEstimate(region, channel, setup, signalAddon="erdOn")
+        return abs((up-ref)/ref) if ref > 0 else up
 
     def PUSystematic(self, region, channel, setup):
         ref  = self.cachedEstimate(region, channel, setup)
@@ -153,11 +166,11 @@ class SystematicEstimator:
         down = self.cachedEstimate(region, channel, setup.sysClone({"selectionModifier":"jesTotalDown"}))
         return abs(0.5*(up-down)/ref) if ref > 0 else max(up, down)
 
-#    def unclusteredSystematic(self, region, channel, setup):
-#        ref  = self.cachedEstimate(region, channel, setup)
-#        up   = self.cachedEstimate(region, channel, setup.sysClone({"selectionModifier":"unclustEnUp"}))
-#        down = self.cachedEstimate(region, channel, setup.sysClone({"selectionModifier":"unclustEnDown"}))
-#        return abs(0.5*(up-down)/ref) if ref > 0 else max(up, down)
+    def unclusteredSystematic(self, region, channel, setup):
+        ref  = self.cachedEstimate(region, channel, setup)
+        up   = self.cachedEstimate(region, channel, setup.sysClone({"selectionModifier":"unclustEnUp"}))
+        down = self.cachedEstimate(region, channel, setup.sysClone({"selectionModifier":"unclustEnDown"}))
+        return abs(0.5*(up-down)/ref) if ref > 0 else max(up, down)
 
     def L1PrefireSystematic(self, region, channel, setup):
         ref  = self.cachedEstimate(region, channel, setup)
@@ -209,46 +222,51 @@ class SystematicEstimator:
 
     def getBkgSysJobs(self, region, channel, setup):
         l = [
-            (region, channel, setup.sysClone({"reweight":["reweightPUUp"]})),
-            (region, channel, setup.sysClone({"reweight":["reweightPUDown"]})),
+            (region, channel, setup.sysClone({"reweight":["reweightPUUp"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightPUDown"]}), None),
 
-            (region, channel, setup.sysClone({"selectionModifier":"jerUp"})),
-            (region, channel, setup.sysClone({"selectionModifier":"jerDown"})),
+            (region, channel, setup.sysClone({"selectionModifier":"jerUp"}), None),
+            (region, channel, setup.sysClone({"selectionModifier":"jerDown"}), None),
 
-            (region, channel, setup.sysClone({"selectionModifier":"jesTotalUp"})),
-            (region, channel, setup.sysClone({"selectionModifier":"jesTotalDown"})),
+            (region, channel, setup.sysClone({"selectionModifier":"jesTotalUp"}), None),
+            (region, channel, setup.sysClone({"selectionModifier":"jesTotalDown"}), None),
 
-#            (region, channel, setup.sysClone({"selectionModifier":"unclustEnUp"})),
-#            (region, channel, setup.sysClone({"selectionModifier":"unclustEnDown"})),
+#            (region, channel, setup.sysClone({"selectionModifier":"unclustEnUp"}), None),
+#            (region, channel, setup.sysClone({"selectionModifier":"unclustEnDown"}), None),
 
-            (region, channel, setup.sysClone({"reweight":["reweightL1PrefireUp"]})),
-            (region, channel, setup.sysClone({"reweight":["reweightL1PrefireDown"]})),
+            (region, channel, setup.sysClone({"reweight":["reweightL1PrefireUp"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightL1PrefireDown"]}), None),
 
-            (region, channel, setup.sysClone({"reweight":["reweightBTag_SF_b_Up"]})),
-            (region, channel, setup.sysClone({"reweight":["reweightBTag_SF_b_Down"]})),
-            (region, channel, setup.sysClone({"reweight":["reweightBTag_SF_l_Up"]})),
-            (region, channel, setup.sysClone({"reweight":["reweightBTag_SF_l_Down"]})),
+            (region, channel, setup.sysClone({"reweight":["reweightBTag_SF_b_Up"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightBTag_SF_b_Down"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightBTag_SF_l_Up"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightBTag_SF_l_Down"]}), None),
 
-            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFUp"]})),
-            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFDown"]})),
+            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFUp"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFDown"]}), None),
 
-            (region, channel, setup.sysClone({"reweight":["reweightLeptonTrackingTightSFUp"]})),
-            (region, channel, setup.sysClone({"reweight":["reweightLeptonTrackingTightSFDown"]})),
+            (region, channel, setup.sysClone({"reweight":["reweightLeptonTrackingTightSFUp"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightLeptonTrackingTightSFDown"]}), None),
 
-            (region, channel, setup.sysClone({"reweight":["reweightPhotonSFUp"]})),
-            (region, channel, setup.sysClone({"reweight":["reweightPhotonSFDown"]})),
+            (region, channel, setup.sysClone({"reweight":["reweightPhotonSFUp"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightPhotonSFDown"]}), None),
 
-            (region, channel, setup.sysClone({"reweight":["reweightPhotonElectronVetoSFUp"]})),
-            (region, channel, setup.sysClone({"reweight":["reweightPhotonElectronVetoSFDown"]})),
+            (region, channel, setup.sysClone({"reweight":["reweightPhotonElectronVetoSFUp"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightPhotonElectronVetoSFDown"]}), None),
 
-#            (region, channel, setup.sysClone({"reweight":["reweightDilepTriggerUp"]})),
-#            (region, channel, setup.sysClone({"reweight":["reweightDilepTriggerDown"]})),
+#            (region, channel, setup.sysClone({"reweight":["reweightDilepTriggerUp"]}), None),
+#            (region, channel, setup.sysClone({"reweight":["reweightDilepTriggerDown"]}), None),
         ]
         return l
 
     def getSigSysJobs(self, region, channel, setup):
         # in case there is a difference, enter it here (originally for fastSim)
-        l = self.getBkgSysJobs(region = region, channel = channel, setup = setup)
+        l  = self.getBkgSysJobs(region = region, channel = channel, setup = setup)
+        l += [
+            (region, channel, setup, "TuneUp"),
+            (region, channel, setup, "TuneDown"),
+            (region, channel, setup, "erdOn"),
+        ]
         return l
 
     def getTexName(self, channel, rootTex=True):

@@ -18,7 +18,7 @@ class MCBasedEstimate(SystematicEstimator):
     def __init__(self, name, process, cacheDir=None):
         super(MCBasedEstimate, self).__init__(name, cacheDir=cacheDir)
         self.process = process
-        
+
     def _transferFactor(self, channel, setup, overwrite=False):
         """Estimate transfer factor for QCD in "region" using setup"""
         return u_float(0, 0)
@@ -27,7 +27,7 @@ class MCBasedEstimate(SystematicEstimator):
         """Estimate transfer factor for QCD in "region" using setup"""
         return u_float(0, 0)
 
-    def _estimate(self, region, channel, setup, overwrite=False):
+    def _estimate(self, region, channel, setup, signalAddon=None, overwrite=False):
 
         ''' Concrete implementation of abstract method 'estimate' as defined in Systematic
         '''
@@ -36,13 +36,20 @@ class MCBasedEstimate(SystematicEstimator):
 
         if channel=='all':
             # 'all' is the total of all contributions
-            return sum([self.cachedEstimate(region, c, setup) for c in lepChannels])
+            return sum([self.cachedEstimate(region, c, setup, signalAddon=signalAddon) for c in lepChannels])
 
         elif channel=='SFtight':
             # 'SFtight' is the total of mumutight and eetight contributions
-            return sum([self.cachedEstimate(region, c, setup) for c in dilepChannels])
+            return sum([self.cachedEstimate(region, c, setup, signalAddon=signalAddon) for c in dilepChannels])
 
         else:
+            # change the sample processed if there is a signal addon like TuneUp
+            if signalAddon:
+                if self.name.split("_")[-1] in ["gen", "misID", "had", "magic"]:
+                    name = "_".join( self.name.split("_")[:-1] + [signalAddon, self.name.split("_")[-1]] )
+                else:
+                    name = "_".join( [self.name, signalAddon] )
+                setattr(self, "process"+signalAddon, setup.processes[name])
             preSelection = setup.preselection('MC', channel=channel)
             cuts         = [ region.cutString( setup.sys['selectionModifier'] ), preSelection['cut'] ]
             if setup.parameters["photonIso"] and setup.parameters["photonIso"] != "lowChgIsolowSieie":
@@ -50,12 +57,13 @@ class MCBasedEstimate(SystematicEstimator):
             if self.processCut:
                 cuts.append( cutInterpreter.cutString(self.processCut) )
                 logger.info( "Adding process specific cut %s"%self.processCut )
+            print cuts
             cut          = "&&".join( cuts )
             weight       = preSelection['weightStr']
 
             logger.debug( "Using cut %s and weight %s"%(cut, weight) )
 
-            return setup.lumi/1000.*u_float(**self.process.getYieldFromDraw(selectionString = cut, weightString = weight) )
+            return setup.lumi/1000.*u_float(**getattr(self,"".join(["process",signalAddon if signalAddon else ""])).getYieldFromDraw(selectionString = cut, weightString = weight) )
 
 
 if __name__ == "__main__":
@@ -69,15 +77,17 @@ if __name__ == "__main__":
     setup = Setup(year=2016, photonSelection=True)
     setup = setup.sysClone(parameters=allRegions["VG3"]["parameters"])
 
-    estimate = MCBasedEstimate( name="TTG", process=setup.processes["TTG"] )
+    estimate = MCBasedEstimate( name="TTG_gen", process=setup.processes["TTG_gen"] )
     estimate.initCache(setup.defaultCacheDir())
-    res = estimate._estimate( r, "e", setup, overwrite=False )
+    res = estimate.TuneSystematic( r, "e", setup)
+
+#    res = estimate._estimate( r, "e", setup, overwrite=False )
     print "TTG", res
 
 
     estimate = MCBasedEstimate( name="TTG_gen", process=setup.processes["TTG_gen"] )
     estimate.initCache(setup.defaultCacheDir())
-    res = estimate._estimate( r, "e", setup, overwrite=False )
+#    res = estimate._estimate( r, "e", setup, overwrite=False )
     print "TTG_gen", res
 
 
