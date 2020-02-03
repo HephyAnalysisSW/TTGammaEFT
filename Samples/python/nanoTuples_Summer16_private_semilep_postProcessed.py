@@ -78,6 +78,7 @@ dirs["TG"]               = ["TGJets"]
 dirs["WJets"]            = ["W1JetsToLNu", "W2JetsToLNu", "W3JetsToLNu", "W4JetsToLNu"]
 #dirs["WJets_HT"]         = ["WJetsToLNu_HT70to100", "WJetsToLNu_HT100to200", "WJetsToLNu_HT200to400_comb", "WJetsToLNu_HT400to600_comb", "WJetsToLNu_HT600to800_comb", "WJetsToLNu_HT800to1200_comb", "WJetsToLNu_HT1200to2500_comb", "WJetsToLNu_HT2500toInf_comb" ]
 dirs["WG"]               = ["WGToLNuG"]
+#dirs["WG"]               = ["WGToLNuG_amcatnlo"]
 dirs["WG_NLO"]           = ["WGToLNuG_amcatnlo"]
 
 # other
