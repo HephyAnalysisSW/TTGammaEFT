@@ -518,7 +518,7 @@ def genLeptonSelector( selection=None ):
             if abs(l["pdgId"]) == 11:
                 if l["pt"]       < 35:         return False
                 if abs(l["eta"]) > 2.1:        return False
-            if abs(l["pdgId"]) == 13:
+            elif abs(l["pdgId"]) == 13:
                 if l["pt"]       < 30:         return False
                 if abs(l["eta"]) > 2.4:        return False
             return True
@@ -619,7 +619,7 @@ def filterGenTops( genParts ):
     return tops
 
 def filterGenBJets( genJets ):
-    bjets = list( filter( lambda j: abs(j['hadronFlavour']) == 5, genJets ) )
+    bjets = list( filter( lambda j: abs(j['partonFlavour']) == 5, genJets ) )
     return bjets
 
 # Pythia status flags:

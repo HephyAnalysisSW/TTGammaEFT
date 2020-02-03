@@ -41,17 +41,18 @@ if os.environ["USER"] in ["lukas.lechner"]: #CBE cluster
     results_directory                   = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/results/"
 
     mva_directory                       = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/mva/"
-    plot_directory                      = "/users/lukas.lechner/www/TTGammaEFT/"
+    plot_directory                      = "/mnt/hephy/cms/lukas.lechner/www/TTGammaEFT/"
 
-    postprocessing_output_directory     = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/nanoTuples/"
+    postprocessing_output_directory     = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/"
     gridpack_directory                  = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/gridpacks/"
 
     analysis_results                    = results_directory
     cache_directory                     = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache/"
-    combineReleaseLocation              = "/users/lukas.lechner/CMSSW_10_2_18/src/"
+    combineReleaseLocation              = "/users/lukas.lechner/public/CMSSW_10_2_18/src/tmp/"
     cardfileLocation                    = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/results/cardfiles/"
 
-    dpm_directory                       = "/dpm/oeaw.ac.at/home/cms/store/user/llechner/"
+#    dpm_directory                       = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/nanoTuples/"
+    dpm_directory                       = "/scratch-cbe/users/hephy/lukas.lechner/TTGammaEFT/nanoTuples/"
     eos_directory                       = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/"
 
 if os.environ["USER"] in ["ttschida"]:

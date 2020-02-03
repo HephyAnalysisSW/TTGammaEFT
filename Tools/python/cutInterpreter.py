@@ -8,7 +8,7 @@ mZ              = 91.1876
 mT              = 172.5
 zMassRange      = 10
 m3MassRange     = 50
-mLgThresh       = mZ + zMassRange
+mLgThresh       = mZ - zMassRange
 isoThresh       = 2.2
 chgIsoThresh    = 1.141
 lowSieieThresh  = 0.01015
@@ -151,7 +151,7 @@ special_cuts = {
   }
 
 continous_variables = [ ("glDR","photonLepdR"), ("mT", "mT"), ("metSig", "METSig"), ("mll", "mll"), ("mllgamma", "mllgamma"), ("mlgamma", "mLtight0Gamma"), ("met", "MET_pt"), ("pTG","PhotonGood0_pt"), ("pTj","Jet_pt[0]"), ("etaj","abs(Jet_eta[0])") ]
-discrete_variables  = [ ("nAllJet", "nJet"), ("nJet", "nJetGood"), ("nBTag", "nBTagGood"), ("nLepNoCorrVeto","nLeptonVeto"), ("nLepVeto","nLeptonVetoIsoCorr"), ("nNoIsoLepTight","nLeptonTightNoIso"), ("nInvLepTight","nLeptonTightInvIso"), ("nLepTight","nLeptonTight"), ("nLep","nLeptonGood"), ("nPhoton","nPhotonGood"), ("nHadPhoton","nPhotonNoChgIsoNoSieie"), ("nNoIsoLepVeto","nLeptonVetoNoIso"), ("nInvLeptVetoTight","nLeptonVetoInvIsoTight") ]
+discrete_variables  = [ ("nAllJet", "nJet"), ("nJet", "nJetGood"), ("nBTag", "nBTagGood"), ("nLepNoCorrVeto","nLeptonVeto"), ("nLepVeto","nLeptonVetoIsoCorr"), ("nNoIsoLepTight","nLeptonTightNoIso"), ("nInvLepTight","nLeptonTightInvIso"), ("nLepTight","nLeptonTight"), ("nLep","nLeptonGood"), ("nPhoton","nPhotonGood"), ("nHadPhoton","nPhotonNoChgIsoNoSieie"), ("nNoIsoLepVeto","nLeptonVetoNoIso"), ("nInvLeptVetoTight","nLeptonVetoNoIso") ]
 discrete_variables += [ ("nGenLepATLAS", "nGenLeptonATLASUnfold"), ("nGenJetATLAS", "nGenJetsATLASUnfold"), ("nGenBTagATLAS", "nGenBJetATLASUnfold"), ("nGenPhotonATLAS", "nGenPhotonATLASUnfold"), ("nGenLepCMS", "nGenLeptonCMSUnfold"), ("nGenJetCMS", "nGenJetsCMSUnfold"), ("nGenBTagCMS", "nGenBJetCMSUnfold"), ("nGenPhotonCMS", "nGenPhotonCMSUnfold") ]
 cutInterpreter = CutInterpreter( continous_variables, discrete_variables, special_cuts)
 
