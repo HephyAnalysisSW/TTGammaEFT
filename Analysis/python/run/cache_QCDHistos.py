@@ -251,6 +251,7 @@ read_variables  = ["weight/F",
                    "nMuonTightInvIso/I",
                    "nLeptonTightNoIso/I",
                    "nLeptonTightInvIso/I",
+                   "nLeptonVetoInvIsoTight/I",
                    "PV_npvsGood/I",
                    "PV_npvs/I", "PV_npvsGood/I",
                    "nJetGood/I", "nBTagGood/I",
@@ -369,6 +370,8 @@ for sample in mc:
             sample.scale *= ZGSF_val[args.year].val
         elif "WG" in sample.name:
             sample.scale *= WGSF_val[args.year].val
+        elif "TTG" in sample.name:
+            sample.scale *= SSMSF_val[args.year].val
 
 if args.small and not args.checkOnly:
     for sample in stack.samples:
@@ -390,7 +393,7 @@ if args.addHEMweight:
 #ptRegions = {"lowPT":regionsTTG20To120[0], "medPT":regionsTTG120To220[0], "highPT":regionsTTG220[0]}
 
 replaceSelection = {
-    "nLeptonVetoIsoCorr": "nLeptonTightNoIso",
+    "nLeptonVetoIsoCorr": "nLeptonVetoNoIsoTight",
     "nLeptonTight":       "nLeptonTightInvIso",
     "nMuonTight":         "nMuonTightInvIso",
     "nElectronTight":     "nElectronTightInvIso",
@@ -513,6 +516,12 @@ for index, mode in enumerate( allModes ):
     isoleptonSelection = cutInterpreter.cutString( mode )
     leptonSelection    = cutInterpreter.cutString( mode + "Inv" )
 
+    data_sample.setSelectionString( [ filterCutData, leptonSelection ] )
+    for sample in mc + signals:
+        sample.setSelectionString( [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] )
+
+    plotting.fill( plots, read_variables=read_variables, sequence=sequence )
+
     # Transfer factor
     if regionPlot:
         # get cached transferfactors
@@ -561,6 +570,10 @@ for index, mode in enumerate( allModes ):
                 elif "WG" in sample.name:
                     y_CR *= WGSF_val[setup.year] #add WGamma SF
                     y_SR *= WGSF_val[setup.year] #add WGamma SF
+                elif "TTG" in sample.name:
+                    y_CR *= SSMSF_val[setup.year] #add SSM
+                    y_SR *= SSMSF_val[setup.year] #add SSM
+
 
             yield_mc_CR += y_CR
             yield_mc_SR += y_SR
@@ -582,12 +595,6 @@ for index, mode in enumerate( allModes ):
 #                else:
 #                    transFacQCD[pt] = 0.
 #                logger.info( "Pt %s TF: %f"%(pt,transFacQCD[pt]) )
-
-    data_sample.setSelectionString( [ filterCutData, leptonSelection ] )
-    for sample in mc + signals:
-        sample.setSelectionString( [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] )
-
-    plotting.fill( plots, read_variables=read_variables, sequence=sequence )
 
     for plot in plots:
         qcdHist  = copy.deepcopy(plot.histos[1][0])

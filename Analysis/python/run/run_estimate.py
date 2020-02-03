@@ -92,6 +92,7 @@ else:
 if args.checkOnly:
     for res in results:
         print args.selectEstimator, res[0][0], res[0][1], args.controlRegion, res[1].val
+    sys.exit(0)
 
 if args.createExecFile:
     for res in results:

@@ -95,7 +95,6 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         print( "Calculating data-driven QCD transfer factor" )
 
         selection_MC_CR     = setup.selection("MC",   channel=channel, **setup.defaultParameters( update=qcdUpdates["CR"] if qcdUpdates else QCDTF_updates["CR"] ))
-        print selection_MC_CR
         selection_Data_CR   = setup.selection("Data", channel=channel, **setup.defaultParameters( update=qcdUpdates["CR"] if qcdUpdates else QCDTF_updates["CR"] ))
         selection_MC_SR     = setup.selection("MC",   channel=channel, **setup.defaultParameters( update=qcdUpdates["SR"] if qcdUpdates else QCDTF_updates["SR"] ))
         selection_Data_SR   = setup.selection("Data", channel=channel, **setup.defaultParameters( update=qcdUpdates["SR"] if qcdUpdates else QCDTF_updates["SR"] ))
@@ -192,22 +191,22 @@ class DataDrivenQCDEstimate(SystematicEstimator):
             y_SR = self.yieldFromCache( setup, s, channel, cut_MC_SR, weight_MC_SR, overwrite=overwrite )
             print "without SF", s, "CR", y_CR*setup.dataLumi/1000., "SR", y_SR*setup.dataLumi/1000.
             if addSF:
-                if s == "DY_LO":
+                if "DY_LO" in s:
                     y_CR *= DYSF_val[setup.year] #add DY SF
                     y_SR *= DYSF_val[setup.year] #add DY SF
-                elif s == "WJets":
+                elif "WJets" in s:
                     y_CR *= WJetsSF_val[setup.year] #add WJets SF
                     y_SR *= WJetsSF_val[setup.year] #add WJets SF
-                elif s == "TT_pow":
+                elif "TT_pow" in s:
                     y_CR *= TTSF_val[setup.year] #add TT SF
                     y_SR *= TTSF_val[setup.year] #add TT SF
-                elif s == "TTG":
+                elif "TTG" in s:
                     y_CR *= SSMSF_val[setup.year] #add TTG SF
                     y_SR *= SSMSF_val[setup.year] #add TTG SF
-                elif s == "ZG":
+                elif "ZG" in s:
                     y_CR *= ZGSF_val[setup.year] #add ZGamma SF
                     y_SR *= ZGSF_val[setup.year] #add ZGamma SF
-                elif s == "WG":
+                elif "WG" in s:
                     y_CR *= WGSF_val[setup.year] #add WGamma SF
                     y_SR *= WGSF_val[setup.year] #add WGamma SF
             print "with SF", s, "CR", y_CR*setup.dataLumi/1000., "SR", y_SR*setup.dataLumi/1000.
@@ -271,12 +270,6 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                 logger.info("Estimate for QCD in dileptonic channels skipped: 0")
                 return u_float(0, 0)
 
-            transferFac   = self.cachedTransferFactor(channel, setup, save=True, overwrite=overwrite, checkOnly=False)
-
-            if transferFac == 0:
-                logger.info("Transfer factor is 0. Skipping QCD estimate calculation and settting it to 0!")
-                return u_float(1, 1)
-
             selection_MC_CR   = setup.selection("MC",   channel=channel, **setup.defaultParameters( update=QCD_updates ))
             selection_Data_CR = setup.selection("Data", channel=channel, **setup.defaultParameters( update=QCD_updates ))
 
@@ -318,6 +311,15 @@ class DataDrivenQCDEstimate(SystematicEstimator):
             yield_other  *= setup.dataLumi/1000.
 
             normRegYield  = yield_data - yield_other
+
+
+            transferFac   = self.cachedTransferFactor(channel, setup, save=True, overwrite=overwrite, checkOnly=False)
+
+            if transferFac == 0:
+                logger.info("Transfer factor is 0. Skipping QCD estimate calculation and settting it to 0!")
+                return u_float(1, 1)
+
+
             estimate      = normRegYield*transferFac
 
             logger.info("Calculating data-driven QCD normalization in channel " + channel + " using lumi " + str(setup.dataLumi) + ":")
@@ -330,7 +332,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                 logger.warning("Negative normalization region yield!")
 
         logger.info("Estimate for QCD in " + channel + " channel" + (" (lumi=" + str(setup.lumi) + "/pb)" if channel != "all" else "") + ": " + str(estimate) + (" (negative estimated being replaced by 0)" if estimate < 0 else ""))
-        return estimate if estimate > 0 else u_float(1, 1)
+        return estimate if estimate > 1 else u_float(1, 1)
 
 if __name__ == "__main__":
     from TTGammaEFT.Analysis.regions      import regionsTTG, noPhotonRegionTTG, inclRegionsTTG

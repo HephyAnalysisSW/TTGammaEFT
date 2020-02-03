@@ -7,7 +7,6 @@ from RootTools.core.standard          import *
 
 #user specific
 from TTGammaEFT.Tools.TriggerSelector import TriggerSelector
-from TTGammaEFT.Tools.user            import results_directory, cache_directory
 from TTGammaEFT.Tools.cutInterpreter  import cutInterpreter, zMassRange
 from TTGammaEFT.Analysis.SetupHelpers import *
 
@@ -115,10 +114,10 @@ class Setup:
 
         if checkOnly:
             self.processes = {}
-            self.processes.update( { sample:          None for sample in default_sampleList } )
-            self.processes.update( { sample+"_gen":   None for sample in default_sampleList } )
-            self.processes.update( { sample+"_misID": None for sample in default_sampleList } )
-            self.processes.update( { sample+"_had":   None for sample in default_sampleList } )
+            self.processes.update( { sample:          None for sample in default_sampleList + default_systematicList } )
+            self.processes.update( { sample+"_gen":   None for sample in default_sampleList + default_systematicList } )
+            self.processes.update( { sample+"_misID": None for sample in default_sampleList + default_systematicList } )
+            self.processes.update( { sample+"_had":   None for sample in default_sampleList + default_systematicList } )
             self.processes["Data"] = "Run%i"%self.year
 
             if year == 2016:
@@ -224,7 +223,7 @@ class Setup:
         """Define full selection
            dataMC: "Data" or "MC"
            channel: all, e or mu, eetight, mumutight, SFtight
-           zWindow: offZeg, onZeg, onZSFllTight or all
+           zWindow: offZeg, onZeg, onZSFllTight, onZSFllgTight or all
            m3Window: offM3, onM3 or all
            photonIso: lowSieie, highSieie, lowChgIso, highChgIso, lowChgIsolowSieie, highChgIsolowSieie, lowChgIsohighSieie, highChgIsohighSieie
         """
@@ -242,7 +241,7 @@ class Setup:
         #Consistency checks
         assert dataMC in ["Data","MC","DataMC"], "dataMC = Data or MC or DataMC, got %r."%dataMC
         assert channel in allChannels, "channel must be one of "+",".join(allChannels)+". Got %r."%channel
-        assert zWindow in ["offZeg", "onZeg", "onZSFllTight", "all"], "zWindow must be one of onZeg, offZeg, onZSFllTight, all. Got %r"%zWindow
+        assert zWindow in ["offZeg", "onZeg", "onZSFllTight", "onZSFllgTight", "all"], "zWindow must be one of onZeg, offZeg, onZSFllTight, onZSFllgTight, all. Got %r"%zWindow
         assert m3Window in ["offM3", "onM3", "all"], "m3Window must be one of onM3, offM3, all. Got %r"%m3Window
         assert photonIso in [None, "lowSieie", "highSieie", "lowChgIso", "highChgIso", "lowChgIsolowSieie", "highChgIsolowSieie", "lowChgIsohighSieie", "highChgIsohighSieie"], "PhotonIso must be one of lowSieie, highSieie, lowChgIso, highChgIso, lowChgIsolowSieie, highChgIsolowSieie, lowChgIsohighSieie, highChgIsohighSieie. Got %r"%photonIso
         if self.sys['selectionModifier']:
@@ -257,7 +256,8 @@ class Setup:
             channel += "Inv"
             zWindow += "Inv"
             tightLepton = "nInvLepTight1"
-            vetoLepton = "nInvLeptVetoTight1"
+#            vetoLepton = "nInvLeptVetoTight1"
+            vetoLepton = "nNoIsoLepVeto1"
 
         if dileptonic:
             tightLepton = "nLepTight2-OStight"

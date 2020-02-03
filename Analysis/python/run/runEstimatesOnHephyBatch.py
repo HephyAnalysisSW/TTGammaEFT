@@ -5,7 +5,7 @@ from TTGammaEFT.Analysis.SetupHelpers import *
 from TTGammaEFT.Analysis.regions      import regionsTTG, inclRegionsTTG, noPhotonRegionTTG
 
 allPhotonRegions = regionsTTG
-year = "2018"
+year = "2016"
 
 # Here, all the estimators are defined, if empty: CR specific estimators are used
 estimators = []
@@ -29,9 +29,11 @@ for name, cr in crs.items():
     if not est and not "processes" in cr: est = default_sampleList
     elif not est:                         est = [ e for eList in cr["processes"].values() for e in eList["process"] ] + ["Data"]
 
-    if "fake" in name: continue
-    if "fine" in name: continue
-    if "eta" in name: continue
+#    if not "3p" in name: continue
+#    if not "EtaUnfold" in name: continue
+#    if "fake" in name: continue
+#    if "fine" in name: continue
+#    if "eta" in name: continue
 #    if not cr["noPhotonCR"]: continue # safe time for qcd estimate
 
     for estimator in est:
@@ -41,6 +43,9 @@ for name, cr in crs.items():
 #        if not "DD" in estimator: continue # safe time for qcd estimate
 #        if not "Data" in estimator: continue # safe time for qcd estimate
 #        if not "DD" in estimator and not "Data" in estimator: continue # safe time for qcd estimate
+#        if not "DY" in estimator or not cr["noPhotonCR"]: continue # safe time for qcd estimate
+#        if not "TTG" in estimator: continue # safe time for qcd estimate
+        if not "WG" in estimator: continue # safe time for qcd estimate
 
         photonRegions = cr["inclRegion"] + cr["regions"] if not cr["noPhotonCR"] else cr["regions"]
 

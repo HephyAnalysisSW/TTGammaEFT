@@ -57,7 +57,6 @@ class MCBasedEstimate(SystematicEstimator):
             if self.processCut:
                 cuts.append( cutInterpreter.cutString(self.processCut) )
                 logger.info( "Adding process specific cut %s"%self.processCut )
-            print cuts
             cut          = "&&".join( cuts )
             weight       = preSelection['weightStr']
 

@@ -1,4 +1,5 @@
 from math import pi
+import numpy as np
 
 from TTGammaEFT.Analysis.Region      import Region
 from TTGammaEFT.Analysis.Region      import texString
@@ -63,7 +64,6 @@ etaG_thresh_fine   = [ -1.5, -0.9, -0.3, 0.3, 0.9, 1.5 ]
 regionsTTGFine     = getRegionsFromThresholds( "PhotonGood0_pt", pTG_thresh_fine )
 regionsTTGEtaFine  = getRegionsFromThresholds( "PhotonGood0_eta", etaG_thresh_fine )
 
-
 mlg_tresh = [ 0, mLgThresh, -999 ]
 mLgPtRegions = getRegions2D( "PhotonGood0_pt", pTG_thresh, "mLtight0Gamma", mlg_tresh )
 mLgRegions   = getRegionsFromThresholds( "mLtight0Gamma", mlg_tresh )
@@ -84,13 +84,15 @@ chgIsoNoSRPtRegions = getRegions2D( "PhotonNoChgIsoNoSieie0_pt", pTG_thresh, "(P
 pTG_thresh         = [ 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 150, 180, 210, -999 ]
 photonBinRegions   = getRegionsFromThresholds( "PhotonGood0_pt", pTG_thresh )
 
-if __name__ == "__main__":
-#    print inclRegionsTTG[0].cutString()
+pTG_thresh          = list(np.linspace(start=20, stop=220, num=31)) + [-999]
+regionsTTGUnfolding = getRegionsFromThresholds( "PhotonGood0_pt", pTG_thresh )
 
-    for region in mLgPtRegions + mLgRegions:
-        print str(region)
-        print region.cutString()
-        print type(region.vals)
-        for val0, val1 in region.vals.values():
-            print val0, val1
-        print val1
+etaG_thresh            = list(np.linspace(start=-1.5, stop=1.5, num=11))
+regionsTTGEtaUnfolding = getRegionsFromThresholds( "PhotonGood0_eta", etaG_thresh )
+
+
+noRegions = [Region("nPhotonGood", (0, -999))]
+
+if __name__ == "__main__":
+    print regionsTTGEtaUnfolding
+
