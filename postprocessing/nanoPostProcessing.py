@@ -131,8 +131,6 @@ gammaCond              = "(Sum$(Photon_pt>=19&&abs(Photon_eta)<=1.5&&Photon_elec
 
 # additional conditions for testing
 addCond                = "(1)"
-#addCond                = "(Sum$(Photon_genPartIdx<0)>0)"
-#addCond                = "(Photon_genPartIdx<0)"
 
 skimConds = []
 if isDiLepGamma:
@@ -140,8 +138,7 @@ if isDiLepGamma:
 elif isDiLep:
     skimConds += [dilepCond, addCond]
 elif isSemiLepGamma:
-#    skimConds += [semilepCond, gammaCond, addCond]  #performance: ~1.5k events left (1 ttbar semilep file)
-    skimConds += [semilepNoIsoCond, gammaCond, addCond] #performance: ~75k events left (1 ttbar semilep file)
+    skimConds += [semilepCond, gammaCond, addCond]  #performance: ~1.5k events left (1 ttbar semilep file)
 elif isSemiLep:
     skimConds += [semilepNoIsoCond, addCond] #performance: ~75k events left (1 ttbar semilep file)
 else:
@@ -159,25 +156,30 @@ if "lxplus" in hostname:
     # Set the redirector in the samples repository to the global redirector
     from Samples.Tools.config import redirector_global as redirector
 
-#if "clip" in hostname:
-    # Set the redirector in the samples repository to the global redirector
-#    from Samples.Tools.config import redirector_clip_local as redirector
+if "clip" in hostname:
+   # Set the redirector in the samples repository to the global redirector
+#    from Samples.Tools.config import redirector_clip_scratch as redirector
+    from Samples.Tools.config import redirector_clip as redirector
 
 if options.year == 2016:
     from Samples.nanoAOD.Summer16_private_legacy_v1 import *
 #    from Samples.nanoAOD.Summer16_private           import *
-#    from Samples.nanoAOD.Run2016_14Dec2018          import *
     from Samples.nanoAOD.Run2016_17Jul2018_private  import *
+#    from Samples.nanoAOD.Summer16_nanoAODv6         import *
+#    from Samples.nanoAOD.Run2016_nanoAODv6          import *
 elif options.year == 2017:
     from Samples.nanoAOD.Fall17_private_legacy_v1   import *
 #    from Samples.nanoAOD.Fall17_private             import *
-#    from Samples.nanoAOD.Run2017_14Dec2018          import *
     from Samples.nanoAOD.Run2017_31Mar2018_private  import *
+#    from Samples.nanoAOD.Fall17_nanoAODv6           import *
+#    from Samples.nanoAOD.Run2017_nanoAODv6          import *
 elif options.year == 2018:
     from Samples.nanoAOD.Autumn18_private_legacy_v1 import *
 #    from Samples.nanoAOD.Autumn18_private           import *
 #    from Samples.nanoAOD.Run2018_14Dec2018          import *
     from Samples.nanoAOD.Run2018_17Sep2018_private  import *
+#    from Samples.nanoAOD.Autumn18_nanoAODv6         import *
+#    from Samples.nanoAOD.Run2018_nanoAODv6          import *
 
 # Load all samples to be post processed
 samples = map( eval, options.samples ) 
@@ -195,6 +197,14 @@ assert isMC   or len(samples)==1,                            "Don't concatenate 
 
 # systematic variations
 addSystematicVariations = (not isData) and (not options.skipSystematicVariations)
+
+# Trigger selection
+if isData and options.triggerSelection:
+    from TTGammaEFT.Tools.TriggerSelector import TriggerSelector
+    Ts          = TriggerSelector( options.year, singleLepton=(isSemiLep or isSemiLepGamma) )
+    triggerCond = Ts.getSelection( options.samples[0] )
+    logger.info("Sample will have the following trigger skim: %s"%triggerCond)
+    skimConds.append( triggerCond )
 
 #Samples: combine if more than one
 if len(samples)>1:
@@ -238,6 +248,10 @@ else:
     if not os.path.exists( targetPath ):
         try:    os.makedirs( targetPath )
         except: pass
+    nExistingFiles    = len(os.listdir(targetPath))
+    if nExistingFiles > options.nJobs:
+        raise Exception("Error: More files exist in target directory as should be processed! Check your nJobs input! Got nJobs %i, existing files: %i"%(options.nJobs, nExistingFiles))
+    logger.info("%i files exist in target directory! Processing %i files."%(nExistingFiles, options.nJobs))
 
 # Single file post processing
 if options.fileBasedSplitting or options.nJobs > 1:
@@ -259,7 +273,6 @@ if os.path.exists( output_directory ) and options.overwrite:
         logger.warning( "NOT removing directory %s because nJobs = %i", output_directory, options.nJobs )
     else:
         logger.info( "Output directory %s exists. Deleting.", outputFilePath )
-#        shutil.rmtree( output_directory, ignore_errors=True )
         shutil.rmtree( outputFilePath, ignore_errors=True )
 
 if not os.path.exists( output_directory ):
@@ -271,6 +284,8 @@ if not os.path.exists( output_directory ):
         pass
 
 # checking overwrite or file exists
+sel = "&&".join(skimConds)
+nEvents = sample.getYieldFromDraw(weightString="1", selectionString=sel)['val']
 if not options.overwrite and options.writeToDPM:
     try:
         # ls the directory on DPM
@@ -286,7 +301,7 @@ if not options.overwrite and options.writeToDPM:
         # Sample found on dpm, check if it is ok
         target  = os.path.join( targetPath, sample.name+".root" )
         if checkRootFile( target, checkForObjects=["Events"] ) and deepCheckRootFile( target ) and deepCheckWeight( target ):
-            logger.info( "File already processed. Source: File check ok! Skipping." ) # Everything is fine, no overwriting
+            logger.info( "File already processed. Source: File check ok! Skipping!" ) # Everything is fine, no overwriting
             sys.exit(0)
         else:
             logger.info( "File corrupt. Removing file from target." )
@@ -303,20 +318,30 @@ elif not options.overwrite and not options.writeToDPM:
     if os.path.isfile(targetFilePath):
         logger.info( "Output file %s found.", targetFilePath)
         if checkRootFile( targetFilePath, checkForObjects=["Events"] ) and deepCheckRootFile( targetFilePath ) and deepCheckWeight( targetFilePath ):
-            logger.info( "File already processed. Source: File check ok! Skipping." ) # Everything is fine, no overwriting
-            sys.exit(0)
+            logger.info( "File already processed. Source: File check ok!" ) # Everything is fine, no overwriting
+            logger.info( "Checking the normalization of the sample." )
+            existingSample = Sample.fromFiles( "existing", targetFilePath, treeName = "Events" )
+            nEventsExist = existingSample.getYieldFromDraw(weightString="1")['val']
+            if nEvents == nEventsExist:
+                logger.info( "File already processed. Normalization file check ok! Skipping." ) # Everything is fine, no overwriting
+                sys.exit(0)
+            else:
+                logger.info( "Target events not equal to processing sample events! Is: %s, should be: %s!"%(nEventsExist, nEvents) )
+                logger.info( "Removing file from target." )
+                os.remove( targetFilePath )
+                logger.info( "Reprocessing." )
         else:
             logger.info( "File corrupt. Removing file from target." )
             os.remove( targetFilePath )
-            if options.checkOnly: sys.exit(0)
             logger.info( "Reprocessing." )
     else:
         logger.info( "Sample not processed yet." )
-        if options.checkOnly: sys.exit(0)
         logger.info( "Processing." )
 
 else:
     logger.info( "Overwriting.")
+
+if options.checkOnly: sys.exit(0)
 
 # Cross section for postprocessed sample
 xSection = samples[0].xSection if isMC else None
@@ -393,7 +418,8 @@ branchKeepStrings_MC = [\
     "GenPart_*", "nGenPart",
     "GenJet_*", "nGenJet",
     "Pileup_*",
-    "LHE_*"
+    "LHE*",
+    "nLHE*",
 ]
 
 #branches to be kept for data only
@@ -623,7 +649,7 @@ if isMC:
     new_variables += [ 'GenJets[%s]'      %writeGenJetVarString ]
     new_variables += [ 'GenBJet[%s]'     %writeGenJetVarString ]
     new_variables += [ 'GenTop[%s]'      %writeGenVarString ]
-    new_variables += [ 'isTTGamma/I', 'isZWGamma/I', 'isTGamma/I', 'isGJets/I', 'overlapRemoval/I' ]
+    new_variables += [ 'isTTGamma/I', 'isZWGamma/I', 'isTGamma/I', 'isGJets/I', 'overlapRemoval/I', 'pTStitching/I' ]
 
     new_variables += [ 'nGenW/I', 'nGenWJets/I', 'nGenWElectron/I', 'nGenWMuon/I','nGenWTau/I', 'nGenWTauJets/I', 'nGenWTauElectron/I', 'nGenWTauMuon/I' ]
 
@@ -669,7 +695,9 @@ if options.topReco:
 if isData:
     new_variables += ['jsonPassed/I']
 
-ptVar="pt_nom" if not options.skipNanoTools else "pt"
+#ptVar="pt_nom" if not options.skipNanoTools else "pt"
+# with the latest change, getAllJets calculates the correct jet pt (removing JER) and stores it as Jet_pt again. No need for Jet_pt_nom anymore
+ptVar="pt"
 
 # Overlap removal Selection
 genPhotonSel_TTG_OR = genPhotonSelector( 'overlapTTGamma' )
@@ -709,33 +737,17 @@ if options.addPreFiringFlag:
     unPreFirableEvents = [ (event, run) for event, run, lumi in PreFire.getUnPreFirableEvents() ]
     del PreFire
 
-# Trigger selection
-if isData:
-    from TTGammaEFT.Tools.TriggerSelector import TriggerSelector
-    Ts          = TriggerSelector( options.year, singleLepton=(isSemiLep or isSemiLepGamma) )
-    triggerCond = Ts.getSelection( options.samples[0] if isData else "MC" )
-    logger.info("Sample will have the following trigger skim: %s"%triggerCond)
-    skimConds.append( triggerCond )
-
 if not options.skipNanoTools:
     # prepare metsignificance and jes/jer
     MetSig = MetSignificance( sample, options.year, output_directory )
     MetSig( "&&".join(skimConds) )
     newfiles = MetSig.getNewSampleFilenames()
-#    sample.clear()
+    sample.clear()
     sample.files = copy.copy(newfiles)
-#    sample.name  = MetSig.name
+    sample.name  = MetSig.name
     if isMC: sample.normalization = sample.getYieldFromDraw(weightString="genWeight")['val']
-#    sample.isData = isData
-#    del MetSig
-
-# Trigger selection after nanotools
-if isData and options.triggerSelection:
-    from TTGammaEFT.Tools.TriggerSelector import TriggerSelector
-    Ts          = TriggerSelector( options.year, singleLepton=isSemiLep )
-    triggerCond = Ts.getSelection( options.samples[0] if isData else "MC" )
-    logger.info("Sample will have the following trigger skim: %s"%triggerCond)
-    skimConds.append( triggerCond )
+    sample.isData = isData
+    del MetSig
 
 # Define a reader
 #sel = "&&".join(skimConds) if options.skipNanoTools else "(1)"
@@ -759,8 +771,10 @@ def getMetJetCorrected(met_pt, met_phi, jets, var, ptVar='pt'):
 
 def getMetCorrected( r, var, addPhoton=None ):
     if not var: # why is this here??
-        if addPhoton: return getMetPhotonEstimated(r.MET_pt_nom, r.MET_phi_nom, addPhoton)
-        else:         return (r.MET_pt_nom, r.MET_phi_nom)
+#        if addPhoton: return getMetPhotonEstimated(r.MET_pt_nom, r.MET_phi_nom, addPhoton)
+#        else:         return (r.MET_pt_nom, r.MET_phi_nom)
+        if addPhoton: return getMetPhotonEstimated(r.MET_pt, r.MET_phi, addPhoton)
+        else:         return (r.MET_pt, r.MET_phi)
 
     elif var in [ "unclustEnUp", "unclustEnDown" ]:
         var_ = var
@@ -863,8 +877,16 @@ def filler( event ):
         GenTauElectron = filter( lambda l: abs(l['pdgId']) == 11, GenLepTauMother )
         GenTauMuon     = filter( lambda l: abs(l['pdgId']) == 13, GenLepTauMother )
 
+        gPart.sort( key = lambda p: -p['pt'] )
+        gJets.sort( key = lambda p: -p['pt'] )
+
         # Overlap removal flags for ttgamma/ttbar and Zgamma/DY
         GenPhoton                  = filterGenPhotons( gPart, status='last' )
+        for g in GenPhoton:
+            g["relIso03_all"] = calculateGenIso( g, gPart, coneSize=0.3, ptCut=5., excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ], chgIso=False )
+            print "all", g["relIso03_all"], g["pt"]
+            g["relIso03_chg"] = calculateGenIso( g, gPart, coneSize=0.3, ptCut=5., excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ], chgIso=True )
+            print "chg", g["relIso03_chg"], g["pt"]
 
         # OR ttgamma/tt
         GenIsoPhotonTTG            = filter( lambda g: isIsolatedPhoton( g, gPart, coneSize=0.1,  ptCut=5, excludedPdgIds=[12,-12,14,-14,16,-16] ), GenPhoton    )
@@ -908,33 +930,19 @@ def filler( event ):
         else:
             event.overlapRemoval = 1 # all other events
 
-        # Gen Leptons in ttbar/gamma decays
-        # get Ws from top or MG matrix element (from gluon)
-        GenW = filter( lambda l: abs(l['pdgId']) == 24 and l["genPartIdxMother"] >= 0 and l["genPartIdxMother"] < len(gPart), gPart )
-        GenW = filter( lambda l: abs(gPart[l["genPartIdxMother"]]["pdgId"]) in [6,21], GenW )
+        event.pTStitching = 1 # all other events
 
-        # e/mu/tau with W mother
-        GenLepWMother    = filter( lambda l: abs(l['pdgId']) in [11,13,15] and l["genPartIdxMother"] >= 0 and l["genPartIdxMother"] < len(gPart), gPart )
-        GenLepWMother    = filter( lambda l: abs(gPart[l["genPartIdxMother"]]["pdgId"])==24, GenLepWMother )
-        # e/mu with tau mother and tau has a W in parentsList
-        GenLepTauMother  = filter( lambda l: abs(l['pdgId']) in [11,13] and l["genPartIdxMother"] >= 0 and l["genPartIdxMother"] < len(gPart), gPart )
-        GenLepTauMother  = filter( lambda l: abs(gPart[l["genPartIdxMother"]]["pdgId"])==15 and 24 in map( abs, getParentIds( gPart[l["genPartIdxMother"]], gPart)), GenLepTauMother )
-
-        GenWElectron = filter( lambda l: abs(l['pdgId']) == 11, GenLepWMother )
-        GenWMuon     = filter( lambda l: abs(l['pdgId']) == 13, GenLepWMother )
-        GenWTau      = filter( lambda l: abs(l['pdgId']) == 15, GenLepWMother )
-
-        GenTauElectron = filter( lambda l: abs(l['pdgId']) == 11, GenLepTauMother )
-        GenTauMuon     = filter( lambda l: abs(l['pdgId']) == 13, GenLepTauMother )
-
-        # ATLAS Unfolding
         GenMuon                                    = filterGenMuons( gPart, status='last' )
         GenElectron                                = filterGenElectrons( gPart, status='last' )
         GenLepton                                  = GenMuon + GenElectron
+
+        # ATLAS Unfolding
         GenLeptonATLASUnfold                       = filter( lambda l: not hasMesonMother( getParentIds( l, gPart ) ), GenLepton )
         GenLeptonATLASUnfold, GenPhotonATLASUnfold = addParticlesInCone( GenLeptonATLASUnfold, GenPhoton, coneSize=0.1 ) # add photons in cone of 0.1 to leptons
         GenLeptonATLASUnfold                       = filter( lambda l: genLeptonSel_ATLASUnfold(l), GenLeptonATLASUnfold )
 
+#        GenPhotonATLASUnfold = filter( lambda g: not hasMesonMother( getParentIds( g, gPart ) ), GenPhoton )
+#        GenPhotonATLASUnfold = filter( lambda g: g["relIso03_chg"] < 0.1, GenPhotonATLASUnfold )
         GenPhotonATLASUnfold = filter( lambda g: not hasMesonMother( getParentIds( g, gPart ) ), GenPhotonATLASUnfold )
         GenPhotonATLASUnfold = filter( lambda g: genPhotonSel_ATLASUnfold(g), GenPhotonATLASUnfold )
 
@@ -965,6 +973,8 @@ def filler( event ):
         GenLeptonCMSUnfold                     = filter( lambda l: genLeptonSel_CMSUnfold(l), GenLeptonCMSUnfold )
 
         # Isolated in CMS
+#        GenPhotonCMSUnfold = filter( lambda g: isIsolatedPhoton( g, gPart, coneSize=0.1,  ptCut=5, excludedPdgIds=[12,-12,14,-14,16,-16] ), GenPhoton )
+#        GenPhotonCMSUnfold = filter( lambda g: g["relIso03_chg"] < 0.1, GenPhotonCMSUnfold )
         GenPhotonCMSUnfold = filter( lambda g: isIsolatedPhoton( g, gPart, coneSize=0.1,  ptCut=5, excludedPdgIds=[12,-12,14,-14,16,-16] ), GenPhotonCMSUnfold )
         GenPhotonCMSUnfold = filter( lambda g: not hasMesonMother( getParentIds( g, gPart ) ), GenPhotonCMSUnfold )
         GenPhotonCMSUnfold = filter( lambda g: genPhotonSel_CMSUnfold(g), GenPhotonCMSUnfold )
@@ -973,11 +983,13 @@ def filler( event ):
         GenBJetCMSUnfold   = filter( lambda j: genJetSel_CMSUnfold(j), filterGenBJets( gJets ) )
 
         # CMS Unfolding cleaning
-        GenJetCMSUnfold    = deltaRCleaning( GenJetCMSUnfold,    GenPhotonCMSUnfold, dRCut=0.1 )
+#        GenJetCMSUnfold    = deltaRCleaning( GenJetCMSUnfold,    GenPhotonCMSUnfold, dRCut=0.4 )
         GenJetCMSUnfold    = deltaRCleaning( GenJetCMSUnfold,    GenLeptonCMSUnfold, dRCut=0.4 )
-        GenBJetCMSUnfold   = deltaRCleaning( GenBJetCMSUnfold,   GenPhotonCMSUnfold, dRCut=0.1 )
+#        GenBJetCMSUnfold   = deltaRCleaning( GenBJetCMSUnfold,   GenPhotonCMSUnfold, dRCut=0.4 )
         GenBJetCMSUnfold   = deltaRCleaning( GenBJetCMSUnfold,   GenLeptonCMSUnfold, dRCut=0.4 )
-        GenPhotonCMSUnfold = deltaRCleaning( GenPhotonCMSUnfold, GenLeptonCMSUnfold, dRCut=0.1 )
+        GenPhotonCMSUnfold = deltaRCleaning( GenPhotonCMSUnfold, GenLeptonCMSUnfold, dRCut=0.4 )
+        GenPhotonCMSUnfold = deltaRCleaning( GenPhotonCMSUnfold, GenJetCMSUnfold,    dRCut=0.4 )
+        GenPhotonCMSUnfold = deltaRCleaning( GenPhotonCMSUnfold, GenBJetCMSUnfold,   dRCut=0.4 )
 
         GenPhotonCMSUnfold.sort( key = lambda p: -p['pt'] )
         genP0 = ( GenPhotonCMSUnfold[:1] + [None] )[0]
@@ -1033,6 +1045,7 @@ def filler( event ):
 
 
     elif isData:
+        event.pTStitching = 1 # all other events
         event.overlapRemoval = 1 # all other events
         event.weight     = 1.
         event.ref_weight = 1.
@@ -1241,7 +1254,7 @@ def filler( event ):
         for g in allPhotons:
 #            g["genPartIdx"] = getGenPartIdx( g, gPart, coneSize=0.4, ptCut=5., excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ] )
             genMatch = filter( lambda p: p['index'] == g['genPartIdx'], gPart )[0] if g['genPartIdx'] >= 0 else None
-            g['photonCat']    = getPhotonCategory( genMatch, gPart ) if g['genPartIdx'] != -2 else 4 # magic photons
+            g['photonCat']    = getPhotonCategory( genMatch, gPart )# if g['genPartIdx'] != -2 else 4 # magic photons
             g['photonCatMagic']    = getAdvancedPhotonCategory( g, gPart, coneSize=0.2, ptCut=5., excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ] )
             g['leptonMother'] = hasLeptonMother( genMatch, gPart )
             g['mother']       = getPhotonMother( genMatch, gPart )
@@ -1342,8 +1355,10 @@ def filler( event ):
         event.MET_phi    = r.METFixEE2017_phi
         event.MET_pt_min = r.MET_pt_min
     elif not options.skipNanoTools:
-        event.MET_pt     = r.MET_pt_nom
-        event.MET_phi    = r.MET_phi_nom
+#        event.MET_pt     = r.MET_pt_nom
+#        event.MET_phi    = r.MET_phi_nom
+        event.MET_pt     = r.MET_pt
+        event.MET_phi    = r.MET_phi
         event.MET_pt_min = 0
     else:
         event.MET_pt     = r.MET_pt
@@ -1508,18 +1523,14 @@ def filler( event ):
     nonBjets_sys  = {}
 
     if addSystematicVariations and not options.skipNanoTools and not options.skipSF:
-        jets_sys["jesTotalUp"]   = filter(lambda j: recoJetSel(j, ptVar="pt_jesTotalUp")   and j["clean"], allGoodJets)
-        jets_sys["jesTotalDown"] = filter(lambda j: recoJetSel(j, ptVar="pt_jesTotalDown") and j["clean"], allGoodJets)
-        jets_sys["jerUp"]        = filter(lambda j: recoJetSel(j, ptVar="pt_jerUp")        and j["clean"], allGoodJets)
-        jets_sys["jerDown"]      = filter(lambda j: recoJetSel(j, ptVar="pt_jerDown")      and j["clean"], allGoodJets)
         for var in ['jesTotalUp', 'jesTotalDown', 'jerUp', 'jerDown']:
-            setattr(event, 'MET_pt_'+var, getattr(r, 'METFixEE2017_pt_'+var) if options.year == 2017 else getattr(r, 'MET_pt_'+var) )
-            bjets_sys[var]      = filter(lambda j: j["isBJet"], jets_sys[var])
-            nonBjets_sys[var]   = filter(lambda j: not j["isBJet"], jets_sys[var])
-
+            jets_sys[var]     = filter(lambda j: recoJetSel(j, ptVar="pt_"+var) and j["clean"], allGoodJets)
+            bjets_sys[var]    = filter(lambda j: j["isBJet"], jets_sys[var])
+            nonBjets_sys[var] = filter(lambda j: not j["isBJet"], jets_sys[var])
+            setattr(event, 'MET_pt_'+var, getattr(r, 'METFixEE2017_pt_'+var if options.year == 2017 else 'MET_pt_'+var) )
             setattr(event, "nJetGood_"+var,  len(jets_sys[var]))
-            setattr(event, "ht_"+var,        sum([j['pt_'+var] for j in jets_sys[var]]))
             setattr(event, "nBTagGood_"+var, len(bjets_sys[var]))
+            setattr(event, "ht_"+var,        sum([j['pt_'+var] for j in jets_sys[var]]))
 
         for var in ['jesTotalUp', 'jesTotalDown', 'jerUp', 'jerDown', 'unclustEnUp', 'unclustEnDown']:
             for i in ["", "_photonEstimated"]:
@@ -1811,8 +1822,19 @@ else:
 #                    subprocess.call( cmd )
                     raise Exception("Corrupt rootfile at target! File not copied: %s"%source )
 
+    existingSample = Sample.fromFiles( "existing", targetFilePath, treeName = "Events" )
+    nEventsExist = existingSample.getYieldFromDraw(weightString="1")['val']
+    if nEvents == nEventsExist:
+        logger.info( "All events processed!")
+    else:
+        logger.info( "Error: Target events not equal to processing sample events! Is: %s, should be: %s!"%(nEventsExist, nEvents) )
+        logger.info( "Removing file from target." )
+        os.remove( targetFilePath )
+        logger.info( "Sorry." )
+
 # There is a double free corruption due to stupid ROOT memory management which leads to a non-zero exit code
 # Thus the job is resubmitted on condor even if the output is ok
 # Current idea is that the problem is with xrootd having a non-closed root file
 # Let's see if this works...
 sample.clear()
+shutil.rmtree( output_directory, ignore_errors=True )
