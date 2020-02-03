@@ -17,14 +17,14 @@ accepted_errors = [
     "Error in <TTreeFormula::Compile>:  Bad numerical expression : ", # missing trigger branches are handled with Alt$
     "input bins have zero error, and are ignored.",                   # TUnfold
     "No branch name is matching wildcard -> LHE_*",                   # samples without weights
-    "Error in <TTree::SetBranchStatus>: unknown branch -> MET_",      # 2017 MET
-    "Error in <TChain::SetBranchAddress>: unknown branch -> MET_",    # 2017 MET
     "slurmstepd:",                                                    # cancelled batch job or killed by walltime
     "Error in <TNetXNGFile::Close>:",                                 # dpm closing issue, dont care
     "Analysis.Tools.MergingDirDB",                                    # double entries in cache or caching error, dont care
     "Analysing bin errors",                                           # cardfile writer
     "Bin        Contents        Error           Notes",               # combine header
-    "not a ROOT file",                                                # copy command issue, no problem since it trys again
+    "unknown branch -> MET_p",                                        # 2017 MET processing
+    "ZGToLLG_01J_5f_lowMLL_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v1_legacy_nano_v4/190812_124339/0000/nanoAOD_65.root", #broken file
+    "TTGamma_Dilept_TuneCP5_erdON_PSweights_13TeV-madgraph-pythia8/crab_RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v1_legacy_nano_v6/200118_211725/0000/nanoAOD_10.root", #broken file
 ]
 
 trigger_words = [
@@ -36,7 +36,8 @@ def loopOverLogs( directory, filterCommand=None, addon=None, ignore="" ):
 
     logger.info("Checking log files in directory %s"%directory )
 
-    files = list(filter(os.path.isfile, glob.glob(directory + "/*.err")))
+    files = list(filter(os.path.isfile, glob.glob(directory + "/*")))
+#    files = list(filter(os.path.isfile, glob.glob(directory + "/*.err")))
     # sort logs by latest one
     files.sort(key=lambda x: -os.path.getmtime(x))
 

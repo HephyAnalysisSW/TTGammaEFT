@@ -1,5 +1,5 @@
 echo "nanoPostProcessing_Run2016_private_semilepGamma"
-python checkPostProcessingRootFiles.py --createExec --file nanoPostProcessing_Run2016_private_semilepGamma
+python checkPostProcessingRootFiles.py --createExec --file nanoPostProcessing_Run2016_private_semilepGamma --overwrite
 echo
 
 echo "nanoPostProcessing_Summer16_private_semilepGamma"

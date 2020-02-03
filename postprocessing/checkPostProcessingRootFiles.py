@@ -22,7 +22,7 @@ def get_parser():
     argParser = argparse.ArgumentParser(description = "Argument parser for nanoPostProcessing")
     argParser.add_argument('--file',       action='store', type=str, default='nanoPostProcessing_Summer16', help="postprocessing sh file to check")
     argParser.add_argument('--createExec', action='store_true', help="create .sh file with missing files?")
-    argParser.add_argument('--overwrite',  action='store_true', help="overwrite existing missingFiles.sh file?")
+    argParser.add_argument('--overwrite',  action='store_true', help="overwrite missing.sh file?")
     return argParser
 
 args = get_parser().parse_args()
@@ -53,7 +53,8 @@ for ppEntry in dictList:
 
     # Check whether file exists on DPM, no check if root file is ok implemented for now
     if "clip" in hostname.lower():
-        dirPath   = os.path.join( postprocessing_output_directory, ppEntry["dir"], ppEntry["skim"], sample  )
+#        dirPath   = os.path.join( postprocessing_output_directory, ppEntry["dir"], ppEntry["skim"], sample  )
+        dirPath   = os.path.join( dpm_directory, "postprocessed", ppEntry["dir"], ppEntry["skim"], sample  )
         files     = os.listdir(dirPath) if os.path.exists(dirPath) else []
         rootFiles = filter( lambda file: file.endswith(".root") and not file.startswith("nanoAOD"), files )
         rootFiles = [ item.split(".root")[0] for item in rootFiles ]
