@@ -1,7 +1,7 @@
 # Standard imports
 import ROOT
 ROOT.gROOT.SetBatch(True)
-import os, sys
+import os, sys, copy
 
 # RootTools
 from RootTools.core.standard          import *
@@ -12,7 +12,11 @@ from Analysis.Tools.MergingDirDB      import MergingDirDB
 # Internal Imports
 from TTGammaEFT.Tools.user            import plot_directory, cache_directory
 from TTGammaEFT.Tools.cutInterpreter  import cutInterpreter
-from TTGammaEFT.Analysis.SetupHelpers import signalRegions
+
+from TTGammaEFT.Analysis.SetupHelpers import *
+from TTGammaEFT.Analysis.Setup        import Setup
+from TTGammaEFT.Analysis.EstimatorList   import EstimatorList
+from TTGammaEFT.Analysis.regions      import *
 
 # Default Parameter
 loggerChoices = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTSET"]
@@ -48,12 +52,16 @@ if args.normalize:    args.plot_directory += "_normalized"
 if args.ttgSingleLep: args.plot_directory += "_singleLep"
 
 # get reco selection criteria lambda function
-selection = signalRegions[args.recoSelection]["lambda"]
+selection     = signalRegions[args.recoSelection]["lambda"]
+setup         = Setup( year=args.year, photonSelection=False, checkOnly=True, runOnLxPlus=False ) #photonselection always false for qcd estimate
+setup         = setup.sysClone( parameters=allRegions[args.recoSelection]["parameters"] )
+recoselection = setup.selection( "MC", channel="all", **setup.defaultParameters() )
+recoSelection = recoselection["prefix"]
 
 nGen,  xminGen,  xmaxGen  = args.genBinning
 nReco, xminReco, xmaxReco = args.recoBinning
 
-cache_dir = os.path.join(cache_directory, "unfolding", str(args.year))
+cache_dir = os.path.join(cache_directory, "unfolding", str(args.year), "matrix")
 dirDB     = MergingDirDB(cache_dir)
 
 if   args.year == 2016: lumi_scale = 35.92
@@ -64,19 +72,22 @@ if args.normalize:
     lumi_scale = 1.
 
 resolutionBinning = [ 50, 0.6, 2 ]
-resMatrix = { "name":"UnfoldingMatrix", "year":args.year, "mode":args.mode, "MCOnly":str(args.noData), "selection":args.recoSelection, "genSelection":args.genSelection, "genBin":args.genBinning,   "recoBin":args.recoBinning, "ttgSingleLepton":str(args.ttgSingleLep), "small":str(args.small) }
-resRes    = { "name":"Resolution",      "year":args.year, "mode":args.mode, "MCOnly":str(args.noData), "selection":args.recoSelection, "genSelection":args.genSelection, "binning":resolutionBinning, "ttgSingleLepton":str(args.ttgSingleLep), "small":str(args.small) }
-resData   = { "name":"DataHistogram",   "year":args.year, "mode":args.mode, "selection":args.recoSelection, "recoBin":args.recoBinning }
+dresMatrix = { "name":"UnfoldingMatrix", "year":str(args.year), "mode":args.mode, "MCOnly":str(args.noData), "selection":args.recoSelection, "genSelection":args.genSelection, "genBin":"_".join(map(str,args.genBinning)),   "recoBin":"_".join(map(str,args.recoBinning)), "ttgSingleLepton":str(args.ttgSingleLep), "small":str(args.small) }
+resMatrix  = "_".join( [ "_".join([k, v]) for k, v in dresMatrix.iteritems() ] )
+dresRes    = { "name":"Resolution",      "year":str(args.year), "mode":args.mode, "MCOnly":str(args.noData), "selection":args.recoSelection, "genSelection":args.genSelection, "binning":"_".join(map(str,resolutionBinning)), "ttgSingleLepton":str(args.ttgSingleLep), "small":str(args.small) }
+resRes     = "_".join( [ "_".join([k, v]) for k, v in dresRes.iteritems() ] )
+dresData   = { "name":"DataHistogram",   "year":str(args.year), "mode":args.mode, "selection":args.recoSelection, "recoBin":"_".join(map(str,args.recoBinning)) }
+resData    = "_".join( [ "_".join([k, v]) for k, v in dresData.iteritems() ] )
 
-if dirDB.contains(frozenset(resData)) and not args.noData:
-    dataHist = dirDB.get( frozenset(resData) )
+if dirDB.contains(resData) and not args.noData:
+    dataHist = dirDB.get( resData )
     logger.info("Getting cached data histograms!")
 elif not args.noData:
     raise Exception( "No input data histogram found!" )
 
-if dirDB.contains(frozenset(resMatrix)) and dirDB.contains(frozenset(resRes)) and not args.overwrite:
-    matrix   = dirDB.get( frozenset(resMatrix) )
-    resHisto = dirDB.get( frozenset(resRes) )
+if dirDB.contains(resMatrix) and dirDB.contains(resRes) and not args.overwrite:
+    matrix   = dirDB.get( resMatrix )
+    resHisto = dirDB.get( resRes )
     logger.info("Re-using cached histograms!")
 
 else:
@@ -125,7 +136,7 @@ else:
     resolution = Plot(
                        name      = "resolution",
                        texX      = "p^{gen}_{T}(#gamma) / p^{reco}_{T}(#gamma)",
-                       attribute = lambda event, sample: getattr( event, args.genPtVariable) / event.PhotonGood0_pt if selection( event, sample ) else -999,
+                       attribute = lambda event, sample: getattr( event, args.genPtVariable ) / event.PhotonGood0_pt if selection( event, sample ) else -999,
                        binning   = resolutionBinning,
                        read_variables = read_variables,
                       )
@@ -134,9 +145,9 @@ else:
 
     matrix   = unfold2D.histos[0][0]
     resHisto = resolution.histos[0][0]
-    dirDB.add( frozenset(resMatrix), matrix )
-    dirDB.add( frozenset(resRes),    resHisto )
 
+    dirDB.add( resMatrix, matrix, overwrite=True )
+    dirDB.add( resRes,    resHisto, overwrite=True )
 
 matrix.Scale(lumi_scale)
 resHisto.Scale(lumi_scale)
@@ -146,6 +157,7 @@ histos["gen"]        = matrix.ProjectionX("gen")
 histos["efficiency"] = ROOT.TH1D( "efficiency", "efficiency", nGen,  xminGen,  xmaxGen  )
 histos["purity"]     = ROOT.TH1D( "purity",     "purity",     nReco, xminReco, xmaxReco )
 histos["recoMC"]     = matrix.ProjectionY("reco")
+histos["resolution"] = resHisto
 if args.noData: histos["reco"] = histos["recoMC"]
 else:           histos["reco"] = dataHisto
 
@@ -197,7 +209,6 @@ lCurve  = ROOT.TGraph()
 
 # Here work needs to be done! Did not work in the tutorial! FIXME
 iBest   = unfold.ScanLcurve(30,0,0,lCurve,logTauX,logTauY)
-
 histos["unfolded"] = unfold.GetOutput("unfolded")
 
 # reco unfolding
@@ -218,7 +229,7 @@ histos["reco"].style       = styles.errorStyle( ROOT.kBlack, width = 2 )
 histos["recoMC"].style     = styles.errorStyle( ROOT.kBlack, width = 2 )
 histos["unfolded"].style   = styles.errorStyle( ROOT.kBlack, width = 2 )
 histos["unfoldedMC"].style = styles.errorStyle( ROOT.kBlack, width = 2 )
-resHisto.style             = styles.errorStyle( ROOT.kBlack, width = 2 )
+histos["resolution"].style = styles.errorStyle( ROOT.kBlack, width = 2 )
 
 addons = []
 if args.ttgSingleLep:  addons.append("tt#gamma 1l")
@@ -234,7 +245,7 @@ histos["efficiency"].legendText = "Efficiency"
 histos["purity"].legendText     = "Purity"
 histos["reco"].legendText       = "Detector Level (%s)"%", ".join(addons)
 histos["recoMC"].legendText     = "Detector Level (%s)"%", ".join(addons).replace(", Data",", MC")
-resHisto.legendText             = "Photon Resolution (%s)"%", ".join(addons).replace(", Data",", MC")
+histos["resolution"].legendText = "Photon Resolution (%s)"%", ".join(addons).replace(", Data",", MC")
 
 # Text on the plots
 def drawObjects( plotData, lumi_scale ):
@@ -250,6 +261,10 @@ def drawObjects( plotData, lumi_scale ):
     return [tex.DrawLatex(*l) for l in lines]
 
 plot_directory_ = os.path.join( plot_directory, "unfolding", str(args.year), args.plot_directory, args.genSelection, args.recoSelection, args.mode )
+
+# remove the defaults again
+Plot.setDefaults()
+Plot2D.setDefaults()
 
 # Unfolding matrix
 unfold2D = Plot2D.fromHisto( "unfoldingMatrix", [[matrix]], texX = "p^{gen}_{T}(#gamma) [GeV]", texY = "p^{reco}_{T}(#gamma) [GeV]" )
@@ -281,7 +296,7 @@ plots.append( Plot.fromHisto( "purity", [[histos["purity"]]], texX = "p^{gen}_{T
 # purity and efficiency
 plots.append( Plot.fromHisto( "purity_efficiency", [[histos["purity"]],[histos["efficiency"]]], texX = "p^{gen,reco}_{T}(#gamma) [GeV]", texY = "Purity, Efficiency" ) )
 # resolution
-plots.append( Plot.fromHisto( "resolution", [[resHisto]], texX = "p^{gen}_{T}(#gamma) / p^{reco}_{T}(#gamma)", texY = "Number of Events" ) )
+plots.append( Plot.fromHisto( "resolution", [[histos["resolution"]]], texX = "p^{gen}_{T}(#gamma) / p^{reco}_{T}(#gamma)", texY = "Number of Events" ) )
 
 for plot in plots:
     xShift = plot.name in ["efficiency","purity","purity_efficiency"]

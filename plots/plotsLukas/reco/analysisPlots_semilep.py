@@ -655,9 +655,6 @@ def printWeight( event, sample ):
 #sequence = [misIDelectrons]# printWeight ]#clean_Jets ]
 #sequence += [calcNoIsoLeptons]
 sequence = []
-if "NoIso" in args.mode:
-    sequence += [vetoNoIsoLeptons]
-
 
 # Sample definition
 if args.year == 2016:
@@ -837,7 +834,7 @@ if args.addHEMWeight:
     weight_ = lambda event, sample: event.weight*event.reweightHEM
 
 replaceSelection = {
-    "nLeptonVetoIsoCorr": "nLeptonTightNoIso",
+    "nLeptonVetoIsoCorr": "nLeptonVetoNoIso",
     "nLeptonTight":       "nLeptonTightInvIso",
     "nMuonTight":         "nMuonTightInvIso",
     "nElectronTight":     "nElectronTightInvIso",
@@ -845,7 +842,7 @@ replaceSelection = {
 }
 
 replaceNoIsoSelection = {
-    "nLeptonVetoIsoCorr": "nLeptonTightNoIso",
+    "nLeptonVetoIsoCorr": "nLeptonVetoNoIso",
     "nLeptonTight":       "nLeptonTightNoIso",
     "nMuonTight":         "nMuonTightNoIso",
     "nElectronTight":     "nElectronTightNoIso",

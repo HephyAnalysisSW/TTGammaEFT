@@ -7,7 +7,7 @@ Get cardfile result plots
 # Standard imports
 import ROOT
 ROOT.gROOT.SetBatch(True)
-import os, sys
+import os, sys, copy
 
 # Helpers
 from plotHelpers                      import *
@@ -48,6 +48,7 @@ argParser.add_argument("--plotImpacts",          action='store_true',           
 argParser.add_argument("--plotCovMatrix",        action='store_true',           default=False,   help="plot covariance matrix")
 argParser.add_argument("--plotCorrelations",     action='store_true',           default=False,   help="plot Correlation matrix")
 argParser.add_argument("--bkgSubstracted",       action='store_true',           default=False,   help="plot region plot background substracted")
+argParser.add_argument("--cacheHistogram",       action='store_true',           default=False,   help="store the histogram as cache")
 args = argParser.parse_args()
 
 # logger
@@ -113,61 +114,88 @@ else:
 # region plot, sorted/not sorted, w/ or w/o +-1sigma changes in one nuisance
 def plotRegions( sorted=True ):
     # get region histograms
-    hists = Results.getRegionHistos( postFit=args.postFit, plotBins=plotBins, nuisances=args.plotNuisances, bkgSubstracted=args.bkgSubstracted, labelFormater=labelFormater )
+    hists = Results.getRegionHistos( postFit=args.postFit, plotBins=plotBins, nuisances=args.plotNuisances, bkgSubstracted=args.bkgSubstracted, labelFormater=labelFormater, directory="Bin0" )["Bin0"]
     
-    hists["data"].style        = styles.errorStyle( ROOT.kBlack )
-    hists["data"].legendText   = "data" if not args.bkgSubstracted else "data (syst + total error)"
-    hists["data"].legendOption = "ep" if args.bkgSubstracted else "p"
+    differential = False
+    ch = "all"
+    xLabel = ""
+    if args.bkgSubstracted:
+        subCard = args.substituteCard.split("_")
+        if len(subCard) == 2 and subCard[1] in ["e", "mu"]:
+            ch = subCard[1]
+            differential = True
+            reg = allRegions[subCard[0]]["regions"]
+            bins, min, max = len(reg), reg[0].vals.values()[0][0], reg[-1].vals.values()[0][1]
+            if max == -999:
+                max    = reg[-1].vals.values()[0][0]
+                bins -= 1
+            xLabel = reg[0].vals.keys()[0]
+            if "PhotonGood0" in xLabel:
+                if xLabel.endswith("_pt"):  xLabel = "p_{T}(#gamma) [GeV]"
+                if xLabel.endswith("_eta"): xLabel = "#eta(#gamma)"
+            for h_key, h in hists.iteritems():
+                h_sub = ROOT.TH1F(h.GetName(), h.GetName(), bins, min, max )
+                for i in range(h_sub.GetNbinsX()):
+                    h_sub.SetBinContent( i+1, h.GetBinContent(i+1))
+                    h_sub.SetBinError( i+1, h.GetBinError(i+1))
+                hists[h_key] = h_sub.Clone(h_key)
+                del h_sub
 
-    if args.bkgSubstracted: 
+    minMax = 0.5 if args.bkgSubstracted and xLabel.endswith("_pt") else 0.25
+    if args.bkgSubstracted:
+        boxes,     ratio_boxes     = getErrorBoxes( copy.copy(hists["data"]), minMax, lineColor=ROOT.kAzure-3, fillColor=ROOT.kAzure-3, hashcode=1001 )
+        boxes_sys, ratio_boxes_sys = getErrorBoxes( copy.copy(hists["data_syst"]), minMax, lineColor=ROOT.kOrange-2, fillColor=ROOT.kOrange-2, hashcode=1001 )
+    else:
+        boxes,     ratio_boxes     = getUncertaintyBoxes( hists["total"], minMax, lineColor=ROOT.kGray+3, fillColor=ROOT.kGray+3, hashcode=formatSettings(nBins)["hashcode"] )
+
+    hists["data"].style        = styles.errorStyle( ROOT.kBlack )
+    hists["data"].legendText   = "data" if not args.bkgSubstracted else "bkg-sub. data (#color[92]{syst} + #color[61]{total} error, %s)"%(ch.replace("mu","#mu"))
+    hists["data"].legendOption = "p" if args.bkgSubstracted else "p"
+
+    if args.bkgSubstracted:
         hists["data_syst"].style        = styles.errorStyle( ROOT.kBlack )
         hists["data_syst"].notInLegend  = True
 
-    for h_key, h in hists.iteritems():
-        if "total" in h_key or h_key not in processes: continue
-        hists[h_key].legendText  = default_processes[h_key]["texName"]
-        hists[h_key].style = styles.fillStyle( default_processes[h_key]["color"], errors=False )
-        hists[h_key].LabelsOption("v","X")
-
-    if args.bkgSubstracted:
-        hists["signal"].style      = styles.lineStyle( ROOT.kOrange+7, width=2, errors=False )
+        hists["signal"].style      = styles.lineStyle( ROOT.kOrange+7, width=2, errors=True )
         hists["signal"].legendText = "SM prediction (detector level)"
 
-#        hists["empty"]             = hists["data"].Clone()
-#        hists["empty"].style       = styles.fillStyle( ROOT.kGray+3, lineWidth=0, fillstyle=formatSettings(nBins)["hashcode"], errors=False )
-#        hists["empty"].legendText  = "syst. error"
-#        hists["empty"].Scale(0)
+    else:
+        for h_key, h in hists.iteritems():
+            if "total" in h_key or h_key not in processes: continue
+            hists[h_key].legendText  = default_processes[h_key]["texName"]
+            hists[h_key].style = styles.fillStyle( default_processes[h_key]["color"], errors=False )
+            hists[h_key].LabelsOption("v","X")
 
     # some settings and things like e.g. uncertainty boxes
-    minMax             = 0.6
-    if not args.bkgSubstracted: boxes, ratio_boxes = getUncertaintyBoxes( hists["total"], minMax )
-
     drawObjects_       = drawObjects( nBins=nBins, isData=(not args.expected), lumi_scale=lumi_scale, postFit=args.postFit, cardfile=args.substituteCard if args.substituteCard else args.cardfile, preliminary=args.preliminary )
-    if not args.bkgSubstracted: drawObjects_ += boxes 
+    drawObjects_      += boxes 
+    if args.bkgSubstracted: drawObjects_ += boxes_sys
     drawObjects_      += drawDivisions( crLabel, misIDPOI=("misIDPOI" in args.cardfile) ) 
     drawObjects_      += drawPTDivisions( crLabel, ptLabels )
 
     histModifications  = []
-    histModifications += [lambda h: h.GetYaxis().SetTitleSize(formatSettings(nBins)["textsize"])]
-    histModifications += [lambda h: h.GetYaxis().SetLabelSize(formatSettings(nBins)["ylabelsize"])]
-    histModifications += [lambda h: h.GetYaxis().SetTitleOffset(formatSettings(nBins)["textoffset"])]
-    histModifications += [ setPTBinLabels(ptLabels, crName, fac=formatSettings(nBins)["offsetfactor"]*hists["total"].GetMaximum())]
+    if not differential:
+        histModifications += [lambda h: h.GetYaxis().SetTitleSize(formatSettings(nBins)["textsize"])]
+        histModifications += [lambda h: h.GetYaxis().SetLabelSize(formatSettings(nBins)["ylabelsize"])]
+        histModifications += [lambda h: h.GetYaxis().SetTitleOffset(formatSettings(nBins)["textoffset"])]
+        histModifications += [ setPTBinLabels(ptLabels, crName, fac=formatSettings(nBins)["offsetfactor"]*hists["total"].GetMaximum())]
 
     ratioHistModifications  = []
-    ratioHistModifications += [lambda h: h.GetYaxis().SetTitleSize(formatSettings(nBins)["textsize"])]
-    ratioHistModifications += [lambda h: h.GetYaxis().SetLabelSize(formatSettings(nBins)["ylabelsize"])]
-    ratioHistModifications += [lambda h: h.GetYaxis().SetTitleOffset(formatSettings(nBins)["textoffset"])]
-    ratioHistModifications += [lambda h: h.GetXaxis().SetTitleSize(formatSettings(nBins)["textsize"])]
-    ratioHistModifications += [lambda h: h.GetXaxis().SetLabelSize(formatSettings(nBins)["xlabelsize"])]
-    ratioHistModifications += [lambda h: h.GetXaxis().SetLabelOffset(0.035)]
+    if not differential:
+        ratioHistModifications += [lambda h: h.GetYaxis().SetTitleSize(formatSettings(nBins)["textsize"])]
+        ratioHistModifications += [lambda h: h.GetYaxis().SetLabelSize(formatSettings(nBins)["ylabelsize"])]
+        ratioHistModifications += [lambda h: h.GetYaxis().SetTitleOffset(formatSettings(nBins)["textoffset"])]
+        ratioHistModifications += [lambda h: h.GetXaxis().SetTitleSize(formatSettings(nBins)["textsize"])]
+        ratioHistModifications += [lambda h: h.GetXaxis().SetLabelSize(formatSettings(nBins)["xlabelsize"])]
+        ratioHistModifications += [lambda h: h.GetXaxis().SetLabelOffset(0.035)]
 
     # get histo list
-    plots, ratioHistos = Results.getRegionHistoList( hists, processes=processes, noData=False, sorted=sorted, bkgSubstracted=args.bkgSubstracted )
+    plots, ratioHistos = Results.getRegionHistoList( hists, processes=processes, noData=False, sorted=sorted and not args.bkgSubstracted, bkgSubstracted=args.bkgSubstracted )
 #    if args.bkgSubstracted: plots += [[hists["empty"]]]
 
     addon = []
     if args.bkgSubstracted: addon += ["bkgSub"]
-    if args.substituteCard: addon += ["rebinned"] + [ cr for cr in args.substituteCard.split("_") if cr not in args.cardfile.split("_") ]
+    if args.substituteCard: addon += ["rebinned"] + [ cr for cr in subCard if cr not in args.cardfile.split("_") ]
     if args.plotNuisances:  addon += args.plotNuisances
 
     # plot name
@@ -176,23 +204,38 @@ def plotRegions( sorted=True ):
     elif args.plotChannels:                      plotName = "_".join( ["regions"] + addon + [ch for ch in args.plotChannels if not "tight" in ch] )
     else:                                        plotName = "_".join( ["regions"] + addon )
 
-    plotting.draw(
-        Plot.fromHisto( plotName,
-                plots,
-                texX = "",
-                texY = "Observed - Background" if args.bkgSubstracted else "Number of Events",
-        ),
-        logX = False, logY = True, sorting = False, 
-        plot_directory    = plotDirectory,
-        legend            = [ (0.2, 0.86 if args.bkgSubstracted else formatSettings(nBins)["legylower"], 0.9, 0.9), formatSettings(nBins)["legcolumns"] ],
-        widths            = { "x_width":formatSettings(nBins)["padwidth"], "y_width":formatSettings(nBins)["padheight"], "y_ratio_width":formatSettings(nBins)["padratio"] },
-        yRange            = ( 0.7, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ),
-        ratio             = { "yRange": ((1-minMax)*0.99, (1+minMax)*1.01), "texY":"Theory/Data" if args.bkgSubstracted else "Data/MC", "histos":ratioHistos, "drawObjects":ratio_boxes if not args.bkgSubstracted else [], "histModifications":ratioHistModifications },
-        drawObjects       = drawObjects_,
-        histModifications = histModifications,
-        copyIndexPHP      = True,
-        extensions = ["png", "pdf", "root"] if args.bkgSubstracted else ["png"], # pdfs are quite large for sorted histograms (disco plot)
-    )
+    if args.cacheHistogram:
+        from Analysis.Tools.MergingDirDB      import MergingDirDB
+        from TTGammaEFT.Tools.user            import cache_directory
+        cache_dir = os.path.join(cache_directory, "unfolding", str(args.year), "bkgSubstracted")
+        dirDB = MergingDirDB(cache_dir)
+        if not dirDB: raise
+        name = ["bkgSubtracted", args.substituteCard, args.cardfile]
+        if args.plotRegions:  name += args.plotRegions
+        if args.plotChannels: name += args.plotChannels
+        dirDB.add( "_".join(name), hists["data"], overwrite=True )
+
+
+    if args.plotRegionPlot:
+
+        plotting.draw(
+            Plot.fromHisto( plotName,
+                    plots,
+                    texX = "" if not differential else xLabel,
+                    texY = "Observed - Background" if args.bkgSubstracted else "Number of Events",
+            ),
+            logX = False, logY = True, sorting = False, 
+            plot_directory    = plotDirectory,
+            legend            = [ (0.2, 0.86 if args.bkgSubstracted else formatSettings(nBins)["legylower"], 0.9, 0.9), formatSettings(nBins)["legcolumns"] ] if not differential else (0.15,0.80,0.9,0.9),
+            widths            = { "x_width":formatSettings(nBins)["padwidth"], "y_width":formatSettings(nBins)["padheight"], "y_ratio_width":formatSettings(nBins)["padratio"] } if not differential else {},
+            yRange            = ( 0.7, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ) if not differential else "auto",
+            ratio             = { "yRange": (0.5, 1.5) if args.bkgSubstracted and xLabel.endswith("_pt") else (0.75, 1.25), "texY":"Theory/Data" if args.bkgSubstracted else "Data/MC", "histos":ratioHistos, "drawObjects":ratio_boxes if not args.bkgSubstracted else ratio_boxes + ratio_boxes_sys, "histModifications":ratioHistModifications },
+            drawObjects       = drawObjects_ if not differential else drawObjectsDiff(lumi_scale) + boxes + boxes_sys,
+            histModifications = histModifications,
+            copyIndexPHP      = True,
+            extensions        = ["png", "pdf", "root"] if args.bkgSubstracted else ["png"], # pdfs are quite large for sorted histograms (disco plot)
+            redrawHistos      = args.bkgSubstracted,
+        )
 
     del hists
 
@@ -275,7 +318,7 @@ def plotCorrelations( systOnly ):
 def plotImpacts():
     Results.getImpactPlot( expected=args.expected, printPNG=True, cores=args.cores )
 
-if args.plotRegionPlot:
+if args.plotRegionPlot or args.cacheHistogram:
     plotRegions( sorted=True )
 if args.plotCovMatrix:
     plotCovariance()

@@ -157,6 +157,18 @@ def drawPTDivisions( labels, ptLabels ):
             lines.append( (min+(i_pt+1)*diff,  0., min+(i_pt+1)*diff, formatSettings(nBins)["legylower"]) )
     return [line.DrawLineNDC(*l) for l in lines]
 
+def drawObjectsDiff( lumi_scale ):
+    tex = ROOT.TLatex()
+    tex.SetNDC()
+    tex.SetTextSize(0.04)
+    tex.SetTextAlign(11) # align right
+    line = (0.65, 0.95, '%3.1f fb{}^{-1} (13 TeV)' % lumi_scale)
+    lines = [
+      (0.15, 0.95, 'CMS #bf{#it{Preliminary}}'),
+      line
+    ]
+    return [tex.DrawLatex(*l) for l in lines]
+
 def drawObjects( nBins, isData, lumi_scale, postFit, cardfile, preliminary ):
     tex = ROOT.TLatex()
     tex.SetNDC()
@@ -207,8 +219,7 @@ def setPTBinLabels( labels, names, fac=1. ):
             tex.DrawLatex( x, fac, labels[i] )
     return setBinLabel
 
-
-def getUncertaintyBoxes( totalHist, minMax=0.3 ):
+def getUncertaintyBoxes( totalHist, minMax=0.3, lineColor=ROOT.kGray+3, fillColor=ROOT.kGray+3, hashcode=3144 ):
     nBins = totalHist.GetNbinsX()
     boxes = []
     ratio_boxes = []
@@ -225,17 +236,17 @@ def getUncertaintyBoxes( totalHist, minMax=0.3 ):
 
         # uncertainty box in main histogram
         box = ROOT.TBox( totalHist.GetXaxis().GetBinLowEdge(ib),  max([0.006, val-syst]), totalHist.GetXaxis().GetBinUpEdge(ib), max([0.006, val+syst]) )
-        box.SetLineColor(ROOT.kGray+3)
-        box.SetFillStyle(formatSettings(nBins)["hashcode"])
-        box.SetFillColor(ROOT.kGray+3)
+        box.SetLineColor(lineColor)
+        box.SetFillStyle(hashcode)
+        box.SetFillColor(fillColor)
 
         # uncertainty box in ratio histogram
         r_min = max( [ 1-sys_rel, r_min ])
         r_max = min( [ 1+sys_rel, r_max ])
         r_box = ROOT.TBox( totalHist.GetXaxis().GetBinLowEdge(ib),  max(1-minMax, 1-sys_rel), totalHist.GetXaxis().GetBinUpEdge(ib), min(1+minMax, 1+sys_rel) )
-        r_box.SetLineColor(ROOT.kGray+3)
-        r_box.SetFillStyle(formatSettings(nBins)["hashcode"])
-        r_box.SetFillColor(ROOT.kGray+3)
+        r_box.SetLineColor(lineColor)
+        r_box.SetFillStyle(hashcode)
+        r_box.SetFillColor(fillColor)
 
         boxes.append( box )
         totalHist.SetBinError(ib, 0)
@@ -243,9 +254,51 @@ def getUncertaintyBoxes( totalHist, minMax=0.3 ):
 
         #pt text in main histogram
         box = ROOT.TBox( totalHist.GetXaxis().GetBinLowEdge(ib),  max([0.006, val-syst]), totalHist.GetXaxis().GetBinUpEdge(ib), max([0.006, val+syst]) )
-        box.SetLineColor(ROOT.kGray+3)
-        box.SetFillStyle(formatSettings(nBins)["hashcode"])
-        box.SetFillColor(ROOT.kGray+3)
+        box.SetLineColor(lineColor)
+        box.SetFillStyle(hashcode)
+        box.SetFillColor(fillColor)
+
+    return boxes, ratio_boxes
+
+def getErrorBoxes( totalHist, minMax=0.3, lineColor=ROOT.kGray+3, fillColor=ROOT.kGray+3, hashcode=3144 ):
+    nBins = totalHist.GetNbinsX()
+    boxes = []
+    ratio_boxes = []
+    r_max = 999
+    r_min = 0
+    for ib in range(1, 1 + nBins ):
+        val = totalHist.GetBinContent(ib)
+        if val<0: continue
+        syst = totalHist.GetBinError(ib)
+        if val > 0:
+            sys_rel = syst/val
+        else:
+            sys_rel = 1.
+
+        width = (totalHist.GetXaxis().GetBinUpEdge(ib) - totalHist.GetXaxis().GetBinLowEdge(ib))*0.5 #0.015*nBins #0.007*nBins
+        # uncertainty box in main histogram
+        box = ROOT.TBox( totalHist.GetXaxis().GetBinCenter(ib)-width,  max([0.006, val-syst]), totalHist.GetXaxis().GetBinCenter(ib)+width, max([0.006, val+syst]) )
+        box.SetLineColor(lineColor)
+        box.SetFillStyle(hashcode)
+        box.SetFillColor(fillColor)
+
+        # uncertainty box in ratio histogram
+        r_min = max( [ 1-sys_rel, r_min ])
+        r_max = min( [ 1+sys_rel, r_max ])
+        r_box = ROOT.TBox( totalHist.GetXaxis().GetBinCenter(ib)-width,  max(1-minMax, 1-sys_rel), totalHist.GetXaxis().GetBinCenter(ib)+width, min(1+minMax, 1+sys_rel) )
+        r_box.SetLineColor(lineColor)
+        r_box.SetFillStyle(hashcode)
+        r_box.SetFillColor(fillColor)
+
+        boxes.append( box )
+        totalHist.SetBinError(ib, 0)
+        ratio_boxes.append( r_box )
+
+        #pt text in main histogram
+        box = ROOT.TBox( totalHist.GetXaxis().GetBinCenter(ib)-width,  max([0.006, val-syst]), totalHist.GetXaxis().GetBinCenter(ib)+width, max([0.006, val+syst]) )
+        box.SetLineColor(lineColor)
+        box.SetFillStyle(hashcode)
+        box.SetFillColor(fillColor)
 
     return boxes, ratio_boxes
 
