@@ -349,6 +349,7 @@ read_variables  = ["weight/F",
                    "nLeptonGood/I", "nElectronGood/I", "nMuonGood/I",
                    "nLeptonTight/I", "nElectronTight/I", "nMuonTight/I",
                    "nLeptonTightNoIso/I", "nElectronTightNoIso/I", "nMuonTightNoIso/I",
+                   "nLeptonVetoNoIso/I", "nElectronVetoNoIso/I", "nMuonVetoNoIso/I",
                    "nLeptonVeto/I", "nElectronVeto/I", "nMuonVeto/I",
                    "Photon[%s]" %photonVarString,
                    "nPhoton/I",
@@ -858,10 +859,9 @@ elif args.invLeptonIso:
         preSelection.replace( key, val )
 elif "NoIso" in args.mode:
     preSelection = cutInterpreter.cutString( args.selection )
-    preSelection = "&&".join( [ item for item in preSelection.split("&&") if not "nLeptonVeto" in item ] )
+#    preSelection = "&&".join( [ item for item in preSelection.split("&&") if not "nLeptonVeto" in item ] )
     for key, val in replaceNoIsoSelection.items():
         preSelection = preSelection.replace( key, val )
-    print preSelection
 else:
     preSelection = cutInterpreter.cutString( args.selection )
 
@@ -1350,8 +1350,6 @@ for index, mode in enumerate( allModes ):
             if plot.name in invPlotNames.values(): continue
             if "category" in plot.name: continue
 
-            print "_".join( ["qcdHisto" if not args.addHEMWeight else "qcdHisto_hemWeight", args.selection, plot.name, str(args.year), mode, "small" if args.small else "full"] + map( str, plot.binning ) )
-            print qcdModes
             for i_m, m in enumerate(qcdModes):
                 res = "_".join( ["qcdHisto" if not args.addHEMWeight else "qcdHisto_hemWeight", args.selection, plot.name, str(args.year), m, "small" if args.small else "full"] + map( str, plot.binning ) )
 
