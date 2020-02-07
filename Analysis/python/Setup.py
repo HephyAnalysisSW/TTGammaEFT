@@ -343,6 +343,8 @@ class Setup:
             res["prefixes"].append(prefix)
         else:
             addMisIDSF   = False
+            res["cuts"].append("nPhotonGood==0")
+            res["prefixes"].append("nPhoton0")
 
         if not photonSel or (photonCutVar=="nPhotonNoChgIsoNoSieie"):
             # remove default zwindow cut in qcd estimation for non photon regions
