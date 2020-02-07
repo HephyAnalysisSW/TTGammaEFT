@@ -94,11 +94,11 @@ PDFType   = "hessian" #"replicas"
 logger.info( "Using PDF type: %s"%PDFType )
 
 #https://indico.cern.ch/event/860492/contributions/3624049/attachments/1957483/3252108/SystematicIssues.pdf
-scale_indices       = [0,5,15,20,24,34,39] #20 central?
+scale_indices       = [0,5,15,24,34,39] #20 central?
 scaleweight_central = "abs(LHEScaleWeight[20])"
 scale_variations    = [ "abs(LHEScaleWeight[%i])"%i for i in scale_indices ]
 
-pdf_indices         = range(30)
+pdf_indices         = range(1,31)
 PDFweight_central   = "abs(LHEPdfWeight[0])"
 PDF_variations      = [ "abs(LHEPdfWeight[%i])/abs(LHEPdfWeight[0])"%i for i in pdf_indices ]
 
@@ -108,7 +108,7 @@ ps_indices          = [] #range(4)
 PSweight_central    = "abs(PSWeight[0])"
 PS_variations       = [ "abs(PSWeight[%i])"%i for i in ps_indices ]
 
-variations          = scale_variations + PDF_variations + aS_variations + PS_variations
+variations          = scale_variations + PDF_variations + aS_variations + PS_variations + [scaleweight_central, PDFweight_central, PSweight_central]
 results             = {}
 scale_systematics   = {}
 
