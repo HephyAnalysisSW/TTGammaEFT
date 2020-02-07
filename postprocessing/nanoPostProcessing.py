@@ -93,7 +93,7 @@ if len( filter( lambda x: x, [options.flagTTGamma, options.flagTTBar, options.fl
 
 # Logging
 import Analysis.Tools.logger as logger
-logdir  = "/tmp/%s/"%str(uuid.uuid4())
+logdir  = "/tmp/lukas.lechner/%s/"%str(uuid.uuid4())
 logFile = '%s/%s_%s_%s_njob%s.txt'%(logdir, options.skim, '_'.join(options.samples), os.environ['USER'], str(0 if options.nJobs==1 else options.job) )
 if not os.path.exists( logdir ):
     try: os.makedirs( logdir )
@@ -158,8 +158,8 @@ if "lxplus" in hostname:
 
 if "clip" in hostname:
    # Set the redirector in the samples repository to the global redirector
-#    from Samples.Tools.config import redirector_clip_scratch as redirector
-    from Samples.Tools.config import redirector_clip as redirector
+    from Samples.Tools.config import redirector_clip_scratch as redirector
+#    from Samples.Tools.config import redirector_clip as redirector
 
 if options.year == 2016:
     from Samples.nanoAOD.Summer16_private_legacy_v1 import *
@@ -881,12 +881,10 @@ def filler( event ):
         gJets.sort( key = lambda p: -p['pt'] )
 
         # Overlap removal flags for ttgamma/ttbar and Zgamma/DY
-        GenPhoton                  = filterGenPhotons( gPart, status='last' )
+        GenPhoton                  = filterGenPhotons( gPart, status='all' )
         for g in GenPhoton:
             g["relIso03_all"] = calculateGenIso( g, gPart, coneSize=0.3, ptCut=5., excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ], chgIso=False )
-            print "all", g["relIso03_all"], g["pt"]
             g["relIso03_chg"] = calculateGenIso( g, gPart, coneSize=0.3, ptCut=5., excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ], chgIso=True )
-            print "chg", g["relIso03_chg"], g["pt"]
 
         # OR ttgamma/tt
         GenIsoPhotonTTG            = filter( lambda g: isIsolatedPhoton( g, gPart, coneSize=0.1,  ptCut=5, excludedPdgIds=[12,-12,14,-14,16,-16] ), GenPhoton    )
@@ -935,6 +933,7 @@ def filler( event ):
         GenMuon                                    = filterGenMuons( gPart, status='last' )
         GenElectron                                = filterGenElectrons( gPart, status='last' )
         GenLepton                                  = GenMuon + GenElectron
+        GenPhoton                                  = filterGenPhotons( gPart, status='last' ) # remove status 23 photons
 
         # ATLAS Unfolding
         GenLeptonATLASUnfold                       = filter( lambda l: not hasMesonMother( getParentIds( l, gPart ) ), GenLepton )
@@ -942,7 +941,7 @@ def filler( event ):
         GenLeptonATLASUnfold                       = filter( lambda l: genLeptonSel_ATLASUnfold(l), GenLeptonATLASUnfold )
 
 #        GenPhotonATLASUnfold = filter( lambda g: not hasMesonMother( getParentIds( g, gPart ) ), GenPhoton )
-#        GenPhotonATLASUnfold = filter( lambda g: g["relIso03_chg"] < 0.1, GenPhotonATLASUnfold )
+        GenPhotonATLASUnfold = filter( lambda g: g["relIso03_chg"] < 0.1, GenPhotonATLASUnfold )
         GenPhotonATLASUnfold = filter( lambda g: not hasMesonMother( getParentIds( g, gPart ) ), GenPhotonATLASUnfold )
         GenPhotonATLASUnfold = filter( lambda g: genPhotonSel_ATLASUnfold(g), GenPhotonATLASUnfold )
 
@@ -968,14 +967,11 @@ def filler( event ):
         event.nGenJetsATLASUnfold     = len(GenJetATLASUnfold)
 
         # CMS Unfolding
-        GenLeptonCMSUnfold                     = filter( lambda l: not hasMesonMother( getParentIds( l, gPart ) ), GenLepton )
-        GenLeptonCMSUnfold, GenPhotonCMSUnfold = addParticlesInCone( GenLeptonCMSUnfold, GenPhoton, coneSize=0.1 ) # add photons in cone of 0.1 to leptons
-        GenLeptonCMSUnfold                     = filter( lambda l: genLeptonSel_CMSUnfold(l), GenLeptonCMSUnfold )
+        GenLeptonCMSUnfold = filter( lambda l: not hasMesonMother( getParentIds( l, gPart ) ), GenLepton )
+        GenLeptonCMSUnfold = filter( lambda l: genLeptonSel_CMSUnfold(l), GenLeptonCMSUnfold )
 
         # Isolated in CMS
-#        GenPhotonCMSUnfold = filter( lambda g: isIsolatedPhoton( g, gPart, coneSize=0.1,  ptCut=5, excludedPdgIds=[12,-12,14,-14,16,-16] ), GenPhoton )
-#        GenPhotonCMSUnfold = filter( lambda g: g["relIso03_chg"] < 0.1, GenPhotonCMSUnfold )
-        GenPhotonCMSUnfold = filter( lambda g: isIsolatedPhoton( g, gPart, coneSize=0.1,  ptCut=5, excludedPdgIds=[12,-12,14,-14,16,-16] ), GenPhotonCMSUnfold )
+        GenPhotonCMSUnfold = filter( lambda g: isIsolatedPhoton( g, gPart, coneSize=0.1,  ptCut=5, excludedPdgIds=[12,-12,14,-14,16,-16] ), GenPhoton )
         GenPhotonCMSUnfold = filter( lambda g: not hasMesonMother( getParentIds( g, gPart ) ), GenPhotonCMSUnfold )
         GenPhotonCMSUnfold = filter( lambda g: genPhotonSel_CMSUnfold(g), GenPhotonCMSUnfold )
 
@@ -983,13 +979,11 @@ def filler( event ):
         GenBJetCMSUnfold   = filter( lambda j: genJetSel_CMSUnfold(j), filterGenBJets( gJets ) )
 
         # CMS Unfolding cleaning
-#        GenJetCMSUnfold    = deltaRCleaning( GenJetCMSUnfold,    GenPhotonCMSUnfold, dRCut=0.4 )
+        GenPhotonCMSUnfold = deltaRCleaning( GenPhotonCMSUnfold, GenLeptonCMSUnfold, dRCut=0.1 )
         GenJetCMSUnfold    = deltaRCleaning( GenJetCMSUnfold,    GenLeptonCMSUnfold, dRCut=0.4 )
-#        GenBJetCMSUnfold   = deltaRCleaning( GenBJetCMSUnfold,   GenPhotonCMSUnfold, dRCut=0.4 )
         GenBJetCMSUnfold   = deltaRCleaning( GenBJetCMSUnfold,   GenLeptonCMSUnfold, dRCut=0.4 )
-        GenPhotonCMSUnfold = deltaRCleaning( GenPhotonCMSUnfold, GenLeptonCMSUnfold, dRCut=0.4 )
-        GenPhotonCMSUnfold = deltaRCleaning( GenPhotonCMSUnfold, GenJetCMSUnfold,    dRCut=0.4 )
-        GenPhotonCMSUnfold = deltaRCleaning( GenPhotonCMSUnfold, GenBJetCMSUnfold,   dRCut=0.4 )
+        GenJetCMSUnfold    = deltaRCleaning( GenJetCMSUnfold,    GenPhotonCMSUnfold, dRCut=0.1 )
+        GenBJetCMSUnfold   = deltaRCleaning( GenBJetCMSUnfold,   GenPhotonCMSUnfold, dRCut=0.1 )
 
         GenPhotonCMSUnfold.sort( key = lambda p: -p['pt'] )
         genP0 = ( GenPhotonCMSUnfold[:1] + [None] )[0]
@@ -1104,19 +1098,19 @@ def filler( event ):
     vetoNoIsoLeptons.sort( key = lambda l: -l['pt'] )
 
     # veto leptons with inverted veto rel iso cut
-    vetoInvIsoElectrons = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt"], l["eta"]+l["deltaEtaSC"], id="veto" ), vetoNoIsoElectrons) )
+    vetoInvIsoElectrons = list( filter( lambda l: l["pfRelIso03_all_corr"]>getElectronIsoCutV2( l["pt"], l["eta"]+l["deltaEtaSC"], id="veto" ), vetoNoIsoElectrons) )
     vetoInvIsoMuons     = list( filter( lambda l: l["pfRelIso04_all"]>muonRelIsoCutVeto, vetoNoIsoMuons ) )
     vetoInvIsoLeptons   = vetoInvIsoElectrons + vetoInvIsoMuons
     vetoInvIsoLeptons.sort( key = lambda l: -l['pt'] )
 
     # veto leptons with inverted loose rel iso cut
-    vetoInvIsoElectronsLoose = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt"], l["eta"]+l["deltaEtaSC"], id="loose" ), vetoNoIsoElectrons) )
+    vetoInvIsoElectronsLoose = list( filter( lambda l: l["pfRelIso03_all_corr"]>getElectronIsoCutV2( l["pt"], l["eta"]+l["deltaEtaSC"], id="loose" ), vetoNoIsoElectrons) )
     vetoInvIsoMuonsLoose    = list( filter( lambda l: l["pfRelIso04_all"]>muonRelIsoCutLoose, vetoNoIsoMuons ) )
     vetoInvIsoLeptonsLoose  = vetoInvIsoElectronsLoose + vetoInvIsoMuonsLoose
     vetoInvIsoLeptonsLoose.sort( key = lambda l: -l['pt'] )
 
     # veto leptons with inverted tight rel iso cut
-    vetoInvIsoElectronsTight = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt"], l["eta"]+l["deltaEtaSC"], id="tight" ), vetoNoIsoElectrons) )
+    vetoInvIsoElectronsTight = list( filter( lambda l: l["pfRelIso03_all_corr"]>getElectronIsoCutV2( l["pt"], l["eta"]+l["deltaEtaSC"], id="tight" ), vetoNoIsoElectrons) )
     vetoInvIsoMuonsTight     = list( filter( lambda l: l["pfRelIso04_all"]>muonRelIsoCut, vetoNoIsoMuons ) )
     vetoInvIsoLeptonsTight   = vetoInvIsoElectronsTight + vetoInvIsoMuonsTight
     vetoInvIsoLeptonsTight.sort( key = lambda l: -l['pt'] )
