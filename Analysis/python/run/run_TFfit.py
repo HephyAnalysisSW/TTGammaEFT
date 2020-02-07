@@ -252,26 +252,18 @@ for s in mc:
     if s.name == floatSample.name: continue
     hist_other.Add(s.hist)
 
-print "data",  dataHist.Integral()
-print "qcd",   hist_qcd.Integral()
-print "float", hist_float.Integral()
-print "fixed", hist_other.Integral()
-
 dataHist.Add(hist_other, -1)
 
 tarray = ROOT.TObjArray(3)
 tarray.AddLast( hist_qcd   )
 tarray.AddLast( hist_float )
-#tarray.AddLast( hist_other )
 
 fitter = ROOT.TFractionFitter(dataHist, tarray)
-fitter.Constrain( 0, 0.000, 1.000 ) # qcd tf
-fitter.Constrain( 1, 0.700, 1.300 ) # floating
-#fitter.Constrain( 2, 0.99, 1.01 ) # fixed
+fitter.Constrain( 0, 0.0, 1.0 ) # qcd tf
+fitter.Constrain( 1, 0.9, 1.1 ) # floating
 
-fitter.SetRangeX(0,10)
-fitter.SetRangeX(1,10)
-#fitter.SetRangeX(2,10)
+fitter.SetRangeX(0,12)
+fitter.SetRangeX(1,12)
 
 print("Performing Fit!")
 status = fitter.Fit()           # perform the fit
@@ -279,21 +271,19 @@ print("Fit performed: status = %i"%status)
 
 qcdTFVal,   qcdTFErr   = ROOT.Double(0), ROOT.Double(0)
 floatSFVal, floatSFErr = ROOT.Double(0), ROOT.Double(0)
-#otherSFVal, otherSFErr = ROOT.Double(0), ROOT.Double(0)
 
 fitter.GetResult( 0, qcdTFVal,   qcdTFErr )
 fitter.GetResult( 1, floatSFVal, floatSFErr )
-#fitter.GetResult( 2, otherSFVal, otherSFErr )
 
 qcdTF   = u_float( qcdTFVal,   qcdTFErr )
 floatSF = u_float( floatSFVal, floatSFErr )
-#otherSF = u_float( otherSFVal, otherSFErr )
 
 dataHist.Add(hist_other)
 
+print
 print "qcdTF", qcdTF
 print "floating SF", floatSF
-#print "fixed SF", otherSF
+print
 
 qcdHist.Scale(qcdTF.val)
 hist_qcd.Scale(qcdTF.val)
@@ -321,7 +311,7 @@ plots.append( Plot.fromHisto( "mT_template", [[qcdTemplate]], texX = "m_{T} [GeV
 for plot in plots:
 
     if plot.name == "mT_fit":
-        legend = [ (0.2, 0.75, 0.9, 0.9), 2 ]
+        legend = [ (0.2, 0.70, 0.9, 0.9), 2 ]
     elif "template" in plot.name:
         legend = [ (0.2, 0.84, 0.9, 0.9), 1 ]
     else:
