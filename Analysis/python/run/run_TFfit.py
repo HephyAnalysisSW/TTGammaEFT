@@ -269,9 +269,9 @@ fitter.Constrain( 0, 0.000, 1.000 ) # qcd tf
 fitter.Constrain( 1, 0.700, 1.300 ) # floating
 #fitter.Constrain( 2, 0.99, 1.01 ) # fixed
 
-#fitter.SetRangeX(0,12)
-#fitter.SetRangeX(1,12)
-#fitter.SetRangeX(2,12)
+fitter.SetRangeX(0,10)
+fitter.SetRangeX(1,10)
+#fitter.SetRangeX(2,10)
 
 print("Performing Fit!")
 status = fitter.Fit()           # perform the fit
