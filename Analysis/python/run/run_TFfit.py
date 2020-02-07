@@ -195,8 +195,13 @@ dataHist_SB.legendText = "data (%s)"%args.mode.replace("mu","#mu")
 dataHist.style         = styles.errorStyle( ROOT.kBlack )
 dataHist.legendText    = "data (%s)"%args.mode.replace("mu","#mu")
 qcdHist.style          = styles.fillStyle( color.QCD )
-qcdHist.legendText     = "multijets"
+qcdHist.legendText     = "QCD"
 
+oneHist = dataHist.Clone("one")
+oneHist.notInLegend = True
+oneHist.style = styles.lineStyle( ROOT.kWhite, width=0 )
+for i in range(oneHist.GetNbinsX()):
+    oneHist.SetBinContent(i+1, 1)
 
 mTHistos     = [[], [dataHist]]
 mTHistos_fit = [[], [dataHist]]
@@ -222,16 +227,21 @@ for i in range(qcdHist.GetNbinsX()):
 # copy template
 qcdTemplate            = qcdHist.Clone("QCDTemplate")
 qcdTemplate.style      = styles.fillStyle( color.QCD )
-qcdTemplate.legendText = "multijets (template)"
+qcdTemplate.legendText = "QCD template"
 qcdTemplate.Scale(1./qcdTemplate.Integral())
+maxQCD = qcdTemplate.GetMaximum()
+
+# for template ratio pattern
+mTHistos_SB.append( [qcdTemplate] )
+mTHistos_SB.append( [oneHist] )
 
 if photonRegion: floatSample = wg
 else:            floatSample = wjets
 
 print("Using sample %s as free floating histogram!"%floatSample.name)
 
-hist_qcd_fit          = qcdHist.Clone("qfit")
-hist_float_fit        = floatSample.hist.Clone("ffit")
+hist_float = floatSample.hist.Clone("ffit")
+hist_qcd   = qcdHist.Clone("hist_qcd")
 
 hist_other            = floatSample.hist.Clone("other")
 hist_other.style      = styles.fillStyle( ROOT.kGray )
@@ -242,24 +252,26 @@ for s in mc:
     if s.name == floatSample.name: continue
     hist_other.Add(s.hist)
 
-tarray = ROOT.TObjArray(3)
-tarray.Add( hist_qcd_fit )
-tarray.Add( hist_float_fit )
-tarray.Add( hist_other )
-
-print "data", dataHist.Integral()
-print "qcd", hist_qcd_fit.Integral()
-print "float", hist_float_fit.Integral()
+print "data",  dataHist.Integral()
+print "qcd",   hist_qcd.Integral()
+print "float", hist_float.Integral()
 print "fixed", hist_other.Integral()
 
-fitter = ROOT.TFractionFitter(dataHist, tarray)
-fitter.Constrain( 0, 0.0,   2.0   ) # unconstrained
-fitter.Constrain( 1, 0.5,   1.5   ) # unconstrained
-fitter.Constrain( 2, 0.999, 1.001 ) # fixed
+dataHist.Add(hist_other, -1)
 
-fitter.SetRangeX(0,12)
-fitter.SetRangeX(1,12)
-fitter.SetRangeX(2,12)
+tarray = ROOT.TObjArray(3)
+tarray.AddLast( hist_qcd   )
+tarray.AddLast( hist_float )
+#tarray.AddLast( hist_other )
+
+fitter = ROOT.TFractionFitter(dataHist, tarray)
+fitter.Constrain( 0, 0.000, 1.000 ) # qcd tf
+fitter.Constrain( 1, 0.700, 1.300 ) # floating
+#fitter.Constrain( 2, 0.99, 1.01 ) # fixed
+
+#fitter.SetRangeX(0,12)
+#fitter.SetRangeX(1,12)
+#fitter.SetRangeX(2,12)
 
 print("Performing Fit!")
 status = fitter.Fit()           # perform the fit
@@ -267,39 +279,36 @@ print("Fit performed: status = %i"%status)
 
 qcdTFVal,   qcdTFErr   = ROOT.Double(0), ROOT.Double(0)
 floatSFVal, floatSFErr = ROOT.Double(0), ROOT.Double(0)
-otherSFVal, otherSFErr = ROOT.Double(0), ROOT.Double(0)
+#otherSFVal, otherSFErr = ROOT.Double(0), ROOT.Double(0)
 
 fitter.GetResult( 0, qcdTFVal,   qcdTFErr )
 fitter.GetResult( 1, floatSFVal, floatSFErr )
-fitter.GetResult( 2, otherSFVal, otherSFErr )
+#fitter.GetResult( 2, otherSFVal, otherSFErr )
 
 qcdTF   = u_float( qcdTFVal,   qcdTFErr )
 floatSF = u_float( floatSFVal, floatSFErr )
-otherSF = u_float( otherSFVal, otherSFErr )
+#otherSF = u_float( otherSFVal, otherSFErr )
+
+dataHist.Add(hist_other)
+
 print "qcdTF", qcdTF
 print "floating SF", floatSF
-print "fixed SF", otherSF
+#print "fixed SF", otherSF
 
-#hist_qcd.Scale(qcdTF.val)#   = fitter.GetMCPrediction(0).Clone("hist_QCD")
-#hist_float.Scale(floatSF.val)# = fitter.GetMCPrediction(1).Clone("float")
-hist_qcd   = fitter.GetMCPrediction(0).Clone("q")
-hist_float = fitter.GetMCPrediction(1).Clone("f")
+qcdHist.Scale(qcdTF.val)
+hist_qcd.Scale(qcdTF.val)
+hist_float.Scale(floatSF.val)
 
-del fitter
-#del qcdTFVal
-#del qcdTFErr
-#del floatSFVal
-#del floatSFErr
-
-hist_qcd.legendText = "QCD" + " (TF %3.3f #pm %3.3f)"%(qcdTF.val, qcdTF.sigma)
+hist_qcd.legendText = "QCD" + " (TF %1.2f#pm %1.2f)"%(qcdTF.val, qcdTF.sigma)
 hist_qcd.style      = styles.fillStyle( color.QCD )
 
-hist_float.legendText = floatSample.texName + " (SF %3.3f #pm %3.3f)"%(floatSF.val, floatSF.sigma)
+hist_float.legendText = floatSample.texName + " (SF %1.2f#pm %1.2f)"%(floatSF.val, floatSF.sigma)
 hist_float.style      = styles.fillStyle( floatSample.color )
 
+mTHistos[0].append( qcdHist )
 mTHistos_fit[0].append( hist_float )
-mTHistos_fit[0].append( hist_other )
 mTHistos_fit[0].append( hist_qcd )
+mTHistos_fit[0].append( hist_other )
 
 Plot.setDefaults()
 
@@ -310,14 +319,32 @@ plots.append( Plot.fromHisto( "mT_sideband", mTHistos_SB,     texX = "m_{T} (QCD
 plots.append( Plot.fromHisto( "mT_template", [[qcdTemplate]], texX = "m_{T} [GeV]",                texY = "Number of Events" ) )
 
 for plot in plots:
+
+    if plot.name == "mT_fit":
+        legend = [ (0.2, 0.75, 0.9, 0.9), 2 ]
+    elif "template" in plot.name:
+        legend = [ (0.2, 0.84, 0.9, 0.9), 1 ]
+    else:
+        legend = [ (0.2,0.9-0.025*sum(map(len, plot.histos)),0.9,0.9), 3 ]
+
     for log in [True, False]:
+
+        if plot.name == "mT" or plot.name == "mT_fit":
+            ratio = {'yRange':(0.65,1.35)}
+        elif plot.name == "mT_sideband":
+            ratio = {'histos':[(2,3)], 'logY':log, 'texY': 'Template', 'yRange': (0.03, maxQCD*2) if log else (0.001, maxQCD*1.2)}
+        else:
+            ratio = None
+
         plot_directory_ = os.path.join( plot_directory, "transferFactor", str(args.year), args.plot_directory, "qcdHistos",  args.selection, args.mode, "log" if log else "lin" )
         plotting.draw( plot,
                        plot_directory = plot_directory_,
                        logX = False, logY = log, sorting = plot.name != "mT_fit",
-                       yRange = "auto",
-                       ratio = {'yRange':(0.65,1.35)} if plot.name == "mT" or plot.name == "mT_fit" else None,
+                       yRange = (0.3, "auto"),
+                       ratio = ratio,
                        drawObjects = drawObjects( lumi_scale ),
-                       legend = [ (0.2,0.9-0.025*sum(map(len, plot.histos))if plot.name != "mT_fit" else 0.8 ,0.9,0.9), 2 if plot.name == "mT_fit" else 3] if not "template" in plot.name else (0.2,0.84,0.9,0.9),
+                       legend = legend,
                        copyIndexPHP = True,
                        )
+
+del fitter
