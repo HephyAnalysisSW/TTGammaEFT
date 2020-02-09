@@ -279,7 +279,7 @@ QCDSF_val[2017] = u_float( 1.0, 0.5 )
 QCDSF_val[2018] = u_float( 1.0, 0.5 )
 
 WJetsSF_val = {}
-WJetsSF_val[2016] = u_float( 1.06, 0.14 ) #26012020
+WJetsSF_val[2016] = u_float( 1.11, 0.14 ) #26012020
 WJetsSF_val[2017] = u_float( 1.08, 0.33 )
 WJetsSF_val[2018] = u_float( 1.19, 0.20 )
 
@@ -307,8 +307,8 @@ fakeSF_val[2017] = u_float( 1.00, 0.09 )
 fakeSF_val[2018] = u_float( 1.00, 0.09 )
 
 WGSF_val = {}
-WGSF_val[2016] = u_float( 1.24, 0.25 ) #26012020
-#WGSF_val[2016] = u_float( 0.79, 0.09 ) #26012020
+#WGSF_val[2016] = u_float( 1.24, 0.25 ) #26012020
+WGSF_val[2016] = u_float( 0.88, 0.09 ) #26012020
 WGSF_val[2017] = u_float( 1.29, 0.18 ) #2020 01 20
 WGSF_val[2018] = u_float( 1.36, 0.15 ) #2020 01 20
 

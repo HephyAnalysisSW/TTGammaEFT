@@ -10,7 +10,7 @@ from RootTools.core.standard           import *
 from Analysis.Tools.metFilters         import getFilterCut
 
 # Internal Imports
-from TTGammaEFT.Tools.user             import plot_directory
+from TTGammaEFT.Tools.user             import plot_directory, cache_directory
 from TTGammaEFT.Tools.cutInterpreter   import cutInterpreter
 from TTGammaEFT.Tools.TriggerSelector  import TriggerSelector
 
@@ -19,6 +19,7 @@ from TTGammaEFT.Analysis.Setup         import Setup
 from TTGammaEFT.Analysis.EstimatorList import EstimatorList
 
 from TTGammaEFT.Samples.color          import color
+from Analysis.Tools.MergingDirDB      import MergingDirDB
 
 # Default Parameter
 loggerChoices = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTSET"]
@@ -34,7 +35,8 @@ argParser.add_argument("--selection",          action="store",      default="WJe
 argParser.add_argument("--year",               action="store",      default=2016,   type=int,  choices=[2016,2017,2018],                     help="Which year to plot?")
 argParser.add_argument("--mode",               action="store",      default="all",  type=str,  choices=["mu", "e", "all"],                   help="lepton selection")
 argParser.add_argument("--small",              action="store_true",                                                                          help="Run only on a small subset of the data?")
-argParser.add_argument("--tfUpdate",           action="store_true",                                                                          help="overwrite cache?")
+argParser.add_argument("--tfUpdate",           action="store_true",                                                                          help="update TF setup parameters?")
+argParser.add_argument("--overwrite",          action="store_true",                                                                          help="overwrite cache?")
 args = argParser.parse_args()
 
 # Logger
@@ -55,6 +57,10 @@ def drawObjects( lumi_scale ):
       line
     ]
     return [tex.DrawLatex(*l) for l in lines]
+
+cache_dir = os.path.join(cache_directory, "qcdTFHistos", str(args.year), args.selection, args.mode)
+dirDB = MergingDirDB(cache_dir)
+if not dirDB: raise
 
 if args.small:    args.plot_directory += "_small"
 if args.tfUpdate: args.plot_directory += "_TF"
@@ -121,27 +127,28 @@ for s in mc:
     s.setSelectionString( [ filterCutMc, triggerCutMc, "overlapRemoval==1" ] )
     s.read_variables = read_variables_MC
     sampleWeight     = weightString
-
-    if addSF:
-        if "DY" in s.name:
-            sampleWeight += "*%f"%DYSF_val[args.year].val
-        elif "WJets" in s.name:
-            sampleWeight += "*%f"%WJetsSF_val[args.year].val
-        elif "TT_pow" in s.name:
-            sampleWeight += "*%f"%TTSF_val[args.year].val
-        elif "ZG" in s.name:
-            sampleWeight += "*%f"%ZGSF_val[args.year].val
-        elif "WG" in s.name:
-            sampleWeight += "*%f"%WGSF_val[args.year].val
-        elif "TTG" in s.name:
-            sampleWeight += "*%f"%SSMSF_val[args.year].val
-
     if args.small:           
         s.normalization = 1.
         s.reduceFiles( factor=100 )
         sampleWeight += "*%f"%(1./s.normalization)
 
     s.setWeightString( sampleWeight )
+
+    s.scale = 1.
+    if addSF:
+        if "DY" in s.name:
+            s.scale *= DYSF_val[args.year].val
+        elif "WJets" in s.name:
+            s.scale *= WJetsSF_val[args.year].val
+        elif "TT_pow" in s.name:
+            s.scale *= TTSF_val[args.year].val
+        elif "ZG" in s.name:
+            s.scale *= ZGSF_val[args.year].val
+        elif "WG" in s.name:
+            s.scale *= WGSF_val[args.year].val
+        elif "TTG" in s.name:
+            s.scale *= SSMSF_val[args.year].val
+
 
 replaceSelection = {
     "nLeptonVetoIsoCorr": "nLeptonVetoNoIsoTight",
@@ -185,9 +192,20 @@ else:
 #    for key, val in replaceSelection.items():
 #        preSelection = preSelection.replace( key, val )
 
+key = (data_sample.name, "mTinv", "_".join(map(str,binning)), data_sample.weightString, data_sample.selectionString, selection, preSelection)
+if dirDB.contains(key) and not args.overwrite:
+    dataHist_SB = dirDB.get(key)
+else:
+    dataHist_SB = data_sample.get1DHistoFromDraw( "mTinv", binning=binning, selectionString=preSelection, addOverFlowBin="upper" )
+    dirDB.add(key, dataHist_SB)
 
-dataHist_SB = data_sample.get1DHistoFromDraw( "mTinv", binning=binning, selectionString=preSelection, addOverFlowBin="upper" )
-dataHist    = data_sample.get1DHistoFromDraw( "mT",    binning=binning, selectionString=selection,    addOverFlowBin="upper" )
+key = (data_sample.name, "mT", "_".join(map(str,binning)), data_sample.weightString, data_sample.selectionString, selection, preSelection)
+if dirDB.contains(key) and not args.overwrite:
+    dataHist = dirDB.get(key)
+else:
+    dataHist = data_sample.get1DHistoFromDraw( "mT",    binning=binning, selectionString=selection,    addOverFlowBin="upper" )
+    dirDB.add(key, dataHist)
+
 qcdHist     = dataHist_SB.Clone("QCD")
 
 dataHist_SB.style      = styles.errorStyle( ROOT.kBlack )
@@ -208,8 +226,24 @@ mTHistos_fit = [[], [dataHist]]
 mTHistos_SB  = [[], [dataHist_SB]]
 
 for s in mc:
-    s.hist_SB = s.get1DHistoFromDraw( "mTinv", binning=binning, selectionString=preSelection, addOverFlowBin="upper" )
-    s.hist    = s.get1DHistoFromDraw( "mT",    binning=binning, selectionString=selection,    addOverFlowBin="upper" )
+    key = (s.name, "mTinv", "_".join(map(str,binning)), s.weightString, s.selectionString, selection, preSelection)
+    if dirDB.contains(key) and not args.overwrite:
+        s.hist_SB = dirDB.get(key)
+    else:
+        s.hist_SB = s.get1DHistoFromDraw( "mTinv", binning=binning, selectionString=preSelection, addOverFlowBin="upper" )
+        dirDB.add(key, s.hist_SB)
+
+    key = (s.name, "mT", "_".join(map(str,binning)), s.weightString, s.selectionString, selection, preSelection)
+    if dirDB.contains(key) and not args.overwrite:
+        s.hist = dirDB.get(key)
+    else:
+        s.hist = s.get1DHistoFromDraw( "mT",    binning=binning, selectionString=selection,    addOverFlowBin="upper" )
+        dirDB.add(key, s.hist)
+
+    # apply SF after histo caching
+    s.hist.Scale(s.scale)
+    s.hist_SB.Scale(s.scale)
+
     qcdHist.Add( s.hist_SB, -1 )
 
     s.hist_SB.style      = styles.fillStyle( s.color )
@@ -228,7 +262,7 @@ for i in range(qcdHist.GetNbinsX()):
 qcdTemplate            = qcdHist.Clone("QCDTemplate")
 qcdTemplate.style      = styles.fillStyle( color.QCD )
 qcdTemplate.legendText = "QCD template"
-qcdTemplate.Scale(1./qcdTemplate.Integral())
+qcdTemplate.Scale(1./ qcdTemplate.Integral() )
 maxQCD = qcdTemplate.GetMaximum()
 
 # for template ratio pattern
@@ -252,18 +286,26 @@ for s in mc:
     if s.name == floatSample.name: continue
     hist_other.Add(s.hist)
 
-dataHist.Add(hist_other, -1)
+nTotal = dataHist.Integral()
+nFloat = hist_float.Integral()
+nFix   = hist_other.Integral()
+nQCD   = hist_qcd.Integral()
 
 tarray = ROOT.TObjArray(3)
-tarray.AddLast( hist_qcd   )
-tarray.AddLast( hist_float )
+tarray.Add( hist_qcd )
+tarray.Add( hist_float )
+tarray.Add( hist_other )
 
-fitter = ROOT.TFractionFitter(dataHist, tarray)
-fitter.Constrain( 0, 0.0, 1.0 ) # qcd tf
-fitter.Constrain( 1, 0.9, 1.1 ) # floating
+fitter = ROOT.TFractionFitter( dataHist, tarray )
 
-fitter.SetRangeX(0,12)
-fitter.SetRangeX(1,12)
+tfitter = fitter.GetFitter()
+tfitter.Config().ParSettings(0).Set("qcd",   nQCD*0.4/nTotal, 0.001, 0.,               1.)
+if photonRegion and args.mode == "e": # fix WGamma in photonRegions e-channel since mT is not a good handle
+    tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.001, nFloat*0.99/nTotal, nFloat*1.01/nTotal)
+else:
+    tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.001, 0.,               1.)
+tfitter.Config().ParSettings(2).Set("fixed", nFix/nTotal,     0.0,   nFix*0.99/nTotal, nFix*1.01/nTotal)
+tfitter.Config().ParSettings(2).Fix()
 
 print("Performing Fit!")
 status = fitter.Fit()           # perform the fit
@@ -275,10 +317,8 @@ floatSFVal, floatSFErr = ROOT.Double(0), ROOT.Double(0)
 fitter.GetResult( 0, qcdTFVal,   qcdTFErr )
 fitter.GetResult( 1, floatSFVal, floatSFErr )
 
-qcdTF   = u_float( qcdTFVal,   qcdTFErr )
-floatSF = u_float( floatSFVal, floatSFErr )
-
-dataHist.Add(hist_other)
+qcdTF   = u_float( qcdTFVal,   qcdTFErr )*nTotal/nQCD
+floatSF = u_float( floatSFVal, floatSFErr )*nTotal/nFloat
 
 print
 print "qcdTF", qcdTF
@@ -292,7 +332,10 @@ hist_float.Scale(floatSF.val)
 hist_qcd.legendText = "QCD" + " (TF %1.2f#pm %1.2f)"%(qcdTF.val, qcdTF.sigma)
 hist_qcd.style      = styles.fillStyle( color.QCD )
 
-hist_float.legendText = floatSample.texName + " (SF %1.2f#pm %1.2f)"%(floatSF.val, floatSF.sigma)
+if photonRegion and args.mode == "e": # fix WGamma in photonRegions e-channel since mT is not a good handle
+    hist_float.legendText = floatSample.texName
+else:
+    hist_float.legendText = floatSample.texName + " (SF %1.2f#pm %1.2f)"%(floatSF.val, floatSF.sigma)
 hist_float.style      = styles.fillStyle( floatSample.color )
 
 mTHistos[0].append( qcdHist )
@@ -306,7 +349,7 @@ plots = []
 plots.append( Plot.fromHisto( "mT",          mTHistos,        texX = "m_{T} [GeV]",                texY = "Number of Events" ) )
 plots.append( Plot.fromHisto( "mT_fit",      mTHistos_fit,    texX = "m_{T} [GeV]",                texY = "Number of Events" ) )
 plots.append( Plot.fromHisto( "mT_sideband", mTHistos_SB,     texX = "m_{T} (QCD sideband) [GeV]", texY = "Number of Events" ) )
-plots.append( Plot.fromHisto( "mT_template", [[qcdTemplate]], texX = "m_{T} [GeV]",                texY = "Number of Events" ) )
+#plots.append( Plot.fromHisto( "mT_template", [[qcdTemplate]], texX = "m_{T} [GeV]",                texY = "Number of Events" ) )
 
 for plot in plots:
 
@@ -329,8 +372,8 @@ for plot in plots:
         plot_directory_ = os.path.join( plot_directory, "transferFactor", str(args.year), args.plot_directory, "qcdHistos",  args.selection, args.mode, "log" if log else "lin" )
         plotting.draw( plot,
                        plot_directory = plot_directory_,
-                       logX = False, logY = log, sorting = plot.name != "mT_fit",
-                       yRange = (0.3, "auto"),
+                       logX = False, logY = log, sorting = True,#plot.name != "mT_fit",
+                       yRange = (0.3, "auto") if not "template" in plot.name else "auto",
                        ratio = ratio,
                        drawObjects = drawObjects( lumi_scale ),
                        legend = legend,

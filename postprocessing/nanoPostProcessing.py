@@ -19,7 +19,7 @@ from RootTools.core.standard                     import *
 from Analysis.Tools.helpers                      import checkRootFile, deepCheckRootFile, deepCheckWeight
 
 # Tools for systematics
-from Analysis.Tools.helpers                      import checkRootFile, bestDRMatchInCollection, deltaR, deltaPhi, mT, lp
+from Analysis.Tools.helpers                      import checkRootFile, bestDRMatchInCollection, deltaR, deltaPhi, mT, mTg, lp
 from Analysis.Tools.MetSignificance              import MetSignificance
 from TTGammaEFT.Tools.helpers                    import m3
 from TTGammaEFT.Tools.user                       import cache_directory
@@ -629,8 +629,8 @@ new_variables += [ 'l1GammadR/F',  'l1GammadPhi/F' ]
 new_variables += [ 'j0GammadR/F',  'j0GammadPhi/F' ] 
 new_variables += [ 'j1GammadR/F',  'j1GammadPhi/F' ] 
 
-new_variables += [ 'mT/F', 'mT2ll/F', 'mT2lg/F', 'mT2bb/F', 'mT2blbl/F']
-new_variables += [ 'mTinv/F', 'mT2linvg/F']
+new_variables += [ 'mT/F', 'mTg/F', 'mT2ll/F', 'mT2lg/F', 'mT2bb/F', 'mT2blbl/F']
+new_variables += [ 'mTinv/F', 'mTginv/F', 'mT2linvg/F']
 mt2Calculator = mt2Calculator()
 
 if options.addPreFiringFlag: new_variables += [ 'unPreFirableEvent/I' ]
@@ -1489,8 +1489,8 @@ def filler( event ):
         event.mT      = mT( tightLeptons[0], met )
 
     if len(tightInvIsoLeptons) > 0:
-        event.lpInvTight = lp( tightInvIsoLeptons[0]["pt"], tightInvIsoLeptons[0]["phi"], met["pt"], met["phi"] )
-        event.mTinv      = mT( tightInvIsoLeptons[0], met )
+        event.lpInvTight = lp(  tightInvIsoLeptons[0]["pt"], tightInvIsoLeptons[0]["phi"], met["pt"], met["phi"] )
+        event.mTinv      = mT(  tightInvIsoLeptons[0], met )
 
     mt2Calculator.reset()
     mt2Calculator.setMet( met["pt"], met["phi"] )
@@ -1498,10 +1498,12 @@ def filler( event ):
         mt2Calculator.setLepton1( tightInvIsoLeptons[0]["pt"], tightInvIsoLeptons[0]["eta"], tightInvIsoLeptons[0]["phi"] )
         mt2Calculator.setLepton2( mediumPhotons[0]["pt"], mediumPhotons[0]["eta"], mediumPhotons[0]["phi"] )
         event.mT2linvg   = mt2Calculator.mt2ll()
+        event.mTginv     = mTg( tightInvIsoLeptons[0], mediumPhotons[0], met )
     if len(tightLeptons) > 0 and len(mediumPhotons) > 0:
         mt2Calculator.setLepton1( tightLeptons[0]["pt"], tightLeptons[0]["eta"], tightLeptons[0]["phi"] )
         mt2Calculator.setLepton2( mediumPhotons[0]["pt"], mediumPhotons[0]["eta"], mediumPhotons[0]["phi"] )
         event.mT2lg   = mt2Calculator.mt2ll()
+        event.mTg     = mTg( tightLeptons[0], mediumPhotons[0], met )
     if len(selectedLeptons) > 1:
         mt2Calculator.setLepton1( selectedLeptons[0]["pt"], selectedLeptons[0]["eta"], selectedLeptons[0]["phi"] )
         mt2Calculator.setLepton2( selectedLeptons[1]["pt"], selectedLeptons[1]["eta"], selectedLeptons[1]["phi"] )
