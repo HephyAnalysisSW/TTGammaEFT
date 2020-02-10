@@ -73,21 +73,27 @@ if args.year == 2016:
     from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed  import *
     from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
     mc          = [ TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
+    tt          = TT_pow_16
     wjets       = WJets_16
+    ttg         = TTG_16
     wg          = WG_16
     data_sample = Run2016
 elif args.year == 2017:
     from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed    import *
     from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
     mc          = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
+    tt          = TT_pow_17
     wjets       = WJets_17
+    ttg         = TTG_17
     wg          = WG_17
     data_sample = Run2017
 elif args.year == 2018:
     from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed  import *
     from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
     mc          = [ TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
+    tt          = TT_pow_18
     wjets       = WJets_18
+    ttg         = TTG_18
     wg          = WG_18
     data_sample = Run2018
 
@@ -134,22 +140,6 @@ for s in mc:
 
     s.setWeightString( sampleWeight )
 
-    s.scale = 1.
-    if addSF:
-        if "DY" in s.name:
-            s.scale *= DYSF_val[args.year].val
-        elif "WJets" in s.name:
-            s.scale *= WJetsSF_val[args.year].val
-        elif "TT_pow" in s.name:
-            s.scale *= TTSF_val[args.year].val
-        elif "ZG" in s.name:
-            s.scale *= ZGSF_val[args.year].val
-        elif "WG" in s.name:
-            s.scale *= WGSF_val[args.year].val
-        elif "TTG" in s.name:
-            s.scale *= SSMSF_val[args.year].val
-
-
 replaceSelection = {
     "nLeptonVetoIsoCorr": "nLeptonVetoNoIsoTight",
     "nLeptonTight":       "nLeptonTightInvIso",
@@ -159,6 +149,7 @@ replaceSelection = {
 }
 
 photonRegion = False
+bjetRegion   = False
 # get selection cuts
 regionPlot = False
 if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
@@ -167,7 +158,9 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
     regionPlot = True
     setup = Setup( year=args.year, photonSelection=False, checkOnly=False, runOnLxPlus=False ) #photonselection always false for qcd estimate
     setup = setup.sysClone( parameters=allRegions[args.selection]["parameters"] )
+
     photonRegion = not allRegions[args.selection]["noPhotonCR"]
+    bjetRegion   = setup.parameters["nBTag"][0] > 0
 
     selection     = setup.selection( "MC", channel="all", **setup.defaultParameters(QCDTF_updates["SR"] if args.tfUpdate else {}) )["prefix"]
     selection    += "-" + args.mode
@@ -241,8 +234,25 @@ for s in mc:
         dirDB.add(key, s.hist)
 
     # apply SF after histo caching
-    s.hist.Scale(s.scale)
-    s.hist_SB.Scale(s.scale)
+    if addSF:
+        if "DY" in s.name:
+            s.hist.Scale(DYSF_val[args.year].val)
+            s.hist_SB.Scale(DYSF_val[args.year].val)
+        elif "WJets" in s.name:
+            s.hist.Scale(WJetsSF_val[args.year].val)
+            s.hist_SB.Scale(WJetsSF_val[args.year].val)
+        elif "TT_pow" in s.name:
+            s.hist.Scale(TTSF_val[args.year].val)
+            s.hist_SB.Scale(TTSF_val[args.year].val)
+        elif "ZG" in s.name:
+            s.hist.Scale(ZGSF_val[args.year].val)
+            s.hist_SB.Scale(ZGSF_val[args.year].val)
+        elif "WG" in s.name:
+            s.hist.Scale(WGSF_val[args.year].val)
+            s.hist_SB.Scale(WGSF_val[args.year].val)
+        elif "TTG" in s.name:
+            s.hist.Scale(SSMSF_val[args.year].val)
+            s.hist_SB.Scale(SSMSF_val[args.year].val)
 
     qcdHist.Add( s.hist_SB, -1 )
 
@@ -269,8 +279,10 @@ maxQCD = qcdTemplate.GetMaximum()
 mTHistos_SB.append( [qcdTemplate] )
 mTHistos_SB.append( [oneHist] )
 
-if photonRegion: floatSample = wg
-else:            floatSample = wjets
+if       photonRegion and not bjetRegion: floatSample = wg
+elif     photonRegion and     bjetRegion: floatSample = tt #ttg?
+elif not photonRegion and not bjetRegion: floatSample = wjets
+elif not photonRegion and     bjetRegion: floatSample = tt
 
 print("Using sample %s as free floating histogram!"%floatSample.name)
 
@@ -329,13 +341,13 @@ qcdHist.Scale(qcdTF.val)
 hist_qcd.Scale(qcdTF.val)
 hist_float.Scale(floatSF.val)
 
-hist_qcd.legendText = "QCD" + " (TF %1.2f#pm %1.2f)"%(qcdTF.val, qcdTF.sigma)
+hist_qcd.legendText = "QCD" + " (TF %1.3f#pm %1.3f)"%(qcdTF.val, qcdTF.sigma)
 hist_qcd.style      = styles.fillStyle( color.QCD )
 
 if photonRegion and args.mode == "e": # fix WGamma in photonRegions e-channel since mT is not a good handle
     hist_float.legendText = floatSample.texName
 else:
-    hist_float.legendText = floatSample.texName + " (SF %1.2f#pm %1.2f)"%(floatSF.val, floatSF.sigma)
+    hist_float.legendText = floatSample.texName + " (SF %1.3f#pm %1.3f)"%(floatSF.val, floatSF.sigma)
 hist_float.style      = styles.fillStyle( floatSample.color )
 
 mTHistos[0].append( qcdHist )

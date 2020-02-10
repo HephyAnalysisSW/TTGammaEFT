@@ -27,7 +27,7 @@ python nanoPostProcessing.py --writeToDPM --skim incl --year 2016 --processingEr
 #python nanoPostProcessing.py --writeToDPM --skim incl --year 2016 --processingEra TTGammaEFT_PP_2016_TTG_private_v26 --fileBasedSplitting --flagDYWJets --sample W4JetsToLNu #SPLIT10
 
 #python nanoPostProcessing.py --writeToDPM --skim incl --year 2016 --processingEra TTGammaEFT_PP_2016_TTG_private_v26 --fileBasedSplitting --flagTTBar --sample TTLep_pow #SPLIT60
-python nanoPostProcessing.py --writeToDPM --skim incl --year 2016 --processingEra TTGammaEFT_PP_2016_TTG_private_v26 --fileBasedSplitting --flagTTBar --sample TTSingleLep_pow #SPLIT100
+python nanoPostProcessing.py --writeToDPM --skim incl --year 2016 --processingEra TTGammaEFT_PP_2016_TTG_private_v26 --fileBasedSplitting --flagTTBar --sample TTSingleLep_pow #SPLIT55
 
 #python nanoPostProcessing.py --writeToDPM --skim incl --year 2016 --processingEra TTGammaEFT_PP_2016_TTG_private_v26 --fileBasedSplitting --flagTGamma --sample TGJets #SPLIT5
 
