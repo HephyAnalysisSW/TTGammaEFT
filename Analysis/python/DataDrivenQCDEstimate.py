@@ -299,7 +299,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         # get mT histos
         dataHist  = self.histoFromCache( "mT",    binning, setup, "Data", channel, cut_Data_SR, weight_Data_SR, overwrite=overwrite)
         # safe some memory, you don't need the CR data hist, only for estimating the qcd hist
-        qcdHist   = self.histoFromCache( "mTinv", binning, setup, "Data", channel, cut_Data_CR, weight_Data_CR, overwrite=overwrite).Clone("qcd")
+        qcdHist   = self.histoFromCache( "mTinv", binning, setup, "Data", channel, cut_Data_CR, weight_Data_CR, overwrite=overwrite)
         fixedHist = dataHist.Clone("fixed") # sum of contributions that stay fixed
         fixedHist.Scale(0.)
 
@@ -311,23 +311,23 @@ class DataDrivenQCDEstimate(SystematicEstimator):
             # apply SF after histo caching
             if addSF:
                 if "DY" in s:
-                    tmp_SR.Scale(DYSF_val[args.year].val)
-                    tmp_CR.Scale(DYSF_val[args.year].val)
+                    tmp_SR.Scale(DYSF_val[setup.year].val)
+                    tmp_CR.Scale(DYSF_val[setup.year].val)
                 elif "WJets" in s:
-                    tmp_SR.Scale(WJetsSF_val[args.year].val)
-                    tmp_CR.Scale(WJetsSF_val[args.year].val)
+                    tmp_SR.Scale(WJetsSF_val[setup.year].val)
+                    tmp_CR.Scale(WJetsSF_val[setup.year].val)
                 elif "TT_pow" in s:
-                    tmp_SR.Scale(TTSF_val[args.year].val)
-                    tmp_CR.Scale(TTSF_val[args.year].val)
+                    tmp_SR.Scale(TTSF_val[setup.year].val)
+                    tmp_CR.Scale(TTSF_val[setup.year].val)
                 elif "ZG" in s:
-                    tmp_SR.Scale(ZGSF_val[args.year].val)
-                    tmp_CR.Scale(ZGSF_val[args.year].val)
+                    tmp_SR.Scale(ZGSF_val[setup.year].val)
+                    tmp_CR.Scale(ZGSF_val[setup.year].val)
                 elif "WG" in s:
-                    tmp_SR.Scale(WGSF_val[args.year].val)
-                    tmp_CR.Scale(WGSF_val[args.year].val)
+                    tmp_SR.Scale(WGSF_val[setup.year].val)
+                    tmp_CR.Scale(WGSF_val[setup.year].val)
                 elif "TTG" in s:
-                    tmp_SR.Scale(SSMSF_val[args.year].val)
-                    tmp_CR.Scale(SSMSF_val[args.year].val)
+                    tmp_SR.Scale(SSMSF_val[setup.year].val)
+                    tmp_CR.Scale(SSMSF_val[setup.year].val)
 
             tmp_SR.Scale( setup.dataLumi/1000. )
             tmp_CR.Scale( setup.dataLumi/1000. )
@@ -363,8 +363,8 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         tfitter.Config().ParSettings(2).Set("fixed", nFixedScale,   0.0,   nFixedScale*0.99, nFixedScale*1.01)
         tfitter.Config().ParSettings(2).Fix()
         # fix WGamma in photonRegions e-channel since mT is not a good handle
-        if photonRegion and not bjetRegion and channel == "e":
-            tfitter.Config().ParSettings(1).Set("float", nFloatScale, 0.0, nFloatScale*0.99, nFloatScale*1.01)
+        if photonRegion and not bjetRegion and channel == "e": # cant make it fixed, as the nDOF is not matching, no clue how to change that, nice workaround
+            tfitter.Config().ParSettings(1).Set("float", nFloatScale, 0.001, nFloatScale*0.99, nFloatScale*1.01)
 
         print("Performing Fit!")
         status = fitter.Fit()           # perform the fit
