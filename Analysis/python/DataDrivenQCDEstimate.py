@@ -1,4 +1,6 @@
 import os, sys
+import ROOT
+ROOT.gROOT.SetBatch(True)
 from math import sqrt
 
 from TTGammaEFT.Analysis.SystematicEstimator import SystematicEstimator
@@ -252,6 +254,144 @@ class DataDrivenQCDEstimate(SystematicEstimator):
 
         return transferFac if transferFac > 0 else u_float(0, 0)
 
+    def _fittedTransferFactor(self, channel, setup, qcdUpdates=None, overwrite=False):
+
+        print( "Calculating data-driven QCD transfer factor" )
+
+        selection_MC_CR     = setup.selection("MC",   channel=channel, **setup.defaultParameters( update=qcdUpdates["CR"] if qcdUpdates else QCDTF_updates["CR"] ))
+        selection_Data_CR   = setup.selection("Data", channel=channel, **setup.defaultParameters( update=qcdUpdates["CR"] if qcdUpdates else QCDTF_updates["CR"] ))
+        selection_MC_SR     = setup.selection("MC",   channel=channel, **setup.defaultParameters( update=qcdUpdates["SR"] if qcdUpdates else QCDTF_updates["SR"] ))
+        selection_Data_SR   = setup.selection("Data", channel=channel, **setup.defaultParameters( update=qcdUpdates["SR"] if qcdUpdates else QCDTF_updates["SR"] ))
+
+        weight_MC_CR      = selection_MC_CR["weightStr"] # w/ misID SF
+        weight_Data_CR    = selection_Data_CR["weightStr"]
+        weight_MC_SR      = selection_MC_SR["weightStr"] # w/ misID SF
+        weight_Data_SR    = selection_Data_SR["weightStr"]
+
+        print( "Using QCD TF CR weightstring MC %s"%(weight_MC_CR) )
+        print( "Using QCD TF CR weightstring Data %s"%(weight_Data_CR) )
+        print( "Using QCD TF SR weightstring MC %s"%(weight_MC_SR) )
+        print( "Using QCD TF SR weightstring Data %s"%(weight_Data_SR) )
+
+        cut_MC_CR     = selection_MC_CR["cut"]
+        cut_Data_CR   = selection_Data_CR["cut"]
+        cut_MC_SR     = selection_MC_SR["cut"]
+        cut_Data_SR   = selection_Data_SR["cut"]
+
+        print( "Using QCD TF CR MC total cut %s"%(cut_MC_CR) )
+        print( "Using QCD TF CR Data total cut %s"%(cut_Data_CR) )
+        print( "Using QCD TF SR MC total cut %s"%(cut_MC_SR) )
+        print( "Using QCD TF SR Data total cut %s"%(cut_Data_SR) )
+
+        # deside which sample should be free floating
+        photonRegion = setup.parameters["nPhoton"][0] > 0
+        bjetRegion   = setup.parameters["nBTag"][0] > 0
+        if       photonRegion and not bjetRegion: floatSample = "WG"
+        elif     photonRegion and     bjetRegion: floatSample = "TT_pow" #"TTG"?
+        elif not photonRegion and not bjetRegion: floatSample = "WJets"
+        elif not photonRegion and     bjetRegion: floatSample = "TT_pow"
+
+        print( "Leaving sample %s floating in the fit"%(floatSample) )
+
+        binning = [ 20, 0, 200 ]
+        print( "Getting mT histograms with binning %s"%(" ".join(map(str,binning))) )
+
+        # get mT histos
+        dataHist  = self.histoFromCache( "mT",    binning, setup, "Data", channel, cut_Data_SR, weight_Data_SR, overwrite=overwrite)
+        # safe some memory, you don't need the CR data hist, only for estimating the qcd hist
+        qcdHist   = self.histoFromCache( "mTinv", binning, setup, "Data", channel, cut_Data_CR, weight_Data_CR, overwrite=overwrite).Clone("qcd")
+        fixedHist = dataHist.Clone("fixed") # sum of contributions that stay fixed
+        fixedHist.Scale(0.)
+
+        # Calculate mTs for MC (normalized to data lumi)
+        for s in default_sampleList:
+            if s in ["QCD-DD", "QCD", "GJets", "Data"]: continue
+            tmp_SR = self.histoFromCache( "mT",    binning, setup, s, channel, cut_MC_SR, weight_MC_SR, overwrite=overwrite )
+            tmp_CR = self.histoFromCache( "mTinv", binning, setup, s, channel, cut_MC_CR, weight_MC_CR, overwrite=overwrite )
+            # apply SF after histo caching
+            if addSF:
+                if "DY" in s:
+                    tmp_SR.Scale(DYSF_val[args.year].val)
+                    tmp_CR.Scale(DYSF_val[args.year].val)
+                elif "WJets" in s:
+                    tmp_SR.Scale(WJetsSF_val[args.year].val)
+                    tmp_CR.Scale(WJetsSF_val[args.year].val)
+                elif "TT_pow" in s:
+                    tmp_SR.Scale(TTSF_val[args.year].val)
+                    tmp_CR.Scale(TTSF_val[args.year].val)
+                elif "ZG" in s:
+                    tmp_SR.Scale(ZGSF_val[args.year].val)
+                    tmp_CR.Scale(ZGSF_val[args.year].val)
+                elif "WG" in s:
+                    tmp_SR.Scale(WGSF_val[args.year].val)
+                    tmp_CR.Scale(WGSF_val[args.year].val)
+                elif "TTG" in s:
+                    tmp_SR.Scale(SSMSF_val[args.year].val)
+                    tmp_CR.Scale(SSMSF_val[args.year].val)
+
+            tmp_SR.Scale( setup.dataLumi/1000. )
+            tmp_CR.Scale( setup.dataLumi/1000. )
+
+            qcdHist.Add( tmp_CR, -1 )
+            if s == floatSample: floatHist = tmp_SR.Clone("float")
+            else:                fixedHist.Add( tmp_SR )
+
+            del tmp_SR
+            del tmp_CR
+
+        # remove negative bins
+        for i in range(qcdHist.GetNbinsX()):
+            if qcdHist.GetBinContent(i+1) < 0: qcdHist.SetBinContent(i+1, 0)
+
+        # all histos prepared, now prepare the fit
+        tarray = ROOT.TObjArray(3)
+        tarray.Add( qcdHist )
+        tarray.Add( floatHist )
+        tarray.Add( fixedHist )
+
+        fitter = ROOT.TFractionFitter( dataHist, tarray )
+
+        # it is a FRACTION fitter, so the range is the fraction of the data hist
+        nTotal      = dataHist.Integral()
+        nFloatScale = floatHist.Integral() / nTotal
+        nFixedScale = fixedHist.Integral() / nTotal
+        nQCDScale   = qcdHist.Integral()   / nTotal
+
+        tfitter = fitter.GetFitter()
+        tfitter.Config().ParSettings(0).Set("qcd",   nQCDScale*0.4, 0.001, 0.,               1.)
+        tfitter.Config().ParSettings(1).Set("float", nFloatScale,   0.001, 0.,               1.)
+        tfitter.Config().ParSettings(2).Set("fixed", nFixedScale,   0.0,   nFixedScale*0.99, nFixedScale*1.01)
+        tfitter.Config().ParSettings(2).Fix()
+        # fix WGamma in photonRegions e-channel since mT is not a good handle
+        if photonRegion and not bjetRegion and channel == "e":
+            tfitter.Config().ParSettings(1).Set("float", nFloatScale, 0.0, nFloatScale*0.99, nFloatScale*1.01)
+
+        print("Performing Fit!")
+        status = fitter.Fit()           # perform the fit
+        print("Fit performed: status = %i"%status)
+
+        qcdTFVal,   qcdTFErr   = ROOT.Double(0), ROOT.Double(0)
+        floatSFVal, floatSFErr = ROOT.Double(0), ROOT.Double(0)
+
+        fitter.GetResult( 0, qcdTFVal,   qcdTFErr )
+        fitter.GetResult( 1, floatSFVal, floatSFErr )
+
+        del fitter
+
+        transferFac = u_float( qcdTFVal,   qcdTFErr ) / nQCDScale
+        floatSF     = u_float( floatSFVal, floatSFErr ) / nFloatScale
+
+        print("Calculating data-driven QCD TF normalization in channel " + channel + " using lumi " + str(setup.dataLumi) + ":")
+        print("TF CR yield QCD:                 " + str(nQCDScale*nTotal))
+        print("TF SR yield data:                " + str(nTotal))
+        print("TF SR yield fixed:               " + str(nFixedScale*nTotal))
+        print("TF SR yield float:               " + str(nFloatScale*nTotal))
+        print("transfer factor:                 " + str(transferFac))
+        print(floatSample + " scale factor:     " + str(floatSF))
+
+        return transferFac if transferFac > 0 else u_float(0, 0)
+
+
     #Concrete implementation of abstract method "estimate" as defined in Systematic
     def _estimate(self, region, channel, setup, signalAddon=None, overwrite=False):
 
@@ -348,4 +488,5 @@ if __name__ == "__main__":
     estimate = DataDrivenQCDEstimate( "QCD-DD" )    
     estimate.initCache(setup.defaultCacheDir())
 
-    print "e", "dd", estimate._dataDrivenTransferFactor( "e", setup, overwrite=overwrite )
+#    print "e", "dd", estimate._dataDrivenTransferFactor( "e", setup, overwrite=overwrite )
+    print "e", "dd", estimate._fittedTransferFactor( "e", setup, overwrite=overwrite )

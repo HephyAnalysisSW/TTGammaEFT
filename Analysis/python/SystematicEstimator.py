@@ -49,6 +49,9 @@ class SystematicEstimator:
                 helperCacheDirName = os.path.join(cacheDir, self.name+"_helper")
                 self.helperCache = MergingDirDB(helperCacheDirName)
                 if not self.helperCache: raise
+                histoHelperCacheDirName = os.path.join(cacheDir, self.name+"_histo")
+                self.histoHelperCache = MergingDirDB(histoHelperCacheDirName)
+                if not self.histoHelperCache: raise
                 tfCacheDirName = os.path.join(cacheDir, self.name+"_tf")
                 self.tfCache = MergingDirDB(tfCacheDirName)
                 if not self.tfCache: raise
@@ -70,6 +73,16 @@ class SystematicEstimator:
             yieldFromDraw = u_float(**setup.processes[process].getYieldFromDraw(selectionString, weightString))
             if self.helperCache: self.helperCache.add(s, yieldFromDraw, overwrite=True)
             return yieldFromDraw
+
+    # For the datadriven subclasses which often need the same mT histos we write those yields to a cache
+    def histoFromCache(self, var, binning, setup, process, c, selectionString, weightString, overwrite=False):
+        s = (var, "_".join(map(str,binning)), process, c, selectionString, weightString)
+        if self.histoHelperCache and self.histoHelperCache.contains(s) and not overwrite:
+            return self.histoHelperCache.get(s)
+        else:
+            histo = setup.processes[process].get1DHistoFromDraw( var, binning=binning, selectionString=selectionString, weightString=weightString, addOverFlowBin="upper" )
+            if self.histoHelperCache: self.histoHelperCache.add(s, histo, overwrite=True)
+            return histo
 
     def uniqueKey(self, region, channel, setup, signalAddon=None, qcdUpdates={}):
         sysForKey = setup.sys.copy()
@@ -109,25 +122,32 @@ class SystematicEstimator:
             logger.debug( "Loading cached %s result for %r : %r"%(self.name, key, res) )
         elif self.tfCache and not checkOnly:
             logger.debug( "Calculating %s result for %r"%(self.name, key) )
-            res = self._dataDrivenTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=overwrite )
+#            res = self._dataDrivenTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=overwrite )
+            res = self._fittedTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=overwrite )
             _res = self.tfCache.add( key, res, overwrite=True )
             logger.debug( "Adding cached transfer factor for %r : %r" %(key, res) )
         elif not checkOnly:
-            res = self._dataDrivenTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=overwrite )
+#            res = self._dataDrivenTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=overwrite )
+            res = self._fittedTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=overwrite )
         else:
             res = u_float(-1,0)
         return res if res > 0 or checkOnly else u_float(0,0)
+
 
     @abc.abstractmethod
     def _estimate(self, region, channel, setup, signalAddon=None, overwrite=False):
         """Estimate yield in "region" using setup"""
         return
 
-    def _transferFactor(self, region, channel, setup, overwrite=False):
+    def _transferFactor(self, channel, setup, overwrite=False):
         """Estimate transfer factor for QCD in "region" using setup"""
         return
 
-    def _dataDrivenTransferFactor(self, region, channel, setup, overwrite=False):
+    def _dataDrivenTransferFactor(self, channel, setup, qcdUpdates=None, overwrite=False):
+        """Estimate transfer factor for QCD in "region" using setup"""
+        return
+
+    def _fittedTransferFactor(self, channel, setup, qcdUpdates=None, overwrite=False):
         """Estimate transfer factor for QCD in "region" using setup"""
         return
 
