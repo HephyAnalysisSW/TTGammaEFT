@@ -24,7 +24,7 @@ from TTGammaEFT.Samples.color         import color
 
 from Analysis.Tools.MergingDirDB      import MergingDirDB
 from Analysis.Tools.metFilters        import getFilterCut
-from Analysis.Tools.helpers           import getCollection, deltaR
+from Analysis.Tools.helpers           import getCollection, deltaR, mTg
 from Analysis.Tools.u_float           import u_float
 from Analysis.Tools.mt2Calculator     import mt2Calculator
 from Analysis.Tools.overlapRemovalTTG import getParentIds
@@ -456,6 +456,14 @@ def calcGenWdecays( event, sample ):
     event.cat_genTau_l = int( event.nGenWTau==1 and event.nGenWTauJets==0 and not event.cat_gen2L )
     event.cat_genTau_q = int( event.nGenWTau==1 and event.nGenWTauJets==1 and not event.cat_gen2L )
 
+def getmTg( event, sample ):
+    if event.nLeptonTight == 0 or event.nPhotonGood == 0:
+        event.mTg = -999
+        return
+    l   = {"pt":event.LeptonTight0_pt, "phi":event.LeptonTight0_phi}
+    p   = {"pt":event.PhotonGood0_pt, "phi":event.PhotonGood0_phi}
+    met = {"pt":event.MET_pt, "phi":event.MET_phi}
+    event.mTg = mTg(l,p,met)
 
 mt2Calculator = mt2Calculator()
 def mt2lg( event, sample ):
@@ -655,7 +663,7 @@ def printWeight( event, sample ):
 #sequence = [calcGenWdecays, calcVetoElectrons, misIDelectrons, allmisIDelectrons, mt2lg ]# printWeight ]#clean_Jets ]
 #sequence = [misIDelectrons]# printWeight ]#clean_Jets ]
 #sequence += [calcNoIsoLeptons]
-sequence = []
+sequence = [getmTg]
 
 # Sample definition
 if args.year == 2016:
@@ -1047,6 +1055,14 @@ noIsoPlots.append( Plot(
 
 # plotList
 addPlots = []
+
+addPlots.append( Plot(
+    name      = 'mTg',
+    texX      = 'M_{T#gamma} (GeV)',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.mTg,
+    binning   = [ 20, 0, 200 ],
+))
 
 addPlots.append( Plot(
     name      = 'misIDElectron0_pt',

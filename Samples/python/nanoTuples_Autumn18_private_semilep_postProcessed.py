@@ -121,7 +121,7 @@ dirs["rest"]             = dirs["singleTop"] + dirs["TG"] + dirs["other"]
 directories = { key : [ os.path.join( data_directory_, postprocessing_directory_, dir) for dir in dirs[key] ] for key in dirs.keys() }
 
 # Samples
-DY_LO_18            = getMCSample(name="DY_LO",            redirector=redirector, color=color.DY,              texName="DY (LO)",           directory=directories["DY_LO"], noCheckProxy=False, fromDPM=fromDPM)
+DY_LO_18            = getMCSample(name="DY_LO",            redirector=redirector, color=color.DY,              texName="DY",                directory=directories["DY_LO"], noCheckProxy=False, fromDPM=fromDPM)
 TT_pow_18           = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_pow"], noCheckProxy=True, fromDPM=fromDPM)
 TT_Lep_18           = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_Lep"], noCheckProxy=True, fromDPM=fromDPM)
 TT_SemiLep_18       = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_SemiLep"], noCheckProxy=True, fromDPM=fromDPM)

@@ -611,7 +611,12 @@ def filterGenTaus( genParts, status=None ):
     return taus
 
 def filterGenPhotons( genParts, status=None ):
-    photons = list( filter( lambda l: abs(l['pdgId']) == 22 and l['status'] >= 0, genParts ) )
+    if   status == 'first': stat = [23]
+    elif status == 'last':  stat = [1]
+    if status == "all":
+        photons = list( filter( lambda l: abs(l['pdgId']) == 22 and l['status'] >= 0, genParts ) )
+    else:
+        photons = list( filter( lambda l: abs(l['pdgId']) == 22 and l['status'] in stat, genParts ) )
     return photons
 
 def filterGenTops( genParts ):

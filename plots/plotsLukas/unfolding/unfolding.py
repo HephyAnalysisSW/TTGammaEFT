@@ -46,6 +46,19 @@ import RootTools.core.logger as logger_rt
 logger    = logger.get_logger(    args.logLevel, logFile=None )
 logger_rt = logger_rt.get_logger( args.logLevel, logFile=None )
 
+# Text on the plots
+def drawObjects( plotData, lumi_scale ):
+    tex = ROOT.TLatex()
+    tex.SetNDC()
+    tex.SetTextSize(0.04)
+    tex.SetTextAlign(11) # align right
+    line = (0.65, 0.95, "%3.1f fb{}^{-1} (13 TeV)" % lumi_scale)
+    lines = [
+      (0.15, 0.95, "CMS #bf{#it{Preliminary}}" if plotData else "CMS #bf{#it{Simulation Preliminary}}"), 
+      line
+    ]
+    return [tex.DrawLatex(*l) for l in lines]
+
 if args.small:        args.plot_directory += "_small"
 if args.noData:       args.plot_directory += "_noData"
 if args.normalize:    args.plot_directory += "_normalized"
@@ -71,10 +84,12 @@ elif args.year == 2018: lumi_scale = 59.74
 if args.normalize:
     lumi_scale = 1.
 
-resolutionBinning = [ 50, 0.6, 2 ]
+plot_directory_ = os.path.join( plot_directory, "unfolding", str(args.year), args.plot_directory, args.genSelection, args.recoSelection, args.mode )
+
+reconstructionBinning = [ 50, 0.6, 2 ]
 dresMatrix = { "name":"UnfoldingMatrix", "year":str(args.year), "mode":args.mode, "MCOnly":str(args.noData), "selection":args.recoSelection, "genSelection":args.genSelection, "genBin":"_".join(map(str,args.genBinning)),   "recoBin":"_".join(map(str,args.recoBinning)), "ttgSingleLepton":str(args.ttgSingleLep), "small":str(args.small) }
 resMatrix  = "_".join( [ "_".join([k, v]) for k, v in dresMatrix.iteritems() ] )
-dresRes    = { "name":"Resolution",      "year":str(args.year), "mode":args.mode, "MCOnly":str(args.noData), "selection":args.recoSelection, "genSelection":args.genSelection, "binning":"_".join(map(str,resolutionBinning)), "ttgSingleLepton":str(args.ttgSingleLep), "small":str(args.small) }
+dresRes    = { "name":"Reconstruction",      "year":str(args.year), "mode":args.mode, "MCOnly":str(args.noData), "selection":args.recoSelection, "genSelection":args.genSelection, "binning":"_".join(map(str,reconstructionBinning)), "ttgSingleLepton":str(args.ttgSingleLep), "small":str(args.small) }
 resRes     = "_".join( [ "_".join([k, v]) for k, v in dresRes.iteritems() ] )
 dresData   = { "name":"DataHistogram",   "year":str(args.year), "mode":args.mode, "selection":args.recoSelection, "recoBin":"_".join(map(str,args.recoBinning)) }
 resData    = "_".join( [ "_".join([k, v]) for k, v in dresData.iteritems() ] )
@@ -106,7 +121,7 @@ else:
     norm = 1.
     if args.small:           
         sample.normalization=1.
-        sample.reduceFiles( factor=20 )
+        sample.reduceFiles( factor=100 )
         norm = 1./sample.normalization
 
     read_variables = [ "weight/F",
@@ -117,7 +132,7 @@ else:
                        "nGenLeptonCMSUnfold/I", "nGenPhotonCMSUnfold/I", "nGenBJetCMSUnfold/I", "nGenJetsCMSUnfold/I",
                      ]
 
-    weight_ = lambda event, sample: event.weight * norm
+    weight_    = lambda event, sample: event.weight * norm
     Plot.setDefaults(   stack=Stack( [sample] ), weight=staticmethod( weight_ ), selectionString=cutInterpreter.cutString( args.genSelection ) )
     Plot2D.setDefaults( stack=Stack( [sample] ), weight=staticmethod( weight_ ), selectionString=cutInterpreter.cutString( args.genSelection ) )
 
@@ -133,18 +148,18 @@ else:
                        read_variables = read_variables,
                       )
 
-    resolution = Plot(
-                       name      = "resolution",
+    reconstruction = Plot(
+                       name      = "reconstruction",
                        texX      = "p^{gen}_{T}(#gamma) / p^{reco}_{T}(#gamma)",
                        attribute = lambda event, sample: getattr( event, args.genPtVariable ) / event.PhotonGood0_pt if selection( event, sample ) else -999,
-                       binning   = resolutionBinning,
+                       binning   = reconstructionBinning,
                        read_variables = read_variables,
                       )
 
-    plotting.fill( [unfold2D, resolution], read_variables=read_variables )
+    plotting.fill( [unfold2D, reconstruction], read_variables=read_variables )
 
     matrix   = unfold2D.histos[0][0]
-    resHisto = resolution.histos[0][0]
+    resHisto = reconstruction.histos[0][0]
 
     dirDB.add( resMatrix, matrix, overwrite=True )
     dirDB.add( resRes,    resHisto, overwrite=True )
@@ -157,7 +172,7 @@ histos["gen"]        = matrix.ProjectionX("gen")
 histos["efficiency"] = ROOT.TH1D( "efficiency", "efficiency", nGen,  xminGen,  xmaxGen  )
 histos["purity"]     = ROOT.TH1D( "purity",     "purity",     nReco, xminReco, xmaxReco )
 histos["recoMC"]     = matrix.ProjectionY("reco")
-histos["resolution"] = resHisto
+histos["reconstruction"] = resHisto
 if args.noData: histos["reco"] = histos["recoMC"]
 else:           histos["reco"] = dataHisto
 
@@ -229,7 +244,7 @@ histos["reco"].style       = styles.errorStyle( ROOT.kBlack, width = 2 )
 histos["recoMC"].style     = styles.errorStyle( ROOT.kBlack, width = 2 )
 histos["unfolded"].style   = styles.errorStyle( ROOT.kBlack, width = 2 )
 histos["unfoldedMC"].style = styles.errorStyle( ROOT.kBlack, width = 2 )
-histos["resolution"].style = styles.errorStyle( ROOT.kBlack, width = 2 )
+histos["reconstruction"].style = styles.errorStyle( ROOT.kBlack, width = 2 )
 
 addons = []
 if args.ttgSingleLep:  addons.append("tt#gamma 1l")
@@ -245,22 +260,7 @@ histos["efficiency"].legendText = "Efficiency"
 histos["purity"].legendText     = "Purity"
 histos["reco"].legendText       = "Detector Level (%s)"%", ".join(addons)
 histos["recoMC"].legendText     = "Detector Level (%s)"%", ".join(addons).replace(", Data",", MC")
-histos["resolution"].legendText = "Photon Resolution (%s)"%", ".join(addons).replace(", Data",", MC")
-
-# Text on the plots
-def drawObjects( plotData, lumi_scale ):
-    tex = ROOT.TLatex()
-    tex.SetNDC()
-    tex.SetTextSize(0.04)
-    tex.SetTextAlign(11) # align right
-    line = (0.65, 0.95, "%3.1f fb{}^{-1} (13 TeV)" % lumi_scale)
-    lines = [
-      (0.15, 0.95, "CMS #bf{#it{Preliminary}}" if plotData else "CMS #bf{#it{Simulation Preliminary}}"), 
-      line
-    ]
-    return [tex.DrawLatex(*l) for l in lines]
-
-plot_directory_ = os.path.join( plot_directory, "unfolding", str(args.year), args.plot_directory, args.genSelection, args.recoSelection, args.mode )
+histos["reconstruction"].legendText = "Inverse Responce (%s)"%", ".join(addons).replace(", Data",", MC")
 
 # remove the defaults again
 Plot.setDefaults()
@@ -295,15 +295,15 @@ plots.append( Plot.fromHisto( "efficiency", [[histos["efficiency"]]], texX = "p^
 plots.append( Plot.fromHisto( "purity", [[histos["purity"]]], texX = "p^{gen}_{T}(#gamma) [GeV]", texY = "Purity" ) )
 # purity and efficiency
 plots.append( Plot.fromHisto( "purity_efficiency", [[histos["purity"]],[histos["efficiency"]]], texX = "p^{gen,reco}_{T}(#gamma) [GeV]", texY = "Purity, Efficiency" ) )
-# resolution
-plots.append( Plot.fromHisto( "resolution", [[histos["resolution"]]], texX = "p^{gen}_{T}(#gamma) / p^{reco}_{T}(#gamma)", texY = "Number of Events" ) )
+# reconstruction
+plots.append( Plot.fromHisto( "reconstruction", [[histos["reconstruction"]]], texX = "p^{gen}_{T}(#gamma) / p^{reco}_{T}(#gamma)", texY = "Number of Events" ) )
 
 for plot in plots:
     xShift = plot.name in ["efficiency","purity","purity_efficiency"]
     plotting.draw( plot,
                    plot_directory = plot_directory_,
-                   logX = False, logY = plot.name=="resolution", sorting = False,
-                   yRange = (0.001, "auto"),
+                   logX = False, logY = plot.name=="reconstruction", sorting = False,
+                   yRange = (0.01, "auto"),
                    drawObjects = drawObjects( not args.noData, lumi_scale ),
                    legend = [ (0.3+0.3*xShift,0.88-0.04*len(plot.histos),0.88,0.88), 1 ],
                    copyIndexPHP = True,
