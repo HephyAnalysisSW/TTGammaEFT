@@ -307,14 +307,14 @@ fakeSF_val[2017] = u_float( 1.00, 0.09 )
 fakeSF_val[2018] = u_float( 1.00, 0.09 )
 
 WGSF_val = {}
-#WGSF_val[2016] = u_float( 1.24, 0.25 ) #26012020
-WGSF_val[2016] = u_float( 0.88, 0.09 ) #26012020
+WGSF_val[2016] = u_float( 1.24, 0.25 ) #26012020
+#WGSF_val[2016] = u_float( 1.00, 0.09 ) #26012020
 WGSF_val[2017] = u_float( 1.29, 0.18 ) #2020 01 20
 WGSF_val[2018] = u_float( 1.36, 0.15 ) #2020 01 20
 
 ZGSF_val = {}
-ZGSF_val[2016] = u_float( 0.90, 0.07 )  #26012020
-#ZGSF_val[2016] = u_float( 0.81, 0.07 )  #26012020
+#ZGSF_val[2016] = u_float( 0.90, 0.07 )  #26012020
+ZGSF_val[2016] = u_float( 0.81, 0.07 )  #26012020
 ZGSF_val[2017] = u_float( 0.90, 0.08 )  #2020 01 20
 ZGSF_val[2018] = u_float( 0.87, 0.09 )  #2020 01 20
 
