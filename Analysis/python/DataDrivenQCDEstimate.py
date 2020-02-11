@@ -303,11 +303,18 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         fixedHist = dataHist.Clone("fixed") # sum of contributions that stay fixed
         fixedHist.Scale(0.)
 
+        print "data", dataHist.Integral()
+        print "datainv", qcdHist.Integral()
+
         # Calculate mTs for MC (normalized to data lumi)
         for s in default_sampleList:
             if s in ["QCD-DD", "QCD", "GJets", "Data"]: continue
             tmp_SR = self.histoFromCache( "mT",    binning, setup, s, channel, cut_MC_SR, weight_MC_SR, overwrite=overwrite )
             tmp_CR = self.histoFromCache( "mTinv", binning, setup, s, channel, cut_MC_CR, weight_MC_CR, overwrite=overwrite )
+
+            print s, tmp_SR.Integral()
+            print s, tmp_CR.Integral()
+
             # apply SF after histo caching
             if addSF:
                 if "DY" in s:
@@ -332,6 +339,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
             tmp_SR.Scale( setup.dataLumi/1000. )
             tmp_CR.Scale( setup.dataLumi/1000. )
 
+
             qcdHist.Add( tmp_CR, -1 )
             if s == floatSample: floatHist = tmp_SR.Clone("float")
             else:                fixedHist.Add( tmp_SR )
@@ -350,21 +358,25 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         tarray.Add( fixedHist )
 
         fitter = ROOT.TFractionFitter( dataHist, tarray )
-
+        fitter.SetRangeX(1,12)
         # it is a FRACTION fitter, so the range is the fraction of the data hist
         nTotal      = dataHist.Integral()
         nFloatScale = floatHist.Integral() / nTotal
         nFixedScale = fixedHist.Integral() / nTotal
         nQCDScale   = qcdHist.Integral()   / nTotal
 
+        if not all([nTotal,nFloatScale,nFixedScale,nQCDScale]):
+            raise Exception("Something is wrong with the cached histograms for the QCD TF!")
+
+        firstApprox = 0.04 if bjetRegion else 0.3 # be kind an help the fit a little
         tfitter = fitter.GetFitter()
-        tfitter.Config().ParSettings(0).Set("qcd",   nQCDScale*0.4, 0.001, 0.,               1.)
-        tfitter.Config().ParSettings(1).Set("float", nFloatScale,   0.001, 0.,               1.)
-        tfitter.Config().ParSettings(2).Set("fixed", nFixedScale,   0.0,   nFixedScale*0.99, nFixedScale*1.01)
+        tfitter.Config().ParSettings(0).Set("qcd",   nQCDScale*firstApprox, 0.001, 0.,               1.)
+        tfitter.Config().ParSettings(1).Set("float", nFloatScale,           0.001, 0.,               1.)
+        tfitter.Config().ParSettings(2).Set("fixed", nFixedScale,           0.0,   nFixedScale*0.99, nFixedScale*1.01)
         tfitter.Config().ParSettings(2).Fix()
         # fix WGamma in photonRegions e-channel since mT is not a good handle
-        if photonRegion and not bjetRegion and channel == "e": # cant make it fixed, as the nDOF is not matching, no clue how to change that, nice workaround
-            tfitter.Config().ParSettings(1).Set("float", nFloatScale, 0.001, nFloatScale*0.99, nFloatScale*1.01)
+#        if photonRegion and not bjetRegion and channel == "e": # cant make it fixed, as the nDOF is not matching, no clue how to change that, nice workaround
+#            tfitter.Config().ParSettings(1).Set("float", nFloatScale, 0.001, nFloatScale*0.99, nFloatScale*1.01)
 
         print("Performing Fit!")
         status = fitter.Fit()           # perform the fit
@@ -483,10 +495,11 @@ if __name__ == "__main__":
     print "incl"
 
     setup = Setup(year=2016, photonSelection=False)
-    setup = setup.sysClone(parameters=allRegions["VG3"]["parameters"])
+#    setup = setup.sysClone(parameters=allRegions["SR2"]["parameters"])
+    setup = setup.sysClone(parameters=allRegions["VGmis2"]["parameters"])
 
     estimate = DataDrivenQCDEstimate( "QCD-DD" )    
     estimate.initCache(setup.defaultCacheDir())
 
-#    print "e", "dd", estimate._dataDrivenTransferFactor( "e", setup, overwrite=overwrite )
-    print "e", "dd", estimate._fittedTransferFactor( "e", setup, overwrite=overwrite )
+#    print "e", "dd", estimate._fittedTransferFactor( "e", setup, overwrite=overwrite )
+    print "mu", "dd", estimate._fittedTransferFactor( "mu", setup, overwrite=overwrite )

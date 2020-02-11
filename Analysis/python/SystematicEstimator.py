@@ -78,11 +78,11 @@ class SystematicEstimator:
     def histoFromCache(self, var, binning, setup, process, c, selectionString, weightString, overwrite=False):
         s = (var, "_".join(map(str,binning)), process, c, selectionString, weightString)
         if self.histoHelperCache and self.histoHelperCache.contains(s) and not overwrite:
-            return self.histoHelperCache.get(s)
+            return self.histoHelperCache.get(s).Clone(process+c+var)
         else:
             histo = setup.processes[process].get1DHistoFromDraw( var, binning=binning, selectionString=selectionString, weightString=weightString, addOverFlowBin="upper" )
             if self.histoHelperCache: self.histoHelperCache.add(s, histo, overwrite=True)
-            return histo
+            return histo.Clone(process+c+var)
 
     def uniqueKey(self, region, channel, setup, signalAddon=None, qcdUpdates={}):
         sysForKey = setup.sys.copy()
