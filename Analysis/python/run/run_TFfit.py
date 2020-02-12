@@ -73,28 +73,34 @@ if args.year == 2016:
     from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed  import *
     from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
     mc          = [ TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
+    ttg         = TTG_16
     tt          = TT_pow_16
     wjets       = WJets_16
     ttg         = TTG_16
     wg          = WG_16
+    other       = rest_16
     data_sample = Run2016
 elif args.year == 2017:
     from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed    import *
     from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
     mc          = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
+    ttg         = TTG_17
     tt          = TT_pow_17
     wjets       = WJets_17
     ttg         = TTG_17
     wg          = WG_17
+    other       = rest_17
     data_sample = Run2017
 elif args.year == 2018:
     from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed  import *
     from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
     mc          = [ TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
+    ttg         = TTG_18
     tt          = TT_pow_18
     wjets       = WJets_18
     ttg         = TTG_18
     wg          = WG_18
+    other       = rest_18
     data_sample = Run2018
 
 read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval/I",
@@ -159,8 +165,9 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
     setup = Setup( year=args.year, photonSelection=False, checkOnly=False, runOnLxPlus=False ) #photonselection always false for qcd estimate
     setup = setup.sysClone( parameters=allRegions[args.selection]["parameters"] )
 
-    photonRegion = not allRegions[args.selection]["noPhotonCR"]
-    bjetRegion   = setup.parameters["nBTag"][0] > 0
+    photonRegion = QCDTF_updates["SR"]["nPhoton"][0] > 0 if args.tfUpdate and "nPhoton" in QCDTF_updates["SR"].keys() else not allRegions[args.selection]["noPhotonCR"]
+    bjetRegion   = QCDTF_updates["SR"]["nBTag"][0] > 0   if args.tfUpdate and "nBTag"   in QCDTF_updates["SR"].keys() else setup.parameters["nBTag"][0] > 0
+    njets        = QCDTF_updates["SR"]["nJet"][0]        if args.tfUpdate and "nJet"    in QCDTF_updates["SR"].keys() else setup.parameters["nJet"][0]
 
     selection     = setup.selection( "MC", channel="all", **setup.defaultParameters(QCDTF_updates["SR"] if args.tfUpdate else {}) )["prefix"]
     selection    += "-" + args.mode
@@ -171,6 +178,11 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
     preSelection += "-" + args.mode + "Inv"
     preSelection  = cutInterpreter.cutString( preSelection )
 
+    print "preselection"
+    print preSelection
+    print
+    print "selection"
+    print selection
 else:
     raise Exception("Region not implemented")
 #else:
@@ -233,6 +245,11 @@ for s in mc:
         s.hist = s.get1DHistoFromDraw( "mT",    binning=binning, selectionString=selection,    addOverFlowBin="upper" )
         dirDB.add(key, s.hist)
 
+    print s.name, s.weightString
+    print s.name, s.selectionString
+    print s.name, s.hist.Integral()/lumi_scale
+    print s.name, s.hist_SB.Integral()/lumi_scale
+
     # apply SF after histo caching
     if addSF:
         if "DY" in s.name:
@@ -261,6 +278,8 @@ for s in mc:
     s.hist.style         = styles.fillStyle( s.color )
     s.hist.legendText    = s.texName
 
+
+
     mTHistos[0].append( s.hist )
     mTHistos_SB[0].append( s.hist_SB )
 
@@ -279,10 +298,12 @@ maxQCD = qcdTemplate.GetMaximum()
 mTHistos_SB.append( [qcdTemplate] )
 mTHistos_SB.append( [oneHist] )
 
-if       photonRegion and not bjetRegion: floatSample = wg
-elif     photonRegion and     bjetRegion: floatSample = tt #ttg?
-elif not photonRegion and not bjetRegion: floatSample = wjets
-elif not photonRegion and     bjetRegion: floatSample = tt
+if       photonRegion and not bjetRegion:                floatSample = wg
+elif     photonRegion and     bjetRegion and njets == 2: floatSample = other
+elif     photonRegion and     bjetRegion:                floatSample = ttg
+elif not photonRegion and not bjetRegion:                floatSample = wjets
+elif not photonRegion and     bjetRegion and njets == 2: floatSample = wjets
+elif not photonRegion and     bjetRegion:                floatSample = tt
 
 print("Using sample %s as free floating histogram!"%floatSample.name)
 
@@ -309,11 +330,14 @@ tarray.Add( hist_float )
 tarray.Add( hist_other )
 
 fitter = ROOT.TFractionFitter( dataHist, tarray )
+fitter.SetRangeX(1,12)
 
 tfitter = fitter.GetFitter()
 tfitter.Config().ParSettings(0).Set("qcd",   nQCD*0.4/nTotal, 0.001, 0.,               1.)
+#if photonRegion and not bjetRegion: #and args.mode == "e": # fix WGamma in photonRegions e-channel since mT is not a good handle
 if photonRegion and args.mode == "e": # fix WGamma in photonRegions e-channel since mT is not a good handle
-    tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.001, nFloat*0.99/nTotal, nFloat*1.01/nTotal)
+    tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.001, 0.,               1.)
+#    tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.001, nFloat*0.99/nTotal, nFloat*1.01/nTotal)
 else:
     tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.001, 0.,               1.)
 tfitter.Config().ParSettings(2).Set("fixed", nFix/nTotal,     0.0,   nFix*0.99/nTotal, nFix*1.01/nTotal)
@@ -345,7 +369,8 @@ hist_qcd.legendText = "QCD" + " (TF %1.3f#pm %1.3f)"%(qcdTF.val, qcdTF.sigma)
 hist_qcd.style      = styles.fillStyle( color.QCD )
 
 if photonRegion and args.mode == "e": # fix WGamma in photonRegions e-channel since mT is not a good handle
-    hist_float.legendText = floatSample.texName
+#    hist_float.legendText = floatSample.texName
+    hist_float.legendText = floatSample.texName + " (SF %1.3f#pm %1.3f)"%(floatSF.val, floatSF.sigma)
 else:
     hist_float.legendText = floatSample.texName + " (SF %1.3f#pm %1.3f)"%(floatSF.val, floatSF.sigma)
 hist_float.style      = styles.fillStyle( floatSample.color )

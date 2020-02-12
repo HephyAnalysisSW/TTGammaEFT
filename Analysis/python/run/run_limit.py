@@ -31,7 +31,6 @@ argParser.add_argument( "--inclRegion",         action="store_true",            
 argParser.add_argument( "--overwrite",          action="store_true",                                                        help="Overwrite existing output files" )
 argParser.add_argument( "--useRegions",         action="store",      nargs='*',       type=str, choices=allRegions.keys(),  help="Which regions to use?" )
 argParser.add_argument( "--useChannels",        action="store",      nargs='*', default="all",   type=str, choices=["e", "mu", "all", "comb"], help="Which lepton channels to use?" )
-argParser.add_argument( "--addQCDSF",           action="store_true",                                                        help="add default DY scale factor" )
 argParser.add_argument( "--addVGSF",            action="store_true",                                                        help="add default DY scale factor" )
 argParser.add_argument( "--addZGSF",            action="store_true",                                                        help="add default DY scale factor" )
 argParser.add_argument( "--addWGSF",            action="store_true",                                                        help="add default DY scale factor" )
@@ -133,7 +132,6 @@ for reg in limitOrdering:
 
 # use the regions as key for caches
 regionNames.sort()
-if args.addQCDSF:    regionNames.append("addQCDSF")
 if args.addTTSF:     regionNames.append("addTTSF")
 if args.addWJetsSF:  regionNames.append("addWJetsSF")
 if args.addDYSF:     regionNames.append("addDYSF")
@@ -339,9 +337,6 @@ def wrapper():
                             if e.name.count( "WJets" ) and args.addWJetsSF:
                                 exp_yield *= WJetsSF_val[args.year].val
                                 logger.info( "Scaling WJets background %s by %f"%(e.name,WJetsSF_val[args.year].val) )
-                            if e.name.count( "QCD" ) and args.addQCDSF:
-                                exp_yield *= QCDSF_val[args.year].val
-                                logger.info( "Scaling QCD background %s by %f"%(e.name,QCDSF_val[args.year].val) )
                             if e.name.count( "DY" ) and args.addDYSF:
                                 exp_yield *= DYSF_val[args.year].val
                                 logger.info( "Scaling DY background %s by %f"%(e.name,DYSF_val[args.year].val) )
