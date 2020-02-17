@@ -274,7 +274,7 @@ SSMSF_val[2017] = u_float( 0.7, 0.06 ) #26012020
 SSMSF_val[2018] = u_float( 0.7, 0.06 ) #26012020
 
 WJetsSF_val = {}
-WJetsSF_val[2016] = u_float( 1.26, 0.13 ) #12022020
+WJetsSF_val[2016] = u_float( 1.15, 0.13 ) #12022020
 WJetsSF_val[2017] = u_float( 1.08, 0.33 )
 WJetsSF_val[2018] = u_float( 1.19, 0.20 )
 
@@ -291,7 +291,7 @@ DYSF_val[2018] = u_float( 1.04, 0.05 )
 
 
 misIDSF_val = {}
-misIDSF_val[2016] = u_float( 2.59, 0.31 ) #12022020
+misIDSF_val[2016] = u_float( 2.35, 0.31 ) #12022020
 misIDSF_val[2017] = u_float( 2.54, 0.34 )
 misIDSF_val[2018] = u_float( 1.57, 0.24 )
 
@@ -301,7 +301,7 @@ fakeSF_val[2017] = u_float( 1.00, 0.09 )
 fakeSF_val[2018] = u_float( 1.00, 0.09 )
 
 WGSF_val = {}
-WGSF_val[2016] = u_float( 1.14, 0.12 ) #12022020
+WGSF_val[2016] = u_float( 1.14*0.8, 0.12 ) #12022020
 WGSF_val[2017] = u_float( 1.29, 0.18 ) #2020 01 20
 WGSF_val[2018] = u_float( 1.36, 0.15 ) #2020 01 20
 
@@ -717,10 +717,10 @@ controlRegions["misTT2"] = { "parameters": { "zWindow":"offZeg", "nJet":(2,2), "
 # updates for QCD estimation (else same settings)
 QCD_updates              = { "invertLepIso":True,               "nBTag":(0,0),                  "addMisIDSF":True }#, "zWindow":"offZeg" }
 QCDTF_updates            = {}
-QCDTF_updates["CR"]      = { "invertLepIso":True, "nJet":(2,2), "nBTag":(0,0), "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
-QCDTF_updates["SR"]      = {                      "nJet":(2,2),                "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
-#QCDTF_updates["CR"]      = { "invertLepIso":True, "nJet":(2,2), "nBTag":(0,0),                  "MET":(0,-1), "m3Window":"all", "zWindow":"offZeg", "addMisIDSF":True }
-#QCDTF_updates["SR"]      = {                      "nJet":(2,2),                                 "MET":(0,-1), "m3Window":"all", "zWindow":"offZeg", "addMisIDSF":True }
+#QCDTF_updates["CR"]      = { "invertLepIso":True, "nJet":(2,2), "nBTag":(0,0), "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+#QCDTF_updates["SR"]      = {                      "nJet":(2,2),                "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+QCDTF_updates["CR"]      = { "invertLepIso":True, "nJet":(2,2), "nBTag":(0,0),                  "MET":(0,-1), "m3Window":"all", "zWindow":"offZeg", "addMisIDSF":True }
+QCDTF_updates["SR"]      = {                      "nJet":(2,2),                                 "MET":(0,-1), "m3Window":"all", "zWindow":"offZeg", "addMisIDSF":True }
 
 customQCDTF_updates               = {}
 customQCDTF_updates["2J0P"]       = {}

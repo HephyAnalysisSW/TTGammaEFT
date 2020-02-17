@@ -197,14 +197,14 @@ else:
 #    for key, val in replaceSelection.items():
 #        preSelection = preSelection.replace( key, val )
 
-key = (data_sample.name, "mTinv", "_".join(map(str,binning)), data_sample.weightString, data_sample.selectionString, selection, preSelection)
+key = (data_sample.name, "mTinv", "_".join(map(str,binning)), data_sample.weightString, data_sample.selectionString, preSelection)
 if dirDB.contains(key) and not args.overwrite:
     dataHist_SB = dirDB.get(key)
 else:
     dataHist_SB = data_sample.get1DHistoFromDraw( "mTinv", binning=binning, selectionString=preSelection, addOverFlowBin="upper" )
     dirDB.add(key, dataHist_SB)
 
-key = (data_sample.name, "mT", "_".join(map(str,binning)), data_sample.weightString, data_sample.selectionString, selection, preSelection)
+key = (data_sample.name, "mT", "_".join(map(str,binning)), data_sample.weightString, data_sample.selectionString, selection)
 if dirDB.contains(key) and not args.overwrite:
     dataHist = dirDB.get(key)
 else:
@@ -231,14 +231,14 @@ mTHistos_fit = [[], [dataHist]]
 mTHistos_SB  = [[], [dataHist_SB]]
 
 for s in mc:
-    key = (s.name, "mTinv", "_".join(map(str,binning)), s.weightString, s.selectionString, selection, preSelection)
+    key = (s.name, "mTinv", "_".join(map(str,binning)), s.weightString, s.selectionString, preSelection)
     if dirDB.contains(key) and not args.overwrite:
         s.hist_SB = dirDB.get(key)
     else:
         s.hist_SB = s.get1DHistoFromDraw( "mTinv", binning=binning, selectionString=preSelection, addOverFlowBin="upper" )
         dirDB.add(key, s.hist_SB)
 
-    key = (s.name, "mT", "_".join(map(str,binning)), s.weightString, s.selectionString, selection, preSelection)
+    key = (s.name, "mT", "_".join(map(str,binning)), s.weightString, s.selectionString, selection)
     if dirDB.contains(key) and not args.overwrite:
         s.hist = dirDB.get(key)
     else:
@@ -261,12 +261,18 @@ for s in mc:
         elif "TT_pow" in s.name:
             s.hist.Scale(TTSF_val[args.year].val)
             s.hist_SB.Scale(TTSF_val[args.year].val)
-        elif "ZG" in s.name:
+        elif "ZG" in s.name and njets < 4:
             s.hist.Scale(ZGSF_val[args.year].val)
             s.hist_SB.Scale(ZGSF_val[args.year].val)
-        elif "WG" in s.name:
+#        elif "other" in s.name:
+#            s.hist.Scale(0.9)
+#            s.hist_SB.Scale(0.9)
+        elif "WG" in s.name:# and njets > 3:
             s.hist.Scale(WGSF_val[args.year].val)
             s.hist_SB.Scale(WGSF_val[args.year].val)
+#        elif "WG" in s.name:
+#            s.hist.Scale(WGSF_val[args.year].val*0.8)
+#            s.hist_SB.Scale(WGSF_val[args.year].val*0.8)
         elif "TTG" in s.name:
             s.hist.Scale(SSMSF_val[args.year].val)
             s.hist_SB.Scale(SSMSF_val[args.year].val)
@@ -336,8 +342,8 @@ tfitter = fitter.GetFitter()
 tfitter.Config().ParSettings(0).Set("qcd",   nQCD*0.4/nTotal, 0.001, 0.,               1.)
 #if photonRegion and not bjetRegion: #and args.mode == "e": # fix WGamma in photonRegions e-channel since mT is not a good handle
 if photonRegion and args.mode == "e": # fix WGamma in photonRegions e-channel since mT is not a good handle
-    tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.001, 0.,               1.)
-#    tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.001, nFloat*0.99/nTotal, nFloat*1.01/nTotal)
+#    tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.001, 0.,               1.)
+    tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.001, nFloat*0.99/nTotal, nFloat*1.01/nTotal)
 else:
     tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.001, 0.,               1.)
 tfitter.Config().ParSettings(2).Set("fixed", nFix/nTotal,     0.0,   nFix*0.99/nTotal, nFix*1.01/nTotal)

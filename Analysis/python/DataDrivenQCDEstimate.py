@@ -24,7 +24,7 @@ try:    addSF = sys.modules['__main__'].addSF == "True"
 except: addSF = True
 logger.info("Adding scale factors is set to %s"%str(addSF))
 
-overwriteMTHistos = False
+overwriteHistos = False
 
 class DataDrivenQCDEstimate(SystematicEstimator):
     def __init__(self, name, cacheDir=None):
@@ -258,6 +258,10 @@ class DataDrivenQCDEstimate(SystematicEstimator):
 
     def _fittedTransferFactor(self, channel, setup, qcdUpdates=None, overwrite=False):
 
+#        var    = "MET_pt" #"mT"
+#        invVar = "MET_pt" #"mTinv"
+        var    = "mT"
+        invVar = "mTinv"
         print( "Calculating data-driven QCD transfer factor" )
 
         selection_MC_CR     = setup.selection("MC",   channel=channel, **setup.defaultParameters( update=qcdUpdates["CR"] if qcdUpdates else QCDTF_updates["CR"] ))
@@ -291,22 +295,31 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         bjetRegion   = updates["nBTag"][0] > 0   if "nBTag" in updates.keys()   else setup.parameters["nBTag"][0] > 0
         njets        = updates["nJet"][0]        if "nJet" in updates.keys()    else setup.parameters["nJet"][0]
 
-        if       photonRegion and not bjetRegion:                floatSample = "WG"
-        elif     photonRegion and     bjetRegion and njets == 2: floatSample = "other"
-        elif     photonRegion and     bjetRegion:                floatSample = "TTG" #"TT_pow"?
-        elif not photonRegion and not bjetRegion:                floatSample = "WJets"
-        elif not photonRegion and     bjetRegion and njets == 2: floatSample = "WJets"
-        elif not photonRegion and     bjetRegion:                floatSample = "TT_pow"
+        if var == "mT":
+            if       photonRegion and not bjetRegion:                floatSample = "WG"
+            elif     photonRegion and     bjetRegion and njets == 2: floatSample = "other"
+            elif     photonRegion and     bjetRegion:                floatSample = "TTG" #"TT_pow"?
+            elif not photonRegion and not bjetRegion:                floatSample = "WJets"
+            elif not photonRegion and     bjetRegion and njets == 2: floatSample = "WJets"
+            elif not photonRegion and     bjetRegion:                floatSample = "TT_pow"
+
+        else:
+            if       photonRegion and not bjetRegion:                floatSample = "WG"
+            elif     photonRegion and     bjetRegion and njets == 2: floatSample = "other"
+            elif     photonRegion and     bjetRegion:                floatSample = "TTG" #"TT_pow"?
+            elif not photonRegion and not bjetRegion:                floatSample = "WJets"
+            elif not photonRegion and     bjetRegion and njets == 2: floatSample = "WJets"
+            elif not photonRegion and     bjetRegion:                floatSample = "TT_pow"
 
         print( "Leaving sample %s floating in the fit"%(floatSample) )
 
         binning = [ 20, 0, 200 ]
-        print( "Getting mT histograms with binning %s"%(" ".join(map(str,binning))) )
+        print( "Getting %s histograms with binning %s"%(var," ".join(map(str,binning))) )
 
         # get mT histos
-        dataHist  = self.histoFromCache( "mT",    binning, setup, "Data", channel, cut_Data_SR, weight_Data_SR, overwrite=overwriteMTHistos)
+        dataHist  = self.histoFromCache( var,    binning, setup, "Data", channel, cut_Data_SR, weight_Data_SR, overwrite=overwriteHistos)
         # safe some memory, you don't need the CR data hist, only for estimating the qcd hist
-        qcdHist   = self.histoFromCache( "mTinv", binning, setup, "Data", channel, cut_Data_CR, weight_Data_CR, overwrite=overwriteMTHistos)
+        qcdHist   = self.histoFromCache( invVar, binning, setup, "Data", channel, cut_Data_CR, weight_Data_CR, overwrite=overwriteHistos)
         fixedHist = dataHist.Clone("fixed") # sum of contributions that stay fixed
         fixedHist.Scale(0.)
 
@@ -316,8 +329,8 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         # Calculate mTs for MC (normalized to data lumi)
         for s in default_sampleList:
             if s in ["QCD-DD", "QCD", "GJets", "Data"]: continue
-            tmp_SR = self.histoFromCache( "mT",    binning, setup, s, channel, cut_MC_SR, weight_MC_SR, overwrite=overwriteMTHistos )
-            tmp_CR = self.histoFromCache( "mTinv", binning, setup, s, channel, cut_MC_CR, weight_MC_CR, overwrite=overwriteMTHistos )
+            tmp_SR = self.histoFromCache( var,    binning, setup, s, channel, cut_MC_SR, weight_MC_SR, overwrite=overwriteHistos )
+            tmp_CR = self.histoFromCache( invVar, binning, setup, s, channel, cut_MC_CR, weight_MC_CR, overwrite=overwriteHistos )
 
             print s, tmp_SR.Integral()
             print s, tmp_CR.Integral()
@@ -333,12 +346,18 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                 elif "TT_pow" in s:
                     tmp_SR.Scale(TTSF_val[setup.year].val)
                     tmp_CR.Scale(TTSF_val[setup.year].val)
-                elif "ZG" in s:
+#                elif "other" in s:
+#                    tmp_SR.Scale(0.9)
+#                    tmp_CR.Scale(0.9)
+                elif "ZG" in s and njets < 4:
                     tmp_SR.Scale(ZGSF_val[setup.year].val)
                     tmp_CR.Scale(ZGSF_val[setup.year].val)
-                elif "WG" in s:
+                elif "WG" in s:# and njets > 3:
                     tmp_SR.Scale(WGSF_val[setup.year].val)
                     tmp_CR.Scale(WGSF_val[setup.year].val)
+#                elif "WG" in s:
+#                    tmp_SR.Scale(WGSF_val[setup.year].val*0.8)
+#                    tmp_CR.Scale(WGSF_val[setup.year].val*0.8)
                 elif "TTG" in s:
                     tmp_SR.Scale(SSMSF_val[setup.year].val)
                     tmp_CR.Scale(SSMSF_val[setup.year].val)
@@ -365,7 +384,8 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         tarray.Add( fixedHist )
 
         fitter = ROOT.TFractionFitter( dataHist, tarray )
-        fitter.SetRangeX(1,12)
+        if var == "mT":
+            fitter.SetRangeX(1,12)
         # it is a FRACTION fitter, so the range is the fraction of the data hist
         nTotal      = dataHist.Integral()
         nFloatScale = floatHist.Integral() / nTotal
@@ -382,7 +402,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         tfitter.Config().ParSettings(2).Set("fixed", nFixedScale,           0.0,   nFixedScale*0.99, nFixedScale*1.01)
         tfitter.Config().ParSettings(2).Fix()
         # fix the floating sample in photonRegions e-channel since mT is not a good handle
-        if photonRegion and channel == "e": # cant make it fixed, as the nDOF is not matching, no clue how to change that, nice workaround
+        if var == "mT" and photonRegion and channel == "e": # cant make it fixed, as the nDOF is not matching, no clue how to change that, nice workaround
             tfitter.Config().ParSettings(1).Set("float", nFloatScale, 0.001, nFloatScale*0.99, nFloatScale*1.01)
 
         print("Performing Fit!")
