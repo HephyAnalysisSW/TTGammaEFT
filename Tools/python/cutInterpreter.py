@@ -152,6 +152,8 @@ special_cuts = {
 
 continous_variables = [ ("glDR","photonLepdR"), ("mT", "mT"), ("metSig", "METSig"), ("mll", "mll"), ("mllgamma", "mllgamma"), ("mlgamma", "mLtight0Gamma"), ("met", "MET_pt"), ("pTG","PhotonGood0_pt"), ("pTj","Jet_pt[0]"), ("etaj","abs(Jet_eta[0])") ]
 discrete_variables  = [ ("nAllJet", "nJet"), ("nJet", "nJetGood"), ("nBTag", "nBTagGood"), ("nLepNoCorrVeto","nLeptonVeto"), ("nLepVeto","nLeptonVetoIsoCorr"), ("nNoIsoLepTight","nLeptonTightNoIso"), ("nInvLepTight","nLeptonTightInvIso"), ("nLepTight","nLeptonTight"), ("nLep","nLeptonGood"), ("nPhoton","nPhotonGood"), ("nHadPhoton","nPhotonNoChgIsoNoSieie"), ("nNoIsoLepVeto","nLeptonVetoNoIso"), ("nInvLeptVetoTight","nLeptonVetoNoIso") ]
+discrete_variables += [ ("nNoChgIsoJet", "nJetGoodNoChgIso"), ("nNoSieieJet", "nJetGoodNoSieie"), ("nNoChgIsoNoSieieJet", "nJetGoodNoChgIsoNoSieie") ]
+discrete_variables += [ ("nNoChgIsoBTag", "nBTagGoodNoChgIso"), ("nNoSieieBTag", "nBTagGoodNoSieie"), ("nNoChgIsoNoSieieBTag", "nBTagGoodNoChgIsoNoSieie") ]
 discrete_variables += [ ("nGenLepATLAS", "nGenLeptonATLASUnfold"), ("nGenJetATLAS", "nGenJetsATLASUnfold"), ("nGenBTagATLAS", "nGenBJetATLASUnfold"), ("nGenPhotonATLAS", "nGenPhotonATLASUnfold"), ("nGenLepCMS", "nGenLeptonCMSUnfold"), ("nGenJetCMS", "nGenJetsCMSUnfold"), ("nGenBTagCMS", "nGenBJetCMSUnfold"), ("nGenPhotonCMS", "nGenPhotonCMSUnfold") ]
 cutInterpreter = CutInterpreter( continous_variables, discrete_variables, special_cuts)
 
