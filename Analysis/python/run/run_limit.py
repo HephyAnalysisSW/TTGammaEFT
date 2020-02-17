@@ -222,17 +222,23 @@ def wrapper():
 #        c.addUncertainty( "PS",            shapeString)
 #        c.addUncertainty( "ISR",           shapeString)
 
-#        default_QCD_unc = 0.5
-#        c.addUncertainty( "QCD_norm", shapeString )
+        default_QCD_unc = 0.5
+        c.addUncertainty( "QCD_norm", shapeString )
+
+#        default_QCD3_unc = 0.1
+#        c.addUncertainty( "QCD_3jets", shapeString )
+
+#        default_QCD4p_unc = 0.2
+#        c.addUncertainty( "QCD_4jets", shapeString )
 
         # Only if TT CR is used
-        default_TT_unc = 0.1
+        default_TT_unc = 0.05
         if any( [name=="TT3" or name=="TT4p" for name in args.useRegions] ) and not with1pCR:
             c.addFreeParameter('TT', 1, '[0.8,1.2]')
         else:
             c.addUncertainty( "TT_norm", shapeString )
                 
-        default_HadFakes_unc = 0.1
+        default_HadFakes_unc = 0.05
         c.addUncertainty( "Fakes_norm",      shapeString )
 #        default_HadCorr_unc = 0.3
 #        addFakeUnc = True
@@ -246,14 +252,17 @@ def wrapper():
 #            c.addFreeParameter('ZG', 1, '[0.5,1.5]')
             c.addFreeParameter('WG', 1, '[0.5,1.5]')
 
-        default_ZG_unc    = 0.2
+        default_ZG_unc    = 0.15
         c.addUncertainty( "ZG_norm",      shapeString )
 
-        default_Other_unc    = 0.2
+        default_Other_unc    = 0.15
         c.addUncertainty( "Other_norm",      shapeString )
 
-#        default_ZG4p_unc    = 0.3
-#        c.addUncertainty( "ZG4p",      shapeString )
+        default_ZG3_unc    = 0.15
+        c.addUncertainty( "ZG_nJet",      shapeString )
+
+#        default_misID4p_unc    = 0.1
+#        c.addUncertainty( "misID4p",      shapeString )
 
         default_TTGpT_unc    = 0.1
         if not args.inclRegion and with1pCR:
@@ -369,8 +378,8 @@ def wrapper():
                         tune, erdOn, pu, jec, jer, sfb, sfl, trigger, lepSF, lepTrSF, phSF, eVetoSF, pfSF = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                         ps, scale, pdf, isr = 0, 0, 0, 0
                         dyGenUnc, ttGenUnc, vgGenUnc, wjetsGenUnc, otherGenUnc, qcdUnc, misIDUnc, hadFakesUnc, misIDPtUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0
-                        zg, zg4p, misIDUnc, qcdUnc, vgUnc, wgUnc, zgUnc, dyUnc, ttUnc, wjetsUnc, other0pUnc, otherUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-
+                        zg, misID4p, zg3, misIDUnc, qcdUnc, vgUnc, wgUnc, zgUnc, dyUnc, ttUnc, wjetsUnc, other0pUnc, otherUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                        qcd3, qcd4 = 0, 0
                         for i in range(len(gammaPT_thresholds)-1):
                             locals()["ttg_bin%i_unc"%i] = 0
 
@@ -387,7 +396,11 @@ def wrapper():
                                 y_scale   = e.expYield.val / expected.val
 
                                 if e.name.count( "QCD" ):
-#                                    qcdUnc   += y_scale * default_QCD_unc
+                                    qcdUnc   += y_scale * default_QCD_unc
+#                                    if "3" in setup.name:
+#                                        qcd3   += y_scale * default_QCD3_unc
+#                                    elif "4p" in setup.name:
+#                                        qcd4   += y_scale * default_QCD4p_unc
                                     continue # no systematics for data-driven QCD
 
                                 if e.name.count( "DY" ):
@@ -420,10 +433,15 @@ def wrapper():
                                 if e.name.count( "ZG" ):
                                     zg += y_scale * default_ZG_unc
 
-#                                if e.name.count( "ZG" ) and "4p" in setup.name:
-#                                    zg4p += y_scale * default_ZG4p_unc
-#                                elif e.name.count( "ZG" ):
-#                                    zg4p += y_scale * 0.001
+                                if e.name.count( "ZG" ) and "3" in setup.name:
+                                    zg3 += y_scale * default_ZG3_unc
+                                elif e.name.count( "ZG" ):
+                                    zg3 += y_scale * 0.001
+
+#                                if e.name.count( "misID" ) and "4p" in setup.name:
+#                                    misID4p += y_scale * default_misID4p_unc
+#                                elif e.name.count( "misID" ):
+#                                    misID4p += y_scale * 0.001
 
                                 if signal and not newPOI_input:
                                     tune    += y_scale * e.TuneSystematic(    r, channel, setup ).val
@@ -475,8 +493,14 @@ def wrapper():
                         addUnc( c, "prefireSF",     binname, pName, pfSF,    expected.val, signal )
                         
 
-#                        if qcdUnc:
-#                            addUnc( c, "QCD_norm", binname, pName, qcdUnc, expected.val, signal )
+                        if qcdUnc:
+                            addUnc( c, "QCD_norm", binname, pName, qcdUnc, expected.val, signal )
+
+                        if qcd3:
+                            addUnc( c, "QCD_3jets", binname, pName, qcd3, expected.val, signal )
+
+                        if qcd4:
+                            addUnc( c, "QCD_4jets", binname, pName, qcd4, expected.val, signal )
 
                         if not args.inclRegion and with1pCR:
                             for i in range(len(gammaPT_thresholds)-1):
@@ -496,8 +520,10 @@ def wrapper():
                             addUnc( c, "Other_norm", binname, pName, otherUnc, expected.val, signal )
                         if zg:
                             addUnc( c, "ZG_norm", binname, pName, zg, expected.val, signal )
-#                        if zg4p:
-#                            addUnc( c, "ZG4p", binname, pName, zg4p, expected.val, signal )
+                        if zg3:
+                            addUnc( c, "ZG_nJet", binname, pName, zg3, expected.val, signal )
+#                        if misID4p:
+#                            addUnc( c, "misID4p", binname, pName, misID4p, expected.val, signal )
 
                         if hadFakesUnc: # and args.addFakeSF:
                             addUnc( c, "Fakes_norm", binname, pName, hadFakesUnc, expected.val, signal )
