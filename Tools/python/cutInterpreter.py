@@ -99,20 +99,43 @@ special_cuts = {
     "e":                    "nElectronTight==1",
     "all":                  "(1)",
 
+    "genMu":                "nGenMuonCMSUnfold==1",
+    "genE":                 "nGenElectronCMSUnfold==1",
+
     "phiGlt1p1":             "abs(PhotonGood0_phi)<1.1",
     "onZEphiGlt1p1":         "((abs(mLtight0Gamma-%s)<=%s&&abs(PhotonGood0_phi)<1.1&&nElectronTight==1)||(abs(mLtight0Gamma-%s)>%s&&nElectronTight==1)||(nElectronTight==0))"%(mZ,zMassRange,mZ,zMassRange),
 
     "n12Jet":               "nJetGood==1||nJetGood==2",
 
-    "lowSieie":          "PhotonNoChgIsoNoSieie0_sieie<%f"%lowSieieThresh,
-    "highSieie":         "PhotonNoChgIsoNoSieie0_sieie>=%f"%highSieieThresh,
-    "lowChgIso":         "(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)<%f"%chgIsoThresh,
-    "highChgIso":        "(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)>=%f"%chgIsoThresh,
+    "noChgIso":          "PhotonNoChgIsoNoSieie0_sieie<%f"%lowSieieThresh,
+    "highChgIso":        "(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)>=%f&&PhotonNoChgIsoNoSieie0_sieie<%f"%(chgIsoThresh,lowSieieThresh),
+    "noSieie":           "(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)<%f"%chgIsoThresh,
+    "highSieie":         "PhotonNoChgIsoNoSieie0_sieie>=%f&&(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)<%f"%(highSieieThresh,chgIsoThresh),
+
+    "lowSieieNoChgIso":          "PhotonNoChgIsoNoSieie0_sieie<%f"%lowSieieThresh,
+    "highSieieNoChgIso":         "PhotonNoChgIsoNoSieie0_sieie>=%f"%highSieieThresh,
+    "lowChgIsoNoSieie":         "(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)<%f"%chgIsoThresh,
+    "highChgIsoNoSieie":        "(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)>=%f"%chgIsoThresh,
 
     "lowChgIsolowSieie":   "(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)<%f&&PhotonNoChgIsoNoSieie0_sieie<%f"%(chgIsoThresh,lowSieieThresh),
     "highChgIsolowSieie":  "(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)>=%f&&PhotonNoChgIsoNoSieie0_sieie<%f"%(chgIsoThresh,lowSieieThresh),
     "lowChgIsohighSieie":  "(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)<%f&&PhotonNoChgIsoNoSieie0_sieie>=%f"%(chgIsoThresh,highSieieThresh),
     "highChgIsohighSieie": "(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)>=%f&&PhotonNoChgIsoNoSieie0_sieie>=%f"%(chgIsoThresh,highSieieThresh),
+
+    "noChgIsoInvL":          "PhotonNoChgIsoNoSieieInvLepIso0_sieie<%f"%lowSieieThresh,
+    "highChgIsoInvL":        "(PhotonNoChgIsoNoSieieInvLepIso0_pfRelIso03_chg*PhotonNoChgIsoNoSieieInvLepIso0_pt)>=%f&&PhotonNoChgIsoNoSieieInvLepIso0_sieie<%f"%(chgIsoThresh,lowSieieThresh),
+    "noSieieInvL":           "(PhotonNoChgIsoNoSieieInvLepIso0_pfRelIso03_chg*PhotonNoChgIsoNoSieieInvLepIso0_pt)<%f"%chgIsoThresh,
+    "highSieieInvL":         "PhotonNoChgIsoNoSieieInvLepIso0_sieie>=%f&&(PhotonNoChgIsoNoSieieInvLepIso0_pfRelIso03_chg*PhotonNoChgIsoNoSieieInvLepIso0_pt)<%f"%(highSieieThresh,chgIsoThresh),
+
+    "lowSieieNoChgIsoInvL":          "PhotonNoChgIsoNoSieieInvLepIso0_sieie<%f"%lowSieieThresh,
+    "highSieieNoChgIsoInvL":         "PhotonNoChgIsoNoSieieInvLepIso0_sieie>=%f"%highSieieThresh,
+    "lowChgIsoNoSieieInvL":         "(PhotonNoChgIsoNoSieieInvLepIso0_pfRelIso03_chg*PhotonNoChgIsoNoSieieInvLepIso0_pt)<%f"%chgIsoThresh,
+    "highChgIsoNoSieieInvL":        "(PhotonNoChgIsoNoSieieInvLepIso0_pfRelIso03_chg*PhotonNoChgIsoNoSieieInvLepIso0_pt)>=%f"%chgIsoThresh,
+
+    "lowChgIsolowSieieInvL":   "(PhotonNoChgIsoNoSieieInvLepIso0_pfRelIso03_chg*PhotonNoChgIsoNoSieieInvLepIso0_pt)<%f&&PhotonNoChgIsoNoSieieInvLepIso0_sieie<%f"%(chgIsoThresh,lowSieieThresh),
+    "highChgIsolowSieieInvL":  "(PhotonNoChgIsoNoSieieInvLepIso0_pfRelIso03_chg*PhotonNoChgIsoNoSieieInvLepIso0_pt)>=%f&&PhotonNoChgIsoNoSieieInvLepIso0_sieie<%f"%(chgIsoThresh,lowSieieThresh),
+    "lowChgIsohighSieieInvL":  "(PhotonNoChgIsoNoSieieInvLepIso0_pfRelIso03_chg*PhotonNoChgIsoNoSieieInvLepIso0_pt)<%f&&PhotonNoChgIsoNoSieieInvLepIso0_sieie>=%f"%(chgIsoThresh,highSieieThresh),
+    "highChgIsohighSieieInvL": "(PhotonNoChgIsoNoSieieInvLepIso0_pfRelIso03_chg*PhotonNoChgIsoNoSieieInvLepIso0_pt)>=%f&&PhotonNoChgIsoNoSieieInvLepIso0_sieie>=%f"%(chgIsoThresh,highSieieThresh),
 
     "lowPT":             "PhotonGood0_pt>=20&&PhotonGood0_pt<120",
     "medPT":             "PhotonGood0_pt>=120&&PhotonGood0_pt<220",
@@ -129,6 +152,60 @@ special_cuts = {
     "photoncat2":        "PhotonGood0_photonCat==2",
     "photoncat3":        "PhotonGood0_photonCat==3",
     "photoncat13":       "(PhotonGood0_photonCat==1||PhotonGood0_photonCat==3)",
+
+    "invLphotoncat0":        "PhotonGoodInvLepIso0_photonCat==0",
+    "invLphotoncat1":        "PhotonGoodInvLepIso0_photonCat==1",
+    "invLphotoncat2":        "PhotonGoodInvLepIso0_photonCat==2",
+    "invLphotoncat3":        "PhotonGoodInvLepIso0_photonCat==3",
+    "invLphotoncat13":       "(PhotonGoodInvLepIso0_photonCat==1||PhotonGoodInvLepIso0_photonCat==3)",
+
+    "invSieiephotoncat0":        "PhotonInvSieie0_photonCat==0",
+    "invSieiephotoncat1":        "PhotonInvSieie0_photonCat==1",
+    "invSieiephotoncat2":        "PhotonInvSieie0_photonCat==2",
+    "invSieiephotoncat3":        "PhotonInvSieie0_photonCat==3",
+    "invSieiephotoncat13":       "(PhotonInvSieie0_photonCat==1||PhotonInvSieie0_photonCat==3)",
+
+    "invLInvSieiephotoncat0":        "PhotonInvSieieInvLepIso0_photonCat==0",
+    "invLInvSieiephotoncat1":        "PhotonInvSieieInvLepIso0_photonCat==1",
+    "invLInvSieiephotoncat2":        "PhotonInvSieieInvLepIso0_photonCat==2",
+    "invLInvSieiephotoncat3":        "PhotonInvSieieInvLepIso0_photonCat==3",
+    "invLInvSieiephotoncat13":       "(PhotonInvSieieInvLepIso0_photonCat==1||PhotonInvSieieInvLepIso0_photonCat==3)",
+
+    "invChgIsophotoncat0":        "PhotonInvChgIso0_photonCat==0",
+    "invChgIsophotoncat1":        "PhotonInvChgIso0_photonCat==1",
+    "invChgIsophotoncat2":        "PhotonInvChgIso0_photonCat==2",
+    "invChgIsophotoncat3":        "PhotonInvChgIso0_photonCat==3",
+    "invChgIsophotoncat13":       "(PhotonInvChgIso0_photonCat==1||PhotonInvChgIso0_photonCat==3)",
+
+    "invLInvChgIsophotoncat0":        "PhotonInvChgIsoInvLepIso0_photonCat==0",
+    "invLInvChgIsophotoncat1":        "PhotonInvChgIsoInvLepIso0_photonCat==1",
+    "invLInvChgIsophotoncat2":        "PhotonInvChgIsoInvLepIso0_photonCat==2",
+    "invLInvChgIsophotoncat3":        "PhotonInvChgIsoInvLepIso0_photonCat==3",
+    "invLInvChgIsophotoncat13":       "(PhotonInvChgIsoInvLepIso0_photonCat==1||PhotonInvChgIsoInvLepIso0_photonCat==3)",
+
+    "invChgIsoInvSieiephotoncat0":        "PhotonInvChgIsoInvSieie0_photonCat==0",
+    "invChgIsoInvSieiephotoncat1":        "PhotonInvChgIsoInvSieie0_photonCat==1",
+    "invChgIsoInvSieiephotoncat2":        "PhotonInvChgIsoInvSieie0_photonCat==2",
+    "invChgIsoInvSieiephotoncat3":        "PhotonInvChgIsoInvSieie0_photonCat==3",
+    "invChgIsoInvSieiephotoncat13":       "(PhotonInvChgIsoInvSieie0_photonCat==1||PhotonInvChgIsoInvSieie0_photonCat==3)",
+
+    "noChgIsoNoSieiephotoncat0":        "PhotonNoChgIsoNoSieie0_photonCat==0",
+    "noChgIsoNoSieiephotoncat1":        "PhotonNoChgIsoNoSieie0_photonCat==1",
+    "noChgIsoNoSieiephotoncat2":        "PhotonNoChgIsoNoSieie0_photonCat==2",
+    "noChgIsoNoSieiephotoncat3":        "PhotonNoChgIsoNoSieie0_photonCat==3",
+    "noChgIsoNoSieiephotoncat13":       "(PhotonNoChgIsoNoSieie0_photonCat==1||PhotonNoChgIsoNoSieie0_photonCat==3)",
+
+    "invLInvChgIsoInvSieiephotoncat0":        "PhotonInvChgIsoInvSieieInvLepIso0_photonCat==0",
+    "invLInvChgIsoInvSieiephotoncat1":        "PhotonInvChgIsoInvSieieInvLepIso0_photonCat==1",
+    "invLInvChgIsoInvSieiephotoncat2":        "PhotonInvChgIsoInvSieieInvLepIso0_photonCat==2",
+    "invLInvChgIsoInvSieiephotoncat3":        "PhotonInvChgIsoInvSieieInvLepIso0_photonCat==3",
+    "invLInvChgIsoInvSieiephotoncat13":       "(PhotonInvChgIsoInvSieieInvLepIso0_photonCat==1||PhotonInvChgIsoInvSieieInvLepIso0_photonCat==3)",
+
+    "invLNoChgIsoNoSieiephotoncat0":        "PhotonNoChgIsoNoSieieInvLepIso0_photonCat==0",
+    "invLNoChgIsoNoSieiephotoncat1":        "PhotonNoChgIsoNoSieieInvLepIso0_photonCat==1",
+    "invLNoChgIsoNoSieiephotoncat2":        "PhotonNoChgIsoNoSieieInvLepIso0_photonCat==2",
+    "invLNoChgIsoNoSieiephotoncat3":        "PhotonNoChgIsoNoSieieInvLepIso0_photonCat==3",
+    "invLNoChgIsoNoSieiephotoncat13":       "(PhotonNoChgIsoNoSieieInvLepIso0_photonCat==1||PhotonNoChgIsoNoSieieInvLepIso0_photonCat==3)",
 
     "photonhadcat0":        "PhotonNoChgIsoNoSieie0_photonCat==0",
     "photonhadcat1":        "PhotonNoChgIsoNoSieie0_photonCat==1",
@@ -151,13 +228,39 @@ special_cuts = {
   }
 
 continous_variables = [ ("glDR","photonLepdR"), ("mT", "mT"), ("metSig", "METSig"), ("mll", "mll"), ("mllgamma", "mllgamma"), ("mlgamma", "mLtight0Gamma"), ("met", "MET_pt"), ("pTG","PhotonGood0_pt"), ("pTj","Jet_pt[0]"), ("etaj","abs(Jet_eta[0])") ]
-discrete_variables  = [ ("nAllJet", "nJet"), ("nJet", "nJetGood"), ("nBTag", "nBTagGood"), ("nLepNoCorrVeto","nLeptonVeto"), ("nLepVeto","nLeptonVetoIsoCorr"), ("nNoIsoLepTight","nLeptonTightNoIso"), ("nInvLepTight","nLeptonTightInvIso"), ("nLepTight","nLeptonTight"), ("nLep","nLeptonGood"), ("nPhoton","nPhotonGood"), ("nHadPhoton","nPhotonNoChgIsoNoSieie"), ("nNoIsoLepVeto","nLeptonVetoNoIso"), ("nInvLeptVetoTight","nLeptonVetoNoIso") ]
+discrete_variables  = [ ("nAllJet", "nJet"), ("nJet", "nJetGood"), ("nBTag", "nBTagGood"), ("nLepNoCorrVeto","nLeptonVeto"), ("nLepVeto","nLeptonVetoIsoCorr"), ("nNoIsoLepTight","nLeptonTightNoIso"), ("nInvLepTight","nLeptonTightInvIso"), ("nLepTight","nLeptonTight"), ("nLep","nLeptonGood"), ("nNoIsoLepVeto","nLeptonVetoNoIso"), ("nInvLeptVetoTight","nLeptonVetoNoIso") ]
+
+discrete_variables += [ ("nPhoton",    "nPhotonGood"),          ("nHadPhoton",    "nPhotonNoChgIsoNoSieie"),          ("nSieiePhoton",    "nPhotonNoSieie"),          ("nChgIsoPhoton",    "nPhotonNoChgIso")  ]
+discrete_variables += [ ("nInvLPhoton","nPhotonGoodInvLepIso"), ("nInvLHadPhoton","nPhotonNoChgIsoNoSieieInvLepIso"), ("nInvLSieiePhoton","nPhotonNoSieieInvLepIso"), ("nInvLChgIsoPhoton","nPhotonNoChgIsoInvLepIso")  ]
+discrete_variables += [ ("nNoLPhoton", "nPhotonGoodNoLepIso"),  ("nNoLHadPhoton", "nPhotonNoChgIsoNoSieieNoLepIso"),  ("nNoLSieiePhoton", "nPhotonNoSieieNoLepIso"),  ("nNoLChgIsoPhoton", "nPhotonNoChgIsoNoLepIso")  ]
+
+discrete_variables += [ ("nIHadPhoton",    "nPhotonInvChgIsoInvSieie"),          ("nISieiePhoton",    "nPhotonInvSieie"),          ("nIChgIsoPhoton",    "nPhotonInvChgIso")  ]
+discrete_variables += [ ("nInvLIHadPhoton","nPhotonInvChgIsoInvSieieInvLepIso"), ("nInvLISieiePhoton","nPhotonInvSieieInvLepIso"), ("nInvLIChgIsoPhoton","nPhotonInvChgIsoInvLepIso")  ]
+discrete_variables += [ ("nNoLIHadPhoton", "nPhotonInvChgIsoInvSieieNoLepIso"),  ("nNoLISieiePhoton", "nPhotonInvSieieNoLepIso"),  ("nNoLIChgIsoPhoton", "nPhotonInvChgIsoNoLepIso")  ]
+
+
+discrete_variables += [ ("nNoLJet",  "nJetGoodNoLepIso"),  ("nInvLJet",  "nJetGoodInvLepIso") ]
+discrete_variables += [ ("nNoLBTag", "nBTagGoodNoLepIso"), ("nInvLBTag", "nBTagGoodInvLepIso") ]
+
 discrete_variables += [ ("nNoChgIsoJet", "nJetGoodNoChgIso"), ("nNoSieieJet", "nJetGoodNoSieie"), ("nNoChgIsoNoSieieJet", "nJetGoodNoChgIsoNoSieie") ]
 discrete_variables += [ ("nNoChgIsoBTag", "nBTagGoodNoChgIso"), ("nNoSieieBTag", "nBTagGoodNoSieie"), ("nNoChgIsoNoSieieBTag", "nBTagGoodNoChgIsoNoSieie") ]
+discrete_variables += [ ("nInvChgIsoJet", "nJetGoodInvChgIso"), ("nInvSieieJet", "nJetGoodInvSieie"), ("nInvChgIsoInvSieieJet", "nJetGoodInvChgIsoInvSieie") ]
+discrete_variables += [ ("nInvChgIsoBTag", "nBTagGoodInvChgIso"), ("nInvSieieBTag", "nBTagGoodInvSieie"), ("nInvChgIsoInvSieieBTag", "nBTagGoodInvChgIsoInvSieie") ]
+
+discrete_variables += [ ("nInvLepNoChgIsoJet", "nJetGoodNoChgIsoInvLepIso"), ("nInvLepNoSieieJet", "nJetGoodNoSieieInvLepIso"), ("nInvLNoChgIsoNoSieieJet", "nJetGoodNoChgIsoNoSieieInvLepIso") ]
+discrete_variables += [ ("nInvLepNoChgIsoBTag", "nBTagGoodNoChgIsoInvLepIso"), ("nInvLepNoSieieBTag", "nBTagGoodNoSieieInvLepIso"), ("nInvLNoChgIsoNoSieieBTag", "nBTagGoodNoChgIsoNoSieieInvLepIso") ]
+discrete_variables += [ ("nNoLepNoChgIsoJet", "nJetGoodNoChgIsoNoLepIso"), ("nNoLepNoSieieJet", "nJetGoodNoSieieNoLepIso"), ("nNoLNoChgIsoNoSieieJet", "nJetGoodNoChgIsoNoSieieNoLepIso") ]
+discrete_variables += [ ("nNoLepNoChgIsoBTag", "nBTagGoodNoChgIsoNoLepIso"), ("nNoLepNoSieieBTag", "nBTagGoodNoSieieNoLepIso"), ("nNoLNoChgIsoNoSieieBTag", "nBTagGoodNoChgIsoNoSieieNoLepIso") ]
+
+discrete_variables += [ ("nInvLepInvChgIsoJet", "nJetGoodInvChgIsoInvLepIso"), ("nInvLepInvSieieJet", "nJetGoodInvSieieInvLepIso"), ("nInvLInvChgIsoInvSieieJet", "nJetGoodInvChgIsoInvSieieInvLepIso") ]
+discrete_variables += [ ("nInvLepInvChgIsoBTag", "nBTagGoodInvChgIsoInvLepIso"), ("nInvLepInvSieieBTag", "nBTagGoodInvSieieInvLepIso"), ("nInvLInvChgIsoInvSieieBTag", "nBTagGoodInvChgIsoInvSieieInvLepIso") ]
+discrete_variables += [ ("nNoLepInvChgIsoJet", "nJetGoodInvChgIsoNoLepIso"), ("nNoLepInvSieieJet", "nJetGoodInvSieieNoLepIso"), ("nNoLInvChgIsoInvSieieJet", "nJetGoodInvChgIsoInvSieieNoLepIso") ]
+discrete_variables += [ ("nNoLepInvChgIsoBTag", "nBTagGoodInvChgIsoNoLepIso"), ("nNoLepInvSieieBTag", "nBTagGoodInvSieieNoLepIso"), ("nNoLInvChgIsoInvSieieBTag", "nBTagGoodInvChgIsoInvSieieNoLepIso") ]
+
 discrete_variables += [ ("nGenLepATLAS", "nGenLeptonATLASUnfold"), ("nGenJetATLAS", "nGenJetsATLASUnfold"), ("nGenBTagATLAS", "nGenBJetATLASUnfold"), ("nGenPhotonATLAS", "nGenPhotonATLASUnfold"), ("nGenLepCMS", "nGenLeptonCMSUnfold"), ("nGenJetCMS", "nGenJetsCMSUnfold"), ("nGenBTagCMS", "nGenBJetCMSUnfold"), ("nGenPhotonCMS", "nGenPhotonCMSUnfold") ]
 cutInterpreter = CutInterpreter( continous_variables, discrete_variables, special_cuts)
 
 if __name__ == "__main__":
-    print cutInterpreter.cutString("dilepOS-pTG20-nPhoton1p-offZSFllgNoChgIsoNoSieie-mll40")
+    print cutInterpreter.cutString("nGenLepCMS1-nGenJetCMS4p-nGenBTagCMS1p-nGenPhotonCMS1")
 #    print cutInterpreter.cutString("etaj2.25To3-pTj100")
 
