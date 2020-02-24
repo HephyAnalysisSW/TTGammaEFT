@@ -38,7 +38,7 @@ logger.info( "Loading MC samples from directory %s", os.path.join( data_director
 # Directories
 dirs = {}
 
-dirs["ttGamma_incl_4WC"] = [ "ttGamma_incl_restrict_MadSpin_4WC_order2_ref_rwgt" ]
+#dirs["ttGamma_incl_4WC"] = [ "ttGamma_incl_restrict_MadSpin_4WC_order2_ref_rwgt" ]
 
 dirs["ttGamma_0l_4WC"]   = [ "ttGamma_Had_restrict_4WC_order2_ref_rwgt" ]
 dirs["ttGamma_1l_4WC"]   = [ "ttGamma_SemiLept_restrict_4WC_order2_ref_rwgt" ]

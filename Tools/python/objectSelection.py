@@ -1,5 +1,6 @@
 # Standard Imports
 import textwrap
+from Analysis.Tools.helpers import getVarValue, getObjDict
 
 photonIdCutBasedBitmap = {                     'loose':1, 'medium':2, 'tight':4 }  # NanoAOD Version ID bitmap, 2^(0:loose, 1:medium, 2:tight)
 photonIdCutBased       = { 'fail':0,           'loose':1, 'medium':2, 'tight':3 }  # NanoAOD Version
@@ -640,4 +641,30 @@ def filterGenBJets( genJets ):
 #  1: stage of event generation inside PYTHIA
 # 22: intermediate (intended to have preserved mass) (tops)
 
+
+# for 4 muon default plot script
+
+muonVars_data = ['pt','eta','phi','pdgId','mediumId','miniPFRelIso_all','pfRelIso03_all','sip3d','dxy','dz','charge']
+muonVars = muonVars_data + []
+
+electronVars_data = ['pt','eta','phi','pdgId','cutBased','miniPFRelIso_all','pfRelIso03_all','sip3d','lostHits','convVeto','dxy','dz','charge','deltaEtaSC','mvaFall17V2noIso_WP80', 'vidNestedWPBitmap']
+electronVars = electronVars_data + []
+
+def alwaysTrue(*args, **kwargs):
+  return True
+
+def alwaysFalse(*args, **kwargs):
+  return False
+
+def getMuons(c, collVars=muonVars):
+    return [getObjDict(c, 'Muon_', collVars, i) for i in range(int(getVarValue(c, 'nMuon')))]
+
+def getElectrons(c, collVars=electronVars):
+    return [getObjDict(c, 'Electron_', collVars, i) for i in range(int(getVarValue(c, 'nElectron')))]
+
+def getGoodMuons(c, collVars=muonVars, mu_selector = alwaysFalse):
+    return [l for l in getMuons(c, collVars) if mu_selector(l)]
+
+def getGoodElectrons(c, collVars=electronVars, ele_selector = alwaysFalse):
+    return [l for l in getElectrons(c, collVars) if ele_selector(l)]
 

@@ -216,6 +216,14 @@ plotList.append( Plot(
 ))
 
 plotList.append( Plot(
+    name      = 'GenPhotonCMSUnfold0_pt_unfolding', # name of the plot file
+    texX      = 'gen p_{T}(#gamma_{0}) (GeV)', # x axis label
+    texY      = 'Number of Events', # y axis label
+    attribute = lambda event, sample: event.GenPhotonCMSUnfold0_pt, # variable to plot
+    binning   = [ 10, 20, 220 ], # 20 bins from 20 to 120
+))
+
+plotList.append( Plot(
     name      = 'GenPhotonCMSUnfold0_eta',
     texX      = 'gen #eta(#gamma_{0})',
     texY      = 'Number of Events',
