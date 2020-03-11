@@ -20,7 +20,7 @@ from RootTools.core.standard                     import *
 import TTGammaEFT.Tools.user as user
 
 # Tools for systematics
-from Analysis.Tools.helpers                      import deltaR, deltaR2
+from Analysis.Tools.helpers                      import deltaR, deltaR2, deltaPhi, mT
 from TTGammaEFT.Tools.helpers                    import m3
 
 from TTGammaEFT.Tools.genObjectSelection         import isGoodGenJet, isGoodGenLepton, isGoodGenPhoton, genJetId
@@ -166,9 +166,13 @@ genJetVarStringWrite = genJetVarStringRead + "," + genJetVarStringWrite
 genJetVars           = [ item.split("/")[0] for item in genJetVarStringWrite.split(",") ]
 genJetVarsRead       = [ item.split("/")[0] for item in genJetVarStringRead.split(",") ]
 
-genTopVarStringRead  = "pt/F,eta/F,phi/F,mass/F"
+genTopVarStringRead  = "pt/F,eta/F,phi/F,mass/F,pdgId/I"
 genTopVarStringWrite = genTopVarStringRead
 genTopVars           = [ item.split("/")[0] for item in genTopVarStringWrite.split(",") ]
+
+genWVarStringRead  = "pt/F,eta/F,phi/F,mass/F,pdgId/I"
+genWVarStringWrite = genWVarStringRead
+genWVars           = [ item.split("/")[0] for item in genWVarStringWrite.split(",") ]
 
 genLeptonVarStringRead  = "pt/F,eta/F,phi/F,pdgId/I"
 genLeptonVarStringWrite = "motherPdgId/I,grandmotherPdgId/I"
@@ -191,6 +195,16 @@ new_variables += [ "run/I", "luminosity/I", "evt/l" ]
 new_variables += [ "weight/F" ]
 
 new_variables += [ "GenMET_pt/F", "GenMET_phi/F" ]
+new_variables += [ "MET_pt/F", "MET_phi/F" ]
+
+new_variables += [ "dPhiLepGamma/F", "dPhiTopHadGamma/F", "dPhiWHadGamma/F", "dPhiTopLepGamma/F", "dPhiWLepGamma/F", "dPhiBHadGamma/F", "dPhiBLepGamma/F" ]
+new_variables += [ "dPhiBLepWLep/F", "dPhiWLepWHad/F", "dPhiBHadWHad/F", "dPhiBLepBHad/F", "dPhiTopLepTopHad/F", "dPhiLepMET/F" ]
+
+new_variables += [ "dRLepGamma/F", "dRTopHadGamma/F", "dRWHadGamma/F", "dRTopLepGamma/F", "dRWLepGamma/F", "dRBHadGamma/F", "dRBLepGamma/F" ]
+new_variables += [ "dRBLepWLep/F", "dRWLepWHad/F", "dRBHadWHad/F", "dRBLepBHad/F", "dRTopLepTopHad/F" ]
+
+new_variables += [ "mT/F", "m3/F", "ht/F" ]
+
 
 new_variables += [ "nGenJets/I" ]
 new_variables += [ "nGenBJet/I" ]
@@ -204,6 +218,13 @@ new_variables += [ "GenPhoton[%s]"   %genPhotonVarStringWrite ]
 new_variables += [ "GenJet[%s]"      %genJetVarStringWrite ]
 new_variables += [ "GenBJet[%s]"     %genJetVarStringWrite ]
 new_variables += [ "GenTop[%s]"      %genTopVarStringWrite ]
+new_variables += [ "GenTopLep[%s]"   %genTopVarStringWrite ]
+new_variables += [ "GenTopHad[%s]"   %genTopVarStringWrite ]
+new_variables += [ "GenW[%s]"        %genWVarStringWrite ]
+new_variables += [ "GenWLep[%s]"     %genWVarStringWrite ]
+new_variables += [ "GenWHad[%s]"     %genWVarStringWrite ]
+new_variables += [ "GenBLep[%s]"     %genWVarStringWrite ]
+new_variables += [ "GenBHad[%s]"     %genWVarStringWrite ]
 
 new_variables += [ "GenPhotonATLASUnfold0_" + var for var in genPhotonVarStringWrite.split(",") ]
 new_variables += [ "nGenJetsATLASUnfold/I" ]
@@ -214,6 +235,27 @@ new_variables += [ "nGenElectronATLASUnfold/I" ]
 new_variables += [ "nGenPhotonATLASUnfold/I" ]
 
 new_variables += [ "GenPhotonCMSUnfold0_" + var for var in genPhotonVarStringWrite.split(",") ]
+new_variables += [ "GenLeptonCMSUnfold0_" + var for var in genLeptonVarStringWrite.split(",") ]
+new_variables += [ "GenJetsCMSUnfold0_" + var for var in genJetVarStringWrite.split(",") ]
+new_variables += [ "GenJetsCMSUnfold1_" + var for var in genJetVarStringWrite.split(",") ]
+new_variables += [ "GenJetsCMSUnfold2_" + var for var in genJetVarStringWrite.split(",") ]
+new_variables += [ "GenBJetCMSUnfold0_" + var for var in genJetVarStringWrite.split(",") ]
+new_variables += [ "GenBJetCMSUnfold1_" + var for var in genJetVarStringWrite.split(",") ]
+new_variables += [ "nGenJetsCMSUnfold/I" ]
+new_variables += [ "nGenBJetCMSUnfold/I" ]
+new_variables += [ "nGenLeptonCMSUnfold/I" ]
+new_variables += [ "nGenMuonCMSUnfold/I" ]
+new_variables += [ "nGenElectronCMSUnfold/I" ]
+new_variables += [ "nGenPhotonCMSUnfold/I" ]
+
+new_variables += [ "nLeptonTight/I" ]
+new_variables += [ "nElectronTight/I" ]
+new_variables += [ "nMuonTight/I" ]
+new_variables += [ "nLeptonVetoIsoCorr/I" ]
+new_variables += [ "nJetGood/I" ]
+new_variables += [ "nBTagGood/I" ]
+new_variables += [ "nPhotonGood/I" ]
+
 new_variables += [ "nGenJetsCMSUnfold/I" ]
 new_variables += [ "nGenBJetCMSUnfold/I" ]
 new_variables += [ "nGenLeptonCMSUnfold/I" ]
@@ -333,11 +375,69 @@ def filler( event ):
     GenMET           = { "pt":reader.products["genMET"][0].pt(), "phi":reader.products["genMET"][0].phi() }
     event.GenMET_pt  = GenMET["pt"]
     event.GenMET_phi = GenMET["phi"] 
+    # reco naming
+    event.MET_pt     = GenMET["pt"]
+    event.MET_phi    = GenMET["phi"] 
 
     # find heavy objects before they decay
-    GenTops = map( lambda t:{ var: getattr( t, var )() for var in genTopVars }, filter( lambda p: abs(p.pdgId()) == 6 and search.isLast(p),  genPart ) )
+    GenT    = filter( lambda p: abs(p.pdgId()) == 6 and search.isLast(p),  genPart )
+
+    GenTopLep = []
+    GenWLep   = []
+    GenTopHad = []
+    GenWHad   = []
+    GenBLep   = []
+    GenBHad   = []
+    GenWs     = []
+    for top in GenT:
+        GenW   = [ search.descend(w) for w in search.daughters(top) if abs(w.pdgId()) == 24 ]
+        GenB   = [ search.descend(w) for w in search.daughters(top) if abs(w.pdgId()) == 5 ]
+        if GenW:
+            GenW = GenW[0]
+            GenWs.append(GenW)
+            wDecays = [ abs(l.pdgId()) for l in search.daughters(GenW) ]
+            if 11 in wDecays or 13 in wDecays or 15 in wDecays:
+                GenWLep.append(GenW)
+                if GenB: GenBLep.append(GenB[0])
+                GenTopLep.append(top)
+            else:
+                GenWHad.append(GenW)
+                if GenB: GenBHad.append(GenB[0])
+                GenTopHad.append(top)
+
+    GenTops = map( lambda t:{ var: getattr( t, var )() for var in genTopVars }, GenT )
     GenTops.sort( key = lambda p:-p["pt"] )
     fill_vector_collection( event, "GenTop", genTopVars, GenTops ) 
+
+    GenTopLep = map( lambda t:{ var: getattr( t, var )() for var in genTopVars }, GenTopLep )
+    GenTopLep.sort( key = lambda p:-p["pt"] )
+    fill_vector_collection( event, "GenTopLep", genTopVars, GenTopLep ) 
+
+    GenTopHad = map( lambda t:{ var: getattr( t, var )() for var in genTopVars }, GenTopHad )
+    GenTopHad.sort( key = lambda p:-p["pt"] )
+    fill_vector_collection( event, "GenTopHad", genTopVars, GenTopHad ) 
+
+    GenWs = map( lambda t:{ var: getattr( t, var )() for var in genWVars }, GenWs )
+    GenWs.sort( key = lambda p:-p["pt"] )
+    fill_vector_collection( event, "GenW", genWVars, GenWs ) 
+
+    GenWLep = map( lambda t:{ var: getattr( t, var )() for var in genWVars }, GenWLep )
+    GenWLep.sort( key = lambda p:-p["pt"] )
+    fill_vector_collection( event, "GenWLep", genWVars, GenWLep ) 
+
+    GenWHad = map( lambda t:{ var: getattr( t, var )() for var in genWVars }, GenWHad )
+    GenWHad.sort( key = lambda p:-p["pt"] )
+    fill_vector_collection( event, "GenWHad", genWVars, GenWHad ) 
+
+    GenBLep = map( lambda t:{ var: getattr( t, var )() for var in genWVars }, GenBLep )
+    GenBLep.sort( key = lambda p:-p["pt"] )
+    fill_vector_collection( event, "GenBLep", genWVars, GenBLep ) 
+
+    GenBHad = map( lambda t:{ var: getattr( t, var )() for var in genWVars }, GenBHad )
+    GenBHad.sort( key = lambda p:-p["pt"] )
+    fill_vector_collection( event, "GenBHad", genWVars, GenBHad ) 
+
+    bPartonsFromTop = [ b for b in filter( lambda p: abs(p.pdgId()) == 5 and p.numberOfMothers() == 1 and abs(p.mother(0).pdgId()) == 6,  genPart ) ]
 
     # genParticles for isolation
     GenParticlesIso = [ l for l in filter( lambda p: abs( p.pdgId() ) not in [12,14,16] and p.pt() > 5 and p.status() == 1, genPart ) ]
@@ -505,12 +605,36 @@ def filler( event ):
     genP0 = ( GenPhotonATLASUnfold[:1] + [None] )[0]
     if genP0: fill_vector( event, "GenPhotonATLASUnfold0",  genPhotonVars, genP0 )
 
+    GenLeptonCMSUnfold.sort( key = lambda p: -p["pt"] )
+    genL0 = ( GenLeptonCMSUnfold[:1] + [None] )[0]
+    if genL0: fill_vector( event, "GenLeptonCMSUnfold0",  genLeptonVars, genL0 )
+
+    GenJetCMSUnfold.sort( key = lambda p: -p["pt"] )
+    genJ0, genJ1, genJ2 = ( GenJetCMSUnfold[:3] + [None,None,None] )[:3]
+    if genJ0: fill_vector( event, "GenJetsCMSUnfold0",  genJetVars, genJ0 )
+    if genJ1: fill_vector( event, "GenJetsCMSUnfold1",  genJetVars, genJ1 )
+    if genJ2: fill_vector( event, "GenJetsCMSUnfold2",  genJetVars, genJ2 )
+
+    GenBJetCMSUnfold.sort( key = lambda p: -p["pt"] )
+    genB0, genB1 = ( GenBJetCMSUnfold[:2] + [None,None] )[:2]
+    if genB0: fill_vector( event, "GenBJetCMSUnfold0",  genJetVars, genB0 )
+    if genB1: fill_vector( event, "GenBJetCMSUnfold1",  genJetVars, genB1 )
+
     event.nGenElectronCMSUnfold = len( filter( lambda l: abs( l["pdgId"] ) == 11, GenLeptonCMSUnfold ) )
     event.nGenMuonCMSUnfold     = len( filter( lambda l: abs( l["pdgId"] ) == 13, GenLeptonCMSUnfold ) )
     event.nGenLeptonCMSUnfold   = len(GenLeptonCMSUnfold)
     event.nGenPhotonCMSUnfold   = len(GenPhotonCMSUnfold)
     event.nGenBJetCMSUnfold     = len(GenBJetCMSUnfold)
     event.nGenJetsCMSUnfold     = len(GenJetCMSUnfold)
+
+    # use reco naming for easier handling
+    event.nLeptonTight         = event.nGenLeptonCMSUnfold
+    event.nElectronTight       = event.nGenElectronCMSUnfold
+    event.nMuonTight           = event.nGenMuonCMSUnfold
+    event.nLeptonVetoIsoCorr   = event.nGenLeptonCMSUnfold
+    event.nJetGood             = event.nGenJetsCMSUnfold
+    event.nBTagGood            = event.nGenBJetCMSUnfold
+    event.nPhotonGood          = event.nGenPhotonCMSUnfold
 
     event.nGenElectronATLASUnfold = len( filter( lambda l: abs( l["pdgId"] ) == 11, GenLeptonATLASUnfold ) )
     event.nGenMuonATLASUnfold     = len( filter( lambda l: abs( l["pdgId"] ) == 13, GenLeptonATLASUnfold ) )
@@ -519,6 +643,61 @@ def filler( event ):
     event.nGenBJetATLASUnfold     = len(GenBJetATLASUnfold)
     event.nGenJetsATLASUnfold     = len(GenJetATLASUnfold)
 
+
+    ##############################################
+    ##############################################
+    ##############################################
+
+    if GenPhotonCMSUnfold:
+        if GenLeptonCMSUnfold:
+            event.dPhiLepGamma     = deltaPhi( GenPhotonCMSUnfold[0]["phi"], GenLeptonCMSUnfold[0]["phi"] ) 
+            event.dRLepGamma       = deltaR( GenPhotonCMSUnfold[0], GenLeptonCMSUnfold[0] ) 
+        if GenTopHad:
+            event.dPhiTopHadGamma  = deltaPhi( GenPhotonCMSUnfold[0]["phi"], GenTopHad[0]["phi"] ) 
+            event.dRTopHadGamma    = deltaR( GenPhotonCMSUnfold[0], GenTopHad[0] ) 
+        if GenWHad:
+            event.dPhiWHadGamma    = deltaPhi( GenPhotonCMSUnfold[0]["phi"], GenWHad[0]["phi"] ) 
+            event.dRWHadGamma      = deltaR( GenPhotonCMSUnfold[0], GenWHad[0] ) 
+        if GenTopLep:
+            event.dPhiTopLepGamma  = deltaPhi( GenPhotonCMSUnfold[0]["phi"], GenTopLep[0]["phi"] ) 
+            event.dRTopLepGamma    = deltaR( GenPhotonCMSUnfold[0], GenTopLep[0] ) 
+        if GenWLep:
+            event.dPhiWLepGamma    = deltaPhi( GenPhotonCMSUnfold[0]["phi"], GenWLep[0]["phi"] )  
+            event.dRWLepGamma      = deltaR( GenPhotonCMSUnfold[0], GenWLep[0] )  
+        if GenBHad:
+            event.dPhiBHadGamma    = deltaPhi( GenPhotonCMSUnfold[0]["phi"], GenBHad[0]["phi"] ) 
+            event.dRBHadGamma      = deltaR( GenPhotonCMSUnfold[0], GenBHad[0] ) 
+        if GenBLep:
+            event.dPhiBLepGamma    = deltaPhi( GenPhotonCMSUnfold[0]["phi"], GenBLep[0]["phi"] )
+            event.dRBLepGamma      = deltaR( GenPhotonCMSUnfold[0], GenBLep[0] )
+    if GenBLep:
+        if GenWLep:
+            event.dPhiBLepWLep     = deltaPhi( GenBLep[0]["phi"], GenWLep[0]["phi"] ) 
+            event.dRBLepWLep       = deltaR( GenBLep[0], GenWLep[0] ) 
+        if GenBHad:
+            event.dPhiBLepBHad     = deltaPhi( GenBLep[0]["phi"], GenBHad[0]["phi"] ) 
+            event.dRBLepBHad       = deltaR( GenBLep[0], GenBHad[0] ) 
+    if GenWHad:
+        if GenBHad:
+            event.dPhiBHadWHad     = deltaPhi( GenBHad[0]["phi"], GenWHad[0]["phi"] ) 
+            event.dRBHadWHad       = deltaR( GenBHad[0], GenWHad[0] ) 
+        if GenWLep:
+            event.dPhiWLepWHad     = deltaPhi( GenWLep[0]["phi"], GenWHad[0]["phi"] ) 
+            event.dRWLepWHad       = deltaR( GenWLep[0], GenWHad[0] ) 
+    if GenTopLep and GenTopHad:
+        event.dPhiTopLepTopHad     = deltaPhi( GenTopLep[0]["phi"], GenTopHad[0]["phi"] ) 
+        event.dRTopLepTopHad       = deltaR( GenTopLep[0], GenTopHad[0] ) 
+    if GenLeptonCMSUnfold:
+        event.dPhiLepMET           = deltaPhi( GenLeptonCMSUnfold[0]["phi"], GenMET["phi"] )
+
+    event.hT = 0
+    event.m3 = -999
+    if GenJetCMSUnfold:
+        event.hT = sum( [ j["pt"] for j in GenJetCMSUnfold ])
+        event.m3 = m3( GenJetCMSUnfold )[0]
+
+    if GenLeptonCMSUnfold:
+        event.mT = mT( GenLeptonCMSUnfold[0], GenMET )
 
 ##############################################
 ##############################################
