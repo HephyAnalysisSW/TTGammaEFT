@@ -21,4 +21,4 @@ class postprocessing_locations:
     MC2017_incl  = "TTGammaEFT_PP_2017_TTG_private_v28/incl/"
     MC2018_incl  = "TTGammaEFT_PP_2018_TTG_private_v28/incl/"
 
-    EFT = "TTGammaEFT_PP_EFT_TTG_v1/gen/"
+    EFT = "TTGammaEFT_PP_EFT_TTG_v2/gen/"
