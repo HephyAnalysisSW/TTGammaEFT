@@ -235,6 +235,8 @@ preSelection = cutInterpreter.cutString( args.selection + "-" + args.mode )
 # set default settings for your plots (selection, do you want an overflow bin?)
 Plot.setDefaults(   stack=stack, selectionString=preSelection, addOverFlowBin="upper" )
 
+print len(GenTopHad_eta[0])
+
 # define a list of plots here
 plotList = []
 

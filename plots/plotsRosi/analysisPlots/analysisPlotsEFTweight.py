@@ -336,7 +336,9 @@ for i, param in enumerate( params ):
 def get_weight_string( param, **kwargs ):
     return w.get_weight_string( **param['WC'] )( event, sample ) * event.ref_weight
 
-smweightString = get_weight_string({})
+print(param) 
+
+smweightString = get_weight_string({'WC':{}})
 bsmweightString = get_weight_string({"ctZ":2})
 selection = cutInterpreter.cutString( args.selection + "-" + args.mode )
 
