@@ -47,12 +47,14 @@ if os.environ["USER"] in ["lukas.lechner"]: #CBE cluster
     gridpack_directory                  = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/gridpacks/"
 
     analysis_results                    = results_directory
-    cache_directory                     = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache/"
+#    cache_directory                     = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache/"
+    cache_directory                     = "/users/lukas.lechner/public/cache/"
     combineReleaseLocation              = "/users/lukas.lechner/public/CMSSW_10_2_18/src/tmp/"
     cardfileLocation                    = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/results/cardfiles/"
 
     dpm_directory                       = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/nanoTuples/"
 #    dpm_directory                       = "/scratch-cbe/users/hephy/lukas.lechner/TTGammaEFT/nanoTuples/"
+#    dpm_directory                       = "/scratch/lukas.lechner/TTGammaEFT/nanoTuples/"
     eos_directory                       = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/"
 
 if os.environ["USER"] in ["ttschida"]:
