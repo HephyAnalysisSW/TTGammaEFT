@@ -110,6 +110,38 @@ massTight.append( Plot(
 ))
 
 massTight.append( Plot(
+    name      = 'm3inv',
+    texX      = 'M_{3} (GeV)',
+    texY      = 'Number of Events',
+    attribute = TreeVariable.fromString( "m3inv/F" ),
+    binning   = [ 70, 60, 500 ],
+))
+
+massTight.append( Plot(
+    name      = 'm3gammainv',
+    texX      = 'M_{3} (GeV)',
+    texY      = 'Number of Events',
+    attribute = TreeVariable.fromString( "m3gammainv/F" ),
+    binning   = [ 100, 0, 500 ],
+))
+
+massTight.append( Plot(
+    name      = 'm3wBJetinv',
+    texX      = 'M_{3} w/ 1 BJet (GeV)',
+    texY      = 'Number of Events',
+    attribute = TreeVariable.fromString( "m3wBJetinv/F" ),
+    binning   = [ 70, 0, 350 ],
+))
+
+massTight.append( Plot(
+    name      = 'm3inv_coarse',
+    texX      = 'M_{3} (GeV)',
+    texY      = 'Number of Events',
+    attribute = TreeVariable.fromString( "m3inv/F" ),
+    binning   = [ 22, 60, 500 ],
+))
+
+massTight.append( Plot(
     name      = 'mT2lg',
     texX      = 'M_{T2}(l,#gamma) (GeV)',
     texY      = 'Number of Events',

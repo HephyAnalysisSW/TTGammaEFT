@@ -52,6 +52,30 @@ massTight_noPhoton.append( Plot(
 ))
 
 massTight_noPhoton.append( Plot(
+    name      = 'm3inv',
+    texX      = 'M_{3} (GeV)',
+    texY      = 'Number of Events',
+    attribute = TreeVariable.fromString( "m3inv/F" ),
+    binning   = [ 70, 60, 500 ],
+))
+
+massTight_noPhoton.append( Plot(
+    name      = 'm3wBJetinv',
+    texX      = 'M_{3} w/ 1 BJet (GeV)',
+    texY      = 'Number of Events',
+    attribute = TreeVariable.fromString( "m3wBJetinv/F" ),
+    binning   = [ 70, 60, 500 ],
+))
+
+massTight_noPhoton.append( Plot(
+    name      = 'm3inv_coarse',
+    texX      = 'M_{3} (GeV)',
+    texY      = 'Number of Events',
+    attribute = TreeVariable.fromString( "m3inv/F" ),
+    binning   = [ 22, 60, 500 ],
+))
+
+massTight_noPhoton.append( Plot(
     name      = 'Lp',
     texX      = 'Lp',
     texY      = 'Number of Events',
