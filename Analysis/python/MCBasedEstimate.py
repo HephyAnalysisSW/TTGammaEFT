@@ -54,13 +54,13 @@ class MCBasedEstimate(SystematicEstimator):
                 else:
                     name = "_".join( [self.name, signalAddon] )
                 setattr(self, "process"+signalAddon, setup.processes[name])
-            preSelection = setup.preselection('MC', channel=channel)
+            preSelection = setup.preselection('MC', channel=channel, processCut=self.processCut)
             cuts         = [ region.cutString( setup.sys['selectionModifier'] ), preSelection['cut'] ]
-            if setup.parameters["photonIso"] and setup.parameters["photonIso"] != "lowChgIsolowSieie":
-                self.processCut = self.processCut.replace("photoncat", "photonhadcat")
-            if self.processCut:
-                cuts.append( cutInterpreter.cutString(self.processCut) )
-                logger.info( "Adding process specific cut %s"%self.processCut )
+#            if setup.parameters["photonIso"] and setup.parameters["photonIso"] != "lowChgIsolowSieie":
+#                self.processCut = self.processCut.replace("photoncat", "photonhadcat")
+#            if self.processCut:
+#                cuts.append( cutInterpreter.cutString(self.processCut) )
+#                logger.info( "Adding process specific cut %s"%self.processCut )
             cut          = "&&".join( cuts )
             weight       = preSelection['weightStr']
 

@@ -53,6 +53,16 @@ regionsTTGEta      = getRegionsFromThresholds( "PhotonGood0_eta", etaG_thresh )
 inclRegionsTTG     = [Region( "PhotonGood0_pt", (20,-999) )]
 regionsTTGfake     = getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", pTG_thresh )
 inclRegionsTTGfake = [Region( "PhotonNoChgIsoNoSieie0_pt", (20,-999) )]
+
+regionsTTGlshc     = getRegionsFromThresholds( "PhotonInvChgIso0_pt", pTG_thresh )
+inclRegionsTTGlshc = [Region( "PhotonInvChgIso0_pt", (20,-999) )]
+
+regionsTTGhslc     = getRegionsFromThresholds( "PhotonInvSieie0_pt", pTG_thresh )
+inclRegionsTTGhslc = [Region( "PhotonInvSieie0_pt", (20,-999) )]
+
+regionsTTGhshc     = getRegionsFromThresholds( "PhotonInvChgIsoInvSieie0_pt", pTG_thresh )
+inclRegionsTTGhshc = [Region( "PhotonInvChgIsoInvSieie0_pt", (20,-999) )]
+
 noPhotonRegionTTG  = [Region( "nPhotonGood", (0,1) )]
 
 regionsTTG20To120  = getRegionsFromThresholds( "PhotonGood0_pt", ( 20,   120 ) )
@@ -68,7 +78,7 @@ mlg_tresh = [ 0, mLgThresh, -999 ]
 mLgPtRegions = getRegions2D( "PhotonGood0_pt", pTG_thresh, "mLtight0Gamma", mlg_tresh )
 mLgRegions   = getRegionsFromThresholds( "mLtight0Gamma", mlg_tresh )
 
-m3_thresh    = [0, 140, 210, 280, 350, -999]
+m3_thresh    = [0, 140, 210, 280, 350, 420, -999]
 m3Regions    = getRegionsFromThresholds( "m3", m3_thresh )
 m3PtRegions  = getRegions2D( "PhotonGood0_pt",  pTG_thresh,  "m3", m3_thresh )
 m3EtaRegions = getRegions2D( "PhotonGood0_eta", etaG_thresh, "m3", m3_thresh )
