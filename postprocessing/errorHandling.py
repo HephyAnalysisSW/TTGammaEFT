@@ -25,6 +25,8 @@ accepted_errors = [
     "unknown branch -> MET_p",                                        # 2017 MET processing
     "ZGToLLG_01J_5f_lowMLL_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/crab_RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v1_legacy_nano_v4/190812_124339/0000/nanoAOD_65.root", #broken file
     "TTGamma_Dilept_TuneCP5_erdON_PSweights_13TeV-madgraph-pythia8/crab_RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v1_legacy_nano_v6/200118_211725/0000/nanoAOD_10.root", #broken file
+    "matching wildcard -> nLHE*",                                     # mc w/o LHE weights
+    "matching wildcard -> LHE*",                                      # mc w/o LHE weights
 ]
 
 trigger_words = [
