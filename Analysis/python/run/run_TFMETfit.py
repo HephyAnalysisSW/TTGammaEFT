@@ -107,8 +107,7 @@ read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval
                      "reweightPU/F", "reweightPUDown/F", "reweightPUUp/F", "reweightPUVDown/F", "reweightPUVUp/F",
                      "reweightLeptonTightSF/F", "reweightLeptonTightSFUp/F", "reweightLeptonTightSFDown/F",
                      "reweightLeptonTrackingTightSF/F",
-                     "reweightDilepTrigger/F", "reweightDilepTriggerUp/F", "reweightDilepTriggerDown/F",
-                     "reweightDilepTriggerBackup/F", "reweightDilepTriggerBackupUp/F", "reweightDilepTriggerBackupDown/F",
+                     "reweightTrigger/F", "reweightTriggerUp/F", "reweightTriggerDown/F",
                      "reweightPhotonSF/F", "reweightPhotonSFUp/F", "reweightPhotonSFDown/F",
                      "reweightPhotonElectronVetoSF/F",
                      "reweightBTag_SF/F", "reweightBTag_SF_b_Down/F", "reweightBTag_SF_b_Up/F", "reweightBTag_SF_l_Down/F", "reweightBTag_SF_l_Up/F",
@@ -121,7 +120,7 @@ read_variables = [ "weight/F",
                  ]
 
 lumi_scale   = data_sample.lumi * 0.001
-weightString = "%f*weight*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
+weightString = "%f*weight*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
 weightString = "(%s)+(%s*%f*((nPhotonGood>0)*(PhotonGood0_photonCat==2)))"%(weightString,weightString,(misIDSF_val[args.year].val-1))
 
 filterCutData = getFilterCut( args.year, isData=True,  skipBadChargedCandidate=True )
@@ -148,11 +147,14 @@ for s in mc:
     s.setWeightString( sampleWeight )
 
 replaceSelection = {
-    "nLeptonVetoIsoCorr": "nLeptonVetoNoIsoTight",
-    "nLeptonTight":       "nLeptonTightInvIso",
+    "nLeptonVetoIsoCorr": "nLeptonVetoNoIso",
+    "nLeptonTight":   "nLeptonTightInvIso",
     "nMuonTight":         "nMuonTightInvIso",
     "nElectronTight":     "nElectronTightInvIso",
     "mLtight0Gamma":      "mLinvtight0Gamma",
+    "nPhotonGood":        "nPhotonGoodInvLepIso",
+    "nJetGood":           "nJetGoodInvLepIso",
+    "nBTagGood":          "nBTagGoodInvLepIso",
 }
 
 photonRegion = False
