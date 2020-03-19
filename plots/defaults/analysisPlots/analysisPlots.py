@@ -127,7 +127,7 @@ read_variables += map( lambda var: "Bj1_"          + var, variables )
 # add here variables that should be read only for MC samples
 read_variables_MC = ["overlapRemoval/I",
                      'nGenElectronCMSUnfold/I', 'nGenMuonCMSUnfold/I', 'nGenLeptonCMSUnfold/I', 'nGenPhotonCMSUnfold/I', 'nGenBJetCMSUnfold/I', 'nGenJetsCMSUnfold/I',
-                     "reweightPU/F", "reweightLeptonTightSF/F", "reweightLeptonTrackingTightSF/F", "reweightPhotonSF/F", "reweightPhotonElectronVetoSF/F", "reweightBTag_SF/F", 'reweightL1Prefire/F',
+                     "reweightTrigger/F", "reweightPU/F", "reweightLeptonTightSF/F", "reweightLeptonTrackingTightSF/F", "reweightPhotonSF/F", "reweightPhotonElectronVetoSF/F", "reweightBTag_SF/F", 'reweightL1Prefire/F',
                     ]
 
 read_variables_MC += map( lambda var: "GenPhotonCMSUnfold0_"  + var, variables )
@@ -152,7 +152,7 @@ def sequenceExample( event, sample ):
 sequence = [ sequenceExample ]
 
 # MC samples need to be corrected by certain scale factors to correct e.g. detector effects. Define the "weight" here:
-mcWeight = lambda event, sample: event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+mcWeight = lambda event, sample: event.reweightTrigger*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
 # a weight for all samples incluuding data is defined here
 weight = lambda event, sample: event.weight
 
