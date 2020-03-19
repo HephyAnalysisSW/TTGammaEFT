@@ -62,6 +62,10 @@ cache_dir = os.path.join(cache_directory, "qcdTFHistos", str(args.year), args.se
 dirDB = MergingDirDB(cache_dir)
 if not dirDB: raise
 
+cache_dir = os.path.join(cache_directory, "qcdTFHistosSF", str(args.year), args.selection)
+dirDBSF = MergingDirDB(cache_dir)
+if not dirDBSF: raise
+
 if args.small:    args.plot_directory += "_small"
 if args.tfUpdate: args.plot_directory += "_TF"
 
@@ -72,7 +76,7 @@ os.environ["gammaSkim"]="False" #always false for QCD estimate
 if args.year == 2016:
     from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed  import *
     from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
-    mc          = [ TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
+    mc          = [ TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, Zinv_16, rest_16 ]
     ttg         = TTG_16
     tt          = TT_pow_16
     wjets       = WJets_16
@@ -83,7 +87,7 @@ if args.year == 2016:
 elif args.year == 2017:
     from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed    import *
     from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
-    mc          = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
+    mc          = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, Zinv_17, rest_17 ]
     ttg         = TTG_17
     tt          = TT_pow_17
     wjets       = WJets_17
@@ -94,7 +98,7 @@ elif args.year == 2017:
 elif args.year == 2018:
     from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed  import *
     from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
-    mc          = [ TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
+    mc          = [ TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, Zinv_18, rest_18 ]
     ttg         = TTG_18
     tt          = TT_pow_18
     wjets       = WJets_18
@@ -107,8 +111,8 @@ read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval
                      "reweightPU/F", "reweightPUDown/F", "reweightPUUp/F", "reweightPUVDown/F", "reweightPUVUp/F",
                      "reweightLeptonTightSF/F", "reweightLeptonTightSFUp/F", "reweightLeptonTightSFDown/F",
                      "reweightLeptonTrackingTightSF/F",
-                     "reweightDilepTrigger/F", "reweightDilepTriggerUp/F", "reweightDilepTriggerDown/F",
-                     "reweightDilepTriggerBackup/F", "reweightDilepTriggerBackupUp/F", "reweightDilepTriggerBackupDown/F",
+                     "reweightTrigger/F", "reweightTriggerUp/F", "reweightTriggerDown/F",
+                     "reweightInvTrigger/F", "reweightInvTriggerUp/F", "reweightInvTriggerDown/F",
                      "reweightPhotonSF/F", "reweightPhotonSFUp/F", "reweightPhotonSFDown/F",
                      "reweightPhotonElectronVetoSF/F",
                      "reweightBTag_SF/F", "reweightBTag_SF_b_Down/F", "reweightBTag_SF_b_Up/F", "reweightBTag_SF_l_Down/F", "reweightBTag_SF_l_Up/F",
@@ -120,8 +124,10 @@ read_variables = [ "weight/F",
                  ]
 
 lumi_scale   = data_sample.lumi * 0.001
-weightString = "%f*weight*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
-weightString = "(%s)+(%s*%f*((nPhotonGood>0)*(PhotonGood0_photonCat==2)))"%(weightString,weightString,(misIDSF_val[args.year].val-1))
+weightString    = "%f*weight*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
+weightStringIL  = "%f*weight*reweightInvTrigger*reweightL1Prefire*reweightPU*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
+weightStringInv  = "((%s)+(%s*%f*((nPhotonGoodInvLepIso>0)*(PhotonGoodInvLepIso0_photonCat==2))))"%(weightStringIL,weightStringIL,(misIDSF_val[args.year].val-1))
+weightStringAR = "((%s)+(%s*%f*((nPhotonGood>0)*(PhotonGood0_photonCat==2))))"%(weightString,weightString,(misIDSF_val[args.year].val-1))
 
 filterCutData = getFilterCut( args.year, isData=True,  skipBadChargedCandidate=True )
 filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )
@@ -136,23 +142,13 @@ if args.small:
     data_sample.setWeightString( "weight*%f"%(1./data_sample.normalization) )
 
 for s in mc:
-    s.setSelectionString( [ filterCutMc, triggerCutMc, "overlapRemoval==1" ] )
+    s.setSelectionString( [ filterCutMc, triggerCutMc ] )#, "overlapRemoval==1" ] )
     s.read_variables = read_variables_MC
-    sampleWeight     = weightString
+    sampleWeight     = "1"
     if args.small:           
         s.normalization = 1.
         s.reduceFiles( factor=100 )
-        sampleWeight += "*%f"%(1./s.normalization)
-
-    s.setWeightString( sampleWeight )
-
-replaceSelection = {
-    "nLeptonVetoIsoCorr": "nLeptonVetoNoIsoTight",
-    "nLeptonTight":       "nLeptonTightInvIso",
-    "nMuonTight":         "nMuonTightInvIso",
-    "nElectronTight":     "nElectronTightInvIso",
-    "mLtight0Gamma":      "mLinvtight0Gamma",
-}
+        sampleWeight = "%f"%(1./s.normalization)
 
 photonRegion = False
 bjetRegion   = False
@@ -169,33 +165,16 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
     bjetRegion   = QCDTF_updates["SR"]["nBTag"][0] > 0   if args.tfUpdate and "nBTag"   in QCDTF_updates["SR"].keys() else setup.parameters["nBTag"][0] > 0
     njets        = QCDTF_updates["SR"]["nJet"][0]        if args.tfUpdate and "nJet"    in QCDTF_updates["SR"].keys() else setup.parameters["nJet"][0]
 
-    selection     = setup.selection( "MC", channel="all", **setup.defaultParameters(QCDTF_updates["SR"] if args.tfUpdate else {}) )["prefix"]
-    selection    += "-" + args.mode
+    allSelection  = setup.selection( "MC", channel="all", **setup.defaultParameters(QCDTF_updates["SR"] if args.tfUpdate else {}) )["prefix"]
+    selection     = allSelection + "-" + args.mode
     selection     = cutInterpreter.cutString( selection )
     print( "Using selection string: %s"%args.selection )
 
     preSelection  = setup.selection("MC",   channel="all", **setup.defaultParameters( update=QCDTF_updates["CR"] if args.tfUpdate else QCD_updates ))["prefix"]
     preSelection += "-" + args.mode + "Inv"
     preSelection  = cutInterpreter.cutString( preSelection )
-
-    print "preselection"
-    print preSelection
-    print
-    print "selection"
-    print selection
 else:
     raise Exception("Region not implemented")
-#else:
-#    selection     = args.selection
-#    selection    += "-" + args.mode
-#    selection     = cutInterpreter.cutString( selection )
-
-#    preSelection  = [ item if not "nBTag" in item else "nBTag0" for item in args.selection.split("-") ]
-#    preSelection += [ args.mode + "Inv" ]
-#    preSelection  = cutInterpreter.cutString( "-".join(preSelection) )
-
-#    for key, val in replaceSelection.items():
-#        preSelection = preSelection.replace( key, val )
 
 key = (data_sample.name, "mTinv", "_".join(map(str,binning)), data_sample.weightString, data_sample.selectionString, preSelection)
 if dirDB.contains(key) and not args.overwrite:
@@ -231,6 +210,7 @@ mTHistos_fit = [[], [dataHist]]
 mTHistos_SB  = [[], [dataHist_SB]]
 
 for s in mc:
+    s.setWeightString( weightStringInv + "*" + sampleWeight )
     key = (s.name, "mTinv", "_".join(map(str,binning)), s.weightString, s.selectionString, preSelection)
     if dirDB.contains(key) and not args.overwrite:
         s.hist_SB = dirDB.get(key)
@@ -238,11 +218,12 @@ for s in mc:
         s.hist_SB = s.get1DHistoFromDraw( "mTinv", binning=binning, selectionString=preSelection, addOverFlowBin="upper" )
         dirDB.add(key, s.hist_SB)
 
+    s.setWeightString( weightStringAR + "*" + sampleWeight )
     key = (s.name, "mT", "_".join(map(str,binning)), s.weightString, s.selectionString, selection)
     if dirDB.contains(key) and not args.overwrite:
         s.hist = dirDB.get(key)
     else:
-        s.hist = s.get1DHistoFromDraw( "mT",    binning=binning, selectionString=selection,    addOverFlowBin="upper" )
+        s.hist = s.get1DHistoFromDraw( "mT", binning=binning, selectionString=selection, addOverFlowBin="upper" )
         dirDB.add(key, s.hist)
 
     print s.name, s.weightString
@@ -261,12 +242,12 @@ for s in mc:
         elif "TT_pow" in s.name:
             s.hist.Scale(TTSF_val[args.year].val)
             s.hist_SB.Scale(TTSF_val[args.year].val)
-        elif "ZG" in s.name and njets < 4:
+        elif "ZG" in s.name:# and njets < 4:
             s.hist.Scale(ZGSF_val[args.year].val)
             s.hist_SB.Scale(ZGSF_val[args.year].val)
-#        elif "other" in s.name:
-#            s.hist.Scale(0.9)
-#            s.hist_SB.Scale(0.9)
+        elif "other" in s.name:# and njets < 4:
+            s.hist.Scale(otherSF_val[args.year].val)
+            s.hist_SB.Scale(otherSF_val[args.year].val)
         elif "WG" in s.name:# and njets > 3:
             s.hist.Scale(WGSF_val[args.year].val)
             s.hist_SB.Scale(WGSF_val[args.year].val)
@@ -316,6 +297,15 @@ print("Using sample %s as free floating histogram!"%floatSample.name)
 hist_float = floatSample.hist.Clone("ffit")
 hist_qcd   = qcdHist.Clone("hist_qcd")
 
+key = (floatSample.name, "mu", "mT", "_".join(map(str,binning)), floatSample.weightString, floatSample.selectionString, allSelection)
+#if args.mode == "e" and dirDBSF.contains(key):
+if photonRegion and args.mode == "e":
+    if dirDBSF.contains(key):
+    # fix electron channel floating sf to muon sf
+        muonSF = dirDBSF.get(key)
+        hist_float.Scale( muonSF )
+        print("Scaling floating electron channel histogram by muon channel SF of %f"%muonSF)
+
 hist_other            = floatSample.hist.Clone("other")
 hist_other.style      = styles.fillStyle( ROOT.kGray )
 hist_other.legendText = "other"
@@ -336,17 +326,21 @@ tarray.Add( hist_float )
 tarray.Add( hist_other )
 
 fitter = ROOT.TFractionFitter( dataHist, tarray )
-fitter.SetRangeX(1,12)
+#fitter.SetRangeX(6,19)
 
 tfitter = fitter.GetFitter()
-tfitter.Config().ParSettings(0).Set("qcd",   nQCD*0.4/nTotal, 0.001, 0.,               1.)
-#if photonRegion and not bjetRegion: #and args.mode == "e": # fix WGamma in photonRegions e-channel since mT is not a good handle
-if photonRegion and args.mode == "e": # fix WGamma in photonRegions e-channel since mT is not a good handle
+tfitter.Config().ParSettings(0).Set("qcd",   nQCD*0.2/nTotal if bjetRegion else nQCD*1./nTotal, 0.01, 0.,               1.)
+if photonRegion and not bjetRegion: #and args.mode == "e": # fix WGamma in photonRegions e-channel since mT is not a good handle
+#if args.mode == "e": # fix WGamma in photonRegions e-channel since mT is not a good handle
+#if photonRegion and args.mode == "e": # fix WGamma in photonRegions e-channel since mT is not a good handle
 #    tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.001, 0.,               1.)
-    tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.001, nFloat*0.99/nTotal, nFloat*1.01/nTotal)
+    tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.01, nFloat*0.999/nTotal, nFloat*1.001/nTotal)
+#elif "EC" in args.selection: # fix WGamma in photonRegions e-channel since mT is not a good handle
+##    tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.001, 0.,               1.)
+#    tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.01, nFloat*0.999/nTotal, nFloat*1.001/nTotal)
 else:
-    tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.001, 0.,               1.)
-tfitter.Config().ParSettings(2).Set("fixed", nFix/nTotal,     0.0,   nFix*0.99/nTotal, nFix*1.01/nTotal)
+    tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.01, 0.,               1.)
+tfitter.Config().ParSettings(2).Set("fixed", nFix/nTotal,     0.0,   nFix*0.999/nTotal, nFix*1.001/nTotal)
 tfitter.Config().ParSettings(2).Fix()
 
 print("Performing Fit!")
@@ -367,6 +361,11 @@ print "qcdTF", qcdTF
 print "floating SF", floatSF
 print
 
+key = (floatSample.name, args.mode, "mT", "_".join(map(str,binning)), floatSample.weightString, floatSample.selectionString, allSelection)
+print key
+dirDBSF.add(key,floatSF.val, overwrite=True )
+print("Storing floating SF of %f"%floatSF.val)
+
 qcdHist.Scale(qcdTF.val)
 hist_qcd.Scale(qcdTF.val)
 hist_float.Scale(floatSF.val)
@@ -374,6 +373,7 @@ hist_float.Scale(floatSF.val)
 hist_qcd.legendText = "QCD" + " (TF %1.3f#pm %1.3f)"%(qcdTF.val, qcdTF.sigma)
 hist_qcd.style      = styles.fillStyle( color.QCD )
 
+#if args.mode == "e": # fix WGamma in photonRegions e-channel since mT is not a good handle
 if photonRegion and args.mode == "e": # fix WGamma in photonRegions e-channel since mT is not a good handle
 #    hist_float.legendText = floatSample.texName
     hist_float.legendText = floatSample.texName + " (SF %1.3f#pm %1.3f)"%(floatSF.val, floatSF.sigma)

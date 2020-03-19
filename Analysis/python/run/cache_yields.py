@@ -216,7 +216,7 @@ else:
 #    data_sample.setSelectionString( [ filterCutData, cutInterpreter.cutString( args.selection ) ] )
     allSamples = [data_sample] + mc
 
-weightString = "(weight*%f*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF)"%lumi_scale
+weightString = "(weight*%f*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF)"%lumi_scale
 #try to create a weightString which gives a SF of 2.25 to misID photon events for QCD estimate
 #fancyWeightString = weightString + "+" + weightString + "*(PhotonGood0_photonCat==2)*1.25"
 

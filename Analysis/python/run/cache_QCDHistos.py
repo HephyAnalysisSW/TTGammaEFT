@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-''' Analysis script for standard plots
-'''
+""" Analysis script for standard plots
+"""
 
 # Standard imports
 import ROOT, os, imp, sys, copy
@@ -30,27 +30,27 @@ from helpers                          import splitList
 
 addSF = True
 # Default Parameter
-loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET']
+loggerChoices = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTSET"]
 photonCatChoices = [ "None", "PhotonGood0", "PhotonGood1", "PhotonMVA0", "PhotonNoChgIso0", "PhotonNoChgIsoNoSieie0", "PhotonNoSieie0" ]
 recoPlotsPath = os.path.expandvars( "$CMSSW_BASE/src/TTGammaEFT/plots/plotsLukas/reco/" )
 
 # Arguments
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
-argParser.add_argument('--logLevel',           action='store',      default='INFO', nargs='?', choices=loggerChoices,                  help="Log level for logging")
-#argParser.add_argument('--plot_directory',     action='store',      default='102X_TTG_ppv1_v1')
-argParser.add_argument('--plotFile',           action='store',      default='all_1l')
-argParser.add_argument('--selection',          action='store',      default='dilepOS-nLepVeto2-pTG20-nPhoton1p-offZSFllg-offZSFll-mll40')
-argParser.add_argument('--small',              action='store_true',                                                                    help='Run only on a small subset of the data?', )
-argParser.add_argument('--overwrite',          action='store_true',                                                                    help='overwrite cache entry?', )
-argParser.add_argument('--checkOnly',          action='store_true',                                                                    help='check cached histos?', )
-argParser.add_argument('--year',               action='store',      default=None,   type=int,  choices=[2016,2017,2018],               help="Which year to plot?")
-argParser.add_argument('--mode',               action='store',      default="None", type=str, choices=["mu", "e", "all"],              help="plot lepton mode" )
-argParser.add_argument('--nJobs',              action='store',      default=1,      type=int, choices=[1,2,3,4,5],                     help="Maximum number of simultaneous jobs.")
-argParser.add_argument('--job',                action='store',      default=0,      type=int, choices=[0,1,2,3,4],                     help="Run only job i")
+argParser.add_argument("--logLevel",           action="store",      default="INFO", nargs="?", choices=loggerChoices,                  help="Log level for logging")
+#argParser.add_argument("--plot_directory",     action="store",      default="102X_TTG_ppv1_v1")
+argParser.add_argument("--plotFile",           action="store",      default="all_1l")
+argParser.add_argument("--selection",          action="store",      default="dilepOS-nLepVeto2-pTG20-nPhoton1p-offZSFllg-offZSFll-mll40")
+argParser.add_argument("--small",              action="store_true",                                                                    help="Run only on a small subset of the data?", )
+argParser.add_argument("--overwrite",          action="store_true",                                                                    help="overwrite cache entry?", )
+argParser.add_argument("--checkOnly",          action="store_true",                                                                    help="check cached histos?", )
+argParser.add_argument("--year",               action="store",      default=None,   type=int,  choices=[2016,2017,2018],               help="Which year to plot?")
+argParser.add_argument("--mode",               action="store",      default="None", type=str, choices=["mu", "e", "all"],              help="plot lepton mode" )
+argParser.add_argument("--nJobs",              action="store",      default=1,      type=int, choices=[1,2,3,4,5],                     help="Maximum number of simultaneous jobs.")
+argParser.add_argument("--job",                action="store",      default=0,      type=int, choices=[0,1,2,3,4],                     help="Run only job i")
 argParser.add_argument("--runOnLxPlus",        action="store_true",                                                                    help="Change the global redirector of samples")
-argParser.add_argument('--addBadEEJetVeto',    action='store_true',                                                                    help='remove BadEEJetVeto', )
-argParser.add_argument('--addHEMweight',       action='store_true',                                                                    help='remove HEMweight', )
+argParser.add_argument("--addBadEEJetVeto",    action="store_true",                                                                    help="remove BadEEJetVeto", )
+argParser.add_argument("--addHEMweight",       action="store_true",                                                                    help="remove HEMweight", )
 args = argParser.parse_args()
 
 # Logging
@@ -80,6 +80,8 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
 if args.year == 2017 and args.addBadEEJetVeto:
     args.selection += "-BadEEJetVeto"
 
+print args.selection
+
 cache_dir = os.path.join(cache_directory, "qcdHistos", str(args.year))
 dirDB = MergingDirDB(cache_dir)
 if not dirDB: raise
@@ -102,9 +104,9 @@ elif args.year == 2018 and not args.checkOnly:
 def getYieldPlots():
     yieldPlots = []
     yieldPlots.append( Plot(
-                name      = 'yield',
-                texX      = 'yield',
-                texY      = 'Number of Events',
+                name      = "yield",
+                texX      = "yield",
+                texY      = "Number of Events",
                 attribute = lambda event, sample: event.nElectronTightInvIso,
                 binning   = [ 2, 0, 2 ] if not args.selection.count("nLepTight2") else [ 3, 0, 3 ],
                 ) )
@@ -112,23 +114,23 @@ def getYieldPlots():
     if "nPhoton0" in args.selection: return yieldPlots
 
     yieldPlots.append( Plot(
-                name      = 'yield_20ptG120',
-                texX      = 'yield',
-                texY      = 'Number of Events',
+                name      = "yield_20ptG120",
+                texX      = "yield",
+                texY      = "Number of Events",
                 attribute = lambda event, sample: event.nElectronTightInvIso if event.PhotonGood0_pt >= 20 and event.PhotonGood0_pt < 120 else -999,
                 binning   = [ 2, 0, 2 ] if not args.selection.count("nLepTight2") else [ 3, 0, 3 ],
                 ) )
     yieldPlots.append( Plot(
-                name      = 'yield_120ptG220',
-                texX      = 'yield',
-                texY      = 'Number of Events',
+                name      = "yield_120ptG220",
+                texX      = "yield",
+                texY      = "Number of Events",
                 attribute = lambda event, sample: event.nElectronTightInvIso if event.PhotonGood0_pt >= 120 and event.PhotonGood0_pt < 220 else -999,
                 binning   = [ 2, 0, 2 ] if not args.selection.count("nLepTight2") else [ 3, 0, 3 ],
                 ) )
     yieldPlots.append( Plot(
-                name      = 'yield_220ptGinf',
-                texX      = 'yield',
-                texY      = 'Number of Events',
+                name      = "yield_220ptGinf",
+                texX      = "yield",
+                texY      = "Number of Events",
                 attribute = lambda event, sample: event.nElectronTightInvIso if event.PhotonGood0_pt >= 220 else -999,
                 binning   = [ 2, 0, 2 ] if not args.selection.count("nLepTight2") else [ 3, 0, 3 ],
                 ) )
@@ -137,30 +139,30 @@ def getYieldPlots():
     if not "NoChgIsoNoSieiePhoton" in args.selection: return yieldPlots
 
     yieldPlots.append( Plot(
-                name      = 'yield_invSieie',
-                texX      = 'yield',
-                texY      = 'Number of Events',
+                name      = "yield_invSieie",
+                texX      = "yield",
+                texY      = "Number of Events",
                 attribute = lambda event, sample: event.nElectronTightInvIso if event.PhotonNoSieie0_sieie > 0.011 else -999,
                 binning   = [ 2, 0, 2 ] if not args.selection.count("nLepTight2") else [ 3, 0, 3 ],
                 ) )
     yieldPlots.append( Plot(
-                name      = 'yield_invSieie_20ptG120',
-                texX      = 'yield',
-                texY      = 'Number of Events',
+                name      = "yield_invSieie_20ptG120",
+                texX      = "yield",
+                texY      = "Number of Events",
                 attribute = lambda event, sample: event.nElectronTightInvIso if event.PhotonNoSieie0_pt >= 20 and event.PhotonNoSieie0_pt < 120 and event.PhotonNoSieie0_sieie > 0.011 else -999,
                 binning   = [ 2, 0, 2 ] if not args.selection.count("nLepTight2") else [ 3, 0, 3 ],
                 ) )
     yieldPlots.append( Plot(
-                name      = 'yield_invSieie_120ptG220',
-                texX      = 'yield',
-                texY      = 'Number of Events',
+                name      = "yield_invSieie_120ptG220",
+                texX      = "yield",
+                texY      = "Number of Events",
                 attribute = lambda event, sample: event.nElectronTightInvIso if event.PhotonNoSieie0_pt >= 120 and event.PhotonNoSieie0_pt < 220 and event.PhotonNoSieie0_sieie > 0.011 else -999,
                 binning   = [ 2, 0, 2 ] if not args.selection.count("nLepTight2") else [ 3, 0, 3 ],
                 ) )
     yieldPlots.append( Plot(
-                name      = 'yield_invSieie_220ptGinf',
-                texX      = 'yield',
-                texY      = 'Number of Events',
+                name      = "yield_invSieie_220ptGinf",
+                texX      = "yield",
+                texY      = "Number of Events",
                 attribute = lambda event, sample: event.nElectronTightInvIso if event.PhotonNoSieie0_pt >= 220 and event.PhotonNoSieie0_sieie > 0.011 else -999,
                 binning   = [ 2, 0, 2 ] if not args.selection.count("nLepTight2") else [ 3, 0, 3 ],
                 ) )
@@ -168,60 +170,60 @@ def getYieldPlots():
 
 
     yieldPlots.append( Plot(
-                name      = 'yield_invChgIso',
-                texX      = 'yield',
-                texY      = 'Number of Events',
+                name      = "yield_invChgIso",
+                texX      = "yield",
+                texY      = "Number of Events",
                 attribute = lambda event, sample: event.nElectronTightInvIso if event.PhotonNoChgIso0_pfRelIso03_chg * event.PhotonNoChgIso0_pt > 1.141 else -999,
                 binning   = [ 2, 0, 2 ] if not args.selection.count("nLepTight2") else [ 3, 0, 3 ],
                 ) )
     yieldPlots.append( Plot(
-                name      = 'yield_invChgIso_20ptG120',
-                texX      = 'yield',
-                texY      = 'Number of Events',
+                name      = "yield_invChgIso_20ptG120",
+                texX      = "yield",
+                texY      = "Number of Events",
                 attribute = lambda event, sample: event.nElectronTightInvIso if event.PhotonNoChgIso0_pt >= 20 and event.PhotonNoChgIso0_pt < 120 and event.PhotonNoChgIso0_pfRelIso03_chg * event.PhotonNoChgIso0_pt > 1.141 else -999,
                 binning   = [ 2, 0, 2 ] if not args.selection.count("nLepTight2") else [ 3, 0, 3 ],
                 ) )
     yieldPlots.append( Plot(
-                name      = 'yield_invChgIso_120ptG220',
-                texX      = 'yield',
-                texY      = 'Number of Events',
+                name      = "yield_invChgIso_120ptG220",
+                texX      = "yield",
+                texY      = "Number of Events",
                 attribute = lambda event, sample: event.nElectronTightInvIso if event.PhotonNoChgIso0_pt >= 120 and event.PhotonNoChgIso0_pt < 220 and event.PhotonNoChgIso0_pfRelIso03_chg * event.PhotonNoChgIso0_pt > 1.141 else -999,
                 binning   = [ 2, 0, 2 ] if not args.selection.count("nLepTight2") else [ 3, 0, 3 ],
                 ) )
     yieldPlots.append( Plot(
-                name      = 'yield_invChgIso_220ptGinf',
-                texX      = 'yield',
-                texY      = 'Number of Events',
+                name      = "yield_invChgIso_220ptGinf",
+                texX      = "yield",
+                texY      = "Number of Events",
                 attribute = lambda event, sample: event.nElectronTightInvIso if event.PhotonNoChgIso0_pt >= 220 and event.PhotonNoChgIso0_pfRelIso03_chg * event.PhotonNoChgIso0_pt > 1.141 else -999,
                 binning   = [ 2, 0, 2 ] if not args.selection.count("nLepTight2") else [ 3, 0, 3 ],
                 ) )
 
 
     yieldPlots.append( Plot(
-                name      = 'yield_invSieie_invChgIso',
-                texX      = 'yield',
-                texY      = 'Number of Events',
+                name      = "yield_invSieie_invChgIso",
+                texX      = "yield",
+                texY      = "Number of Events",
                 attribute = lambda event, sample: event.nElectronTightInvIso if event.PhotonNoChgIsoNoSieie0_sieie > 0.011 and event.PhotonNoChgIsoNoSieie0_pfRelIso03_chg * event.PhotonNoChgIsoNoSieie0_pt > 1.141 else -999,
                 binning   = [ 2, 0, 2 ] if not args.selection.count("nLepTight2") else [ 3, 0, 3 ],
                 ) )
     yieldPlots.append( Plot(
-                name      = 'yield_invSieie_invChgIso_20ptG120',
-                texX      = 'yield',
-                texY      = 'Number of Events',
+                name      = "yield_invSieie_invChgIso_20ptG120",
+                texX      = "yield",
+                texY      = "Number of Events",
                 attribute = lambda event, sample: event.nElectronTightInvIso if event.PhotonNoChgIsoNoSieie0_pt >= 20 and event.PhotonNoChgIsoNoSieie0_pt < 120 and event.PhotonNoChgIsoNoSieie0_sieie > 0.011 and event.PhotonNoChgIsoNoSieie0_pfRelIso03_chg * event.PhotonNoChgIsoNoSieie0_pt > 1.141 else -999,
                 binning   = [ 2, 0, 2 ] if not args.selection.count("nLepTight2") else [ 3, 0, 3 ],
                 ) )
     yieldPlots.append( Plot(
-                name      = 'yield_invSieie_invChgIso_120ptG220',
-                texX      = 'yield',
-                texY      = 'Number of Events',
+                name      = "yield_invSieie_invChgIso_120ptG220",
+                texX      = "yield",
+                texY      = "Number of Events",
                 attribute = lambda event, sample: event.nElectronTightInvIso if event.PhotonNoChgIsoNoSieie0_pt >= 120 and event.PhotonNoChgIsoNoSieie0_pt < 220 and event.PhotonNoChgIsoNoSieie0_sieie > 0.011 and event.PhotonNoChgIsoNoSieie0_pfRelIso03_chg * event.PhotonNoChgIsoNoSieie0_pt > 1.141 else -999,
                 binning   = [ 2, 0, 2 ] if not args.selection.count("nLepTight2") else [ 3, 0, 3 ],
                 ) )
     yieldPlots.append( Plot(
-                name      = 'yield_invSieie_invChgIso_220ptGinf',
-                texX      = 'yield',
-                texY      = 'Number of Events',
+                name      = "yield_invSieie_invChgIso_220ptGinf",
+                texX      = "yield",
+                texY      = "Number of Events",
                 attribute = lambda event, sample: event.nElectronTightInvIso if event.PhotonNoChgIsoNoSieie0_pt >= 220 and event.PhotonNoChgIsoNoSieie0_sieie > 0.011 and event.PhotonNoChgIsoNoSieie0_pfRelIso03_chg * event.PhotonNoChgIsoNoSieie0_pt > 1.141 else -999,
                 binning   = [ 2, 0, 2 ] if not args.selection.count("nLepTight2") else [ 3, 0, 3 ],
                 ) )
@@ -247,6 +249,14 @@ genVarList       = NanoVars.getVariableNameList( "Gen",    postprocessed=True, d
 
 # Read variables and sequences
 read_variables  = ["weight/F",
+                   "nLeptonVetoIsoCorr/I",
+                   "nLeptonVetoNoIso/I",
+                   "nLeptonTight/I",       "nLeptonTightInvIso/I",
+                   "nMuonTight/I",         "nMuonTightInvIso/I",
+                   "nElectronTight/I",     "nElectronTightInvIso/I",
+                   "nPhotonGood/I",        "nPhotonGoodInvLepIso/I",
+                   "nJetGood/I",           "nJetGoodInvLepIso/I",
+                   "nBTagGood/I",          "nBTagGoodInvLepIso/I",
                    "nElectronTightInvIso/I",
                    "nMuonTightInvIso/I",
                    "nLeptonTightNoIso/I",
@@ -271,15 +281,19 @@ read_variables  = ["weight/F",
                    "mLtight0Gamma/F",
                    "mLinvtight0Gamma/F",
                    "ltight0GammadR/F", "ltight0GammadPhi/F",
-                   "m3/F", "m3wBJet/F", "mT/F", "mT2lg/F", "mTinv/F", "mT2linvg/F",
+                   "m3/F", "m3wBJet/F",
+                   "m3inv/F", "m3wBJetinv/F",
+                   "mT/F", "mT2lg/F", "mTinv/F", "mT2linvg/F",
                    "photonJetdR/F", "tightLeptonJetdR/F",
                    "reweightHEM/F",
+                   "ht/F", "htinv/F",
                   ]
 
 read_variables += [ "%s_photonCat/I"%item for item in photonCatChoices if item != "None" ]
 
 read_variables += map( lambda var: "PhotonMVA0_"              + var, photonVariables )
 read_variables += map( lambda var: "PhotonGood0_"             + var, photonVariables )
+read_variables += map( lambda var: "PhotonGoodInvLepIso0_"    + var, photonVariables )
 read_variables += map( lambda var: "PhotonNoChgIso0_"         + var, photonVariables )
 read_variables += map( lambda var: "PhotonNoSieie0_"          + var, photonVariables )
 read_variables += map( lambda var: "PhotonNoChgIsoNoSieie0_"  + var, photonVariables )
@@ -306,12 +320,11 @@ read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval
                      "reweightPU/F", "reweightPUDown/F", "reweightPUUp/F", "reweightPUVDown/F", "reweightPUVUp/F",
                      "reweightLeptonTightSF/F", "reweightLeptonTightSFUp/F", "reweightLeptonTightSFDown/F",
                      "reweightLeptonTrackingTightSF/F",
-                     "reweightDilepTrigger/F", "reweightDilepTriggerUp/F", "reweightDilepTriggerDown/F",
-                     "reweightDilepTriggerBackup/F", "reweightDilepTriggerBackupUp/F", "reweightDilepTriggerBackupDown/F",
+                     "reweightTrigger/F", "reweightTriggerUp/F", "reweightTriggerDown/F",
                      "reweightPhotonSF/F", "reweightPhotonSFUp/F", "reweightPhotonSFDown/F",
                      "reweightPhotonElectronVetoSF/F",
                      "reweightBTag_SF/F", "reweightBTag_SF_b_Down/F", "reweightBTag_SF_b_Up/F", "reweightBTag_SF_l_Down/F", "reweightBTag_SF_l_Up/F",
-                     'reweightL1Prefire/F', 'reweightL1PrefireUp/F', 'reweightL1PrefireDown/F',
+                     "reweightL1Prefire/F", "reweightL1PrefireUp/F", "reweightL1PrefireDown/F",
                     ]
 
 sequence = []
@@ -347,11 +360,8 @@ else:
     stack = Stack( mc )
 
 
-sampleWeight = lambda event, sample: (event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)+((misIDSF_val[args.year].val-1)*(event.nPhotonGood>0)*(event.PhotonGood0_photonCat==2)*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)
-if args.addHEMweight:
-    weightString = "reweightHEM*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"
-else:
-    weightString = "reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"
+sampleWeight = lambda event, sample: (event.reweightTrigger*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)+((misIDSF_val[args.year].val-1)*(event.nPhotonGood>0)*(event.PhotonGood0_photonCat==2)*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)
+weightString = "reweightL1Prefire*reweightTrigger*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"
 
 weightStringMisIDSF = "(%s)+(%s*%f*((nPhotonGood>0)*(PhotonGood0_photonCat==2)))"%(weightString,weightString,(misIDSF_val[args.year].val-1))
 
@@ -383,28 +393,23 @@ weight_ = lambda event, sample: event.weight
 if args.addHEMweight:
     weight_ = lambda event, sample: event.weight*event.reweightHEM
 
-#if "nPhoton0" in args.selection:
-#    ptSels = ["lowPT", "medPT", "highPT"]
-#elif "NoChgIsoNoSieiePhoton" in args.selection:
-#    ptSels = ["lowhadPT", "medhadPT", "highhadPT"]
-#else:
-#    ptSels = ["lowPT", "medPT", "highPT"]
-
-#ptRegions = {"lowPT":regionsTTG20To120[0], "medPT":regionsTTG120To220[0], "highPT":regionsTTG220[0]}
-
 replaceSelection = {
-    "nLeptonVetoIsoCorr": "nLeptonVetoNoIsoTight",
+    "nLeptonVetoIsoCorr": "nLeptonVetoNoIso",
     "nLeptonTight":       "nLeptonTightInvIso",
     "nMuonTight":         "nMuonTightInvIso",
     "nElectronTight":     "nElectronTightInvIso",
     "mLtight0Gamma":      "mLinvtight0Gamma",
+    "nPhotonGood":        "nPhotonGoodInvLepIso",
+    "nJetGood":           "nJetGoodInvLepIso",
+    "nBTagGood":          "nBTagGoodInvLepIso",
+    "LeptonTight0_eta":   "LeptonTightInvIso0_eta",
+    "LeptonTight0_pt":    "LeptonTightInvIso0_pt",
 }
 
 if regionPlot:
     selection    = setup.selection("MC",   channel="all", **setup.defaultParameters( update=QCD_updates ))
     if args.year == 2017 and args.addBadEEJetVeto: selection["prefix"] += "-BadEEJetVeto"
     preSelection = "&&".join( [ cutInterpreter.cutString( selection["prefix"] ) ] )
-
 else:
     selection        = [ item if not "nBTag" in item else "nBTag0" for item in args.selection.split("-") ]
     preSelection     = "&&".join( [ cutInterpreter.cutString( "-".join(selection) ) ] )
@@ -426,10 +431,10 @@ filterCutData = getFilterCut( args.year, isData=True,  skipBadChargedCandidate=T
 filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )
 tr            = TriggerSelector( args.year, singleLepton=True )
 triggerCutMc  = tr.getSelection( "MC" )
-
+print preSelection
 Plot.setDefaults( stack=stack, weight=staticmethod( weight_ ), selectionString=preSelection, addOverFlowBin="upper" )
 # Import plots list (AFTER setDefaults!!)
-plotListFile = os.path.join( recoPlotsPath, 'plotLists', args.plotFile + '.py' )
+plotListFile = os.path.join( recoPlotsPath, "plotLists", args.plotFile + ".py" )
 if not os.path.isfile( plotListFile ):
     logger.info( "Plot file not found: %s", plotListFile )
     sys.exit(1)
@@ -446,7 +451,7 @@ allPlots = {}
 if args.mode != "None":
     allModes = [ args.mode ]
 else:
-    allModes = [ 'mu', 'e' ] if not args.selection.count("nLepTight2") else ["mumutight","muetight","eetight"]
+    allModes = [ "mu", "e" ] if not args.selection.count("nLepTight2") else ["mumutight","muetight","eetight"]
     if args.nJobs != 1:
         allModes = splitList( allModes, args.nJobs)[args.job]
 
@@ -471,12 +476,66 @@ invPlotNames = {
                 "mT2lginv_120ptG220":                 "mT2lg_120ptG220",
                 "mT2lginv_220ptGinf":                 "mT2lg_220ptGinf",
                 "Lpinv":                              "Lp",
+                'nPhotonGoodInvIso':                  "nPhotonGood",
                 "nElectronGoodInvIso":                "nElectronGood",
                 "nMuonGoodInvIso":                    "nMuonGood",
                 "nLeptonGoodInvIso":                  "nLeptonGood",
                 "nElectronTightInvIso":               "nElectronTight",
                 "nMuonTightInvIso":                   "nMuonTight",
                 "nLeptonTightInvIso":                 "nLeptonTight",
+                "jetGoodinv0_pt_wide":                "jetGood0_pt_wide",
+                "jetGoodinv0_pt":                     "jetGood0_pt",
+                "jetGoodinv0_eta":                    "jetGood0_eta",
+                "jetGoodinv0_phi":                    "jetGood0_phi",
+                "jetGoodinv0_neHEF":                  "jetGood0_neHEF",
+                "jetGoodinv0_neEmEF":                 "jetGood0_neEmEF",
+                "jetGoodinv0_chEmHEF":                "jetGood0_chEmHEF",
+                "jetGoodinv0_chHEF":                  "jetGood0_chHEF",
+                "jetGoodinv1_pt_wide":                "jetGood1_pt_wide",
+                "jetGoodinv1_pt":                     "jetGood1_pt",
+                "jetGoodinv1_eta":                    "jetGood1_eta",
+                "jetGoodinv1_phi":                    "jetGood1_phi",
+                "jetGoodinv1_neHEF":                  "jetGood1_neHEF",
+                "jetGoodinv1_neEmEF":                 "jetGood1_neEmEF",
+                "jetGoodinv1_chEmHEF":                "jetGood1_chEmHEF",
+                "jetGoodinv1_chHEF":                  "jetGood1_chHEF",
+                "nJetGoodInvIso":                     "nJetGood",
+                "nJetGoodInvIso_wide":                "nJetGood_wide",
+                "nJetGoodInvIso_semi":                "nJetGood_semi",
+                "nJetGoodInvIso_semi2":               "nJetGood_semi2",
+                "nJetGoodInvIso_semi3":               "nJetGood_semi3",
+                "nJetGoodInvIso_20ptG120":            "nJetGood_20ptG120",
+                "nJetGoodInvIso_120ptG220":           "nJetGood_120ptG220",
+                "nJetGoodInvIso_220ptGinf":           "nJetGood_220ptGinf",
+                "nBJetGoodInvIso":                    "nBJetGood",
+                "nBJetGoodInvIso_20ptG120":           "nBJetGood_20ptG120",
+                "nBJetGoodInvIso_120ptG220":          "nBJetGood_120ptG220",
+                "nBJetGoodInvIso_220ptGinf":          "nBJetGood_220ptGinf",
+                "htinv":                              "ht",
+                "m3inv":                              "m3",
+                "m3inv_coarse":                       "m3_coarse",
+                "m3inv_20ptG120":                     "m3_20ptG120",
+                "m3inv_120ptG220":                    "m3_120ptG220",
+                "m3inv_220ptGinf":                    "m3_220ptGinf",
+                "m3inv_20ptG120_coarse":              "m3_20ptG120_coarse",
+                "m3inv_120ptG220_coarse":             "m3_120ptG220_coarse",
+                "m3inv_220ptGinf_coarse":             "m3_220ptGinf_coarse",
+                "leptonTightinv0_hoe":                "leptonTight0_hoe",
+                "leptonTightinv0_eInvMinusPInv":      "leptonTight0_eInvMinusPInv",
+                "leptonTightinv0_convVeto":           "leptonTight0_convVeto",
+                "leptonTightinv0_sieie":              "leptonTight0_sieie",
+                "leptonTightinv0_sip3d":                    "leptonTight0_sip3d",
+                "leptonTightinv0_lostHits":                 "leptonTight0_lostHits",
+                "leptonTightinv0_dr03EcalRecHitSumEt":      "leptonTight0_dr03EcalRecHitSumEt",
+                "leptonTightinv0_dr03HcalDepth1TowerSumEt": "leptonTight0_dr03HcalDepth1TowerSumEt",
+                "leptonTightinv0_dr03TkSumPt":              "leptonTight0_dr03TkSumPt",
+                "leptonTightinv0_dxy":                      "leptonTight0_dxy",
+                "leptonTightinv0_dz":                       "leptonTight0_dz",
+                "leptonTightinv0_ip3d":                     "leptonTight0_ip3d",
+                "leptonTightinv0_r9":                       "leptonTight0_r9",
+                "mindRJetTightLeptoninv":             "mindRJetTightLepton",
+                "dRLTight0PhotonGood0inv":            "dRLTight0PhotonGood0",
+                "dPhiLTight0PhotonGood0inv":          "dPhiLTight0PhotonGood0",
  }
 
 bSelection = [ sel for sel in args.selection.split("-") if "nBTag" in sel ][:1]
@@ -484,6 +543,7 @@ bSelection = [ sel for sel in args.selection.split("-") if "nBTag" in sel ][:1]
 for index, mode in enumerate( allModes ):
     logger.info( "Computing plots for mode %s", mode )
 
+    print cutInterpreter.cutString( mode + "Inv" )
     plots  = []
     plots += plotList
     plots += getYieldPlots()
@@ -532,6 +592,7 @@ for index, mode in enumerate( allModes ):
 
         transFacQCD = estimate.cachedTransferFactor(mode, setup, save=True, overwrite=False, checkOnly=False)
         transFacQCD = transFacQCD.val
+        print transFacQCD
         logger.info("Calculated transfer factor for inclusive region: %f"%transFacQCD)
 
     else:
@@ -582,23 +643,8 @@ for index, mode in enumerate( allModes ):
         if transFacQCD < 0: transFacQCD = 0
         logger.info( "Inclusive TF: %f"%transFacQCD )
 
-#        for pt in ptSels:
-#                if transFacQCD != 0:
-#                    preSelectionSRMC_pt = "&&".join( [ preSelectionTFSR, cutInterpreter.cutString(pt), filterCutMc, isoleptonSelection, triggerCutMc, "overlapRemoval==1" ] )
-#                    yield_mc_SR_pt      = 0
-#                    for sample in mc:
-#                        sample.setSelectionString( "(1)" )
-#                        sample.setWeightString( "(1)" )
-#                        yield_mc_SR_pt += sample.getYieldFromDraw( selectionString=preSelectionSRMC_pt, weightString="weight*%f*%s"%(sample.scale,weightStringMisIDSF) )["val"]
-#                    transFacQCD[pt] = transFacQCD * yield_mc_SR_pt / yield_mc_SR
-#                    if transFacQCD[pt] < 0: transFacQCD[pt] = 0
-#                else:
-#                    transFacQCD[pt] = 0.
-#                logger.info( "Pt %s TF: %f"%(pt,transFacQCD[pt]) )
-
     for plot in plots:
         qcdHist  = copy.deepcopy(plot.histos[1][0])
-        dataHist = copy.deepcopy(plot.histos[1][0])
         for h in plot.histos[0]:
             qcdHist.Add( h, -1 )
 
@@ -607,16 +653,6 @@ for index, mode in enumerate( allModes ):
             if qcdHist.GetBinContent(i+1) < 0:
                 qcdHist.SetBinContent(i+1, 0)
 
-#        if "20ptG120" in plot.name:
-#            fac = "lowPT"
-#        elif "120ptG220" in plot.name:
-#            fac = "medPT"
-#        elif "220ptGinf" in plot.name:
-#            fac = "highPT"
-#        else:
-#            fac = "incl"
-
-#        qcdHist.Scale( transFacQCD[fac] )
         qcdHist.Scale( transFacQCD )
 
         cacheName = "_".join( ["qcdHisto" if not args.addHEMweight else "qcdHisto_hemWeight", args.selection, plot.name, str(args.year), mode, "small" if args.small else "full"] + map( str, plot.binning ) )
