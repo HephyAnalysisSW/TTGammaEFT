@@ -37,6 +37,7 @@ class Setup:
         self.parameters   = {
             "dileptonic":   default_dileptonic,
             "zWindow":      default_zWindow,
+            "leptonEta":    default_leptonEta,
             "nJet":         default_nJet,
             "nBTag":        default_nBTag,
             "nPhoton":      default_nPhoton,
@@ -49,9 +50,10 @@ class Setup:
 
         self.isPhotonSelection = default_nPhoton[0] != 0
 
-#        self.puWeight = "reweightPUVUp" if self.year == 2018 else "reweightPU"
-#        self.sys = {"weight":"weight", "reweight":["reweightHEM", "reweightL1Prefire", "reweightPU", "reweightLeptonTightSF", "reweightLeptonTrackingTightSF", "reweightPhotonSF", "reweightPhotonElectronVetoSF", "reweightBTag_SF"], "selectionModifier":None} 
-        self.sys = {"weight":"weight", "reweight":["reweightL1Prefire", "reweightPU", "reweightLeptonTightSF", "reweightLeptonTrackingTightSF", "reweightPhotonSF", "reweightPhotonElectronVetoSF", "reweightBTag_SF"], "selectionModifier":None} 
+#        self.sys = {"weight":"weight", "reweight":["reweightL1Prefire", "reweightPU", "reweightLeptonTightSF", "reweightLeptonTrackingTightSF", "reweightPhotonSF", "reweightPhotonElectronVetoSF", "reweightBTag_SF"], "selectionModifier":None} 
+        self.sys = {"weight":"weight", "reweight":["reweightTrigger", "reweightL1Prefire", "reweightPU", "reweightLeptonTightSF", "reweightLeptonTrackingTightSF", "reweightPhotonSF", "reweightPhotonElectronVetoSF", "reweightBTag_SF"], "selectionModifier":None} 
+#        if self.year == 2018:
+#            self.sys["reweight"] += ["reweightHEM"]
 
         if runOnLxPlus:
             # Set the redirector in the samples repository to the global redirector
@@ -170,6 +172,7 @@ class Setup:
                     
                     for upOrDown in ["Up","Down"]:
                         if "reweightL1Prefire"+upOrDown             in res.sys[k]: res.sys[k].remove("reweightL1Prefire")
+                        if "reweightTrigger"+upOrDown               in res.sys[k]: res.sys[k].remove("reweightTrigger")
                         if "reweightPU"+upOrDown                    in res.sys[k]: res.sys[k].remove("reweightPU")
                         if "reweightLeptonTightSF"+upOrDown         in res.sys[k]: res.sys[k].remove("reweightLeptonTightSF")
                         if "reweightLeptonTrackingTightSF"+upOrDown in res.sys[k]: res.sys[k].remove("reweightLeptonTrackingTightSF")
@@ -207,25 +210,27 @@ class Setup:
 
         return _weightString
 
-    def preselection(self, dataMC , channel="all"):
+    def preselection(self, dataMC , channel="all", processCut=None):
         """Get preselection  cutstring."""
-        cut = self.selection(dataMC, channel = channel, **self.parameters)
+        cut = self.selection(dataMC, channel = channel, processCut=processCut, **self.parameters)
         logger.debug("Using cut-string: %s", cut)
+        if processCut:
+            logger.info("Adding process specific cut: %s"%processCut)
         return cut
 
     def selection(self, dataMC,
                         dileptonic=None, invertLepIso=None, addMisIDSF=None,
                         nJet=None, nBTag=None, nPhoton=None,
                         MET=None,
-                        zWindow=None, m3Window=None,
-                        photonIso=None,
+                        zWindow=None, m3Window=None, leptonEta=None,
+                        photonIso=None, processCut=None,
                         channel="all"):
         """Define full selection
            dataMC: "Data" or "MC"
            channel: all, e or mu, eetight, mumutight, SFtight
            zWindow: offZeg, onZeg, onZSFllTight, onZSFllgTight or all
            m3Window: offM3, onM3 or all
-           photonIso: lowSieie, highSieie, lowChgIso, highChgIso, lowChgIsolowSieie, highChgIsolowSieie, lowChgIsohighSieie, highChgIsohighSieie
+           photonIso: highSieie, highChgIso, highChgIsohighSieie
         """
         if not dileptonic:   dileptonic   = self.parameters["dileptonic"]
         if not invertLepIso: invertLepIso = self.parameters["invertLepIso"]
@@ -235,6 +240,7 @@ class Setup:
         if not nPhoton:      nPhoton      = self.parameters["nPhoton"]
         if not MET:          MET          = self.parameters["MET"]
         if not zWindow:      zWindow      = self.parameters["zWindow"]
+        if not leptonEta:    leptonEta    = self.parameters["leptonEta"]
         if not m3Window:     m3Window     = self.parameters["m3Window"]
         if not photonIso:    photonIso    = self.parameters["photonIso"]
 
@@ -243,32 +249,106 @@ class Setup:
         assert channel in allChannels, "channel must be one of "+",".join(allChannels)+". Got %r."%channel
         assert zWindow in ["offZeg", "onZeg", "onZSFllTight", "onZSFllgTight", "all"], "zWindow must be one of onZeg, offZeg, onZSFllTight, onZSFllgTight, all. Got %r"%zWindow
         assert m3Window in ["offM3", "onM3", "all"], "m3Window must be one of onM3, offM3, all. Got %r"%m3Window
-        assert photonIso in [None, "lowSieie", "highSieie", "lowChgIso", "highChgIso", "lowChgIsolowSieie", "highChgIsolowSieie", "lowChgIsohighSieie", "highChgIsohighSieie"], "PhotonIso must be one of lowSieie, highSieie, lowChgIso, highChgIso, lowChgIsolowSieie, highChgIsolowSieie, lowChgIsohighSieie, highChgIsohighSieie. Got %r"%photonIso
+        assert photonIso in [None, "highSieieNoChgIso", "lowSieieNoChgIso", "noSieie", "highSieie", "lowChgIsoNoSieie", "highChgIsoNoSieie", "noChgIso", "highChgIso", "noChgIsoNoSieie", "highChgIsohighSieie"], "PhotonIso must be one of highSieie, highChgIso, highChgIsohighSieie. Got %r"%photonIso
+        assert processCut in [None, "cat0","cat2","cat13","cat4"], "Process specific cut must be one of cat0, cat2, cat13, cat4. Got %r"%processCut
         if self.sys['selectionModifier']:
             assert self.sys['selectionModifier'] in jmeVariations+metVariations, "Don't know about systematic variation %r, take one of %s"%(self.sys['selectionModifier'], ",".join(jmeVariations+metVariations))
 
-        # default lepton selections
-        tightLepton = "nLepTight1"
-        vetoLepton = "nLepVeto1"
+        res={"cuts":[], "prefixes":[]}
 
-        if invertLepIso:
-            # invert leptonIso in lepton cuts
-            channel += "Inv"
-            zWindow += "Inv"
-            tightLepton = "nInvLepTight1"
-#            vetoLepton = "nInvLeptVetoTight1"
-            vetoLepton = "nNoIsoLepVeto1"
+        # default lepton selections
+        tightLepton  = "nLepTight1"
+        vetoLepton   = "nLepVeto1"
+        jetCutVar    = "nJetGood"
+        jetPrefix    = "nJet"
+        btagCutVar   = "nBTagGood"
+        btagPrefix   = "nBTag"
+        photonCutVar = "nPhotonGood"
+        photonPrefix = "nPhoton"
+        photonCatVar = "PhotonGood0_photonCat"
+        photonCatPrefix = "photoncat"
+        photonVetoCutVar = None
+        photonVetoPrefix = None
+#        photonVetoCutVar = "nPhotonNoChgIsoNoSieie"
+#        photonVetoPrefix = "nHadPhoton"
+        if channel in ["e","eetight"]:
+            leptonEtaCutVar = "abs(LeptonTight0_eta+LeptonTight0_deltaEtaSC)"
+            leptonEtaPrefix = "etascl"
+        else:
+            leptonEtaCutVar = "abs(LeptonTight0_eta)"
+            leptonEtaPrefix = "etal"
 
         if dileptonic:
             tightLepton = "nLepTight2-OStight"
             vetoLepton = "nLepVeto2"
 
+        if invertLepIso:
+            # invert leptonIso in lepton cuts
+            channel     += "Inv"
+            zWindow     += "Inv"
+            tightLepton  = "nInvLepTight1"
+            vetoLepton   = "nNoIsoLepVeto1"
+            jetCutVar    = "nJetGoodInvLepIso"
+            jetPrefix    = "nInvLJet"
+            btagCutVar   = "nBTagGoodInvLepIso"
+            btagPrefix   = "nInvLBTag"
+            photonCutVar = "nPhotonGoodInvLepIso"
+            photonPrefix = "nInvLPhoton"
+            photonCatVar = "PhotonGoodInvLepIso0_photonCat"
+            photonCatPrefix = "invLphotoncat"
+            photonVetoCutVar = None
+            photonVetoPrefix = None
+#            photonVetoCutVar = "nPhotonNoChgIsoNoSieieInvLepIso"
+#            photonVetoPrefix = "nInvLHadPhoton"
+            if channel in ["eInv","eetightInv"]:
+                leptonEtaCutVar = "abs(LeptonTightInvIso0_eta+LeptonTightInvIso0_deltaEtaSC)"
+                leptonEtaPrefix = "etainvscl"
+            else:
+                leptonEtaCutVar = "abs(LeptonTightInvIso0_eta)"
+                leptonEtaPrefix = "etainvl"
+
+        #photon cut
+        photonSel = nPhoton and not (nPhoton[0]==0 and nPhoton[1]<=0)
+
+        if photonSel and photonIso:
+
+            if invertLepIso:
+                jetCutVar    = "nJetGoodNoChgIsoNoSieieInvLepIso"
+                jetPrefix    = "nInvLNoChgIsoNoSieieJet"
+                btagCutVar   = "nBTagGoodNoChgIsoNoSieieInvLepIso"
+                btagPrefix   = "nInvLNoChgIsoNoSieieBTag"
+                photonCutVar = "nPhotonNoChgIsoNoSieieInvLepIso"
+                photonPrefix = "nInvLHadPhoton"
+                photonVetoCutVar = "nPhotonNoChgIsoNoSieieInvLepIso"
+                photonVetoPrefix = "nInvLHadPhoton"
+                photonCatVar = "PhotonNoChgIsoNoSieieInvLepIso0_photonCat"
+                photonCatPrefix = "invLNoChgIsoNoSieiephotoncat"
+                photonIso += "InvL"
+
+            else:
+                jetCutVar    = "nJetGoodNoChgIsoNoSieie"
+                jetPrefix    = "nNoChgIsoNoSieieJet"
+                btagCutVar   = "nBTagGoodNoChgIsoNoSieie"
+                btagPrefix   = "nNoChgIsoNoSieieBTag"
+                photonCutVar = "nPhotonNoChgIsoNoSieie"
+                photonPrefix = "nHadPhoton"
+                photonVetoCutVar = "nPhotonNoChgIsoNoSieie"
+                photonVetoPrefix = "nHadPhoton"
+                photonCatVar = "PhotonNoChgIsoNoSieie0_photonCat"
+                photonCatPrefix = "noChgIsoNoSieiephotoncat"
+
+            res["prefixes"].append( photonIso )
+            preselphotonIso = cutInterpreter.cutString( photonIso )
+            res["cuts"].append( preselphotonIso )
+
+        if not photonSel:
+            # remove default zwindow cut in qcd estimation for non photon regions
+            zWindow = "all"
+
         #Postfix for variables (only for MC and if we have a jme variation)
         sysStr = ""
         if dataMC == "MC" and self.sys['selectionModifier'] in jmeVariations + metVariations:
             sysStr = "_" + self.sys['selectionModifier']
-
-        res={"cuts":[], "prefixes":[]}
 
         #leptons or inv. iso leptons
         res["prefixes"].append( tightLepton )
@@ -287,10 +367,10 @@ class Setup:
 
         if nJet and not (nJet[0]==0 and nJet[1]<0):
             assert nJet[0]>=0 and (nJet[1]>=nJet[0] or nJet[1]<0), "Not a good nJet selection: %r"%nJet
-            njetsstr = "nJetGood"+sysStr+">="+str(nJet[0])
-            prefix   = "nJet"+str(nJet[0])
+            njetsstr = jetCutVar+sysStr+">="+str(nJet[0])
+            prefix   = jetPrefix+str(nJet[0])
             if nJet[1]>=0:
-                njetsstr+= "&&"+"nJetGood"+sysStr+"<="+str(nJet[1])
+                njetsstr+= "&&"+jetCutVar+sysStr+"<="+str(nJet[1])
                 if nJet[1]!=nJet[0]: prefix+=str(nJet[1])
 #                if nJet[1]!=nJet[0]: prefix+="To"+str(nJet[1])
             else:
@@ -300,12 +380,12 @@ class Setup:
 
         if nBTag and not (nBTag[0]==0 and nBTag[1]<0):
             assert nBTag[0]>=0 and (nBTag[1]>=nBTag[0] or nBTag[1]<0), "Not a good nBTag selection: %r"% nBTag
-            if sysStr: nbtstr = "nBTagGood"+sysStr+">="+str(nBTag[0])
-            else:      nbtstr = "nBTagGood"+sysStr+">="+str(nBTag[0])
-            prefix = "nBTag"+str(nBTag[0])
+            if sysStr: nbtstr = btagCutVar+sysStr+">="+str(nBTag[0])
+            else:      nbtstr = btagCutVar+sysStr+">="+str(nBTag[0])
+            prefix = btagPrefix+str(nBTag[0])
             if nBTag[1]>=0:
-                if sysStr: nbtstr+= "&&nBTagGood"+sysStr+"<="+str(nBTag[1])
-                else:      nbtstr+= "&&nBTagGood"+sysStr+"<="+str(nBTag[1])
+                if sysStr: nbtstr+= "&&"+btagCutVar+sysStr+"<="+str(nBTag[1])
+                else:      nbtstr+= "&&"+btagCutVar+sysStr+"<="+str(nBTag[1])
                 if nBTag[1]!=nBTag[0]: prefix+=str(nBTag[1])
 #                if nBTag[1]!=nBTag[0]: prefix+="To"+str(nBTag[1])
             else:
@@ -313,27 +393,17 @@ class Setup:
             res["cuts"].append(nbtstr)
             res["prefixes"].append(prefix)
 
-        #photon cut
-        photonSel = nPhoton and not (nPhoton[0]==0 and nPhoton[1]<=0)
-
         if photonSel:
-            #photonIso of leading photon
-            if not photonIso or photonIso == "lowChgIsolowSieie":
-                photonCutVar = "nPhotonGood"
-                photonPrefix = "nPhoton"
-                # no special photon iso cut needed
-            else:
-                photonCutVar = "nPhotonNoChgIsoNoSieie"
-                photonPrefix = "nHadPhoton"
-                
-                res["prefixes"].append( photonIso )
-                preselphotonIso = cutInterpreter.cutString( photonIso )
-                res["cuts"].append( preselphotonIso )
+#            #photonIso of leading photon
+#            if photonIso and photonIso != "lowChgIsolowSieie":
+#                res["prefixes"].append( photonIso )
+#                preselphotonIso = cutInterpreter.cutString( photonIso )
+#                res["cuts"].append( preselphotonIso )
 
             #photon cut
             assert nPhoton[0]>=0 and (nPhoton[1]>=nPhoton[0] or nPhoton[1]<0), "Not a good nPhoton selection: %r"%nPhoton
             nphotonsstr = photonCutVar+">="+str(nPhoton[0])
-            prefix   = photonPrefix+str(nPhoton[0])
+            prefix      = photonPrefix+str(nPhoton[0])
             if nPhoton[1]>=0:
                 nphotonsstr+= "&&"+photonCutVar+"<="+str(nPhoton[1])
                 if nPhoton[1]!=nPhoton[0]: prefix+="To"+str(nPhoton[1])
@@ -341,14 +411,36 @@ class Setup:
                 prefix+="p"
             res["cuts"].append(nphotonsstr)
             res["prefixes"].append(prefix)
+
+            if photonVetoCutVar:
+                nphotonVetosstr = photonVetoCutVar+">="+str(nPhoton[0])
+                prefix          = photonVetoPrefix+str(nPhoton[0])
+                if nPhoton[1]>=0:
+                    nphotonVetosstr += "&&"+photonVetoCutVar+"<="+str(nPhoton[1])
+                    if nPhoton[1] != nPhoton[0]: prefix+="To"+str(nPhoton[1])
+                else:
+                    prefix+="p"
+                res["cuts"].append(nphotonVetosstr)
+                res["prefixes"].append(prefix)
+
         else:
             addMisIDSF   = False
-            res["cuts"].append("nPhotonGood==0")
-            res["prefixes"].append("nPhoton0")
+            res["cuts"].append(photonCutVar+"==0")
+            res["prefixes"].append(photonPrefix+"0")
+            if photonVetoCutVar:
+                res["cuts"].append(photonVetoCutVar+"==0")
+                res["prefixes"].append(photonVetoPrefix+"0")
 
-        if not photonSel or (photonCutVar=="nPhotonNoChgIsoNoSieie"):
-            # remove default zwindow cut in qcd estimation for non photon regions
-            zWindow = "all"
+        #leptonEta cut
+        if leptonEta and not (leptonEta[0]==0 and leptonEta[1]<0):
+            assert leptonEta[0]>=0 and (leptonEta[1]>=leptonEta[0] or leptonEta[1]<0) and leptonEta[1]!=leptonEta[0], "Not a good leptonEta selection: %r"%leptonEta
+            leptonEtastr = leptonEtaCutVar+">="+str(leptonEta[0])
+            prefix       = leptonEtaPrefix+str(leptonEta[0])
+            if leptonEta[1]>=0:
+                leptonEtastr += "&&"+leptonEtaCutVar+"<"+str(leptonEta[1])
+                prefix       += "To"+str(leptonEta[1])
+            res["cuts"].append(leptonEtastr)
+            res["prefixes"].append(prefix)
 
         #MET cut
         if MET and not (MET[0]==0 and MET[1]<0):
@@ -372,6 +464,12 @@ class Setup:
             res["prefixes"].append( m3Window )
             preselM3Window = cutInterpreter.cutString( m3Window )
             res["cuts"].append( preselM3Window )
+
+        if processCut:
+            catPrefix = photonCatPrefix + processCut.replace("cat","")
+            res["prefixes"].append( catPrefix )
+            catCut = cutInterpreter.cutString( catPrefix )
+            res["cuts"].append( catCut )
 
         #badEEVeto
 #        if self.year == 2017 and photonSel:
@@ -398,28 +496,26 @@ class Setup:
             res["cuts"].append( getFilterCut(isData=(dataMC=="Data"), year=self.year, skipBadChargedCandidate=True) )
             res["cuts"].extend(self.externalCuts)
 
-        return {"cut":"&&".join(res["cuts"]), "prefix":"-".join(res["prefixes"]), "weightStr": self.weightString(dataMC,photon=str(photonCutVar[1:]) if addMisIDSF else None,addMisIDSF=addMisIDSF and self.isPhotonSelection)}
+        return {"cut":"&&".join(res["cuts"]), "prefix":"-".join(res["prefixes"]), "weightStr": self.weightString(dataMC,photon=photonCatVar.split("0")[0] if addMisIDSF else None,addMisIDSF=addMisIDSF and self.isPhotonSelection)}
 
 if __name__ == "__main__":
     setup = Setup( year=2016 )
     for name, dict in allRegions.items():
-        if not "Iso" in name: continue
+#        if not "wjetsec3" in name.lower() and not "wjetsbarrel3" in name.lower(): continue
+        if not "met" in name.lower(): continue
         print
         print name
         print
+        setup = setup.sysClone( parameters=dict["parameters"] )
+        setup = setup.sysClone({"selectionModifier":"unclustEnUp"})
         for channel in dict["channels"]:
             print
             print channel
             print
-            res = setup.selection("MC", channel=channel, **setup.defaultParameters( update={"MET":(0,30)} ))
+            res = setup.selection("MC", channel=channel, **setup.defaultParameters( update=dict["parameters"] ))
             print res["cut"]
             print res["prefix"]
             print res["weightStr"]
 
-            print
-            res = setup.selection("Data", channel=channel, **setup.defaultParameters( update=dict["parameters"] ))
-            print res["cut"]
-            print res["prefix"]
-            print res["weightStr"]
 
 
