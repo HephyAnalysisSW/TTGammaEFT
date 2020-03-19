@@ -62,7 +62,7 @@ ttGamma_Had_restrict_4WC_order2_ref_rwgt.xSection              = 11.77
 ttGamma_Had_restrict_4WC_order2_ref_rwgt.nEvents               = 1000000
 
 EFT = [
-    ttGamma_incl_restrict_MadSpin_4WC_order2_ref_rwgt,
+#    ttGamma_incl_restrict_MadSpin_4WC_order2_ref_rwgt,
     ttGamma_SemiLept_restrict_4WC_order2_ref_rwgt,
     ttGamma_Dilept_restrict_4WC_order2_ref_rwgt,
     ttGamma_Had_restrict_4WC_order2_ref_rwgt,
