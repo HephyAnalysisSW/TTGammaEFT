@@ -29,9 +29,10 @@ class SystematicEstimator:
         self.initCache(cacheDir)
         self.processCut = None
 
-        if   "_gen"   in name: self.processCut = "photoncat0"
-        elif "_misID" in name: self.processCut = "photoncat2"
-        elif "_had"   in name: self.processCut = "photoncat13"
+        if   "_gen"   in name: self.processCut = "cat0"  #"photoncat0"
+        elif "_misID" in name: self.processCut = "cat2"  #"photoncat2"
+        elif "_had"   in name: self.processCut = "cat13" #"photoncat13"
+        elif "_magic" in name: self.processCut = "cat4"
 
     def initCache(self, cacheDir="systematics"):
         logger.info("Initializing cache for %s in directory %s"%(self.name, cacheDir))
@@ -234,11 +235,11 @@ class SystematicEstimator:
         down = self.cachedEstimate(region, channel, setup.sysClone({"reweight":["reweightPhotonElectronVetoSFDown"]}))
         return abs(0.5*(up-down)/ref) if ref > 0 else max(up, down)
 
-#    def triggerSystematic(self, region, channel, setup):
-#        ref  = self.cachedEstimate(region, channel, setup)
-#        up   = self.cachedEstimate(region, channel, setup.sysClone({"reweight":["reweightDilepTriggerUp"]}))
-#        down = self.cachedEstimate(region, channel, setup.sysClone({"reweight":["reweightDilepTriggerDown"]}))
-#        return abs(0.5*(up-down)/ref) if ref > 0 else max(up, down)
+    def triggerSystematic(self, region, channel, setup):
+        ref  = self.cachedEstimate(region, channel, setup)
+        up   = self.cachedEstimate(region, channel, setup.sysClone({"reweight":["reweightTriggerUp"]}))
+        down = self.cachedEstimate(region, channel, setup.sysClone({"reweight":["reweightTriggerDown"]}))
+        return abs(0.5*(up-down)/ref) if ref > 0 else max(up, down)
 
     def getBkgSysJobs(self, region, channel, setup):
         l = [
@@ -274,8 +275,8 @@ class SystematicEstimator:
             (region, channel, setup.sysClone({"reweight":["reweightPhotonElectronVetoSFUp"]}), None),
             (region, channel, setup.sysClone({"reweight":["reweightPhotonElectronVetoSFDown"]}), None),
 
-#            (region, channel, setup.sysClone({"reweight":["reweightDilepTriggerUp"]}), None),
-#            (region, channel, setup.sysClone({"reweight":["reweightDilepTriggerDown"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightTriggerUp"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightTriggerDown"]}), None),
         ]
         return l
 
