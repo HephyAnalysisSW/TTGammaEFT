@@ -66,7 +66,7 @@ hists       = {}
 hists2D     = {}
 for b in range(2):
     hists2D["%ib"%b] = ROOT.TH2F("hist2D%ib"%b, "hist2D%ib"%b, 2, 0, 2, 3, 2, 5)
-    hists2D["%ib"%b].GetZaxis().SetTitle( "QCD Transferfactor" )
+    hists2D["%ib"%b].GetZaxis().SetTitle( "QCD TF rel. diff" )
     hists2D["%ib"%b].GetZaxis().SetTitleSize( 0.04 )
     hists["%ib"%b]   = {}
     for p in range(2):
@@ -109,8 +109,9 @@ for b in range(2):
             hists["%ib"%b]["nJUsed"].SetBinError(   j-1, cachedTF["%ib"%b]["2J0P"].sigma )
             hists["%ib"%b]["nJUsed"].GetXaxis().SetBinLabel( j-1, str(j) )
 
-            hists2D["%ib"%b].SetBinContent( p+1, j-1, cachedTF["%ib"%b]["%iJ%iP"%(j,p)].val   )
-            hists2D["%ib"%b].SetBinError(   p+1, j-1, cachedTF["%ib"%b]["%iJ%iP"%(j,p)].sigma )
+            relTF = (cachedTF["%ib"%b]["%iJ%iP"%(j,p)] - cachedTF["%ib"%b]["2J0P"]) / cachedTF["%ib"%b]["2J0P"]
+            hists2D["%ib"%b].SetBinContent( p+1, j-1, abs(relTF.val)   )
+            hists2D["%ib"%b].SetBinError(   p+1, j-1, abs(relTF.sigma) )
 
 
 plots       = {}
@@ -153,7 +154,7 @@ def draw2DPlots( plot ):
                     plot_directory = plot_directory_,
                     extensions = extensions_,
                     logX = False, logY = False, logZ = False,
-                    zRange = (0.0, 1.4),
+                    zRange = (0.0, 1.0 if "nBTag0" in plot.name else 1.0),
                     drawObjects = drawObjects( lumi_scale ),
                     copyIndexPHP = True,
                 )

@@ -35,7 +35,6 @@ argParser.add_argument('--plot_directory',     action='store',      default='102
 #argParser.add_argument('--plotFile',           action='store',      default='all_noPhoton')
 argParser.add_argument('--selection',          action='store',      default='dilepOS-nLepVeto2-pTG20-nPhoton1p-offZSFllg-offZSFll-mll40')
 argParser.add_argument('--small',              action='store_true',                                                                       help='Run only on a small subset of the data?', )
-argParser.add_argument('--noData',             action='store_true', default=False,                                                        help='also plot data?')
 argParser.add_argument('--year',               action='store',      default=None,      type=int,  choices=[2016,2017,2018],                  help="Which year to plot?")
 argParser.add_argument('--onlyTT',             action='store_true', default=False,                                                        help="Plot only tt sample")
 argParser.add_argument('--onlyTTLep',          action='store_true', default=False,                                                        help="Plot only tt 2l sample")
@@ -57,50 +56,16 @@ logger    = logger.get_logger(   args.logLevel, logFile = None)
 logger_rt = logger_rt.get_logger(args.logLevel, logFile = None)
 
 if args.small:           args.plot_directory += "_small"
-if args.noData:          args.plot_directory += "_noData"
 if args.normalize:       args.plot_directory += "_normalize"
 
 # Samples
 os.environ["gammaSkim"]="True"# if ("hoton" in args.selection or "pTG" in args.selection) and not args.invLeptonIso else "False"
-if "dilep" in args.selection:
-    if args.year == 2016:
-        from TTGammaEFT.Samples.nanoTuples_Summer16_private_postProcessed      import *
-        if not args.noData:
-            del postprocessing_directory
-            from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_postProcessed import *
-
-    elif args.year == 2017:
-        from TTGammaEFT.Samples.nanoTuples_Fall17_private_postProcessed        import *
-        if not args.noData:
-            del postprocessing_directory
-            from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_postProcessed import *
-
-    elif args.year == 2018:
-        from TTGammaEFT.Samples.nanoTuples_Autumn18_private_postProcessed      import *
-        if not args.noData:
-            del postprocessing_directory
-            from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_postProcessed import *
-else:
-    if args.year == 2016:
-#        postprocessing_directory = "TTGammaEFT_PP_2016_TTG_private_v22/semilep/"
-#        from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed_test      import *
-        from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed      import *
-        if not args.noData:
-            del postprocessing_directory
-            from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
-
-    elif args.year == 2017:
-        from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed        import *
-        if not args.noData:
-            del postprocessing_directory
-            from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
-
-    elif args.year == 2018:
-        from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed      import *
-        if not args.noData:
-            del postprocessing_directory
-            from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
-
+if args.year == 2016:
+    from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed      import *
+elif args.year == 2017:
+    from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed        import *
+elif args.year == 2018:
+    from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed      import *
 
 # Text on the plots
 def drawObjects( plotData, lumi_scale ):
@@ -132,49 +97,54 @@ def drawPlots( plots, mode ):
                 postFix = " (high #sigma_{i#etai#eta})"
             elif args.sideband == "chgIso":
                 postFix = " (high chg Iso)"
-            plot.histos[0][0].style          = styles.lineStyle( ROOT.kCyan+2, width = 2, dotted=False, dashed=False, errors = True )
-            plot.histos[1][0].style          = styles.lineStyle( ROOT.kRed+2, width = 2, dotted=False, dashed=False, errors = True )
-            if not args.noData: 
-                plot.histos[2][0].style          = styles.errorStyle( ROOT.kBlack )
-                if mode == "all":
-                    plot.histos[2][0].legendText = "data" + postFix
-                if mode == "SF":
-                    plot.histos[2][0].legendText = "data (SF)" + postFix
             extensions_ = ["pdf", "png", "root"] if mode in ['all', 'SF', 'mue', "mu", "e"] else ['png']
 
-            scaling = { 0:1 } if args.noData or "_cat" in plot.name else { 0:2, 1:2 } 
+            scaling = { 0:2 }
 
             if "_cat" in plot.name:
                 pf = plot.name.split("_cat")[1].split("_")[0]
                 plot.histos[0][0].legendText     = mc[0].texName + " (%s)"%pf
-                plot.histos[1][0].legendText     = mc[1].texName + " (%s)"%pf
+                plot.histos[2][0].legendText     = mc[2].texName + " (%s)"%pf
+
+            plot.histos[0][0].Add(plot.histos[1][0])
+            plot.histos[2][0].Add(plot.histos[3][0])
+
+            plot.histos[0][0].style        = styles.lineStyle( ROOT.kCyan+2, width = 2, dotted=False, dashed=False, errors = True )
+            plot.histos[2][0].style        = styles.lineStyle( ROOT.kRed+2, width = 2, dotted=False, dashed=False, errors = True )
+
+            plot.histos[1][0].style        = styles.lineStyle( ROOT.kBlack, width = 1 )
+            plot.histos[1][0].Scale(0.)
+#            plot.histos[1][0].notInLegend  = True
+            plot.histos[3][0].style        = styles.lineStyle( ROOT.kBlack, width = 1 )
+            plot.histos[3][0].Scale(0.)
+#            plot.histos[3][0].notInLegend  = True
 
             plotting.draw( plot,
 	                       plot_directory = plot_directory_,
                            extensions = extensions_,
-                           ratio = {'histos':[(0,2), (1,2)] if not args.noData else [(0,1)], 'texY': 'Sig/SB', 'yRange':(0.1,1.9)},
+                           ratio = {'histos':[(0,2)], 'texY': 'Sig/SB', 'yRange':(0.1,1.9)},
 	                       logX = False, logY = log, sorting = False,
 	                       yRange = (0.03, "auto") if log else (0.001, "auto"),
 	                       scaling = scaling if args.normalize else {},
 	                       legend = [ (0.2,0.87-0.04*sum(map(len, plot.histos)),0.8,0.87), 1],
-	                       drawObjects = drawObjects( not args.noData , lumi_scale ),
+	                       drawObjects = drawObjects( False , lumi_scale ),
                            copyIndexPHP = True
                          )
 
 
 # get nano variable lists
 NanoVars         = NanoVariables( args.year )
-jetVarString     = NanoVars.getVariableString(   "Jet",    postprocessed=True, data=(not args.noData), plot=True )
-jetVariableNames = NanoVars.getVariableNameList( "Jet",    postprocessed=True, data=(not args.noData), plot=True )
-jetVarList       = NanoVars.getVariableNameList( "Jet",    postprocessed=True, data=(not args.noData), plot=True )
-jetVariables     = NanoVars.getVariables(        "Jet",    postprocessed=True, data=(not args.noData), plot=True )
-bJetVariables    = NanoVars.getVariables(        "BJet",   postprocessed=True, data=(not args.noData), plot=True )
-leptonVariables  = NanoVars.getVariables(        "Lepton", postprocessed=True, data=(not args.noData), plot=True )
-leptonVarString  = NanoVars.getVariableString(   "Lepton", postprocessed=True, data=(not args.noData), plot=True )
-leptonVarList    = NanoVars.getVariableNameList( "Lepton", postprocessed=True, data=(not args.noData), plot=True )
-photonVariables  = NanoVars.getVariables(        "Photon", postprocessed=True, data=(not args.noData), plot=True )
-photonVarString  = NanoVars.getVariableString(   "Photon", postprocessed=True, data=(not args.noData), plot=True )
-photonVarList    = NanoVars.getVariableNameList( "Photon", postprocessed=True, data=(not args.noData), plot=True )
+jetVarString     = NanoVars.getVariableString(   "Jet",    postprocessed=True, data=False, plot=True )
+jetVariableNames = NanoVars.getVariableNameList( "Jet",    postprocessed=True, data=False, plot=True )
+jetVarList       = NanoVars.getVariableNameList( "Jet",    postprocessed=True, data=False, plot=True )
+jetVariables     = NanoVars.getVariables(        "Jet",    postprocessed=True, data=False, plot=True )
+bJetVariables    = NanoVars.getVariables(        "BJet",   postprocessed=True, data=False, plot=True )
+leptonVariables  = NanoVars.getVariables(        "Lepton", postprocessed=True, data=False, plot=True )
+leptonVarString  = NanoVars.getVariableString(   "Lepton", postprocessed=True, data=False, plot=True )
+leptonVarList    = NanoVars.getVariableNameList( "Lepton", postprocessed=True, data=False, plot=True )
+photonVariables  = NanoVars.getVariables(        "Photon", postprocessed=True, data=False, plot=True )
+photonVarString  = NanoVars.getVariableString(   "Photon", postprocessed=True, data=False, plot=True )
+photonVarList    = NanoVars.getVariableNameList( "Photon", postprocessed=True, data=False, plot=True )
 genVariables     = NanoVars.getVariables(        "Gen",    postprocessed=True, data=False,             plot=True )
 genVarString     = NanoVars.getVariableString(   "Gen",    postprocessed=True, data=False,             plot=True )
 genVarList       = NanoVars.getVariableNameList( "Gen",    postprocessed=True, data=False,             plot=True )
@@ -182,8 +152,6 @@ genVarList       = NanoVars.getVariableNameList( "Gen",    postprocessed=True, d
 # Read variables and sequences
 read_variables  = ["weight/F",
                    'run/I', 'luminosityBlock/I', 'event/l',
-#                   "fixedGridRhoFastjetAll/F",
-#                   "fixedGridRhoFastjetCentralChargedPileUp/F",
                    "PV_npvsGood/I",
                    "Jet[%s]" %jetVarString,
                    "PV_npvs/I", "PV_npvsGood/I",
@@ -227,8 +195,8 @@ read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval
                      "reweightLeptonTrackingTightSF/F",
                      "reweightLeptonMediumSF/F", "reweightLeptonMediumSFUp/F", "reweightLeptonMediumSFDown/F",
                      "reweightLeptonTracking2lSF/F",
-                     "reweightDilepTrigger/F", "reweightDilepTriggerUp/F", "reweightDilepTriggerDown/F",
-                     "reweightDilepTriggerBackup/F", "reweightDilepTriggerBackupUp/F", "reweightDilepTriggerBackupDown/F",
+                     "reweightTrigger/F", "reweightTriggerUp/F", "reweightTriggerDown/F",
+                     "reweightInvTrigger/F", "reweightInvTriggerUp/F", "reweightInvTriggerDown/F",
                      "reweightPhotonSF/F", "reweightPhotonSFUp/F", "reweightPhotonSFDown/F",
                      "reweightPhotonElectronVetoSF/F",
                      "reweightBTag_SF/F", "reweightBTag_SF_b_Down/F", "reweightBTag_SF_b_Up/F", "reweightBTag_SF_l_Down/F", "reweightBTag_SF_l_Up/F",
@@ -276,15 +244,10 @@ def minDR( event, sample ):
 
     event.photonJetdR = min( deltaR( reco, j ) if deltaR( reco, j ) > 0.0005 else 999 for j in allJets )    if allJets    else -1
     event.photonLepdR = min( deltaR( reco, j ) if deltaR( reco, j ) > 0.0005 else 999 for j in allLeptons ) if allLeptons else -1
-#    print event.photonJetdR
-#    print event.photonLepdR
 
 # Sequence
 #sequence = []
-sequence = [ checkParentList ]# makePhotons ]#\
-#            clean_Jets,
-#            make_Zpt,
-#           ]
+sequence = [ checkParentList ]
 
 # Sample definition
 if args.year == 2016:
@@ -306,58 +269,58 @@ elif args.year == 2018:
     elif args.addOtherBg: all = all_18
     else: all = all_noOther_18
 
-all_sb = copy.deepcopy(all)
-all_sb.name = "sb"
-all_sb.texName  = "tt " if args.onlyTT else "MC "
+high_sb = copy.deepcopy(all)
+high_sb.name = "high_sb"
+high_sb.texName  = "tt " if args.onlyTT else "MC "
 if args.sideband == "chgIso":
-    all_sb.texName += "high chg Iso"
+    high_sb.texName += "high chg Iso"
 elif args.sideband == "iso":
-    all_sb.texName += "high Iso"
+    high_sb.texName += "high Iso"
 elif args.sideband == "sieie":
-    all_sb.texName += "high #sigma_{i#etai#eta}"
-all_sb.color   = ROOT.kRed+2
+    high_sb.texName += "high #sigma_{i#etai#eta}"
+high_sb.color   = ROOT.kRed+2
 
-all_fit = copy.deepcopy(all_sb)
-all_fit.name = "fit"
-all_fit.texName  = "tt " if args.onlyTT else "MC "
+low_sb = copy.deepcopy(all)
+low_sb.name = "low_sb"
+low_sb.texName = ""
+low_sb.color   = ROOT.kRed+2
+low_sb.notInLegend  = True
+
+high_fit = copy.deepcopy(all)
+high_fit.name = "high_fit"
+high_fit.texName  = "tt " if args.onlyTT else "MC "
 if args.sideband == "chgIso":
-    all_fit.texName += "low chg Iso"
+    high_fit.texName += "low chg Iso"
 elif args.sideband == "iso":
-    all_fit.texName += "low Iso"
+    high_fit.texName += "low Iso"
 elif args.sideband == "sieie":
-    all_fit.texName += "low #sigma_{i#etai#eta}"
-all_fit.syles    = styles.lineStyle( ROOT.kOrange, width = 2, dotted=False, dashed=False, errors = True )
-all_fit.color   = ROOT.kCyan+2
+    high_fit.texName += "low #sigma_{i#etai#eta}"
+high_fit.color   = ROOT.kCyan+2
 
-mc  = [ all_fit, all_sb ]
-stackSamples  = [ [s] for s in mc ]
+low_fit = copy.deepcopy(all)
+low_fit.name = "low_fit"
+low_fit.texName = ""
+low_fit.color   = ROOT.kCyan+2
+low_fit.notInLegend  = True
 
-if args.noData:
-    if args.year == 2016:   lumi_scale = 35.92
-    elif args.year == 2017: lumi_scale = 41.53
-    elif args.year == 2018: lumi_scale = 59.74
-    stack = Stack( *stackSamples )
-else:
-    if args.year == 2016:   data_sample = Run2016
-    elif args.year == 2017: data_sample = Run2017
-    elif args.year == 2018: data_sample = Run2018
-    data_sample.texName        = "data (legacy)"
-    data_sample.name           = "data"
-    data_sample.read_variables = [ "event/I", "run/I" ]
-    data_sample.scale          = 1
-    lumi_scale                 = data_sample.lumi * 0.001
-    stackSamples              += [data_sample]
+sel_lSlI = cutInterpreter.cutString( args.selection )
+sel_hSlI = cutInterpreter.cutString( args.selection.replace("nPhoton", "nISieiePhoton").replace("nJet","nInvSieieJet").replace("nBTag","nInvSieieBTag") )
+sel_lShI = cutInterpreter.cutString( args.selection.replace("nPhoton", "nIChgIsoPhoton").replace("nJet","nInvChgIsoJet").replace("nBTag","nInvChgIsoBTag") )
+sel_hShI = cutInterpreter.cutString( args.selection.replace("nPhoton", "nIHadPhoton").replace("nJet","nInvChgIsoInvSieieJet").replace("nBTag","nInvChgIsoInvSieieBTag") )
 
-stack = Stack( *stackSamples )
+mc  = [ high_fit, low_fit, high_sb, low_sb ]
+
+if args.year == 2016:   lumi_scale = 35.92
+elif args.year == 2017: lumi_scale = 41.53
+elif args.year == 2018: lumi_scale = 59.74
 
 for sample in mc:
     sample.read_variables = read_variables_MC
     sample.scale          = lumi_scale
-    sample.style          = styles.fillStyle( sample.color )
     if "dilep" in args.selection:
         sample.weight         = lambda event, sample: event.reweightL1Prefire*event.reweightPU*event.reweightLeptonMediumSF*event.reweightLeptonTracking2lSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
     else:
-        sample.weight         = lambda event, sample: event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+        sample.weight         = lambda event, sample: event.reweightTrigger*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
 
 if args.small:
     for sample in stack.samples:
@@ -365,22 +328,14 @@ if args.small:
         sample.reduceFiles( factor=20 )
         sample.scale /= sample.normalization
 
+stackSamples  = [ [s] for s in mc ]
+stack = Stack( *stackSamples )
+
 weight_ = lambda event, sample: event.weight
 
 # Use some defaults (set defaults before you create/import list of Plots!!)
-#preSelection = "&&".join( [ cutInterpreter.cutString( args.selection ), "overlapRemoval==1"] )
-preSelection = "&&".join( [ cutInterpreter.cutString( args.selection ) ] )
-Plot.setDefaults( stack=stack, weight=staticmethod( weight_ ), selectionString=preSelection )#, addOverFlowBin='upper' )
-
-# Import plots list (AFTER setDefaults!!)
-#plotListFile = os.path.join( os.path.dirname( os.path.realpath( __file__ ) ), 'plotLists', args.plotFile + '.py' )
-#if not os.path.isfile( plotListFile ):
-#    logger.info( "Plot file not found: %s", plotListFile )
-#    sys.exit(1)
-
-#plotModule = imp.load_source( "plotLists", os.path.expandvars( plotListFile ) )
-#if args.noData: from plotLists import plotListDataMC as plotList
-#else:           from plotLists import plotListData   as plotList
+#preSelection = "&&".join( [ cutInterpreter.cutString( args.selection ) ] )
+Plot.setDefaults( stack=stack, weight=staticmethod( weight_ ), selectionString="(1)" ) #preSelection )#, addOverFlowBin='upper' )
 
 # plotList
 addPlots = []
@@ -453,72 +408,6 @@ if True: #not use it for now
     attribute = lambda event, sample: event.photonJetdR if event.photonJetdR > 0 and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
     binning   = [40,0,2],
   ))
-
-if False: #not use it for now
-  addPlots.append( Plot(
-    name      = 'fixedGridRhoFastjetAll_wide_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#rho(PU)',
-    texY      = 'Number of Events',
-    attribute = TreeVariable.fromString( "fixedGridRhoFastjetAll/F" ),
-    binning   = [20,0,200],
-  ))
-
-  addPlots.append( Plot(
-    name      = 'fixedGridRhoFastjetAll_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#rho(PU)',
-    texY      = 'Number of Events',
-    attribute = TreeVariable.fromString( "fixedGridRhoFastjetAll/F" ),
-    binning   = [10,0,40],
-  ))
-
-  addPlots.append( Plot(
-    name      = 'fixedGridRhoFastjetAll_wide_catFake_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#rho(PU)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.fixedGridRhoFastjetAll if getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
-    binning   = [20,0,200],
-  ))
-
-  addPlots.append( Plot(
-    name      = 'fixedGridRhoFastjetAll_catFake_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#rho(PU)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.fixedGridRhoFastjetAll if getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
-    binning   = [10,0,40],
-  ))
-
-  addPlots.append( Plot(
-    name      = 'fixedGridRhoFastjetAll_wide_catHad_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#rho(PU)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.fixedGridRhoFastjetAll if getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
-    binning   = [20,0,200],
-  ))
-
-  addPlots.append( Plot(
-    name      = 'fixedGridRhoFastjetAll_wide_catMagic_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#rho(PU)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.fixedGridRhoFastjetAll if getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
-    binning   = [20,0,200],
-  ))
-
-  addPlots.append( Plot(
-    name      = 'fixedGridRhoFastjetAll_catHad_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#rho(PU)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.fixedGridRhoFastjetAll if getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
-    binning   = [10,0,40],
-  ))
-
-  addPlots.append( Plot(
-    name      = 'fixedGridRhoFastjetAll_catMagic_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#rho(PU)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.fixedGridRhoFastjetAll if getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
-    binning   = [10,0,40],
-  ))
-
 
 addPlots.append( Plot(
     name      = '%s_mother_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
@@ -1454,16 +1343,6 @@ filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=T
 tr            = TriggerSelector( args.year, singleLepton="nLepTight1" in args.selection )
 triggerCutMc  = tr.getSelection( "MC" )
 
-if args.sideband == "sieie":
-    sb_sel  = ["%s_sieie>%f"%(args.categoryPhoton, highSieieThresh) ] #, "%s_sieie<0.02"%(args.categoryPhoton) ]
-    fit_sel = ["%s_sieie<%f"%(args.categoryPhoton, lowSieieThresh)]
-elif args.sideband == "chgIso":
-    sb_sel  = ["(%s_pfRelIso03_chg*%s_pt)>=%f"%(args.categoryPhoton, args.categoryPhoton, chgIsoThresh)]
-    fit_sel = ["(%s_pfRelIso03_chg*%s_pt)<%f"%(args.categoryPhoton, args.categoryPhoton, chgIsoThresh)]
-elif args.sideband == "iso":
-    sb_sel  = ["(%s_pfRelIso03_all*%s_pt)>=%f"%(args.categoryPhoton, args.categoryPhoton, isoThresh)]
-    fit_sel = ["(%s_pfRelIso03_all*%s_pt)<%f"%(args.categoryPhoton, args.categoryPhoton, isoThresh)]
-
 for index, mode in enumerate( allModes ):
     logger.info( "Computing plots for mode %s", mode )
 
@@ -1471,21 +1350,23 @@ for index, mode in enumerate( allModes ):
 
     # always initialize with [], elso you get in trouble with pythons references!
     plots  = []
-#    plots += plotList
-#    plots += [ getYieldPlot( index ) ]
     plots += addPlots
 
     # Define 2l selections
     leptonSelection = cutInterpreter.cutString( mode )
-#    mcSelection = [ filterCutMc, leptonSelection, triggerCutMc ] if args.onlyTT else mcSelection = [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ]
-    mcSelection = [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ]
-#    if not args.noData:    data_sample.setSelectionString( [ filterCutData, leptonSelection ] )
-#    for sample in mc: sample.setSelectionString( mcSelection )
+    mcSelection = [ filterCutMc, leptonSelection, triggerCutMc ]
+    if not (args.onlyTT or args.onlyTTLep or args.onlyTTSemiLep): mcSelection += [ "overlapRemoval==1" ]
 
-    # sideband/fit region cuts
-    if not args.noData: data_sample.setSelectionString( [filterCutData, leptonSelection ] + sb_sel )
-    all_sb.setSelectionString( mcSelection + sb_sel )
-    all_fit.setSelectionString( mcSelection + fit_sel )
+    if args.sideband == "chgIso":
+        high_sb.setSelectionString(  mcSelection + [sel_hShI] )
+        low_sb.setSelectionString(   mcSelection + [sel_lShI] )
+        high_fit.setSelectionString( mcSelection + [sel_hSlI] )
+        low_fit.setSelectionString(  mcSelection + [sel_lSlI] )
+    elif args.sideband == "sieie":
+        high_sb.setSelectionString(  mcSelection + [sel_hShI] )
+        low_sb.setSelectionString(   mcSelection + [sel_hSlI] )
+        high_fit.setSelectionString( mcSelection + [sel_lShI] )
+        low_fit.setSelectionString(  mcSelection + [sel_lSlI] )
 
     plotting.fill( plots, read_variables=read_variables, sequence=sequence )
 

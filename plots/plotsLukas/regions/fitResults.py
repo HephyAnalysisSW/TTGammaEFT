@@ -73,6 +73,7 @@ elif args.year == 2018: lumi_scale = 59.74
 dirName  = "_".join( [ item for item in args.cardfile.split("_") if not (item.startswith("add") or item == "incl") ] )
 add      = [ item for item in args.cardfile.split("_") if (item.startswith("add") or item == "incl")  ]
 add.sort()
+if args.expected: add += ["expected"]
 fit      = "_".join( ["postFit" if args.postFit else "preFit"] + add )
 
 plotDirectory = os.path.join(plot_directory, "fit", str(args.year), fit, dirName)
@@ -141,11 +142,12 @@ def plotRegions( sorted=True ):
                 hists[h_key] = h_sub.Clone(h_key)
                 del h_sub
 
-    minMax = 0.5 if args.bkgSubstracted and xLabel.endswith("_pt") else 0.25
+    minMax = 0.5 if args.bkgSubstracted and xLabel.endswith("_pt") else 0.5
     if args.bkgSubstracted:
         boxes,     ratio_boxes     = getErrorBoxes( copy.copy(hists["data"]), minMax, lineColor=ROOT.kAzure-3, fillColor=ROOT.kAzure-3, hashcode=1001 )
         boxes_sys, ratio_boxes_sys = getErrorBoxes( copy.copy(hists["data_syst"]), minMax, lineColor=ROOT.kOrange-2, fillColor=ROOT.kOrange-2, hashcode=1001 )
     else:
+        print  hists["total"]
         boxes,     ratio_boxes     = getUncertaintyBoxes( hists["total"], minMax, lineColor=ROOT.kGray+3, fillColor=ROOT.kGray+3, hashcode=formatSettings(nBins)["hashcode"] )
 
     hists["data"].style        = styles.errorStyle( ROOT.kBlack )
@@ -229,7 +231,7 @@ def plotRegions( sorted=True ):
             legend            = [ (0.2, 0.86 if args.bkgSubstracted else formatSettings(nBins)["legylower"], 0.9, 0.9), formatSettings(nBins)["legcolumns"] ] if not differential else (0.15,0.80,0.9,0.9),
             widths            = { "x_width":formatSettings(nBins)["padwidth"], "y_width":formatSettings(nBins)["padheight"], "y_ratio_width":formatSettings(nBins)["padratio"] } if not differential else {},
             yRange            = ( 0.7, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ) if not differential else "auto",
-            ratio             = { "yRange": (0.5, 1.5) if args.bkgSubstracted and xLabel.endswith("_pt") else (0.75, 1.25), "texY":"Theory/Data" if args.bkgSubstracted else "Data/MC", "histos":ratioHistos, "drawObjects":ratio_boxes if not args.bkgSubstracted else ratio_boxes + ratio_boxes_sys, "histModifications":ratioHistModifications },
+            ratio             = { "yRange": (1-minMax, 1+minMax), "texY":"Theory/Data" if args.bkgSubstracted else "Data/MC", "histos":ratioHistos, "drawObjects":ratio_boxes if not args.bkgSubstracted else ratio_boxes + ratio_boxes_sys, "histModifications":ratioHistModifications },
             drawObjects       = drawObjects_ if not differential else drawObjectsDiff(lumi_scale) + boxes + boxes_sys,
             histModifications = histModifications,
             copyIndexPHP      = True,

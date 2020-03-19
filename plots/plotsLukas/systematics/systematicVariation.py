@@ -82,7 +82,7 @@ def metSelectionModifier( sys, returntype = 'func'):
         return [ v+'_'+sys for v in variiedMetObservables ]
 
 # these are the nominal MC weights we always apply
-nominalMCWeights = ["weight", "reweightL1Prefire", "reweightPU", "reweightLeptonTightSF", "reweightLeptonTrackingTightSF", "reweightPhotonSF", "reweightPhotonElectronVetoSF", "reweightBTag_SF"]
+nominalMCWeights = ["weight", "reweightTrigger", "reweightL1Prefire", "reweightPU", "reweightLeptonTightSF", "reweightLeptonTrackingTightSF", "reweightPhotonSF", "reweightPhotonElectronVetoSF", "reweightBTag_SF"]
 
 # weight the MC according to a variation
 def MC_WEIGHT( variation, returntype = "string"):
@@ -117,6 +117,8 @@ nominalPuWeight, upPUWeight, downPUWeight = "reweightPU", "reweightPUUp", "rewei
 # Define all systematic variations
 variations = {
     "central"                   : {"read_variables": [ "%s/F"%v for v in nominalMCWeights ]},
+    "TriggerUp"                 : {"replaceWeight":("reweightTrigger","reweightTriggerUp"),                               "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightTriggerUp"] ]},
+    "TriggerDown"               : {"replaceWeight":("reweightTrigger","reweightTriggerDown"),                             "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightTriggerDown"] ]},
     "L1PrefireUp"               : {"replaceWeight":("reweightL1Prefire","reweightL1PrefireUp"),                           "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightL1PrefireUp"] ]},
     "L1PrefireDown"             : {"replaceWeight":("reweightL1Prefire","reweightL1PrefireDown"),                         "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightL1PrefireDown"] ]},
     "PUUp"                      : {"replaceWeight":(nominalPuWeight,upPUWeight),                                          "read_variables" : [ "%s/F"%v for v in nominalMCWeights + [upPUWeight] ]},
@@ -129,8 +131,8 @@ variations = {
     "PhotonSFDown"              : {"replaceWeight":("reweightPhotonSF","reweightPhotonSFDown"),                           "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightPhotonSFDown"]]},
     "PhotonElectronVetoSFUp"    : {"replaceWeight":("reweightPhotonElectronVetoSF","reweightPhotonElectronVetoSFUp"),     "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightPhotonElectronVetoSFUp"]]},
     "PhotonElectronVetoSFDown"  : {"replaceWeight":("reweightPhotonElectronVetoSF","reweightPhotonElectronVetoSFDown"),   "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightPhotonElectronVetoSFDown"]]},
-#    "jerUp"                     : {"selectionModifier":jetSelectionModifier("jerUp"),                                     "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jerUp","list")]},
-#    "jerDown"                   : {"selectionModifier":jetSelectionModifier("jerDown"),                                   "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jerDown","list")]},
+    "jerUp"                     : {"selectionModifier":jetSelectionModifier("jerUp"),                                     "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jerUp","list")]},
+    "jerDown"                   : {"selectionModifier":jetSelectionModifier("jerDown"),                                   "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jerDown","list")]},
     "jesTotalUp"                : {"selectionModifier":jetSelectionModifier("jesTotalUp"),                                "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jesTotalUp","list")]},
     "jesTotalDown"              : {"selectionModifier":jetSelectionModifier("jesTotalDown"),                              "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jesTotalDown","list")]},
 #    "unclustEnUp"               : {"selectionModifier":metSelectionModifier("unclustEnUp"),                               "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("unclustEnUp","list")]},
@@ -178,12 +180,13 @@ read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval
                      "reweightPhotonElectronVetoSF/F", "reweightPhotonElectronVetoSFUp/F", "reweightPhotonElectronVetoSFDown/F",
                      "reweightBTag_SF/F", "reweightBTag_SF_b_Down/F", "reweightBTag_SF_b_Up/F", "reweightBTag_SF_l_Down/F", "reweightBTag_SF_l_Up/F",
                      'reweightL1Prefire/F', 'reweightL1PrefireUp/F', 'reweightL1PrefireDown/F',
+                     'reweightTrigger/F', 'reweightTriggerUp/F', 'reweightTriggerDown/F',
                     ]
 sequence = []
 signals = []
 
 # Samples
-os.environ["gammaSkim"]="True" if ("hoton" in args.selection or "pTG" in args.selection) else "False"
+os.environ["gammaSkim"]="True" if ("hoton" in args.selection or "pTG" in args.selection) and not "nPhoton0" in args.selection else "False"
 #os.environ["gammaSkim"]="False"
 if args.year == 2016:
     from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed  import *
@@ -506,13 +509,13 @@ if args.variation is not None:
     sys.exit(0)
 
 systematics = [\
-#    {"name":"JER",              "pair":("jerDown", "jerUp"),},
+    {"name":"JER",              "pair":("jerDown", "jerUp"),},
     {"name":"JEC",              "pair":("jesTotalDown", "jesTotalUp")},
 #    {"name":"Unclustered",      "pair":("unclustEnDown", "unclustEnUp") },
     {"name":"PU",               "pair":("PUDown", "PUUp")},
     {"name":"BTag_b",           "pair":("BTag_SF_b_Down", "BTag_SF_b_Up" )},
     {"name":"BTag_l",           "pair":("BTag_SF_l_Down", "BTag_SF_l_Up")},
-#    {"name":"trigger",          "pair":("DilepTriggerDown", "DilepTriggerUp")},
+    {"name":"trigger",          "pair":("TriggerDown", "TriggerUp")},
     {"name":"leptonSF",         "pair":("LeptonSFTightDown", "LeptonSFTightUp")},
     {"name":"leptonTrackingSF", "pair":("LeptonSFTrackingTightDown", "LeptonSFTrackingTightUp")},
     {"name":"photonSF",         "pair":("PhotonSFDown", "PhotonSFUp")},

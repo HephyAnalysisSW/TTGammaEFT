@@ -144,8 +144,7 @@ for estimator in allEstimators:
     for i_sieie, sieie in enumerate(sieieSel):
         for i_chgIso, chgIso in enumerate(chgSel):
             for i_region, region in enumerate(allPhotonRegions):
-#                for i_cat, cat in enumerate(catSel):
-                    for i_mode, mode in enumerate(channels):
+                for i_mode, mode in enumerate(channels):
 
                             y = wrapper( (region, mode, setup, estimator) )[1].val
                             if y < 0: continue
@@ -163,6 +162,35 @@ for estimator in allEstimators:
                                 if est != "Data":
                                     yields["MC"][sieie][chgIso][ptDict[str(region)]][cat][allMode] += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
                                     yields["MC"][sieie][chgIso][ptDict[str(region)]][cat][mode]    += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
+
+
+for estimator in allEstimators:
+    est = estimator.name.split("_")[0]
+    for i_sieie, sieie in enumerate(sieieSel):
+        for i_chgIso, chgIso in enumerate(chgSel):
+            for i_region, region in enumerate(allPhotonRegions):
+                for i_mode, mode in enumerate(channels):
+
+                    if yields[est][sieie][chgIso][ptDict[str(region)]]["all"][mode] <= 0:
+                        yields[est][sieie][chgIso][ptDict[str(region)]]["all"][mode] = 0
+                        for i_cat, cat in enumerate(["gen","had","misID"]):
+                            yields[est][sieie][chgIso][ptDict[str(region)]]["all"][mode]    += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
+                            yields[est][sieie][chgIso][ptDict[str(region)]]["all"][allMode] += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
+                            if est != "Data":
+#                                yields["MC"][sieie][chgIso][ptDict[str(region)]][cat][allMode] += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
+#                                yields["MC"][sieie][chgIso][ptDict[str(region)]][cat][mode]    += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
+                                yields["MC"][sieie][chgIso][ptDict[str(region)]]["all"][allMode] += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
+                                yields["MC"][sieie][chgIso][ptDict[str(region)]]["all"][mode]    += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
+
+for estimator in allEstimators:
+    est = estimator.name.split("_")[0]
+    for i_sieie, sieie in enumerate(sieieSel):
+        for i_chgIso, chgIso in enumerate(chgSel):
+            for i_region, region in enumerate(allPhotonRegions):
+                for i_mode, mode in enumerate(channels):
+                    for i_cat, cat in enumerate(["gen","had","misID","all"]):
+                        if yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode] == 0:
+                            yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode] = -1
 
 
 mc.sort(key=lambda est: -yields[est]["all"]["all"][ptDict[str(allPhotonRegions[0])]]["all"][allMode])

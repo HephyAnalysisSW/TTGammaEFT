@@ -85,6 +85,7 @@ if args.year == 2017 and args.addBadEEJetVeto:
 addMisIDSF = args.invLeptonIso # always true for QCD plots
 addDYSF    = args.invLeptonIso #always true for QCD plots
 selDir     = args.selection
+photonSel  = ("hoton" in args.selection or "pTG" in args.selection) and not "nPhoton0" in args.selection
 if args.selection.count("addMisIDSF"):
     addMisIDSF = True
     args.selection = "-".join( [ item for item in args.selection.split("-") if item != "addMisIDSF" ] )
@@ -103,6 +104,7 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
     args.selection = selection["prefix"]
     selDir        += "-"+args.selection
     logger.info( "Using selection string: %s"%args.selection )
+    photonSel = setup.isPhotonSelection
 
 if args.small:           args.plot_directory += "_small"
 if args.noData:          args.plot_directory += "_noData"
@@ -118,7 +120,7 @@ if args.useEOS:
     useToken("hephy")
 
 # Samples
-os.environ["gammaSkim"]="True" if ("hoton" in args.selection or "pTG" in args.selection) and not args.invLeptonIso and not "NoIso" in args.mode else "False"
+os.environ["gammaSkim"]="True" if photonSel and not args.invLeptonIso and not "NoIso" in args.mode else "False"
 if args.year == 2016:
     if args.useEOS: postprocessing_directory = "2016/MC_v20/semilep/"
     from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed      import *
@@ -198,17 +200,16 @@ def drawPlots( plots, mode, dataMCScale ):
                 logger.info( "Empty plot!" )
                 continue # Empty plot
 
-            if not args.noQCDDD and not args.leptonCategory and not categoryPlot and not args.invLeptonIso and plot.name not in invPlotNames.values():
+            if not args.noQCDDD and not args.leptonCategory and not categoryPlot and not args.invLeptonIso and plot.name not in invPlotNames.keys():
                 for h in plot.histos[0]:
                     if not "datadrivenQCD" in h.GetName(): continue
                     h.style      = styles.fillStyle( color.QCD )
                     h.legendText = "QCD (data)"
 
-            postFix = " (%s)"%args.mode.replace("mu","#mu").replace("all","e+#mu") #" (legacy)"
+            postFix = " (%s)"%mode.replace("mu","#mu").replace("all","e+#mu")
             if not args.noData: 
                 plot.histos[1][0].style = styles.errorStyle( ROOT.kBlack )
-                if mode == "all":
-                    plot.histos[1][0].legendText = "data" + postFix
+                plot.histos[1][0].legendText = "data" + postFix
             extensions_ = ["pdf", "png", "root"]
 
             logger.info( "Plotting..." )
@@ -342,6 +343,7 @@ read_variables  = ["weight/F",
                    "PV_npvsGood/I",
                    "PV_npvs/I", "PV_npvsGood/I",
                    "nJetGood/I", "nBTagGood/I",
+                   "nJetGoodInvLepIso/I", "nBTagGoodInvLepIso/I",
                    "lpTight/F", "lpInvTight/F",
                    "nJet/I", "nBTag/I",
                    "Jet[%s]" %jetVarString,
@@ -349,6 +351,7 @@ read_variables  = ["weight/F",
                    "nLeptonGood/I", "nElectronGood/I", "nMuonGood/I",
                    "nLeptonTight/I", "nElectronTight/I", "nMuonTight/I",
                    "nLeptonTightNoIso/I", "nElectronTightNoIso/I", "nMuonTightNoIso/I",
+                   "nLeptonTightInvIso/I", "nElectronTightInvIso/I", "nMuonTightInvIso/I",
                    "nLeptonVetoNoIso/I", "nElectronVetoNoIso/I", "nMuonVetoNoIso/I",
                    "nLeptonVeto/I", "nElectronVeto/I", "nMuonVeto/I",
                    "Photon[%s]" %photonVarString,
@@ -359,8 +362,13 @@ read_variables  = ["weight/F",
                    "mLtight0Gamma/F",
                    "mLinvtight0Gamma/F",
                    "ltight0GammadR/F", "ltight0GammadPhi/F",
-                   "m3/F", "m3wBJet/F", "mT/F", "mT2lg/F", "mTinv/F", "mT2linvg/F",
+                   "linvtight0GammadR/F", "linvtight0GammadPhi/F",
+                   "m3/F", "m3wBJet/F",
+                   "ht/F", "htinv/F",
+                   "m3inv/F", "m3wBJetinv/F",
+                   "mT/F", "mT2lg/F", "mTinv/F", "mT2linvg/F",
                    "photonJetdR/F", "tightLeptonJetdR/F",
+                   "invtightLeptonJetdR/F",
                    "reweightHEM/F",
                   ]
 
@@ -373,6 +381,7 @@ read_variables += [ VectorTreeVariable.fromString('Photon[%s]'%photonVarString, 
 
 read_variables += map( lambda var: "PhotonMVA0_"              + var, photonVariables )
 read_variables += map( lambda var: "PhotonGood0_"             + var, photonVariables )
+read_variables += map( lambda var: "PhotonGoodInvLepIso0_"    + var, photonVariables )
 read_variables += map( lambda var: "PhotonNoChgIso0_"         + var, photonVariables )
 read_variables += map( lambda var: "PhotonNoSieie0_"          + var, photonVariables )
 read_variables += map( lambda var: "PhotonNoChgIsoNoSieie0_"  + var, photonVariables )
@@ -399,8 +408,8 @@ read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval
                      "reweightPU/F", "reweightPUDown/F", "reweightPUUp/F", "reweightPUVDown/F", "reweightPUVUp/F",
                      "reweightLeptonTightSF/F", "reweightLeptonTightSFUp/F", "reweightLeptonTightSFDown/F",
                      "reweightLeptonTrackingTightSF/F",
-                     "reweightDilepTrigger/F", "reweightDilepTriggerUp/F", "reweightDilepTriggerDown/F",
-                     "reweightDilepTriggerBackup/F", "reweightDilepTriggerBackupUp/F", "reweightDilepTriggerBackupDown/F",
+                     "reweightTrigger/F", "reweightTriggerUp/F", "reweightTriggerDown/F",
+                     "reweightInvTrigger/F", "reweightInvTriggerUp/F", "reweightInvTriggerDown/F",
                      "reweightPhotonSF/F", "reweightPhotonSFUp/F", "reweightPhotonSFDown/F",
                      "reweightPhotonElectronVetoSF/F",
                      "reweightBTag_SF/F", "reweightBTag_SF_b_Down/F", "reweightBTag_SF_b_Up/F", "reweightBTag_SF_l_Down/F", "reweightBTag_SF_l_Up/F",
@@ -663,7 +672,7 @@ def printWeight( event, sample ):
 #sequence = [calcGenWdecays, calcVetoElectrons, misIDelectrons, allmisIDelectrons, mt2lg ]# printWeight ]#clean_Jets ]
 #sequence = [misIDelectrons]# printWeight ]#clean_Jets ]
 #sequence += [calcNoIsoLeptons]
-sequence = [getmTg]
+sequence = []
 
 # Sample definition
 if args.year == 2016:
@@ -680,8 +689,13 @@ if args.year == 2016:
             mc = [ TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, rest_16 ]
         else:
             mc = [ TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
-        if not (args.invLeptonIso or "NoIso" in args.mode): mc += [ QCD_16 ]
-#        if not (args.invLeptonIso): mc += [ QCD_16 ]
+#        if not (args.invLeptonIso or "NoIso" in args.mode):
+#            mc += [ QCD_16 ]
+#            if args.noQCDDD: mc += [ GJets_16 ]
+        if not (args.invLeptonIso):
+            mc += [ QCD_16 ]
+            if args.noQCDDD or "NoIso" in args.mode: mc += [ GJets_16 ]
+        mc += [ QCD_16, GJets_16 ]
 elif args.year == 2017:
     if args.onlyTTG and not categoryPlot and not args.leptonCategory:
         mc = [ TTG_17, QCD_17 ]
@@ -696,7 +710,12 @@ elif args.year == 2017:
             mc = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, rest_17 ]
         else:
             mc = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
-        if not (args.invLeptonIso or "NoIso" in args.mode): mc += [ QCD_17 ]
+#        if not (args.invLeptonIso or "NoIso" in args.mode):
+#            mc += [ QCD_17 ]
+#            if args.noQCDDD: mc += [ GJets_17 ]
+        if not (args.invLeptonIso):
+            mc += [ QCD_17 ]
+            if args.noQCDDD or "NoIso" in args.mode: mc += [ GJets_17 ]
 elif args.year == 2018:
     if args.onlyTTG and not categoryPlot and not args.leptonCategory:
         mc = [ TTG_18, QCD_18 ]
@@ -711,7 +730,12 @@ elif args.year == 2018:
             mc = [ TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, rest_18 ]
         else:
             mc = [ TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
-        if not (args.invLeptonIso or "NoIso" in args.mode): mc += [ QCD_18 ]
+#        if not (args.invLeptonIso or "NoIso" in args.mode):
+#            mc += [ QCD_18 ]
+#            if args.noQCDDD: mc += [ GJets_18 ]
+        if not (args.invLeptonIso):
+            mc += [ QCD_18 ]
+            if args.noQCDDD or "NoIso" in args.mode: mc += [ GJets_18 ]
 
 if categoryPlot:
     all_cat0 = all
@@ -811,23 +835,30 @@ else:
 
 stack.extend( [ [s] for s in signals ] )
 
-if addMisIDSF and addDYSF:
-    sampleWeight = lambda event, sample: (misIDSF_val[args.year].val if event.nPhotonGood>0 and event.PhotonGood0_photonCat==2 else 1.)*(DYSF_val[args.year].val if "DY" in sample.name else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
-elif addDYSF:
-    sampleWeight = lambda event, sample: (DYSF_val[args.year].val if "DY" in sample.name else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
-elif addMisIDSF:
-    sampleWeight = lambda event, sample: (misIDSF_val[args.year].val if event.nPhotonGood>0 and event.PhotonGood0_photonCat==2 else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+if addMisIDSF and addDYSF and not args.invLeptonIso:
+    sampleWeight = lambda event, sample: (misIDSF_val[args.year].val if event.nPhotonGood>0 and event.PhotonGood0_photonCat==2 else 1.)*(DYSF_val[args.year].val if "DY" in sample.name else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+elif addDYSF and not args.invLeptonIso:
+    sampleWeight = lambda event, sample: (DYSF_val[args.year].val if "DY" in sample.name else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+elif addMisIDSF and not args.invLeptonIso:
+    sampleWeight = lambda event, sample: (misIDSF_val[args.year].val if event.nPhotonGood>0 and event.PhotonGood0_photonCat==2 else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+elif addMisIDSF and addDYSF and args.invLeptonIso:
+    sampleWeight = lambda event, sample: (misIDSF_val[args.year].val if event.nPhotonGoodInvLepIso>0 and event.PhotonGoodInvLepIso0_photonCat==2 else 1.)*(DYSF_val[args.year].val if "DY" in sample.name else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+elif addDYSF and args.invLeptonIso:
+    sampleWeight = lambda event, sample: (DYSF_val[args.year].val if "DY" in sample.name else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+elif addMisIDSF and args.invLeptonIso:
+    sampleWeight = lambda event, sample: (misIDSF_val[args.year].val if event.nPhotonGoodInvLepIso>0 and event.PhotonGoodInvLepIso0_photonCat==2 else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
 else:
-    sampleWeight = lambda event, sample: event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+    sampleWeight = lambda event, sample: event.reweightL1Prefire*event.reweightPU*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
 
 # no misIDSF included in weightString!!
-weightString = "reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"
+weightString = "reweightL1Prefire*reweightPU*reweightTrigger*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"
 if args.addHEMWeight:
     weightString += "*reweightHEM"
 
 for sample in mc + signals:
     sample.read_variables = read_variables_MC
     sample.scale          = lumi_scale
+    if "qcd" in sample.name.lower() and photonSel and not args.noQCDDD: sample.scale = 0.
     sample.style          = styles.fillStyle( sample.color )
     sample.weight         = sampleWeight
 #event.reweightDilepTriggerBackup
@@ -848,6 +879,11 @@ replaceSelection = {
     "nMuonTight":         "nMuonTightInvIso",
     "nElectronTight":     "nElectronTightInvIso",
     "mLtight0Gamma":      "mLinvtight0Gamma",
+    "nPhotonGood":        "nPhotonGoodInvLepIso",
+    "nJetGood":           "nJetGoodInvLepIso",
+    "nBTagGood":          "nBTagGoodInvLepIso",
+    "LeptonTight0_eta":   "LeptonTightInvIso0_eta",
+    "LeptonTight0_pt":    "LeptonTightInvIso0_pt",
 }
 
 replaceNoIsoSelection = {
@@ -855,6 +891,11 @@ replaceNoIsoSelection = {
     "nLeptonTight":       "nLeptonTightNoIso",
     "nMuonTight":         "nMuonTightNoIso",
     "nElectronTight":     "nElectronTightNoIso",
+    "nPhotonGood":        "nPhotonGoodNoLepIso",
+    "nJetGood":           "nJetGoodNoLepIso",
+    "nBTagGood":          "nBTagGoodNoLepIso",
+    "LeptonTight0_eta":   "LeptonTightNoIso0_eta",
+    "LeptonTight0_pt":    "LeptonTightNoIso0_pt",
 }
 
 if args.invLeptonIso and regionPlot:
@@ -864,7 +905,7 @@ if args.invLeptonIso and regionPlot:
 elif args.invLeptonIso:
     preSelection = cutInterpreter.cutString( "-".join([ item if not "nBTag" in item else "nBTag0" for item in args.selection.split("-") ]) )
     for key, val in replaceSelection.items():
-        preSelection.replace( key, val )
+        preSelection = preSelection.replace( key, val )
 elif "NoIso" in args.mode:
     preSelection = cutInterpreter.cutString( args.selection )
 #    preSelection = "&&".join( [ item for item in preSelection.split("&&") if not "nLeptonVeto" in item ] )
@@ -873,8 +914,10 @@ elif "NoIso" in args.mode:
 else:
     preSelection = cutInterpreter.cutString( args.selection )
 
-Plot.setDefaults(   stack=stack, weight=staticmethod( weight_ ), selectionString=preSelection, addOverFlowBin=None if args.invLeptonIso else "upper" )
+print preSelection
+
 Plot2D.setDefaults( stack=stack, weight=staticmethod( weight_ ), selectionString=preSelection )
+Plot.setDefaults(   stack=stack, weight=staticmethod( weight_ ), selectionString=preSelection, addOverFlowBin=None if args.invLeptonIso else "upper" )
 
 # Import plots list (AFTER setDefaults!!)
 plotListFile = os.path.join( os.path.dirname( os.path.realpath( __file__ ) ), 'plotLists', args.plotFile + '.py' )
@@ -963,6 +1006,78 @@ add2DPlots.append( Plot2D(
 
 # plotList
 noIsoPlots = []
+
+noIsoPlots.append( Plot(
+    name      = "LeptonTightNoIso0_dxy",
+    texX      = "dxy (l_{noIso})",
+    texY      = "Number of Events",
+    attribute = TreeVariable.fromString( "LeptonTightNoIso0_dxy/F" ),
+    binning   = [ 20, 0, 0.15 ],
+))
+
+noIsoPlots.append( Plot(
+    name      = "LeptonTightNoIso0_dz",
+    texX      = "dz (l_{noIso})",
+    texY      = "Number of Events",
+    attribute = TreeVariable.fromString( "LeptonTightNoIso0_dz/F" ),
+    binning   = [ 20, 0, 0.3 ],
+))
+
+noIsoPlots.append( Plot(
+    name      = "LeptonTightNoIso0_ip3d",
+    texX      = "ip3d (l_{noIso})",
+    texY      = "Number of Events",
+    attribute = TreeVariable.fromString( "LeptonTightNoIso0_ip3d/F" ),
+    binning   = [ 20, 0, 0.1 ],
+))
+
+noIsoPlots.append( Plot(
+    name      = "LeptonTightNoIso0_r9",
+    texX      = "R9 (l_{noIso})",
+    texY      = "Number of Events",
+    attribute = TreeVariable.fromString( "LeptonTightNoIso0_r9/F" ),
+    binning   = [ 20, 0, 1 ],
+))
+
+noIsoPlots.append( Plot(
+    name      = "LeptonTightNoIso0_sip3d",
+    texX      = "SIP3D(l_{noIso})",
+    texY      = "Number of Events",
+    attribute = TreeVariable.fromString( "LeptonTightNoIso0_sip3d/F" ),
+    binning   = [ 20, 0, 6 ],
+))
+
+noIsoPlots.append( Plot(
+    name      = "LeptonTightNoIso0_lostHits",
+    texX      = "lost hits (l_{noIso})",
+    texY      = "Number of Events",
+    attribute = TreeVariable.fromString( "LeptonTightNoIso0_lostHits/I" ),
+    binning   = [ 4, 0, 4 ],
+))
+
+noIsoPlots.append( Plot(
+    name      = "LeptonTightNoIso0_dr03EcalRecHitSumEt",
+    texX      = "dr03EcalRecHitSumEt (l_{noIso})",
+    texY      = "Number of Events",
+    attribute = TreeVariable.fromString( "LeptonTightNoIso0_dr03EcalRecHitSumEt/F" ),
+    binning   = [ 20, 0, 3 ],
+))
+
+noIsoPlots.append( Plot(
+    name      = "LeptonTightNoIso0_dr03HcalDepth1TowerSumEt",
+    texX      = "dr03HcalDepth1TowerSumEt (l_{noIso})",
+    texY      = "Number of Events",
+    attribute = TreeVariable.fromString( "LeptonTightNoIso0_dr03HcalDepth1TowerSumEt/F" ),
+    binning   = [ 20, 0, 3 ],
+))
+
+noIsoPlots.append( Plot(
+    name      = "LeptonTightNoIso0_dr03TkSumPt",
+    texX      = "dr03TkSumPt (l_{noIso})",
+    texY      = "Number of Events",
+    attribute = TreeVariable.fromString( "LeptonTightNoIso0_dr03TkSumPt/F" ),
+    binning   = [ 20, 0, 2.5 ],
+))
 
 noIsoPlots.append( Plot(
     name      = 'LeptonTightNoIso0_pt',
@@ -1055,14 +1170,6 @@ noIsoPlots.append( Plot(
 
 # plotList
 addPlots = []
-
-addPlots.append( Plot(
-    name      = 'mTg',
-    texX      = 'M_{T#gamma} (GeV)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.mTg,
-    binning   = [ 20, 0, 200 ],
-))
 
 addPlots.append( Plot(
     name      = 'misIDElectron0_pt',
@@ -1198,7 +1305,7 @@ cat_sel1 = [ "%s_photonCat==1"%args.categoryPhoton ]
 cat_sel2 = [ "%s_photonCat==2"%args.categoryPhoton ]
 cat_sel3 = [ "%s_photonCat==3"%args.categoryPhoton ]
 
-if "NoChgIso" in args.selection or "NoSieie" in args.selection:
+if "NoChgIso" in args.selection or "NoSieie" in args.selection or "nHadPhoton" in args.selection:
     photonCats = ["-photonhadcat0", "-photonhadcat1", "-photonhadcat2", "-photonhadcat3"]
 else:
     photonCats = ["-photoncat0", "-photoncat1", "-photoncat2", "-photoncat3"]
@@ -1221,32 +1328,86 @@ if args.invLeptonIso and not regionPlot:
         gjets = GJets_18
 
 invPlotNames = {
-                "leptonTight0_pt":                 "leptonTightInvIso0_pt",
-                "leptonTight0_eta":                "leptonTightInvIso0_eta",
-                "leptonTight0_phi":                "leptonTightInvIso0_phi",
-                "mL0PhotonTight":                  "mLinv0PhotonTight",
-                "mL0PhotonTight_20ptG120":         "mLinv0PhotonTight_20ptG120",
-                "mL0PhotonTight_120ptG220":        "mLinv0PhotonTight_120ptG220",
-                "mL0PhotonTight_220ptGinf":        "mLinv0PhotonTight_220ptGinf",
-                "mL0PhotonTight_coarse":           "mLinv0PhotonTight_coarse",
-                "mL0PhotonTight_20ptG120_coarse":  "mLinv0PhotonTight_20ptG120_coarse",
-                "mL0PhotonTight_120ptG220_coarse": "mLinv0PhotonTight_120ptG220_coarse",
-                "mL0PhotonTight_220ptGinf_coarse": "mLinv0PhotonTight_220ptGinf_coarse",
-                "mT":                              "mTinv",
-                "mT_20ptG120":                     "mTinv_20ptG120",
-                "mT_120ptG220":                    "mTinv_120ptG220",
-                "mT_220ptGinf":                    "mTinv_220ptGinf",
-                "mT2lg":                           "mT2lginv",
-                "mT2lg_20ptG120":                  "mT2lginv_20ptG120",
-                "mT2lg_120ptG220":                 "mT2lginv_120ptG220",
-                "mT2lg_220ptGinf":                 "mT2lginv_220ptGinf",
-                "Lp":                              "Lpinv",
-                "nElectronGood":                   "nElectronGoodInvIso",
-                "nMuonGood":                       "nMuonGoodInvIso",
-                "nLeptonGood":                     "nLeptonGoodInvIso",
-                "nElectronTight":                  "nElectronTightInvIso",
-                "nMuonTight":                      "nMuonTightInvIso",
-                "nLeptonTight":                    "nLeptonTightInvIso",
+                "leptonTightInvIso0_pt":                 "leptonTight0_pt",
+                "leptonTightInvIso0_eta":                "leptonTight0_eta",
+                "leptonTightInvIso0_phi":                "leptonTight0_phi",
+                "mLinv0PhotonTight":                     "mL0PhotonTight",
+                "mLinv0PhotonTight_20ptG120":            "mL0PhotonTight_20ptG120",
+                "mLinv0PhotonTight_120ptG220":           "mL0PhotonTight_120ptG220",
+                "mLinv0PhotonTight_220ptGinf":           "mL0PhotonTight_220ptGinf",
+                "mLinv0PhotonTight_coarse":              "mL0PhotonTight_coarse",
+                "mLinv0PhotonTight_20ptG120_coarse":     "mL0PhotonTight_20ptG120_coarse",
+                "mLinv0PhotonTight_120ptG220_coarse":    "mL0PhotonTight_120ptG220_coarse",
+                "mLinv0PhotonTight_220ptGinf_coarse":    "mL0PhotonTight_220ptGinf_coarse",
+                "mTinv":                                 "mT",
+                "mTinv_20ptG120":                        "mT_20ptG120",
+                "mTinv_120ptG220":                       "mT_120ptG220",
+                "mTinv_220ptGinf":                       "mT_220ptGinf",
+                "mT2lginv":                              "mT2lg",
+                "mT2lginv_20ptG120":                     "mT2lg_20ptG120",
+                "mT2lginv_120ptG220":                    "mT2lg_120ptG220",
+                "mT2lginv_220ptGinf":                    "mT2lg_220ptGinf",
+                "Lpinv":                                 "Lp",
+                "nElectronGoodInvIso":                   "nElectronGood",
+                "nMuonGoodInvIso":                       "nMuonGood",
+                "nLeptonGoodInvIso":                     "nLeptonGood",
+                "nElectronTightInvIso":                  "nElectronTight",
+                "nMuonTightInvIso":                      "nMuonTight",
+                "nLeptonTightInvIso":                    "nLeptonTight",
+                'nPhotonGoodInvIso':                     "nPhotonGood",
+                'nJetGoodInvIso':                        "nJetGood",
+                'nJetGoodInvIso_wide':                   "nJetGood_wide",
+                'nJetGoodInvIso_semi':                   "nJetGood_semi",
+                'nJetGoodInvIso_semi2':                  "nJetGood_semi2",
+                'nJetGoodInvIso_semi3':                  "nJetGood_semi3",
+                'nJetGoodInvIso_20ptG120':               "nJetGood_20ptG120",
+                'nJetGoodInvIso_120ptG220':              "nJetGood_120ptG220",
+                'nJetGoodInvIso_220ptGinf':              "nJetGood_220ptGinf",
+                'nBJetGoodInvIso':                       "nBJetGood",
+                'nBJetGoodInvIso_20ptG120':              "nBJetGood_20ptG120",
+                'nBJetGoodInvIso_120ptG220':             "nBJetGood_120ptG220",
+                'nBJetGoodInvIso_220ptGinf':             "nBJetGood_220ptGinf",
+                'htinv':                                 "ht",
+                'm3inv':                                 "m3",
+                'm3inv_coarse':                          "m3_coarse",
+                'm3inv_20ptG120':                        "m3_20ptG120",
+                'm3inv_120ptG220':                       "m3_120ptG220",
+                'm3inv_220ptGinf':                       "m3_220ptGinf",
+                'm3inv_20ptG120_coarse':                 "m3_20ptG120_coarse",
+                'm3inv_120ptG220_coarse':                "m3_120ptG220_coarse",
+                'm3inv_220ptGinf_coarse':                "m3_220ptGinf_coarse",
+                "jetGoodinv0_pt":                        "jetGood0_pt",
+                "jetGoodinv0_pt_wide":                   "jetGood0_pt_wide",
+                "jetGoodinv0_eta":                       "jetGood0_eta",
+                "jetGoodinv0_phi":                       "jetGood0_phi",
+                "jetGoodinv0_neHEF":                     "jetGood0_neHEF",
+                "jetGoodinv0_neEmEF":                    "jetGood0_neEmEF",
+                "jetGoodinv0_chEmHEF":                   "jetGood0_chEmHEF",
+                "jetGoodinv0_chHEF":                     "jetGood0_chHEF",
+                "jetGoodinv1_pt_wide":                   "jetGood1_pt_wide",
+                "jetGoodinv1_pt":                        "jetGood1_pt",
+                "jetGoodinv1_eta":                       "jetGood1_eta",
+                "jetGoodinv1_phi":                       "jetGood1_phi",
+                "jetGoodinv1_neHEF":                     "jetGood1_neHEF",
+                "jetGoodinv1_neEmEF":                    "jetGood1_neEmEF",
+                "jetGoodinv1_chEmHEF":                   "jetGood1_chEmHEF",
+                "jetGoodinv1_chHEF":                     "jetGood1_chHEF",
+                "leptonTightinv0_hoe":                   "leptonTight0_hoe",
+                "leptonTightinv0_eInvMinusPInv":         "leptonTight0_eInvMinusPInv",
+                "leptonTightinv0_convVeto":              "leptonTight0_convVeto",
+                "leptonTightinv0_sieie":                 "leptonTight0_sieie",
+                "leptonTightinv0_sip3d":                    "leptonTight0_sip3d",
+                "leptonTightinv0_lostHits":                 "leptonTight0_lostHits",
+                "leptonTightinv0_dr03EcalRecHitSumEt":      "leptonTight0_dr03EcalRecHitSumEt",
+                "leptonTightinv0_dr03HcalDepth1TowerSumEt": "leptonTight0_dr03HcalDepth1TowerSumEt",
+                "leptonTightinv0_dr03TkSumPt":              "leptonTight0_dr03TkSumPt",
+                "leptonTightinv0_dxy":                      "leptonTight0_dxy",
+                "leptonTightinv0_dz":                       "leptonTight0_dz",
+                "leptonTightinv0_ip3d":                     "leptonTight0_ip3d",
+                "leptonTightinv0_r9":                       "leptonTight0_r9",
+                "mindRJetTightLeptoninv":                "mindRJetTightLepton",
+                "dRLTight0PhotonGood0inv":               "dRLTight0PhotonGood0",
+                "dPhiLTight0PhotonGood0inv":             "dPhiLTight0PhotonGood0",
  }
 
 
@@ -1269,12 +1430,12 @@ for index, mode in enumerate( allModes ):
     plots += addPlots
     if "NoIso" in args.mode:
         plots += noIsoPlots
-    if not "NoChgIso" in args.selection and not "NoSieie" in args.selection:
+    if not "NoChgIso" in args.selection and not "NoSieie" in args.selection and not "nHadPhoton" in args.selection:
         plots = [ plot for plot in plots if not "NoChgIso" in plot.name and not "NoSieie" in plot.name ]
     if args.invLeptonIso:
-        plots = [ plot for plot in plots if plot.name not in invPlotNames.keys() ]
-    else:
         plots = [ plot for plot in plots if plot.name not in invPlotNames.values() ]
+    else:
+        plots = [ plot for plot in plots if plot.name not in invPlotNames.keys() ]
 
     # Define 2l selections
     isoleptonSelection    = cutInterpreter.cutString( mode )
@@ -1284,6 +1445,7 @@ for index, mode in enumerate( allModes ):
 
     if not args.noData:
         data_sample.setSelectionString( [ filterCutData, leptonSelection ] )
+        print data_sample.selectionString
     if categoryPlot:
         all_cat0.setSelectionString(  [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] + cat_sel0 )
         all_cat1.setSelectionString(  [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] + cat_sel1 )
@@ -1363,7 +1525,7 @@ for index, mode in enumerate( allModes ):
         for plot in plots:
 #            if "nBJet" in plot.name or "nElectron" in plot.name or "nMuon" in plot.name or "yield" in plot.name: continue
 #            if "nBJet" in plot.name: continue
-            if plot.name in invPlotNames.values(): continue
+            if plot.name in invPlotNames.keys(): continue
             if "category" in plot.name: continue
 
             for i_m, m in enumerate(qcdModes):
