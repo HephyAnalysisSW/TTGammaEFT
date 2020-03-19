@@ -260,40 +260,41 @@ default_nJet         = (4,-1)
 default_nBTag        = (1,-1)
 default_nPhoton      = (1,1)
 default_MET          = (0,-1)
+default_leptonEta    = (0,-1)
 default_zWindow      = "all"
 default_dileptonic   = False
 default_invLepIso    = False
 default_addMisIDSF   = False
 default_photonCat    = "all"
 default_m3Window     = "all"
-default_photonIso    = "lowChgIsolowSieie"
+default_photonIso    = None
 
 SSMSF_val = {}
 SSMSF_val[2016] = u_float( 0.75, 0.06 ) #26012020
-SSMSF_val[2017] = u_float( 0.7, 0.06 ) #26012020
-SSMSF_val[2018] = u_float( 0.7, 0.06 ) #26012020
+SSMSF_val[2017] = u_float( 0.75, 0.06 ) #26012020
+SSMSF_val[2018] = u_float( 0.75, 0.06 ) #26012020
 
 WJetsSF_val = {}
-WJetsSF_val[2016] = u_float( 1.15, 0.13 ) #12022020
-WJetsSF_val[2017] = u_float( 1.08, 0.33 )
-WJetsSF_val[2018] = u_float( 1.19, 0.20 )
+WJetsSF_val[2016] = u_float( 1.13, 0.13 ) #12022020
+WJetsSF_val[2017] = u_float( 1.13, 0.13 )
+WJetsSF_val[2018] = u_float( 1.13, 0.13 )
 
 TTSF_val = {}
-TTSF_val[2016] = u_float( 0.98, 0.07 ) #12022020
-TTSF_val[2017] = u_float( 0.95, 0.08 )
-TTSF_val[2018] = u_float( 0.99, 0.08 )
+TTSF_val[2016] = u_float( 0.95, 0.07 ) #12022020
+TTSF_val[2017] = u_float( 0.96, 0.06 )
+TTSF_val[2018] = u_float( 1.00, 0.08 )
 
 DYSF_val = {}
-DYSF_val[2016] = u_float( 1.06, 0.06 ) #12022020
+DYSF_val[2016] = u_float( 1.05, 0.09 ) #12022020
 DYSF_val[2017] = u_float( 1.06, 0.04 )
 DYSF_val[2018] = u_float( 1.04, 0.05 )
 
 
 
 misIDSF_val = {}
-misIDSF_val[2016] = u_float( 2.35, 0.31 ) #12022020
-misIDSF_val[2017] = u_float( 2.54, 0.34 )
-misIDSF_val[2018] = u_float( 1.57, 0.24 )
+misIDSF_val[2016] = u_float( 2.24*0.96, 0.31 ) #12022020
+misIDSF_val[2017] = u_float( 2.25*1.06*0.96, 0.3 )
+misIDSF_val[2018] = u_float( 1.58*1.06, 0.22 )
 
 fakeSF_val = {}
 fakeSF_val[2016] = u_float( 1.00, 0.09 )
@@ -301,14 +302,19 @@ fakeSF_val[2017] = u_float( 1.00, 0.09 )
 fakeSF_val[2018] = u_float( 1.00, 0.09 )
 
 WGSF_val = {}
-WGSF_val[2016] = u_float( 1.14*0.8, 0.12 ) #12022020
-WGSF_val[2017] = u_float( 1.29, 0.18 ) #2020 01 20
-WGSF_val[2018] = u_float( 1.36, 0.15 ) #2020 01 20
+WGSF_val[2016] = u_float( 1.08, 0.13 ) #12022020
+WGSF_val[2017] = u_float( 1.30, 0.22 ) #2020 01 20
+WGSF_val[2018] = u_float( 1.33, 0.18 ) #2020 01 20
+
+otherSF_val = {}
+otherSF_val[2016] = u_float( 1.0, 0.1 ) #12022020
+otherSF_val[2017] = u_float( 1.0, 0.1 ) #2020 01 20
+otherSF_val[2018] = u_float( 1.0, 0.1 ) #2020 01 20
 
 ZGSF_val = {}
-ZGSF_val[2016] = u_float( 0.88, 0.08 )  #12022020
-ZGSF_val[2017] = u_float( 0.90, 0.08 )  #2020 01 20
-ZGSF_val[2018] = u_float( 0.87, 0.09 )  #2020 01 20
+ZGSF_val[2016] = u_float( 1.00, 0.08 )  #12022020
+ZGSF_val[2017] = u_float( 1.00, 0.08 )  #2020 01 20
+ZGSF_val[2018] = u_float( 0.95, 0.08 )  #2020 01 20
 
 # all processes are all samples + them splitted in photon categories
 allProcesses            = copy.copy(default_sampleList)
@@ -324,37 +330,54 @@ metVariations    = ["unclustEnUp", "unclustEnDown"]
 # Control Regions Settings
 controlRegions = {}
 #hadronic fakes
-controlRegions["fake3high"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1), "photonIso":"highSieie" },
-                          "channels":   lepChannels,
-                          "regions":    chgIsoPtRegions,
-                          "inclRegion": chgIsoRegions,
-                          "noPhotonCR": False,
-                          "processes":  processes,
-                         }
 
-controlRegions["fake4phigh"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1), "photonIso":"highSieie" },
-                          "channels":   lepChannels,
-                          "regions":    chgIsoPtRegions,
-                          "inclRegion": chgIsoRegions,
-                          "noPhotonCR": False,
-                          "processes":  processes,
-                         }
-
-controlRegions["fake3low"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1), "photonIso":"lowSieie" },
-                          "channels":   lepChannels,
-                          "regions":    chgIsoNoSRPtRegions,
-                          "inclRegion": chgIsoNoSRRegions,
-                          "noPhotonCR": False,
-                          "processes":  processes,
-                         }
-
-controlRegions["fake4plow"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1), "photonIso":"lowSieie" },
-                          "channels":   lepChannels,
-                          "regions":    chgIsoNoSRPtRegions,
-                          "inclRegion": chgIsoNoSRRegions,
-                          "noPhotonCR": False,
-                          "processes":  processes,
-                         }
+controlRegions["fake3high"] = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1), "photonIso":"highSieieNoChgIso" },
+                                 "channels":   lepChannels,
+                                 "regions":    chgIsoPtRegions,
+                                 "inclRegion": chgIsoRegions,
+                                 "noPhotonCR": False,
+                                 "processes":  processes,
+                               }
+ 
+controlRegions["fake3phigh"] = { "parameters": { "zWindow":"all", "nJet":(3,-1), "nBTag":(1,-1), "nPhoton":(1,1), "photonIso":"highSieieNoChgIso" },
+                                 "channels":   lepChannels,
+                                 "regions":    chgIsoPtRegions,
+                                 "inclRegion": chgIsoRegions,
+                                 "noPhotonCR": False,
+                                 "processes":  processes,
+                               }
+ 
+controlRegions["fake4phigh"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1), "photonIso":"highSieieNoChgIso" },
+                                 "channels":   lepChannels,
+                                 "regions":    chgIsoPtRegions,
+                                 "inclRegion": chgIsoRegions,
+                                 "noPhotonCR": False,
+                                 "processes":  processes,
+                               }
+ 
+controlRegions["fake3low"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1), "photonIso":"lowSieieNoChgIso" },
+                                "channels":   lepChannels,
+                                "regions":    chgIsoNoSRPtRegions,
+                                "inclRegion": chgIsoNoSRRegions,
+                                "noPhotonCR": False,
+                                "processes":  processes,
+                              }
+ 
+controlRegions["fake3plow"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1), "nBTag":(1,-1), "nPhoton":(1,1), "photonIso":"lowSieieNoChgIso" },
+                                "channels":   lepChannels,
+                                "regions":    chgIsoNoSRPtRegions,
+                                "inclRegion": chgIsoNoSRRegions,
+                                "noPhotonCR": False,
+                                "processes":  processes,
+                              }
+ 
+controlRegions["fake4plow"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1), "photonIso":"lowSieieNoChgIso" },
+                                "channels":   lepChannels,
+                                "regions":    chgIsoNoSRPtRegions,
+                                "inclRegion": chgIsoNoSRRegions,
+                                "noPhotonCR": False,
+                                "processes":  processes,
+                              }
 
 # dileptonic ee/mumu all m(l,l) nBTag0 nPhoton0 CR for DY ScaleFactor
 controlRegions["DY2"]  = { "parameters": { "dileptonic":True, "zWindow":"onZSFllTight", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0) },
@@ -473,21 +496,157 @@ controlRegions["WJets4p"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "n
                               "processes":  processesNoPhoton,
                          }
 
-controlRegions["WJets3MET"]  = { "parameters": { "zWindow":"all", "nJet":(3,3),  "nBTag":(0,0), "nPhoton":(0,0), "MET":(80,-1) },
-                                 "channels":   lepChannels,
-                                 "regions":    noPhotonRegionTTG,
-                                 "inclRegion": noPhotonRegionTTG,
-                                 "noPhotonCR": True,
-                                 "processes":  processesNoPhoton,
-                            }
 
-controlRegions["WJets4pMET"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(0,0), "MET":(80,-1) },
-                                 "channels":   lepChannels,
-                                 "regions":    noPhotonRegionTTG,
-                                 "inclRegion": noPhotonRegionTTG,
-                                 "noPhotonCR": True,
-                                 "processes":  processesNoPhoton,
-                             }
+controlRegions["WJets2Eta0003"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(0.0,0.3) },
+                                     "channels":   lepChannels,
+                                     "regions":    noPhotonRegionTTG,
+                                     "inclRegion": noPhotonRegionTTG,
+                                     "noPhotonCR": True,
+                                     "processes":  processesNoPhoton,
+                                   }
+
+controlRegions["WJets2Eta0306"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(0.3,0.6) },
+                                     "channels":   lepChannels,
+                                     "regions":    noPhotonRegionTTG,
+                                     "inclRegion": noPhotonRegionTTG,
+                                     "noPhotonCR": True,
+                                     "processes":  processesNoPhoton,
+                                   }
+
+
+controlRegions["WJets2Eta0609"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(0.6,0.9) },
+                                     "channels":   lepChannels,
+                                     "regions":    noPhotonRegionTTG,
+                                     "inclRegion": noPhotonRegionTTG,
+                                     "noPhotonCR": True,
+                                     "processes":  processesNoPhoton,
+                                   }
+
+
+controlRegions["WJets2Eta0912"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(0.9,1.2) },
+                                     "channels":   lepChannels,
+                                     "regions":    noPhotonRegionTTG,
+                                     "inclRegion": noPhotonRegionTTG,
+                                     "noPhotonCR": True,
+                                     "processes":  processesNoPhoton,
+                                   }
+
+
+controlRegions["WJets2Eta1215"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(1.2,1.5) },
+                                     "channels":   lepChannels,
+                                     "regions":    noPhotonRegionTTG,
+                                     "inclRegion": noPhotonRegionTTG,
+                                     "noPhotonCR": True,
+                                     "processes":  processesNoPhoton,
+                                   }
+
+
+controlRegions["WJets2Eta1518"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(1.5,1.8) },
+                                     "channels":   lepChannels,
+                                     "regions":    noPhotonRegionTTG,
+                                     "inclRegion": noPhotonRegionTTG,
+                                     "noPhotonCR": True,
+                                     "processes":  processesNoPhoton,
+                                   }
+
+
+controlRegions["WJets2Eta1821"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(1.8,2.1) },
+                                     "channels":   lepChannels,
+                                     "regions":    noPhotonRegionTTG,
+                                     "inclRegion": noPhotonRegionTTG,
+                                     "noPhotonCR": True,
+                                     "processes":  processesNoPhoton,
+                                   }
+
+
+controlRegions["WJets2Eta2124"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(2.1,2.4) },
+                                     "channels":   lepChannels,
+                                     "regions":    noPhotonRegionTTG,
+                                     "inclRegion": noPhotonRegionTTG,
+                                     "noPhotonCR": True,
+                                     "processes":  processesNoPhoton,
+                                   }
+
+
+controlRegions["WJetsEC2"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(1.479,-1) },
+                              "channels":   lepChannels,
+                              "regions":    noPhotonRegionTTG,
+                              "inclRegion": noPhotonRegionTTG,
+                              "noPhotonCR": True,
+                              "processes":  processesNoPhoton,
+                         }
+
+controlRegions["WJetsEC3"]  = { "parameters": { "zWindow":"all", "nJet":(3,3),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(1.479,-1) },
+                              "channels":   lepChannels,
+                              "regions":    noPhotonRegionTTG,
+                              "inclRegion": noPhotonRegionTTG,
+                              "noPhotonCR": True,
+                              "processes":  processesNoPhoton,
+                         }
+
+controlRegions["WJetsEC3p"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(1.479,-1) },
+                              "channels":   lepChannels,
+                              "regions":    noPhotonRegionTTG,
+                              "inclRegion": noPhotonRegionTTG,
+                              "noPhotonCR": True,
+                              "processes":  processesNoPhoton,
+                         }
+
+controlRegions["WJetsEC4p"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(1.479,-1) },
+                              "channels":   lepChannels,
+                              "regions":    noPhotonRegionTTG,
+                              "inclRegion": noPhotonRegionTTG,
+                              "noPhotonCR": True,
+                              "processes":  processesNoPhoton,
+                         }
+
+controlRegions["WJetsBarrel2"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(0,1.479) },
+                              "channels":   lepChannels,
+                              "regions":    noPhotonRegionTTG,
+                              "inclRegion": noPhotonRegionTTG,
+                              "noPhotonCR": True,
+                              "processes":  processesNoPhoton,
+                         }
+
+controlRegions["WJetsBarrel3"]  = { "parameters": { "zWindow":"all", "nJet":(3,3),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(0,1.479) },
+                              "channels":   lepChannels,
+                              "regions":    noPhotonRegionTTG,
+                              "inclRegion": noPhotonRegionTTG,
+                              "noPhotonCR": True,
+                              "processes":  processesNoPhoton,
+                         }
+
+controlRegions["WJetsBarrel3p"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(0,1.479) },
+                              "channels":   lepChannels,
+                              "regions":    noPhotonRegionTTG,
+                              "inclRegion": noPhotonRegionTTG,
+                              "noPhotonCR": True,
+                              "processes":  processesNoPhoton,
+                         }
+
+controlRegions["WJetsBarrel4p"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(0,1.479) },
+                              "channels":   lepChannels,
+                              "regions":    noPhotonRegionTTG,
+                              "inclRegion": noPhotonRegionTTG,
+                              "noPhotonCR": True,
+                              "processes":  processesNoPhoton,
+                         }
+
+#controlRegions["WJets3MET"]  = { "parameters": { "zWindow":"all", "nJet":(3,3),  "nBTag":(0,0), "nPhoton":(0,0), "MET":(80,-1) },
+#                                 "channels":   lepChannels,
+#                                 "regions":    noPhotonRegionTTG,
+#                                 "inclRegion": noPhotonRegionTTG,
+#                                 "noPhotonCR": True,
+#                                 "processes":  processesNoPhoton,
+#                            }
+
+#controlRegions["WJets4pMET"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(0,0), "MET":(80,-1) },
+#                                 "channels":   lepChannels,
+#                                 "regions":    noPhotonRegionTTG,
+#                                 "inclRegion": noPhotonRegionTTG,
+#                                 "noPhotonCR": True,
+#                                 "processes":  processesNoPhoton,
+#                             }
 
 
 controlRegions["ZG3"]  = { "parameters": { "dileptonic":True, "zWindow":"onZSFllgTight", "nJet":(3,3),  "nBTag":(0,0), "nPhoton":(1,1) },
@@ -539,7 +698,39 @@ controlRegions["VG3"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,3), "nB
                            "processes":  processes,
                          }
 
+controlRegions["VGBarrel3"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1), "leptonEta":(0,1.479) },
+                           "channels":   lepChannels,
+                           "regions":    mLgPtRegions,
+                           "inclRegion": mLgRegions,
+                           "noPhotonCR": False,
+                           "processes":  processes,
+                         }
+
+controlRegions["VGEC3"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1), "leptonEta":(1.479,-1) },
+                           "channels":   lepChannels,
+                           "regions":    mLgPtRegions,
+                           "inclRegion": mLgRegions,
+                           "noPhotonCR": False,
+                           "processes":  processes,
+                         }
+
 controlRegions["VG3p"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,-1), "nBTag":(0,0), "nPhoton":(1,1) },
+                           "channels":   lepChannels,
+                           "regions":    mLgPtRegions,
+                           "inclRegion": mLgRegions,
+                           "noPhotonCR": False,
+                           "processes":  processes,
+                         }
+
+controlRegions["VGBarrel3p"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,-1), "nBTag":(0,0), "nPhoton":(1,1), "leptonEta":(0,1.479) },
+                           "channels":   lepChannels,
+                           "regions":    mLgPtRegions,
+                           "inclRegion": mLgRegions,
+                           "noPhotonCR": False,
+                           "processes":  processes,
+                         }
+
+controlRegions["VGEC3p"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,-1), "nBTag":(0,0), "nPhoton":(1,1), "leptonEta":(1.479,-1) },
                            "channels":   lepChannels,
                            "regions":    mLgPtRegions,
                            "inclRegion": mLgRegions,
@@ -564,6 +755,22 @@ controlRegions["VG5"]  = { "parameters": { "zWindow":"offZeg", "nJet":(5,5), "nB
                          }
 
 controlRegions["VG4p"] = { "parameters": { "zWindow":"offZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1)  },
+                           "channels":   lepChannels,
+                           "regions":    mLgPtRegions,
+                           "inclRegion": mLgRegions,
+                           "noPhotonCR": False,
+                           "processes":  processes,
+                         }
+
+controlRegions["VGBarrel4p"] = { "parameters": { "zWindow":"offZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1), "leptonEta":(0,1.479) },
+                           "channels":   lepChannels,
+                           "regions":    mLgPtRegions,
+                           "inclRegion": mLgRegions,
+                           "noPhotonCR": False,
+                           "processes":  processes,
+                         }
+
+controlRegions["VGEC4p"] = { "parameters": { "zWindow":"offZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1), "leptonEta":(1.479,-1) },
                            "channels":   lepChannels,
                            "regions":    mLgPtRegions,
                            "inclRegion": mLgRegions,
@@ -654,7 +861,39 @@ controlRegions["misDY3"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,3), "
                               "processes":  processes,
                             }
 
+controlRegions["misDYBarrel3"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1) },
+                              "channels":   ["e"],
+                              "regions":    regionsTTG,
+                              "inclRegion": inclRegionsTTG,
+                              "noPhotonCR": False,
+                              "processes":  processes,
+                            }
+
+controlRegions["misDYEC3"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1) },
+                              "channels":   ["e"],
+                              "regions":    regionsTTG,
+                              "inclRegion": inclRegionsTTG,
+                              "noPhotonCR": False,
+                              "processes":  processes,
+                            }
+
 controlRegions["misDY3p"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,-1), "nBTag":(0,0), "nPhoton":(1,1) },
+                              "channels":   ["e"],
+                              "regions":    regionsTTG,
+                              "inclRegion": inclRegionsTTG,
+                              "noPhotonCR": False,
+                              "processes":  processes,
+                            }
+
+controlRegions["misDYBarrel3p"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,-1), "nBTag":(0,0), "nPhoton":(1,1) },
+                              "channels":   ["e"],
+                              "regions":    regionsTTG,
+                              "inclRegion": inclRegionsTTG,
+                              "noPhotonCR": False,
+                              "processes":  processes,
+                            }
+
+controlRegions["misDYEC3p"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,-1), "nBTag":(0,0), "nPhoton":(1,1) },
                               "channels":   ["e"],
                               "regions":    regionsTTG,
                               "inclRegion": inclRegionsTTG,
@@ -687,21 +926,39 @@ controlRegions["misDY4p"] = { "parameters": { "zWindow":"onZeg", "nJet":(4,-1), 
                             }
 
 
-controlRegions["misDY3MET"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1), "MET":(50,-1) },
-                                 "channels":   ["e"],
-                                 "regions":    regionsTTG,
-                                 "inclRegion": inclRegionsTTG,
-                                 "noPhotonCR": False,
-                                 "processes":  processes,
-                               }
+controlRegions["misDYBarrel4p"] = { "parameters": { "zWindow":"onZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1) },
+                              "channels":   ["e"],
+                              "regions":    regionsTTG,
+                              "inclRegion": inclRegionsTTG,
+                              "noPhotonCR": False,
+                              "processes":  processes,
+                            }
 
-controlRegions["misDY4pMET"] = { "parameters": { "zWindow":"onZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1), "MET":(50,-1) },
-                                 "channels":   ["e"],
-                                 "regions":    regionsTTG,
-                                 "inclRegion": inclRegionsTTG,
-                                 "noPhotonCR": False,
-                                 "processes":  processes,
-                               }
+
+controlRegions["misDYEC4p"] = { "parameters": { "zWindow":"onZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1) },
+                              "channels":   ["e"],
+                              "regions":    regionsTTG,
+                              "inclRegion": inclRegionsTTG,
+                              "noPhotonCR": False,
+                              "processes":  processes,
+                            }
+
+
+#controlRegions["misDY3MET"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1), "MET":(50,-1) },
+#                                 "channels":   ["e"],
+#                                 "regions":    regionsTTG,
+#                                 "inclRegion": inclRegionsTTG,
+#                                 "noPhotonCR": False,
+#                                 "processes":  processes,
+#                               }
+
+#controlRegions["misDY4pMET"] = { "parameters": { "zWindow":"onZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1), "MET":(50,-1) },
+#                                 "channels":   ["e"],
+#                                 "regions":    regionsTTG,
+#                                 "inclRegion": inclRegionsTTG,
+#                                 "noPhotonCR": False,
+#                                 "processes":  processes,
+#                               }
 
 
 # nPhoton1p nBTag2 nJet2 offZeg m(e,gamma) CR for misID ScaleFactor TTbar
@@ -715,12 +972,20 @@ controlRegions["misTT2"] = { "parameters": { "zWindow":"offZeg", "nJet":(2,2), "
 
 
 # updates for QCD estimation (else same settings)
-QCD_updates              = { "invertLepIso":True,               "nBTag":(0,0),                  "addMisIDSF":True }#, "zWindow":"offZeg" }
-QCDTF_updates            = {}
-#QCDTF_updates["CR"]      = { "invertLepIso":True, "nJet":(2,2), "nBTag":(0,0), "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
-#QCDTF_updates["SR"]      = {                      "nJet":(2,2),                "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
-QCDTF_updates["CR"]      = { "invertLepIso":True, "nJet":(2,2), "nBTag":(0,0),                  "MET":(0,-1), "m3Window":"all", "zWindow":"offZeg", "addMisIDSF":True }
-QCDTF_updates["SR"]      = {                      "nJet":(2,2),                                 "MET":(0,-1), "m3Window":"all", "zWindow":"offZeg", "addMisIDSF":True }
+QCD_updates               = { "invertLepIso":True,               "nBTag":(0,0),                  "addMisIDSF":True }#, "zWindow":"offZeg" }
+QCDTF_updates             = {}
+QCDTF_updates["CR"]       = { "invertLepIso":True, "nJet":(2,2), "nBTag":(0,0), "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+QCDTF_updates["SR"]       = {                      "nJet":(2,2),                "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all" }
+QCDTF_updates["CRBarrel"] = { "invertLepIso":True, "nJet":(2,2), "nBTag":(0,0), "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "leptonEta":(0,1.479) }
+QCDTF_updates["SRBarrel"] = {                      "nJet":(2,2),                "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "leptonEta":(0,1.479) }
+QCDTF_updates["CREC"]     = { "invertLepIso":True, "nJet":(2,2), "nBTag":(0,0), "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "leptonEta":(1.479,-1) }
+QCDTF_updates["SREC"]     = {                      "nJet":(2,2),                "nPhoton":(0,0), "MET":(0,-1), "m3Window":"all", "zWindow":"all", "leptonEta":(1.479,-1) }
+#QCDTF_updates["CR"]       = { "invertLepIso":True, "nJet":(2,2), "nBTag":(0,0),                  "MET":(0,-1), "m3Window":"all", "zWindow":"offZeg", "addMisIDSF":True }
+#QCDTF_updates["SR"]       = {                      "nJet":(2,2),                                 "MET":(0,-1), "m3Window":"all", "zWindow":"offZeg", "addMisIDSF":True }
+#QCDTF_updates["CRBarrel"] = { "invertLepIso":True, "nJet":(2,2), "nBTag":(0,0),                  "MET":(0,-1), "m3Window":"all", "zWindow":"offZeg", "addMisIDSF":True, "leptonEta":(0,1.479) }
+#QCDTF_updates["SRBarrel"] = {                      "nJet":(2,2),                                 "MET":(0,-1), "m3Window":"all", "zWindow":"offZeg", "addMisIDSF":True, "leptonEta":(0,1.479) }
+#QCDTF_updates["CREC"]     = { "invertLepIso":True, "nJet":(2,2), "nBTag":(0,0),                  "MET":(0,-1), "m3Window":"all", "zWindow":"offZeg", "addMisIDSF":True, "leptonEta":(1.479,-1) }
+#QCDTF_updates["SREC"]     = {                      "nJet":(2,2),                                 "MET":(0,-1), "m3Window":"all", "zWindow":"offZeg", "addMisIDSF":True, "leptonEta":(1.479,-1) }
 
 customQCDTF_updates               = {}
 customQCDTF_updates["2J0P"]       = {}
@@ -751,6 +1016,8 @@ customQCDTF_updates["5J1P"]["SR"] = {                      "nJet":(5,5),        
 
 QCD_cutReplacements = {
                         "mLtight0Gamma":     "mLinvtight0Gamma",
+                        "PhotonGood0":       "PhotonGoodInvLepIso0",
+#                        "m3":                "m3inv",
 }
 
 # specific region cuts that should not be considered in the TF calculation as they are specifically set by the QCDTF_updates (e.g. no photon_pt cut as QCDTF_updates require 0 photons)
