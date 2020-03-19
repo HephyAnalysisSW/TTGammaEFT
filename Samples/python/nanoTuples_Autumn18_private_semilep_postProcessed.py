@@ -49,54 +49,66 @@ logger.info( "Loading MC samples from directory %s", os.path.join( data_director
 
 dirs = {}
 dirs["DY_LO"]            = ["DYJetsToLL_M50_LO", "DYJetsToLL_M10to50_LO"]
+dirs["Z_NuNu"]           = ["DYJetsToNuNu_HT100to200", "DYJetsToNuNu_HT200to400", "DYJetsToNuNu_HT400to600", "DYJetsToNuNu_HT600to800", "DYJetsToNuNu_HT800to1200", "DYJetsToNuNu_HT1200to2500", "DYJetsToNuNu_HT2500toInf"]
 
-dirs["TT_pow"]           = ["TTLep_pow", "TTSingleLep_pow"]#, "TTHad_pow" ]
+dirs["TT_pow"]           = ["TTLep_pow", "TTSingleLep_pow", "TTHad_pow" ]
 dirs["TT_Lep"]           = ["TTLep_pow"]
 dirs["TT_SemiLep"]       = ["TTSingleLep_pow"]
 
 dirs["TTGSemiLep"]       = ["TTGSingleLep_LO"]
+
 dirs["TTGLep"]           = ["TTGLep_LO"]
 dirs["TTG"]              = ["TTGLep_LO", "TTGSingleLep_LO", "TTGHad_LO"]
 dirs["TTG_TuneUp"]       = ["TTGLep_TuneUp_LO", "TTGSingleLep_TuneUp_LO"]
 dirs["TTG_TuneDown"]     = ["TTGLep_TuneDown_LO", "TTGSingleLep_TuneDown_LO"]
 dirs["TTG_erdOn"]        = ["TTGLep_erdOn_LO", "TTGSingleLep_erdOn_LO"]
 
-dirs["singleTop"]        = ["T_tWch", "TBar_tWch", "TToLeptons_sch_amcatnlo", "T_tch_pow", "TBar_tch_pow"]
+dirs["singleTop"]        = ["T_tWch_incl", "TBar_tWch_incl", "TToLeptons_sch_amcatnlo", "TToHad_sch", "T_tch_pow", "TBar_tch_pow"]#"TBar_tWch", "T_tWch"
 
 # other
 dirs["TZQ"]              = ["tZq_ll"]
-dirs["TWZ"]              = ["tWll"]
+dirs["TWZ"]              = ["tWll", "tWnunu"]
+dirs["THQ"]              = ["THQ"]
+dirs["THW"]              = ["THW"]
+dirs["TTH"]              = ["TTHbbLep", "TTHbbSemiLep" "TTHnobb_pow"]
 
 dirs["TTW"]              = ["TTWToLNu", "TTWToQQ"]
-dirs["TTZ"]              = ["TTZToLLNuNu", "TTZToLLNuNu_m1to10"]
+dirs["TTZ"]              = ["TTZToLLNuNu", "TTZToLLNuNu_m1to10", "TTZToQQ"]
 
+dirs["TTTT"]             = ["TTTT"]
 dirs["TTWZ"]             = ["TTWZ"]
 dirs["TTZZ"]             = ["TTZZ"]
 dirs["TTWW"]             = ["TTWW"]
 
+dirs["WWW"]              = ["WWW_4F"]
 dirs["WWZ"]              = ["WWZ"]
 dirs["WZZ"]              = ["WZZ"]
 dirs["ZZZ"]              = ["ZZZ"]
 
 dirs["ZGToLLG"]          = ["ZGToLLG"]
 dirs["ZG_lowMLL"]        = ["ZGToLLG_lowMLL"]
-dirs["TG"]               = ["TGJets"]
+dirs["TG"]               = ["TGJets_comb"] #"TGJets_lep"
+#["TGJets_lep"]
 dirs["WJets"]            = ["W1JetsToLNu", "W2JetsToLNu", "W3JetsToLNu", "W4JetsToLNu"]
 dirs["WG"]               = ["WGToLNuG"]
 
 dirs["VV"]               = ["VVTo2L2Nu"]
 
-dirs["WW"]               = [] #["WWTo2L2Nu"]
-dirs["ZZ"]               = ["ZZTo2L2Q", "ZZTo4L"] #"ZZTo2L2Nu"
-dirs["WZ"]               = ["WZTo3LNu_amcatnlo"]
+dirs["WW"]               = ["WWToLNuQQ", "WWTo4Q"]
+dirs["WZ"]               = ["WZTo1L3Nu", "WZTo1L1Nu2Q", "WZTo2L2Q", "WZTo3LNu_comb"]
+dirs["ZZ"]               = ["ZZTo2L2Q", "ZZTo2Q2Nu", "ZZTo4L" ]
 
-dirs["GluGlu"]           = ["GluGluToContinToZZTo2e2mu", "GluGluToContinToZZTo2e2tau"]
+#dirs["WW"]               = [] #["WWTo2L2Nu"]
+#dirs["ZZ"]               = ["ZZTo2L2Q", "ZZTo4L"] #"ZZTo2L2Nu"
+#dirs["WZ"]               = ["WZTo3LNu_amcatnlo"]
+
+dirs["GluGlu"]           = ["GluGluHToZZTo4L", "GluGluToContinToZZTo2e2mu", "GluGluToContinToZZTo2e2tau", "GluGluToContinToZZTo2mu2tau", "GluGluToContinToZZTo4e", "GluGluToContinToZZTo4mu", "GluGluToContinToZZTo4tau"]
 
 dirs["other"]            = []
-dirs["other"]           += dirs["TZQ"]  + dirs["TWZ"]
+dirs["other"]           += dirs["TZQ"]  + dirs["TWZ"] + dirs["THW"] + dirs["THQ"]
 dirs["other"]           += dirs["TTW"]  + dirs["TTZ"]
-dirs["other"]           += dirs["TTWZ"] + dirs["TTZZ"] + dirs["TTWW"]
-dirs["other"]           += dirs["WWZ"] + dirs["WZZ"]  + dirs["ZZZ"]
+dirs["other"]           += dirs["TTWZ"] + dirs["TTZZ"] + dirs["TTWW"] + dirs["TTTT"]
+dirs["other"]           += dirs["WWZ"] + dirs["WZZ"]  + dirs["ZZZ"] + dirs["WWW"]
 dirs["other"]           += dirs["VV"]
 dirs["other"]           += dirs["WW"]   + dirs["WZ"]  + dirs["ZZ"]
 dirs["other"]           += dirs["GluGlu"]
@@ -122,6 +134,7 @@ directories = { key : [ os.path.join( data_directory_, postprocessing_directory_
 
 # Samples
 DY_LO_18            = getMCSample(name="DY_LO",            redirector=redirector, color=color.DY,              texName="DY",                directory=directories["DY_LO"], noCheckProxy=False, fromDPM=fromDPM)
+Zinv_18             = getMCSample(name="Zinv",             redirector=redirector, color=color.Zinv,            texName="Z(#nu#nu)+jets",    directory=directories["Z_NuNu"], noCheckProxy=False, fromDPM=fromDPM)
 TT_pow_18           = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_pow"], noCheckProxy=True, fromDPM=fromDPM)
 TT_Lep_18           = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_Lep"], noCheckProxy=True, fromDPM=fromDPM)
 TT_SemiLep_18       = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_SemiLep"], noCheckProxy=True, fromDPM=fromDPM)
