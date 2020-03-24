@@ -333,12 +333,12 @@ for i, param in enumerate( params ):
     signals.append( sample )
 
 #Histograms 
-def get_weight_string( param, **kwargs ):
-    return w.get_weight_string( **param['WC'] )( event, sample ) * event.ref_weight
+def get_weight_string( parameters ):
+    return w.get_weight_string( **parameters )
 
 print(param) 
 
-smweightString = get_weight_string({'WC':{}})
+smweightString = get_weight_string({})
 bsmweightString = get_weight_string({"ctZ":2})
 selection = cutInterpreter.cutString( args.selection + "-" + args.mode )
 
@@ -348,8 +348,8 @@ print bsmweightString
 smHisto = eftSample.get1DHistoFromDraw( "GenPhotonCMSUnfold0_pt", binning=[20, 20, 800], selectionString=selection, weightString=smweightString, addOverFlowBin="upper" )
 bsmHisto = eftSample.get1DHistoFromDraw( "GenPhotonCMSUnfold0_pt", binning=[20, 20, 800], selectionString=selection, weightString=bsmweightString, addOverFlowBin="upper" )
 
-#bsmHisto.Divide(smHisto) 
-
+Histo = bsmHisto.Divide(smHisto) 
+print Histo
 #define the Stack
 stackList  = [ [s] for s in signals ]
 stack      = Stack( *stackList )
