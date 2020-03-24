@@ -81,12 +81,13 @@ if args.parameters:
         bsmweightstring = get_weight_string({coeff:val})
         bsmHisto = eftSample.get1DHistoFromDraw( "GenPhotonCMSUnfold0_pt", binning=[20, 20, 800], selectionString=selection, weightString=bsmweightstring, addOverFlowBin="upper" )
         bsmHisto.Scale( 1./bsmHisto.Integral() )
-        Histo.Divide(bsmHisto)
+        copyHisto = Histo.Clone(str(i_param))
+        copyHisto.Divide(bsmHisto)
         params.append( {
             'legendText': ' = '.join([coeff,str_val]).replace("c", "C_{").replace(" =", "} =").replace("I", "}^{[Im]"),
             'WC' : { coeff:val },
             'color' : colors[i_param],
-            'histo':  Histo,
+            'histo':  copyHisto,
             'name': coeff         
             })
         
@@ -193,11 +194,20 @@ def sequenceExample( event, sample ):
     # example of how to calculate your own variables
     event.myVariable = 1
 
+#ptweight
+def pt_weight( event, sample ):
+    if sample.name == 'SM': return
+    else :
+        binNumber = param['histo'].FindBin( event.GenPhotonCMSUnfold0_pt )
+        eftweight = param['histo'].GetBinContent( binNumber )
+        event.weight *= eftweight
+        event.ref_weight *= eftweight
+        #print eftweight
 
 # add functions to calculate your own variables here
 # this is slow, use it only if needed
 sequence = [ sequenceExample ]
-#sequence += [ pt_weight ]
+sequence += [ pt_weight ]
 
 # MC samples need to be corrected by certain scale factors to correct e.g. detector effects. Define the "weight" here:
 mcWeight = lambda event, sample: event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
@@ -218,22 +228,6 @@ for i, param in enumerate( params ):
     sample.params         = param
     sample.name           = param['name']
     
-#ptweight
-    def pt_weight( event, sample ):
-        if sample.name == 'SM': return
-        else : 
-            binNumber = param['histo'].FindBin( event.GenPhotonCMSUnfold0_pt )
-            eftweight = param['histo'].GetBinContent( binNumber )
-            event.weight *= eftweight
-            event.ref_weight *= eftweight
-            #print eftweight
-        return eftweight
-
-    # add functions to calculate your own variables here
-    # this is slow, use it only if needed
-    sequence = [ sequenceExample ]
-    sequence += [ pt_weight ]
-
     # change the style of the MC sample
     if param["legendText"] == "SM":
         sample.style = styles.lineStyle( param["color"], width=3  ) # let the standard model histo be black and solid
@@ -279,7 +273,7 @@ plotList.append( Plot(
     texX      = 'gen p_{T}(#gamma_{0}) (GeV)', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenPhotonCMSUnfold0_pt, # variable to plot
-    binning   = [ 20, 20, 900 ], # 20 bins from 20 to 120
+    binning   = [ 20, 20, 800 ], # 20 bins from 20 to 120
 ))
 
 plotList.append( Plot(
