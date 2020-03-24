@@ -69,6 +69,7 @@ selection = cutInterpreter.cutString( args.selection + "-" + args.mode )
 
 smweightstring = smweightString = get_weight_string({}) 
 Histo = eftSample.get1DHistoFromDraw( "GenPhotonCMSUnfold0_pt", binning=[20, 20, 800], selectionString=selection, weightString=smweightString, addOverFlowBin="upper" )
+Histo.Scale( 1./Histo.Integral() )
 
 # format the EFT parameter you want to plot
 params = []
@@ -79,6 +80,7 @@ if args.parameters:
     for i_param, (coeff, val, str_val, ) in enumerate(zip(coeffs, vals, str_vals)):
         bsmweightstring = get_weight_string({coeff:val})
         bsmHisto = eftSample.get1DHistoFromDraw( "GenPhotonCMSUnfold0_pt", binning=[20, 20, 800], selectionString=selection, weightString=bsmweightstring, addOverFlowBin="upper" )
+        bsmHisto.Scale( 1./bsmHisto.Integral() )
         Histo.Divide(bsmHisto)
         params.append( {
             'legendText': ' = '.join([coeff,str_val]).replace("c", "C_{").replace(" =", "} =").replace("I", "}^{[Im]"),
