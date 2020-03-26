@@ -88,7 +88,7 @@ def get_weight_string( parameters ):
 selection = cutInterpreter.cutString( args.selection + "-" + args.mode )
 
 smweightstring = smweightString = get_weight_string({})
-Histo = eftSample.get1DHistoFromDraw( "PhotonGood0_pt", binning=[20, 20, 800], selectionString=selection, weightString=smweightString, addOverFlowBin="upper" )
+Histo = eftSample.get1DHistoFromDraw( "GenPhotonCMSUnfold0_pt", binning=[20, 20, 400], selectionString=selection, weightString=smweightString, addOverFlowBin="upper" )
 #Histo.Scale( 1./Histo.Integral() )
 
 # format the EFT parameter you want to plot
@@ -99,7 +99,7 @@ if args.parameters:
     vals = list( map( float, str_vals ) )
     for i_param, (coeff, val, str_val, ) in enumerate(zip(coeffs, vals, str_vals)):
         bsmweightstring = get_weight_string({coeff:val})
-        bsmHisto = eftSample.get1DHistoFromDraw( "PhotonGood0_pt", binning=[20, 20, 800], selectionString=selection, weightString=bsmweightstring, addOverFlowBin="upper" )
+        bsmHisto = eftSample.get1DHistoFromDraw( "GenPhotonCMSUnfold0_pt", binning=[20, 20, 400], selectionString=selection, weightString=bsmweightstring, addOverFlowBin="upper" )
         #bsmHisto.Scale( 1./bsmHisto.Integral() )
         #copyHisto = Histo.Clone(str(i_param))
         bsmHisto.Divide(Histo)
@@ -110,8 +110,6 @@ if args.parameters:
             'histo':  bsmHisto,
             'name': coeff
             })
-
-params.append( {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack, 'histo' : Histo, 'name': 'SM'})
 
 # for shape plots normalize each EFT shape to the SM shape
 if args.normalize:
@@ -194,13 +192,6 @@ read_variables += map( lambda var: "JetGood1_"     + var, variables )
 read_variables += map( lambda var: "Bj0_"          + var, variables )
 read_variables += map( lambda var: "Bj1_"          + var, variables )
 
-#
-#read_variables = ["weight/F", "ref_weight/F", "GenMET_pt/F", "GenMET_phi/F",
- #                 VectorTreeVariable.fromString('p[C/F]', nMax=100),
-  #                'nGenElectronCMSUnfold/I', 'nGenMuonCMSUnfold/I', 'nGenLeptonCMSUnfold/I', 'nGenPhotonCMSUnfold/I', 'nGenBJetCMSUnfold/I', 'nGenJetsCMSUnfold/I',
-   #               'nGenJets/I', 'nGenBJet/I', 'nGenLepton/I', 'nGenMuon/I', 'nGenElectron/I', 'nGenPhoton/I'
-    #             ]
-
 genJetVarStringRead  = "pt/F,eta/F,phi/F,isMuon/I,isElectron/I,isPhoton/I"
 genJetVarStringWrite = "isBJet/I"
 genJetVarStringWrite = genJetVarStringRead + "," + genJetVarStringWrite
@@ -226,12 +217,28 @@ read_variables += map( lambda var: "GenPhotonCMSUnfold0_"  + var, ["pt/F","eta/F
 
 
 # add here variables that should be read only for MC samples
-read_variables_MC = ["overlapRemoval/I",
+read_variables_MC = ["overlapRemoval/I", "weight/F", "ref_weight/F", VectorTreeVariable.fromString('p[C/F]', nMax=100), "PV_npvsGood/I", "PV_npvs/I", "PV_npvsGood/I",
+                     "nJetGood/I", "nBTagGood/I", "nLeptonTight/I", "nElectronTight/I", "nMuonTight/I", "nPhotonGood/I", "Photon[pt/F,eta/F,phi/F]", "MET_pt/F", "MET_phi/F", "ht/F",
+                     "mLtight0Gamma/F", "m3/F", "mT/F",
                      'nGenElectronCMSUnfold/I', 'nGenMuonCMSUnfold/I', 'nGenLeptonCMSUnfold/I', 'nGenPhotonCMSUnfold/I', 'nGenBJetCMSUnfold/I', 'nGenJetsCMSUnfold/I',
                      "reweightPU/F", "reweightLeptonTightSF/F", "reweightLeptonTrackingTightSF/F", "reweightPhotonSF/F", "reweightPhotonElectronVetoSF/F", "reweightBTag_SF/F", 'reweightL1Prefire/F',
                     ]
 
 read_variables_MC += map( lambda var: "GenPhotonCMSUnfold0_"  + var, variables )
+read_variables_MC += map( lambda var: "PhotonGood0_"  + var, variables )
+read_variables_MC += map( lambda var: "LeptonTight0_" + var, variables )
+read_variables_MC += map( lambda var: "LeptonTight1_" + var, variables )
+read_variables_MC += map( lambda var: "JetGood0_"     + var, variables )
+read_variables_MC += map( lambda var: "JetGood1_"     + var, variables )
+read_variables_MC += map( lambda var: "Bj0_"          + var, variables )
+read_variables_MC += map( lambda var: "Bj1_"          + var, variables )
+
+read_variables_MC += [ VectorTreeVariable.fromString('GenLepton[%s]'%genLeptonVarStringWrite, nMax=100) ]
+read_variables_MC += [ VectorTreeVariable.fromString('GenPhoton[%s]'%genPhotonVarStringWrite, nMax=100) ]
+read_variables_MC += [ VectorTreeVariable.fromString('GenJet[%s]'%genJetVarStringWrite, nMax=10) ]
+read_variables_MC += [ VectorTreeVariable.fromString('GenBJet[%s]'%genJetVarStringWrite, nMax=10) ]
+read_variables_MC += [ VectorTreeVariable.fromString('GenTop[%s]'%genTopVarStringWrite, nMax=10) ]
+
 
 # add here variables that should be read only for Data samples
 read_variables_Data = [ "event/I", "run/I", "luminosityBlock/I" ]
@@ -251,8 +258,9 @@ def sequenceExample( event, sample ):
 #ptweight
 def pt_weight( event, sample ):
     if sample.name == data_sample.name: return
+    if sample.name == 'SM': return
     else:
-        if event.PhotonGood0_pt >= 120: binNumber = 20
+        if event.PhotonGood0_pt >= 400: binNumber = 20
         else: binNumber = param['histo'].FindBin( event.PhotonGood0_pt )
     eftweight = param['histo'].GetBinContent( binNumber )
     event.weight *= eftweight
@@ -279,14 +287,17 @@ triggerCutMc  = tr.getSelection( "MC" )
 if args.year == 2016:
     # mc samples are defined in TTGammaEFT/Samples/python/nanoTuples_Summer16_private_semilep_postProcessed.py
     mc = [ TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
+    mc_nottg = [ TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
     ttg = TTG_16
 elif args.year == 2017:
     # mc samples are defined in TTGammaEFT/Samples/python/nanoTuples_Fall17_private_semilep_postProcessed.py
     mc = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
+    mc_nottg = [ TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
     ttg = TTG_17
 elif args.year == 2018:
     # mc samples are defined in TTGammaEFT/Samples/python/nanoTuples_Autumn18_private_semilep_postProcessed.py
     mc = [ TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
+    mc_nottg = [ TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
     ttg = TTG_18
 
 if args.noData:
@@ -342,6 +353,7 @@ for i, param in enumerate( params ):
     # copy the sample for each EFT parameter
     sample                = copy.deepcopy( ttg )
     sample.params         = param
+    sample.name           = param['name']
 
     # change the style of the MC sample
     if param["legendText"] == "SM":
@@ -361,7 +373,7 @@ for i, param in enumerate( params ):
     signals.append( sample )
 
 #define the Stack
-stackList  = [mc] + [ [s] for s in signals ] + [[data_sample]]
+stackList  = [mc] + [mc_nottg + [s] for s in signals ] + [[data_sample]]
 stack      = Stack( *stackList )
 
 # if you want to check your plots you can run only on a sub-set of events, we reduce the number of events here
@@ -385,81 +397,7 @@ plotList.append( Plot(
     texX      = 'p_{T}(#gamma_{0}) (GeV)', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.PhotonGood0_pt, # variable to plot
-    binning   = [ 20, 20, 120 ], # 20 bins from 20 to 120
-))
-
-#plotList.append( Plot(
-#    name      = 'PhotonGood0_eta',
-#    texX      = '#eta(#gamma_{0})',
-#    texY      = 'Number of Events',
-#    attribute = lambda event, sample: event.PhotonGood0_eta,
-#    binning   = [ 10, -1.5, 1.5 ],
-#))
-#
-#plotList.append( Plot(
-#    name      = 'PhotonGood0_phi',
-#    texX      = '#phi(#gamma_{0})',
-#    texY      = 'Number of Events',
-#    attribute = lambda event, sample: event.PhotonGood0_phi,
-#    binning   = [ 10, -pi, pi ],
-#))
-
-#opt
-plotList.append( Plot(
-    name      = 'LeptonTight0_pt',
-    texX      = '#p_{T}i(#gamma_{0}) (GeV)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.LeptonTight0_pt,
-    binning   = [ 20, 20,200 ],
-))
-
-#plotList.append( Plot(
-#    name      = 'LeptonTight0_eta',
-#    texX      = '#eta(#gamma_{0})',
-#    texY      = 'Number of Events',
-#    attribute = lambda event, sample: event.LeptonTight0_eta,
-#    binning   = [ 10, -2, 2 ],
-#))
-
-#plotList.append( Plot(
-#    name      = 'LeptonThight0_phi',
-#    texX      = '#phi(#gamma_{0})',
-#    texY      = 'Number of Events',
-#    attribute = lambda event, sample: event.LeptonTight0_phi,
-#    binning   = [ 10, -pi, pi ],
-#))
-
-plotList.append( Plot(
-    name      = 'JetGood0_pt',
-    texX      = '#p_{T}i(#gamma_{0}) (GeV)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.JetGood0_pt,
-    binning   = [ 20, 20, 320 ],
-))
-
-#plotList.append( Plot(
-   # name      = 'JetGood0_eta',
-   # texX      = '#eta(#gamma_{0})',
-   # texY      = 'Number of Events',
-  #  attribute = lambda event, sample: event.JetGood0_eta,
- #   binning   = [ 10, -2, 2],
-#))
-
-#plotList.append( Plot(
- #   name      = 'JetGood0_phi',
-  #  texX      = '#phi(#gamma_{0})',
-   # texY      = 'Number of Events',
-   # attribute = lambda event, sample: event.JetGood0_phi,
-   # binning   = [ 10, -pi, pi ],
-#))
-
-# plot with self-calculated variable
-plotList.append( Plot(
-    name      = 'nHighPTPhotons',
-    texX      = 'N_{#gamma} (p_{T} > 100 GeV)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.nHighPTPhotons,
-    binning   = [ 3, 0, 3 ],
+    binning   = [ 20, 20, 400 ], # 20 bins from 20 to 120
 ))
 
 # fill the histograms here, depending on the selection this can take a while
