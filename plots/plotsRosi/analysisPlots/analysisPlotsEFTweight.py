@@ -73,9 +73,23 @@ elif args.year == 2018:
     if not args.noData:
         from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
 
-#EFT/SM Ratio
 # define some colors
 colors = [ ROOT.kRed+1, ROOT.kGreen-2, ROOT.kOrange+1, ROOT.kAzure+4 ]
+
+#settings for eft reweighting
+w = WeightInfo( eftSample.reweight_pkl )
+w.set_order( args.order )
+variables = w.variables
+
+#Histograms 
+def get_weight_string( parameters ):
+    return w.get_weight_string( **parameters )
+
+selection = cutInterpreter.cutString( args.selection + "-" + args.mode )
+
+smweightstring = smweightString = get_weight_string({})
+Histo = eftSample.get1DHistoFromDraw( "PhotonGood0_pt", binning=[20, 20, 800], selectionString=selection, weightString=smweightString, addOverFlowBin="upper" )
+#Histo.Scale( 1./Histo.Integral() )
 
 # format the EFT parameter you want to plot
 params = []
@@ -83,14 +97,21 @@ if args.parameters:
     coeffs = args.parameters[::2]
     str_vals = args.parameters[1::2]
     vals = list( map( float, str_vals ) )
-    for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
+    for i_param, (coeff, val, str_val, ) in enumerate(zip(coeffs, vals, str_vals)):
+        bsmweightstring = get_weight_string({coeff:val})
+        bsmHisto = eftSample.get1DHistoFromDraw( "PhotonGood0_pt", binning=[20, 20, 800], selectionString=selection, weightString=bsmweightstring, addOverFlowBin="upper" )
+        #bsmHisto.Scale( 1./bsmHisto.Integral() )
+        #copyHisto = Histo.Clone(str(i_param))
+        bsmHisto.Divide(Histo)
         params.append( {
             'legendText': ' = '.join([coeff,str_val]).replace("c", "C_{").replace(" =", "} =").replace("I", "}^{[Im]"),
             'WC' : { coeff:val },
             'color' : colors[i_param],
+            'histo':  bsmHisto,
+            'name': coeff
             })
 
-params.append( {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack} )
+params.append( {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack, 'histo' : Histo, 'name': 'SM'})
 
 # for shape plots normalize each EFT shape to the SM shape
 if args.normalize:
@@ -98,11 +119,6 @@ if args.normalize:
 
 if args.parameters: wcString = "_".join(args.parameters).replace('.','p').replace('-','m')
 else: wcString = "SM"
-
-# settings for eft reweighting
-w = WeightInfo( eftSample.reweight_pkl )
-w.set_order( args.order )
-variables = w.variables
 
 def checkReferencePoint( sample ):
     ''' check if sample is simulated with a reference point
@@ -129,7 +145,6 @@ def drawObjects( plotData, lumi_scale ):
       line
     ]
     return [tex.DrawLatex(*l) for l in lines] 
-
 
 # Default plotting function
 def drawPlots( plots ):
@@ -233,9 +248,19 @@ def sequenceExample( event, sample ):
     # this variable will be added for each event and can be plotted afterwards (event.yourVariable =)
     event.nHighPTPhotons = len(highPTPhotons)
 
+#ptweight
+def pt_weight( event, sample ):
+    if sample.name == data_sample.name: return
+    else :
+        binNumber = param['histo'].FindBin( event.PhotonGood0_pt )
+        eftweight = param['histo'].GetBinContent( binNumber )
+        event.weight *= eftweight
+        #print eftweight
+
 # add functions to calculate your own variables here
 # this is slow, use it only if needed
 sequence = [ sequenceExample ]
+sequence += [ pt_weight ]
 
 # MC samples need to be corrected by certain scale factors to correct e.g. detector effects. Define the "weight" here:
 mcWeight = lambda event, sample: event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
@@ -332,24 +357,6 @@ for i, param in enumerate( params ):
     sample.scale          = lumi_scale
     signals.append( sample )
 
-#Histograms 
-def get_weight_string( parameters ):
-    return w.get_weight_string( **parameters )
-
-print(param) 
-
-smweightString = get_weight_string({})
-bsmweightString = get_weight_string({"ctZ":2})
-selection = cutInterpreter.cutString( args.selection + "-" + args.mode )
-
-print smweightString
-print bsmweightString
-
-smHisto = eftSample.get1DHistoFromDraw( "GenPhotonCMSUnfold0_pt", binning=[20, 20, 800], selectionString=selection, weightString=smweightString, addOverFlowBin="upper" )
-bsmHisto = eftSample.get1DHistoFromDraw( "GenPhotonCMSUnfold0_pt", binning=[20, 20, 800], selectionString=selection, weightString=bsmweightString, addOverFlowBin="upper" )
-
-Histo = bsmHisto.Divide(smHisto) 
-print Histo
 #define the Stack
 stackList  = [ [s] for s in signals ]
 stack      = Stack( *stackList )
@@ -378,21 +385,21 @@ plotList.append( Plot(
     binning   = [ 20, 20, 120 ], # 20 bins from 20 to 120
 ))
 
-plotList.append( Plot(
-    name      = 'PhotonGood0_eta',
-    texX      = '#eta(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.PhotonGood0_eta,
-    binning   = [ 10, -1.5, 1.5 ],
-))
-
-plotList.append( Plot(
-    name      = 'PhotonGood0_phi',
-    texX      = '#phi(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.PhotonGood0_phi,
-    binning   = [ 10, -pi, pi ],
-))
+#plotList.append( Plot(
+#    name      = 'PhotonGood0_eta',
+#    texX      = '#eta(#gamma_{0})',
+#    texY      = 'Number of Events',
+#    attribute = lambda event, sample: event.PhotonGood0_eta,
+#    binning   = [ 10, -1.5, 1.5 ],
+#))
+#
+#plotList.append( Plot(
+#    name      = 'PhotonGood0_phi',
+#    texX      = '#phi(#gamma_{0})',
+#    texY      = 'Number of Events',
+#    attribute = lambda event, sample: event.PhotonGood0_phi,
+#    binning   = [ 10, -pi, pi ],
+#))
 
 #opt
 plotList.append( Plot(
@@ -403,21 +410,21 @@ plotList.append( Plot(
     binning   = [ 20, 20,200 ],
 ))
 
-plotList.append( Plot(
-    name      = 'LeptonTight0_eta',
-    texX      = '#eta(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.LeptonTight0_eta,
-    binning   = [ 10, -2, 2 ],
-))
+#plotList.append( Plot(
+#    name      = 'LeptonTight0_eta',
+#    texX      = '#eta(#gamma_{0})',
+#    texY      = 'Number of Events',
+#    attribute = lambda event, sample: event.LeptonTight0_eta,
+#    binning   = [ 10, -2, 2 ],
+#))
 
-plotList.append( Plot(
-    name      = 'LeptonThight0_phi',
-    texX      = '#phi(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.LeptonTight0_phi,
-    binning   = [ 10, -pi, pi ],
-))
+#plotList.append( Plot(
+#    name      = 'LeptonThight0_phi',
+#    texX      = '#phi(#gamma_{0})',
+#    texY      = 'Number of Events',
+#    attribute = lambda event, sample: event.LeptonTight0_phi,
+#    binning   = [ 10, -pi, pi ],
+#))
 
 plotList.append( Plot(
     name      = 'JetGood0_pt',
@@ -427,21 +434,21 @@ plotList.append( Plot(
     binning   = [ 20, 20, 320 ],
 ))
 
-plotList.append( Plot(
-    name      = 'JetGood0_eta',
-    texX      = '#eta(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.JetGood0_eta,
-    binning   = [ 10, -2, 2],
-))
+#plotList.append( Plot(
+   # name      = 'JetGood0_eta',
+   # texX      = '#eta(#gamma_{0})',
+   # texY      = 'Number of Events',
+  #  attribute = lambda event, sample: event.JetGood0_eta,
+ #   binning   = [ 10, -2, 2],
+#))
 
-plotList.append( Plot(
-    name      = 'JetGood0_phi',
-    texX      = '#phi(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.JetGood0_phi,
-    binning   = [ 10, -pi, pi ],
-))
+#plotList.append( Plot(
+ #   name      = 'JetGood0_phi',
+  #  texX      = '#phi(#gamma_{0})',
+   # texY      = 'Number of Events',
+   # attribute = lambda event, sample: event.JetGood0_phi,
+   # binning   = [ 10, -pi, pi ],
+#))
 
 # plot with self-calculated variable
 plotList.append( Plot(
