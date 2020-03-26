@@ -370,10 +370,13 @@ for i, param in enumerate( params ):
     sample.scale          = lumi_scale
     signals.append( sample )
     
-    mc_nottg = []
-    for sample in mc:
-        if sample.name != "TTG": mc_nottg.append( copy.deepcopy(sample) )
-    print ttg.name
+mc_nottg = []
+for sample in mc:
+    if sample.name != "TTG":
+        s = copy.deepcopy(sample)
+        s.notInLegend = True
+        mc_nottg.append(s)
+#print ttg.name
 
 #define the Stack
 stackList  = [mc] + [mc_nottg + [s] for s in signals ] + [[data_sample]]
