@@ -257,7 +257,8 @@ def sequenceExample( event, sample ):
 
 #ptweight
 def pt_weight( event, sample ):
-    if sample.name == 'ttgamma':
+    if sample.name != 'ttgamma': return
+    else :     
         if event.PhotonGood0_pt >= 400: binNumber = 20
         else: binNumber = sample.params["histo"].FindBin( event.PhotonGood0_pt )
     eftweight = sample.params["histo"].GetBinContent( binNumber )
