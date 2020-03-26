@@ -251,11 +251,11 @@ def sequenceExample( event, sample ):
 #ptweight
 def pt_weight( event, sample ):
     if sample.name == data_sample.name: return
-    else :
-        binNumber = param['histo'].FindBin( event.PhotonGood0_pt )
-        eftweight = param['histo'].GetBinContent( binNumber )
-        event.weight *= eftweight
-        #print eftweight
+    else:
+        if event.PhotonGood0_pt >= 120: binNumber = 20
+        else: binNumber = param['histo'].FindBin( event.PhotonGood0_pt )
+    eftweight = param['histo'].GetBinContent( binNumber )
+    event.weight *= eftweight
 
 # add functions to calculate your own variables here
 # this is slow, use it only if needed
@@ -279,12 +279,15 @@ triggerCutMc  = tr.getSelection( "MC" )
 if args.year == 2016:
     # mc samples are defined in TTGammaEFT/Samples/python/nanoTuples_Summer16_private_semilep_postProcessed.py
     mc = [ TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
+    ttg = TTG_16
 elif args.year == 2017:
     # mc samples are defined in TTGammaEFT/Samples/python/nanoTuples_Fall17_private_semilep_postProcessed.py
-        mc = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
+    mc = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
+    ttg = TTG_17
 elif args.year == 2018:
     # mc samples are defined in TTGammaEFT/Samples/python/nanoTuples_Autumn18_private_semilep_postProcessed.py
     mc = [ TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
+    ttg = TTG_18
 
 if args.noData:
     # Scale the histograms by the luminosity taken by CMS in each year
@@ -337,7 +340,7 @@ signals = []
 # Sample definition
 for i, param in enumerate( params ):
     # copy the sample for each EFT parameter
-    sample                = copy.deepcopy( eftSample )
+    sample                = copy.deepcopy( ttg )
     sample.params         = param
 
     # change the style of the MC sample
@@ -349,16 +352,16 @@ for i, param in enumerate( params ):
     # add here the text in the legend
     sample.texName        = param["legendText"]
     # add the predefined weight to the samples
-    sample.weight         = get_reweight( param, sample )
+    sample.weight         = mcWeight 
     # add here variables that should be read only for MC samples
-    sample.read_variables = read_variables
+    #sample.read_variables = read_variables
     # you can scale the histograms of each sample by defining sample.scale (don't scale data)
     # Scale the MC histograms by the luminosity taken by CMS in each year
     sample.scale          = lumi_scale
     signals.append( sample )
 
 #define the Stack
-stackList  = [ [s] for s in signals ]
+stackList  = [mc] + [ [s] for s in signals ] + [[data_sample]]
 stack      = Stack( *stackList )
 
 # if you want to check your plots you can run only on a sub-set of events, we reduce the number of events here
