@@ -108,7 +108,7 @@ if args.parameters:
             'WC' : { coeff:val },
             'color' : colors[i_param],
             'histo':  bsmHisto,
-            'name': coeff
+            'name': 'ttgamma' 
             })
 
 # for shape plots normalize each EFT shape to the SM shape
@@ -257,12 +257,10 @@ def sequenceExample( event, sample ):
 
 #ptweight
 def pt_weight( event, sample ):
-    if sample.name == data_sample.name: return
-    if sample.name == 'SM': return
-    else:
+    if sample.name == 'ttgamma':
         if event.PhotonGood0_pt >= 400: binNumber = 20
-        else: binNumber = param['histo'].FindBin( event.PhotonGood0_pt )
-    eftweight = param['histo'].GetBinContent( binNumber )
+        else: binNumber = sample.params["histo"].FindBin( event.PhotonGood0_pt )
+    eftweight = sample.params["histo"].GetBinContent( binNumber )
     event.weight *= eftweight
 
 # add functions to calculate your own variables here
@@ -346,15 +344,15 @@ for sample in mc:
     # add the predefined weight to the samples
     sample.weight         = mcWeight
 
-# settings for MC Samples
 signals = []
 # Sample definition
 for i, param in enumerate( params ):
     # copy the sample for each EFT parameter
     sample                = copy.deepcopy( ttg )
     sample.params         = param
-    sample.name           = param['name']
-
+    sample.name           = param['name'] 
+   # print sample.name
+    
     # change the style of the MC sample
     if param["legendText"] == "SM":
         sample.style = styles.lineStyle( param["color"], width=3  ) # let the standard model histo be black and solid
@@ -363,6 +361,8 @@ for i, param in enumerate( params ):
 
     # add here the text in the legend
     sample.texName        = param["legendText"]
+    for sample in mc_nottg:
+        sample                = copy.deepcopy( sample )
     # add the predefined weight to the samples
     sample.weight         = mcWeight 
     # add here variables that should be read only for MC samples
