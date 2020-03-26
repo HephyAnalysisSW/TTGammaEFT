@@ -285,17 +285,17 @@ triggerCutMc  = tr.getSelection( "MC" )
 if args.year == 2016:
     # mc samples are defined in TTGammaEFT/Samples/python/nanoTuples_Summer16_private_semilep_postProcessed.py
     mc = [ TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
-    mc_nottg = [ TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
+    mc_nottg = [ copy.deepcopy( TT_pow_16), copy.deepcopy( DY_LO_16), copy.deepcopy( WJets_16), copy.deepcopy( WG_16), copy.deepcopy( ZG_16),copy.deepcopy( rest_16) ]
     ttg = TTG_16
 elif args.year == 2017:
     # mc samples are defined in TTGammaEFT/Samples/python/nanoTuples_Fall17_private_semilep_postProcessed.py
     mc = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
-    mc_nottg = [ TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
+    mc_nottg = [ copy.deepcopy( TT_pow_17), copy.deepcopy( DY_LO_17), copy.deepcopy( WJets_17), copy.deepcopy( WG_17), copy.deepcopy( ZG_17), copy.deepcopy( rest_17)]
     ttg = TTG_17
 elif args.year == 2018:
     # mc samples are defined in TTGammaEFT/Samples/python/nanoTuples_Autumn18_private_semilep_postProcessed.py
     mc = [ TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
-    mc_nottg = [ TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
+    mc_nottg = [ copy.deepcopy( TT_pow_18), copy.deepcopy( DY_LO_18), copy.deepcopy( WJets_18), copy.deepcopy( WG_18), copy.deepcopy( ZG_18), copy.deepcopy( rest_18)]
     ttg = TTG_18
 
 if args.noData:
@@ -361,12 +361,10 @@ for i, param in enumerate( params ):
 
     # add here the text in the legend
     sample.texName        = param["legendText"]
-    for sample in mc_nottg:
-        sample                = copy.deepcopy( sample )
     # add the predefined weight to the samples
     sample.weight         = mcWeight 
     # add here variables that should be read only for MC samples
-    #sample.read_variables = read_variables
+    sample.read_variables = read_variables
     # you can scale the histograms of each sample by defining sample.scale (don't scale data)
     # Scale the MC histograms by the luminosity taken by CMS in each year
     sample.scale          = lumi_scale
