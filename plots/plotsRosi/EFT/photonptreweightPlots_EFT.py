@@ -198,14 +198,11 @@ def sequenceExample( event, sample ):
 def pt_weight( event, sample ):
     if sample.name == 'SM': return
     else :
-        if event.GenPhotonCMSUnfold0_pt >= 800:
-            binNumber = 20
-        else:
-            binNumber = sample.params["histo"].FindBin( event.GenPhotonCMSUnfold0_pt )
-            eftweight = sample.params["histo"].GetBinContent( binNumber )
-            event.weight *= eftweight
-            event.ref_weight *= eftweight
-            #print eftweight
+        if event.GenPhotonCMSUnfold0_pt >= 800: binNumber = 20
+        else: binNumber = sample.params["histo"].FindBin( event.GenPhotonCMSUnfold0_pt )
+    eftweight = sample.params["histo"].GetBinContent( binNumber )
+    event.weight *= eftweight
+    event.ref_weight *= eftweight
 
 # add functions to calculate your own variables here
 # this is slow, use it only if needed
