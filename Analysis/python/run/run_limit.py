@@ -224,7 +224,8 @@ def wrapper():
 
         default_QCD_unc = 0.5
         c.addUncertainty( "QCD_norm", shapeString )
-        c.addUncertainty( "QCD_lowMlg", shapeString )
+#        c.addUncertainty( "QCD_TF", shapeString )
+#        c.addUncertainty( "QCD_lowMlg", shapeString )
 
         # Only if TT CR is used
         default_TT_unc = 0.05
@@ -252,7 +253,7 @@ def wrapper():
 #        default_WG_unc    = 0.30
 #        c.addUncertainty( "WG_norm",      shapeString )
 
-        default_ZG_unc    = 0.4
+        default_ZG_unc    = 0.2
         c.addUncertainty( "ZG_norm",      shapeString )
 
         default_Other_unc    = 0.15
@@ -377,6 +378,7 @@ def wrapper():
 
                         tune, erdOn, pu, jec, jer, sfb, sfl, trigger, lepSF, lepTrSF, phSF, eVetoSF, pfSF = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                         ps, scale, pdf, isr = 0, 0, 0, 0
+                        qcdTF3, qcdTF4 = 0, 0
                         dyGenUnc, ttGenUnc, vgGenUnc, wjetsGenUnc, otherGenUnc, qcdhigh, misIDUnc, lowSieieUnc, highSieieUnc, misIDPtUnc = 0, 0, 0, 0, 0, 0.001, 0, 0.001, 0.001, 0.001
                         wg, zg, misID4p, zg3, misIDUnc, qcdUnc, vgUnc, wgUnc, zgUnc, dyUnc, ttUnc, wjetsUnc, other0pUnc, otherUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                         for i in range(len(gammaPT_thresholds)-1):
@@ -396,7 +398,8 @@ def wrapper():
 
                                 if e.name.count( "QCD" ):
                                     qcdUnc   += y_scale * default_QCD_unc
-                                    if mLgRegions[1].cutString() in r.cutString() and channel=="e":
+                                    qcdTF3   += y_scale * e.expYield.sigma / e.expYield.val
+                                    if mLgRegions[0].cutString() in r.cutString() and channel=="e":
                                         qcdhigh   += y_scale * default_QCD_unc
                                     continue # no systematics for data-driven QCD
 
@@ -501,8 +504,11 @@ def wrapper():
                         if qcdUnc:
                             addUnc( c, "QCD_norm", binname, pName, qcdUnc, expected.val, signal )
 
-                        if qcdhigh:
-                            addUnc( c, "QCD_lowMlg", binname, pName, qcdhigh, expected.val, signal )
+#                        if qcdTF3:
+#                            addUnc( c, "QCD_TF", binname, pName, qcdTF3, expected.val, signal )
+
+#                        if qcdhigh:
+#                            addUnc( c, "QCD_lowMlg", binname, pName, qcdhigh, expected.val, signal )
 
                         if not args.inclRegion and with1pCR:
                             for i in range(len(gammaPT_thresholds)-1):
