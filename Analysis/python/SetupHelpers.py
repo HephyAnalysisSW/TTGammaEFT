@@ -15,7 +15,7 @@ signal      = ["TTG_gen","TTG_misID"]
 DY_misID    = ["DY_LO_misID"]
 DY          = ["DY_LO_gen","DY_LO_had"]
 TT_misID    = ["TT_pow_misID"]
-TT          = ["TT_pow_gen","TT_pow_had", "TTG_had"]
+TT          = ["TT_pow_gen","TT_pow_had","TTG_had"]
 WG          = ["WG_gen","WG_had"]
 ZG          = ["ZG_gen","ZG_had"]
 VG          = ["WG_gen","WG_had","ZG_gen","ZG_had"]
@@ -23,10 +23,11 @@ other_misID = ["WJets_misID","other_misID","WG_misID","ZG_misID"]
 other       = ["other_gen","other_had"]
 WJets       = ["WJets_gen","WJets_had"]
 QCD         = ["QCD-DD"]
+PU          = ["TTG_magic","DY_LO_magic","TT_pow_magic","WG_magic","ZG_magic","WJets_magic","other_magic"]
 
 default_sampleList            = ["TTG","TT_pow","DY_LO","ZG","WG","WJets","other","QCD-DD"]
 default_systematicList        = ["TTG_TuneUp","TTG_TuneDown","TTG_erdOn"]
-default_photonSampleList      = signal + DY_misID + DY + TT_misID + TT + WG + ZG + other_misID + other + WJets + QCD
+default_photonSampleList      = signal + DY_misID + DY + TT_misID + TT + WG + ZG + other_misID + other + WJets + QCD + PU
 
 processes = {
              "signal":      { "process":signal,      "color":color.TTG,          "texName":"tt#gamma (gen, misID)" },
@@ -41,6 +42,7 @@ processes = {
              "other":       { "process":other,       "color":color.Other,        "texName":"other (gen, had)"      },
              "other_misID": { "process":other_misID, "color":color.Other_misID,  "texName":"WJets+V#gamma+other (misID)" },
              "QCD":         { "process":QCD,         "color":color.QCD,          "texName":"multijets"             },
+             "PU":          { "process":PU,          "color":color.PU,           "texName":"PU #gamma (all)"      },
 }
 
 processesNoPhoton = {
@@ -71,6 +73,7 @@ default_processes = {
              "other":       { "process":["other"]+other, "color":color.Other,        "texName":"other (gen, had)"      },
              "other_misID": { "process":other_misID,     "color":color.Other_misID,  "texName":"WJets+V#gamma+other (misID)" },
              "QCD":         { "process":QCD,             "color":color.QCD,          "texName":"multijets"             },
+             "PU":          { "process":PU,          "color":color.PU,           "texName":"PU #gamma (all)"      },
 }
 
 processesMisIDPOI = {
@@ -261,6 +264,7 @@ default_nBTag        = (1,-1)
 default_nPhoton      = (1,1)
 default_MET          = (0,-1)
 default_leptonEta    = (0,-1)
+default_leptonPt     = (0,-1)
 default_zWindow      = "all"
 default_dileptonic   = False
 default_invLepIso    = False
@@ -270,31 +274,31 @@ default_m3Window     = "all"
 default_photonIso    = None
 
 SSMSF_val = {}
-SSMSF_val[2016] = u_float( 0.75, 0.06 ) #26012020
-SSMSF_val[2017] = u_float( 0.75, 0.06 ) #26012020
-SSMSF_val[2018] = u_float( 0.75, 0.06 ) #26012020
+SSMSF_val[2016] = u_float( 0.8, 0.08 ) #26012020
+SSMSF_val[2017] = u_float( 0.8, 0.08 ) #26012020
+SSMSF_val[2018] = u_float( 0.8, 0.08 ) #26012020
 
 WJetsSF_val = {}
-WJetsSF_val[2016] = u_float( 1.13, 0.13 ) #12022020
-WJetsSF_val[2017] = u_float( 1.13, 0.13 )
-WJetsSF_val[2018] = u_float( 1.13, 0.13 )
+WJetsSF_val[2016] = u_float( 1.14*1.12, 0.13 ) #12022020
+WJetsSF_val[2017] = u_float( 1.08*1.14, 0.13 )
+WJetsSF_val[2018] = u_float( 1.04*1.11, 0.13 )
 
 TTSF_val = {}
-TTSF_val[2016] = u_float( 0.95, 0.07 ) #12022020
-TTSF_val[2017] = u_float( 0.96, 0.06 )
+TTSF_val[2016] = u_float( 1.00, 0.07 ) #12022020
+TTSF_val[2017] = u_float( 1.00, 0.06 )
 TTSF_val[2018] = u_float( 1.00, 0.08 )
 
 DYSF_val = {}
-DYSF_val[2016] = u_float( 1.05, 0.09 ) #12022020
-DYSF_val[2017] = u_float( 1.06, 0.04 )
+DYSF_val[2016] = u_float( 1.06, 0.08 ) #12022020
+DYSF_val[2017] = u_float( 1.03, 0.13 )
 DYSF_val[2018] = u_float( 1.04, 0.05 )
 
 
 
 misIDSF_val = {}
-misIDSF_val[2016] = u_float( 2.24*0.96, 0.31 ) #12022020
-misIDSF_val[2017] = u_float( 2.25*1.06*0.96, 0.3 )
-misIDSF_val[2018] = u_float( 1.58*1.06, 0.22 )
+misIDSF_val[2016] = u_float( 2.61, 0.39 ) #12022020
+misIDSF_val[2017] = u_float( 2.50, 0.6 )
+misIDSF_val[2018] = u_float( 1.72, 0.34 )
 
 fakeSF_val = {}
 fakeSF_val[2016] = u_float( 1.00, 0.09 )
@@ -302,25 +306,26 @@ fakeSF_val[2017] = u_float( 1.00, 0.09 )
 fakeSF_val[2018] = u_float( 1.00, 0.09 )
 
 WGSF_val = {}
-WGSF_val[2016] = u_float( 1.08, 0.13 ) #12022020
-WGSF_val[2017] = u_float( 1.30, 0.22 ) #2020 01 20
-WGSF_val[2018] = u_float( 1.33, 0.18 ) #2020 01 20
+WGSF_val[2016] = u_float( 1.10, 0.15 ) #12022020
+WGSF_val[2017] = u_float( 1.34, 0.21 ) #2020 01 20
+WGSF_val[2018] = u_float( 1.30, 0.27 ) #2020 01 20
 
 otherSF_val = {}
-otherSF_val[2016] = u_float( 1.0, 0.1 ) #12022020
-otherSF_val[2017] = u_float( 1.0, 0.1 ) #2020 01 20
-otherSF_val[2018] = u_float( 1.0, 0.1 ) #2020 01 20
+otherSF_val[2016] = u_float( 1.10, 0.2 ) #12022020
+otherSF_val[2017] = u_float( 1.05, 0.2 ) #2020 01 20
+otherSF_val[2018] = u_float( 0.98, 0.2 ) #2020 01 20
 
 ZGSF_val = {}
-ZGSF_val[2016] = u_float( 1.00, 0.08 )  #12022020
-ZGSF_val[2017] = u_float( 1.00, 0.08 )  #2020 01 20
-ZGSF_val[2018] = u_float( 0.95, 0.08 )  #2020 01 20
+ZGSF_val[2016] = u_float( 0.90, 0.08 )  #12022020
+ZGSF_val[2017] = u_float( 1.02, 0.10 )  #2020 01 20
+ZGSF_val[2018] = u_float( 1.01, 0.10 )  #2020 01 20
 
 # all processes are all samples + them splitted in photon categories
 allProcesses            = copy.copy(default_sampleList)
 allProcesses           += [ s+"_gen"   for s in default_sampleList ]
 allProcesses           += [ s+"_misID" for s in default_sampleList ]
 allProcesses           += [ s+"_had"   for s in default_sampleList ]
+allProcesses           += [ s+"_magic" for s in default_sampleList ]
 
 analysis_results = os.path.join( results_directory, "analysis" )
 cache_dir        = os.path.join( cache_directory,   "analysis" )
@@ -465,6 +470,14 @@ controlRegions["TT4p"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTa
 
 # nPhoton0 nBTag0 CR for W+Jets
 controlRegions["WJets2"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0) },
+                              "channels":   lepChannels,
+                              "regions":    noPhotonRegionTTG,
+                              "inclRegion": noPhotonRegionTTG,
+                              "noPhotonCR": True,
+                              "processes":  processesNoPhoton,
+                         }
+
+controlRegions["WJets2p"]  = { "parameters": { "zWindow":"all", "nJet":(2,-1),  "nBTag":(0,0), "nPhoton":(0,0) },
                               "channels":   lepChannels,
                               "regions":    noPhotonRegionTTG,
                               "inclRegion": noPhotonRegionTTG,

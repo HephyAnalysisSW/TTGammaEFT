@@ -38,6 +38,7 @@ class Setup:
             "dileptonic":   default_dileptonic,
             "zWindow":      default_zWindow,
             "leptonEta":    default_leptonEta,
+            "leptonPt":     default_leptonPt,
             "nJet":         default_nJet,
             "nBTag":        default_nBTag,
             "nPhoton":      default_nPhoton,
@@ -120,6 +121,7 @@ class Setup:
             self.processes.update( { sample+"_gen":   None for sample in default_sampleList + default_systematicList } )
             self.processes.update( { sample+"_misID": None for sample in default_sampleList + default_systematicList } )
             self.processes.update( { sample+"_had":   None for sample in default_sampleList + default_systematicList } )
+            self.processes.update( { sample+"_magic": None for sample in default_sampleList + default_systematicList } )
             self.processes["Data"] = "Run%i"%self.year
 
             if year == 2016:
@@ -140,6 +142,7 @@ class Setup:
             self.processes.update( { sample.name+"_gen":   sample for sample in mc } )
             self.processes.update( { sample.name+"_misID": sample for sample in mc } )
             self.processes.update( { sample.name+"_had":   sample for sample in mc } )
+            self.processes.update( { sample.name+"_magic": sample for sample in mc } )
             self.processes["Data"] = data
 
             self.lumi     = data.lumi
@@ -200,7 +203,7 @@ class Setup:
         _weightString = {}
         _weightString["Data"] = "weight" 
         _weightString["MC"] = "*".join([self.sys["weight"]] + (self.sys["reweight"] if self.sys["reweight"] else []))
-        if addMisIDSF and photon: _weightString["MC"] += "+%s*(%s0_photonCat==2)*(%f-1)" %(_weightString["MC"], photon, misIDSF_val[self.year].val)
+        if addMisIDSF and photon: _weightString["MC"] += "+%s*(%s0_photonCatMagic==2)*(%f-1)" %(_weightString["MC"], photon, misIDSF_val[self.year].val)
 
         if   dataMC == "DataMC": return _weightString
 
@@ -222,7 +225,7 @@ class Setup:
                         dileptonic=None, invertLepIso=None, addMisIDSF=None,
                         nJet=None, nBTag=None, nPhoton=None,
                         MET=None,
-                        zWindow=None, m3Window=None, leptonEta=None,
+                        zWindow=None, m3Window=None, leptonEta=None, leptonPt=None,
                         photonIso=None, processCut=None,
                         channel="all"):
         """Define full selection
@@ -241,6 +244,7 @@ class Setup:
         if not MET:          MET          = self.parameters["MET"]
         if not zWindow:      zWindow      = self.parameters["zWindow"]
         if not leptonEta:    leptonEta    = self.parameters["leptonEta"]
+        if not leptonPt:     leptonPt     = self.parameters["leptonPt"]
         if not m3Window:     m3Window     = self.parameters["m3Window"]
         if not photonIso:    photonIso    = self.parameters["photonIso"]
 
@@ -265,7 +269,7 @@ class Setup:
         btagPrefix   = "nBTag"
         photonCutVar = "nPhotonGood"
         photonPrefix = "nPhoton"
-        photonCatVar = "PhotonGood0_photonCat"
+        photonCatVar = "PhotonGood0_photonCatMagic"
         photonCatPrefix = "photoncat"
         photonVetoCutVar = None
         photonVetoPrefix = None
@@ -277,6 +281,9 @@ class Setup:
         else:
             leptonEtaCutVar = "abs(LeptonTight0_eta)"
             leptonEtaPrefix = "etal"
+
+        leptonPtCutVar = "LeptonTight0_pt"
+        leptonPtPrefix = "ptl"
 
         if dileptonic:
             tightLepton = "nLepTight2-OStight"
@@ -294,7 +301,7 @@ class Setup:
             btagPrefix   = "nInvLBTag"
             photonCutVar = "nPhotonGoodInvLepIso"
             photonPrefix = "nInvLPhoton"
-            photonCatVar = "PhotonGoodInvLepIso0_photonCat"
+            photonCatVar = "PhotonGoodInvLepIso0_photonCatMagic"
             photonCatPrefix = "invLphotoncat"
             photonVetoCutVar = None
             photonVetoPrefix = None
@@ -306,6 +313,9 @@ class Setup:
             else:
                 leptonEtaCutVar = "abs(LeptonTightInvIso0_eta)"
                 leptonEtaPrefix = "etainvl"
+
+            leptonPtCutVar = "LeptonTightInvIso0_pt"
+            leptonPtPrefix = "ptinvl"
 
         #photon cut
         photonSel = nPhoton and not (nPhoton[0]==0 and nPhoton[1]<=0)
@@ -321,7 +331,7 @@ class Setup:
                 photonPrefix = "nInvLHadPhoton"
                 photonVetoCutVar = "nPhotonNoChgIsoNoSieieInvLepIso"
                 photonVetoPrefix = "nInvLHadPhoton"
-                photonCatVar = "PhotonNoChgIsoNoSieieInvLepIso0_photonCat"
+                photonCatVar = "PhotonNoChgIsoNoSieieInvLepIso0_photonCatMagic"
                 photonCatPrefix = "invLNoChgIsoNoSieiephotoncat"
                 photonIso += "InvL"
 
@@ -334,7 +344,7 @@ class Setup:
                 photonPrefix = "nHadPhoton"
                 photonVetoCutVar = "nPhotonNoChgIsoNoSieie"
                 photonVetoPrefix = "nHadPhoton"
-                photonCatVar = "PhotonNoChgIsoNoSieie0_photonCat"
+                photonCatVar = "PhotonNoChgIsoNoSieie0_photonCatMagic"
                 photonCatPrefix = "noChgIsoNoSieiephotoncat"
 
             res["prefixes"].append( photonIso )
@@ -423,6 +433,13 @@ class Setup:
                 res["cuts"].append(nphotonVetosstr)
                 res["prefixes"].append(prefix)
 
+            # for now add a dR(lep, gamma) > 0.4 cut in the script here
+            if invertLepIso:
+                res["cuts"].append("linvtight0GammadR>=0.4")
+                res["prefixes"].append("linvgDR0.4")
+            else:
+                res["cuts"].append("ltight0GammadR>=0.4")
+                res["prefixes"].append("lgDR0.4")
         else:
             addMisIDSF   = False
             res["cuts"].append(photonCutVar+"==0")
@@ -440,6 +457,17 @@ class Setup:
                 leptonEtastr += "&&"+leptonEtaCutVar+"<"+str(leptonEta[1])
                 prefix       += "To"+str(leptonEta[1])
             res["cuts"].append(leptonEtastr)
+            res["prefixes"].append(prefix)
+
+        #leptonPt cut
+        if leptonPt and not (leptonPt[0]==0 and leptonPt[1]<0):
+            assert leptonPt[0]>=0 and (leptonPt[1]>=leptonPt[0] or leptonPt[1]<0) and leptonPt[1]!=leptonPt[0], "Not a good leptonPt selection: %r"%leptonPt
+            leptonPtstr = leptonPtCutVar+">="+str(leptonPt[0])
+            prefix       = leptonPtPrefix+str(leptonPt[0])
+            if leptonPt[1]>=0:
+                leptonPtstr += "&&"+leptonPtCutVar+"<"+str(leptonPt[1])
+                prefix       += "To"+str(leptonPt[1])
+            res["cuts"].append(leptonPtstr)
             res["prefixes"].append(prefix)
 
         #MET cut

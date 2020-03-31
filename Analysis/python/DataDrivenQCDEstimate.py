@@ -26,6 +26,8 @@ except: addSF = True
 logger.info("Adding scale factors is set to %s"%str(addSF))
 
 overwriteHistos = False
+ptBins  = [0, 45, 65, 80, 100, 120, -1]
+etaBins = [0, 1.479, 1.7, 2.1, -1]
 
 class DataDrivenQCDEstimate(SystematicEstimator):
     def __init__(self, name, cacheDir=None):
@@ -270,7 +272,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         selection_MC_SR     = setup.selection("MC",   channel=channel, **setup.defaultParameters( update=qcdUpdates["SR"] if qcdUpdates else QCDTF_updates["SR"] ))
         selection_Data_SR   = setup.selection("Data", channel=channel, **setup.defaultParameters( update=qcdUpdates["SR"] if qcdUpdates else QCDTF_updates["SR"] ))
 
-        weight_MC_CR      = selection_MC_CR["weightStr"].replace("*reweightLeptonTrackingTightSF","").replace("*reweightLeptonTightSF","") # w/ misID SF
+        weight_MC_CR      = selection_MC_CR["weightStr"].replace("reweightTrigger","reweightInvTrigger") # w/ misID SF #.replace("*reweightLeptonTrackingTightSF","").replace("*reweightLeptonTightSF","") # w/ misID SF
         weight_Data_CR    = selection_Data_CR["weightStr"]
         weight_MC_SR      = selection_MC_SR["weightStr"] # w/ misID SF
         weight_Data_SR    = selection_Data_SR["weightStr"]
@@ -351,22 +353,18 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                 elif "other" in s:
                     tmp_SR.Scale(otherSF_val[setup.year].val)
                     tmp_CR.Scale(otherSF_val[setup.year].val)
-                elif "ZG" in s:# and njets < 4:
+                elif "ZG" in s:
                     tmp_SR.Scale(ZGSF_val[setup.year].val)
                     tmp_CR.Scale(ZGSF_val[setup.year].val)
-                elif "WG" in s:# and njets > 3:
+                elif "WG" in s:
                     tmp_SR.Scale(WGSF_val[setup.year].val)
                     tmp_CR.Scale(WGSF_val[setup.year].val)
-#                elif "WG" in s:
-#                    tmp_SR.Scale(WGSF_val[setup.year].val*0.8)
-#                    tmp_CR.Scale(WGSF_val[setup.year].val*0.8)
                 elif "TTG" in s:
                     tmp_SR.Scale(SSMSF_val[setup.year].val)
                     tmp_CR.Scale(SSMSF_val[setup.year].val)
 
             tmp_SR.Scale( setup.dataLumi/1000. )
             tmp_CR.Scale( setup.dataLumi/1000. )
-
 
             qcdHist.Add( tmp_CR, -1 )
             if s == floatSample: floatHist = tmp_SR.Clone("float")
@@ -418,7 +416,9 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         # fix the floating sample in photonRegions e-channel since mT is not a good handle
 #        if var == "mT" and channel == "e": # cant make it fixed, as the nDOF is not matching, no clue how to change that, nice workaround
 #        if var == "mT" and photonRegion and channel == "e": # cant make it fixed, as the nDOF is not matching, no clue how to change that, nice workaround
-#            tfitter.Config().ParSettings(1).Set("float", nFloatScale, 0.001, nFloatScale*0.999, nFloatScale*1.001)
+        # let it float a bit
+        tfitter.Config().ParSettings(1).Set("float", nFloatScale, 0.001, nFloatScale*0.8, nFloatScale*1.2)
+
 
         print("Performing Fit!")
         status = fitter.Fit()           # perform the fit
@@ -481,7 +481,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
 #                selection_Data_CR["cut"] += "&&LeptonTightInvIso0_pfRelIso04_all<0.4"
 
             weight_Data_CR    = selection_Data_CR["weightStr"]
-            weight_MC_CR      = selection_MC_CR["weightStr"].replace("*reweightLeptonTrackingTightSF","").replace("*reweightLeptonTightSF","") # w/ misID SF
+            weight_MC_CR      = selection_MC_CR["weightStr"].replace("*reweightTrigger","reweightInvTrigger") # w/ misID SF
 
             regionCut_CR      = region.cutString()
 
@@ -500,102 +500,109 @@ class DataDrivenQCDEstimate(SystematicEstimator):
 #            logger.info( "Using CR Data total cut %s"%(cut_Data_CR) )
 
             # Accounting for 
+            leptonPtCutVar = "LeptonTightInvIso0_pt"
             if channel in ["e", "eetight"]:
                 leptonEtaCutVar = "abs(LeptonTightInvIso0_eta+LeptonTightInvIso0_deltaEtaSC)"
             else:
                 leptonEtaCutVar = "abs(LeptonTightInvIso0_eta)"
 
-            cut_MC_CR_Barrel   = "&&".join([ regionCut_CR, selection_MC_CR["cut"],   leptonEtaCutVar+"<=1.479" ])
-            cut_Data_CR_Barrel = "&&".join([ regionCut_CR, selection_Data_CR["cut"], leptonEtaCutVar+"<=1.479" ])
-            logger.info( "Using CR MC Barrel total cut %s"%(cut_MC_CR_Barrel) )
-            logger.info( "Using CR Data Barrel total cut %s"%(cut_Data_CR_Barrel) )
+            QCDTF_updates_2J = copy.deepcopy(QCDTF_updates)
+            QCDTF_updates_nJ = copy.deepcopy(QCDTF_updates)
+            if "nJet" in QCDTF_updates_nJ["CR"].keys(): del QCDTF_updates_nJ["CR"]["nJet"]
+            if "nJet" in QCDTF_updates_nJ["SR"].keys(): del QCDTF_updates_nJ["SR"]["nJet"]
+            qcd_yield = u_float(0)
+            for i_pt, pt in enumerate(ptBins[:-1]):
+                for i_eta, eta in enumerate(etaBins[:-1]):
+                    etaLow, etaHigh = eta, etaBins[i_eta+1]
+                    ptLow, ptHigh   = pt,  ptBins[i_pt+1]
 
-            cut_MC_CR_EC   = "&&".join([ regionCut_CR, selection_MC_CR["cut"],   leptonEtaCutVar+">1.479" ])
-            cut_Data_CR_EC = "&&".join([ regionCut_CR, selection_Data_CR["cut"], leptonEtaCutVar+">1.479" ])
-            logger.info( "Using CR MC EC total cut %s"%(cut_MC_CR_EC) )
-            logger.info( "Using CR Data EC total cut %s"%(cut_Data_CR_EC) )
+                    # Transfer Factor, get the QCD histograms always in barrel regions
+                    QCDTF_updates_2J["CR"]["leptonEta"] = ( etaLow, etaHigh )
+                    QCDTF_updates_2J["CR"]["leptonPt"]  = ( ptLow,  ptHigh   )
+                    QCDTF_updates_2J["SR"]["leptonEta"] = ( etaLow, etaHigh )
+                    QCDTF_updates_2J["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
 
-            # Calculate yields for CR (normalized to data lumi)
-#            yield_data = self.yieldFromCache(setup, "Data", channel, cut_Data_CR, weight_Data_CR, overwrite=overwrite)
-            yield_data_Barrel = self.yieldFromCache(setup, "Data", channel, cut_Data_CR_Barrel, weight_Data_CR, overwrite=overwrite)
-            yield_data_EC     = self.yieldFromCache(setup, "Data", channel, cut_Data_CR_EC,     weight_Data_CR, overwrite=overwrite)
+                    QCDTF_updates_nJ["CR"]["leptonEta"] = ( etaLow, etaHigh )
+                    QCDTF_updates_nJ["CR"]["leptonPt"]  = ( ptLow,  ptHigh   )
+                    QCDTF_updates_nJ["SR"]["leptonEta"] = ( etaLow, etaHigh )
+                    QCDTF_updates_nJ["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
 
-#            yield_other = 0
-            yield_other_Barrel = 0
-            yield_other_EC     = 0
-            for s in default_sampleList:
-                if s in ["QCD-DD", "QCD", "GJets", "Data"]: continue
-#                y  = self.yieldFromCache( setup, s, channel, cut_MC_CR, weight_MC_CR, overwrite=overwrite )
-                yB  = self.yieldFromCache( setup, s, channel, cut_MC_CR_Barrel, weight_MC_CR, overwrite=overwrite )
-                yEC = self.yieldFromCache( setup, s, channel, cut_MC_CR_EC,     weight_MC_CR, overwrite=overwrite )
-                if addSF:
-                    if   s == "DY_LO":
-#                        y *= DYSF_val[setup.year]    #add DY SF
-                        yB  *= DYSF_val[setup.year]    #add DY SF
-                        yEC *= DYSF_val[setup.year]    #add DY SF
-                    elif s == "WJets":
-#                        y *= WJetsSF_val[setup.year] #add WJets SF
-                        yB  *= WJetsSF_val[setup.year] #add WJets SF
-                        yEC *= WJetsSF_val[setup.year] #add WJets SF
-                    elif s == "TT_pow":
-#                        y *= TTSF_val[setup.year]    #add TT SF
-                        yB  *= TTSF_val[setup.year]    #add TT SF
-                        yEC *= TTSF_val[setup.year]    #add TT SF
-                    elif s == "ZG":
-#                        y *= ZGSF_val[setup.year]    #add ZGamma SF
-                        yB  *= ZGSF_val[setup.year]    #add ZGamma SF
-                        yEC *= ZGSF_val[setup.year]    #add ZGamma SF
-                    elif s == "WG":
-#                        y *= WGSF_val[setup.year]    #add WGamma SF
-                        yB  *= WGSF_val[setup.year]    #add WGamma SF
-                        yEC *= WGSF_val[setup.year]    #add WGamma SF
-#                yield_other += y
-                yield_other_Barrel += yB
-                yield_other_EC     += yEC
+                    # define the 2016 e-channel QCD sideband in barrel only (bad mT fit in EC)
+#                    if channel == "e" and setup.year == 2016 and (etaHigh > 1.479 or etaHigh < 0):
+#                        QCDTF_updates_2J["CR"]["leptonEta"] = ( 0, 1.479 )
+#                        QCDTF_updates_nJ["CR"]["leptonEta"] = ( 0, 1.479 )
 
-#            yield_other  *= setup.dataLumi/1000.
-            yield_other_Barrel *= setup.dataLumi/1000.
-            yield_other_EC     *= setup.dataLumi/1000.
+                    qcdUpdates  = { "CR":QCDTF_updates_2J["CR"], "SR":QCDTF_updates_2J["SR"] }
+                    transferFac = self.cachedTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=overwrite, checkOnly=False )
+                    if transferFac.val <= 0: continue
 
-#            normRegYield  = yield_data - yield_other
-            normRegYield_Barrel = yield_data_Barrel - yield_other_Barrel
-            normRegYield_EC     = yield_data_EC     - yield_other_EC
-            if normRegYield_Barrel < 0: normRegYield_Barrel = 0
-            if normRegYield_EC < 0:     normRegYield_EC = 0
+                    qcdUpdates     = { "CR":QCDTF_updates_nJ["CR"], "SR":QCDTF_updates_nJ["SR"] }
+                    transferFac_nJ = self.cachedTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=overwrite, checkOnly=False )
 
-            qcdUpdates_EC      = { "CR":QCDTF_updates["CREC"],     "SR":QCDTF_updates["SREC"]     }
-            transferFac_EC     = self.cachedTransferFactor(channel, setup, qcdUpdates=qcdUpdates_EC,     save=True, overwrite=overwrite, checkOnly=False)
-            qcdUpdates_Barrel  = { "CR":QCDTF_updates["CRBarrel"], "SR":QCDTF_updates["SRBarrel"] }
-            transferFac_Barrel = self.cachedTransferFactor(channel, setup, qcdUpdates=qcdUpdates_Barrel, save=True, overwrite=overwrite, checkOnly=False)
+                    # set the transferfactor uncertainty to the nJet dependence uncertainty
+                    transferFac.sigma = abs( transferFac.val - transferFac_nJ.val )
+                    if transferFac.sigma > transferFac.val: transferFac.sigma = transferFac.val #upper bound of 100%
 
-#            transferFac       = self.cachedTransferFactor(channel, setup, save=True, overwrite=overwrite, checkOnly=False)
-#            if transferFac == 0:
-#                logger.info("Transfer factor is 0. Skipping QCD estimate calculation and settting it to 0!")
-#                return u_float(1, 1)
+                    leptonPtEtaCut = [ leptonEtaCutVar + ">=" + str(etaLow), leptonPtCutVar + ">=" + str(ptLow) ]
+                    if etaHigh > 0: leptonPtEtaCut += [ leptonEtaCutVar + "<" + str(etaHigh) ]
+                    if ptHigh > 0:  leptonPtEtaCut += [ leptonPtCutVar + "<" + str(ptHigh) ]
 
-#            estimate      = normRegYield*transferFac
-            estimate      = normRegYield_Barrel*transferFac_Barrel + normRegYield_EC*transferFac_EC
+                    # define the 2016 e-channel QCD sideband in barrel only (bad mT fit in EC)
+#                    if channel == "e" and setup.year == 2016 and (etaHigh > 1.479 or etaHigh < 0):
+#                        leptonPtEtaCut  = [ leptonEtaCutVar + ">=0", leptonPtCutVar + ">=" + str(ptLow) ]
+#                        leptonPtEtaCut += [ leptonEtaCutVar + "<1.479" ]
+#                        if ptHigh > 0:  leptonPtEtaCut += [ leptonPtCutVar + "<" + str(ptHigh) ]
+#                    else:
+#                        leptonPtEtaCut = [ leptonEtaCutVar + ">=" + str(etaLow), leptonPtCutVar + ">=" + str(ptLow) ]
+#                        if etaHigh > 0: leptonPtEtaCut += [ leptonEtaCutVar + "<" + str(etaHigh) ]
+#                        if ptHigh > 0:  leptonPtEtaCut += [ leptonPtCutVar + "<" + str(ptHigh) ]
 
-            logger.info("Calculating data-driven QCD normalization in channel " + channel + " using lumi " + str(setup.dataLumi) + ":")
-#            logger.info("yield data:                " + str(yield_data))
-#            logger.info("yield other:               " + str(yield_other))
-#            logger.info("yield (data-other):        " + str(normRegYield))
-#            logger.info("transfer factor:           " + str(transferFac))
-            logger.info("yield data Barrel:                " + str(yield_data_Barrel))
-            logger.info("yield other Barrel:               " + str(yield_other_Barrel))
-            logger.info("yield (data-other) Barrel:        " + str(normRegYield_Barrel))
-            logger.info("transfer factor Barrel:           " + str(transferFac_Barrel))
-            logger.info("yield data EC:                    " + str(yield_data_EC))
-            logger.info("yield other EC:                   " + str(yield_other_EC))
-            logger.info("yield (data-other) EC:            " + str(normRegYield_EC))
-            logger.info("transfer factor EC:               " + str(transferFac_EC))
-            logger.info("yield data:                       " + str(yield_data_Barrel+yield_data_EC))
-            logger.info("yield other:                      " + str(yield_other_Barrel+yield_other_EC))
-            logger.info("yield (data-other):               " + str(normRegYield_Barrel+normRegYield_EC))
-            logger.info("transfer factor:                  " + str(transferFac_Barrel+transferFac_EC))
+                    leptonPtEtaCut = "&&".join( leptonPtEtaCut )
+
+                    cut_MC_CR   = "&&".join([ regionCut_CR, selection_MC_CR["cut"],   leptonPtEtaCut ])
+                    cut_Data_CR = "&&".join([ regionCut_CR, selection_Data_CR["cut"], leptonPtEtaCut ])
+                    logger.info( "Using CR MC total cut %s"%(cut_MC_CR) )
+                    logger.info( "Using CR Data total cut %s"%(cut_Data_CR) )
+
+                    # Calculate yields for CR (normalized to data lumi)
+                    yield_data = self.yieldFromCache(setup, "Data", channel, cut_Data_CR, weight_Data_CR, overwrite=overwrite)
+                    if yield_data.val <= 0: continue
+
+                    yield_other = 0
+                    for s in default_sampleList:
+                        if s in ["QCD-DD", "QCD", "GJets", "Data"]: continue
+                        y  = self.yieldFromCache( setup, s, channel, cut_MC_CR, weight_MC_CR, overwrite=overwrite )
+                        if addSF:
+                            if   s == "DY_LO":
+                                y *= DYSF_val[setup.year]    #add DY SF
+                            elif s == "WJets":
+                                y *= WJetsSF_val[setup.year] #add WJets SF
+                            elif s == "TT_pow":
+                                y *= TTSF_val[setup.year]    #add TT SF
+                            elif s == "ZG":
+                                y *= ZGSF_val[setup.year]    #add ZGamma SF
+                            elif s == "WG":
+                                y *= WGSF_val[setup.year]    #add WGamma SF
+                        yield_other += y
+
+                    yield_other  *= setup.dataLumi/1000.
+
+                    normRegYield = yield_data - yield_other
+                    if normRegYield <= 0: continue
+                    # remove uncertainty from yield, replace it with transfer factor uncertainty
+                    normRegYield.sigma = 0
+
+                    estimate = normRegYield*transferFac
+                    qcd_yield += estimate
+
+                    logger.info("Calculating data-driven QCD normalization in channel " + channel + " using lumi " + str(setup.dataLumi) + ":")
+                    logger.info("yield data:                " + str(yield_data))
+                    logger.info("yield other:               " + str(yield_other))
+                    logger.info("yield (data-other):        " + str(normRegYield))
+                    logger.info("transfer factor:           " + str(transferFac))
 
         logger.info("Estimate for QCD in " + channel + " channel" + (" (lumi=" + str(setup.lumi) + "/pb)" if channel != "all" else "") + ": " + str(estimate) + (" (negative estimated being replaced by 0)" if estimate < 0 else ""))
-        return estimate if estimate > 1 else u_float(1, 1)
+        return qcd_yield if qcd_yield > 1 else u_float(1, 1)
 
 if __name__ == "__main__":
     from TTGammaEFT.Analysis.regions      import regionsTTG, noPhotonRegionTTG, inclRegionsTTG
@@ -605,13 +612,13 @@ if __name__ == "__main__":
     overwrite = False
     print "incl"
 
-    setup = Setup(year=2017, photonSelection=False)
+    setup = Setup(year=2016, photonSelection=False)
 #    setup = setup.sysClone(parameters=allRegions["SR2"]["parameters"])
-    setup = setup.sysClone(parameters=allRegions["VGmis2"]["parameters"])
+    setup = setup.sysClone(parameters=allRegions["WJets2"]["parameters"])
 
     estimate = DataDrivenQCDEstimate( "QCD-DD" )    
     estimate.initCache(setup.defaultCacheDir())
 
 #    print "e", "dd", estimate._fittedTransferFactor( "e", setup, overwrite=overwrite )
 #    print "mu", "dd", estimate._fittedTransferFactor( "mu", setup, overwrite=overwrite )
-    print "mu", "dd", estimate._estimate( allRegions["VG4p"]["regions"][0], "e", setup, overwrite=overwrite )
+    print "e", "dd", estimate._estimate( allRegions["WJets2"]["regions"][0], "e", setup, overwrite=overwrite )
