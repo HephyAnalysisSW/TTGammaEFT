@@ -100,7 +100,7 @@ if args.parameters:
     for i_param, (coeff, val, str_val, ) in enumerate(zip(coeffs, vals, str_vals)):
         bsmweightstring = get_weight_string({coeff:val})
         bsmHisto = eftSample.get1DHistoFromDraw( "GenPhotonCMSUnfold0_pt", binning=[20, 20, 400], selectionString=selection, weightString=bsmweightstring, addOverFlowBin="upper" )
-        #bsmHisto.Scale( 1./bsmHisto.Integral() )
+ #       bsmHisto.Scale( 1./bsmHisto.Integral() )
         #copyHisto = Histo.Clone(str(i_param))
         bsmHisto.Divide(Histo)
         params.append( {
@@ -113,7 +113,7 @@ if args.parameters:
 
 # for shape plots normalize each EFT shape to the SM shape
 if args.normalize:
-    scaling = { i:len(params)-1 for i, _ in enumerate(params) }
+    scaling = { i+1:0 for i, _ in enumerate(params) }
 
 if args.parameters: wcString = "_".join(args.parameters).replace('.','p').replace('-','m')
 else: wcString = "SM"
@@ -144,6 +144,8 @@ def drawObjects( plotData, lumi_scale ):
     ]
     return [tex.DrawLatex(*l) for l in lines] 
 
+#histModifications = [lambda h: h.GetYaxis().SetTitleOffset(0.9-0.025*sum(map(len, plot.histos))["textoffset"])]
+
 # Default plotting function
 def drawPlots( plots ):
     logger.info( "Plotting mode: %s"%args.mode )
@@ -154,16 +156,24 @@ def drawPlots( plots ):
             logger.info( "Empty plot!" )
             continue # Empty plot
 
+        for i_hist, hist in enumerate(plot.histos[0]):
+            if plot.stack[0][i_hist].name == "TTG": continue
+            for i in range(len(params)):
+                plot.histos[i+1][0].Add( hist )
+
+
         # plot in log scale and linear scale
         for log in [True, False]:
             plot_directory_ = os.path.join( plot_directory, 'analysisPlots', str(args.year), args.plot_directory, args.selection, args.mode, "log" if log else "lin" )
             plotting.draw( plot,
                            plot_directory = plot_directory_,
-                           ratio = {'yRange':(0.5,1.5)} if not args.noData else None,
+                           ratio = {'yRange':(0.1,1.9),'histos':[(i+1,0) for i in range(0, len(params)+1)], 'texY': 'EFT/SM'} if not args.noData else None,
                            logX = False, logY = log, sorting = True,
                            yRange = (0.001, "auto"),
-                           legend = [ (0.2,0.9-0.025*sum(map(len, plot.histos)),0.9,0.9), 3],
+                           scaling = scaling if args.normalize else {},
+                           legend = [ (0.2,0.9-0.025*sum(map(len, plot.histos)),0.9,0.9), 4],
                            drawObjects = drawObjects( not args.noData, lumi_scale ),
+                           histModifications = [lambda h: h.GetYaxis().SetTitleOffset(2)],
                            copyIndexPHP = True,
                           )
 
@@ -364,22 +374,22 @@ for i, param in enumerate( params ):
     # add the predefined weight to the samples
     sample.weight         = mcWeight 
     # add here variables that should be read only for MC samples
-    sample.read_variables = read_variables
+    sample.read_variables = read_variables_MC
     # you can scale the histograms of each sample by defining sample.scale (don't scale data)
     # Scale the MC histograms by the luminosity taken by CMS in each year
     sample.scale          = lumi_scale
     signals.append( sample )
     
-mc_nottg = []
-for sample in mc:
-    if sample.name != "TTG":
-        s = copy.deepcopy(sample)
-        s.notInLegend = True
-        mc_nottg.append(s)
+#mc_nottg = []
+#for sample in mc:
+ #   if sample.name != "TTG":
+  #      s = copy.deepcopy(sample)
+   #     s.notInLegend = True
+    #    mc_nottg.append(s)
 #print ttg.name
 
 #define the Stack
-stackList  = [mc] + [mc_nottg + [s] for s in signals ] + [[data_sample]]
+stackList  = [mc] + [[s] for s in signals ] + [[data_sample]]
 stack      = Stack( *stackList )
 
 # if you want to check your plots you can run only on a sub-set of events, we reduce the number of events here
@@ -388,6 +398,7 @@ if args.small:
     for sample in stack.samples:
         sample.normalization=1.
         sample.reduceFiles( factor=20 )
+        print sample.name
         sample.scale /= sample.normalization
 
 # define your plot selection via the python option --selection
@@ -403,7 +414,7 @@ plotList.append( Plot(
     texX      = 'p_{T}(#gamma_{0}) (GeV)', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.PhotonGood0_pt, # variable to plot
-    binning   = [ 20, 20, 400 ], # 20 bins from 20 to 120
+    binning   = [ 20, 20, 420 ], # 20 bins from 20 to 120
 ))
 
 # fill the histograms here, depending on the selection this can take a while
