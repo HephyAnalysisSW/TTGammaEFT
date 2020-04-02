@@ -183,9 +183,6 @@ pdfUncCache     = MergingDirDB( cacheFileName )
 cacheFileName   = os.path.join( cacheDir, "PS" )
 psUncCache      = MergingDirDB( cacheFileName )
 
-nllCache.get(baseDir, "calculatednll" )
-nllCache.contains(baseDir, "calculatednll" )
-
 
 def getScaleUnc(name, r, channel, setup):
     key      = uniqueKey( name, r, channel, setup ) + tuple(str(args.year))
@@ -613,8 +610,6 @@ def wrapper():
 
     nllCache.add( sConfig, nll_prefit, overwrite=True )
     
-    nllCache.get(sConfig, nll_prefit, overwrite=True )
-    nllCache.contains(sConfig, nll_prefit, overwrite=True )
     print nll
 
 ######################################
