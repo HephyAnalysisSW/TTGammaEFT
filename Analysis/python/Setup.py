@@ -404,12 +404,6 @@ class Setup:
             res["prefixes"].append(prefix)
 
         if photonSel:
-#            #photonIso of leading photon
-#            if photonIso and photonIso != "lowChgIsolowSieie":
-#                res["prefixes"].append( photonIso )
-#                preselphotonIso = cutInterpreter.cutString( photonIso )
-#                res["cuts"].append( preselphotonIso )
-
             #photon cut
             assert nPhoton[0]>=0 and (nPhoton[1]>=nPhoton[0] or nPhoton[1]<0), "Not a good nPhoton selection: %r"%nPhoton
             nphotonsstr = photonCutVar+">="+str(nPhoton[0])
@@ -526,6 +520,152 @@ class Setup:
 
         return {"cut":"&&".join(res["cuts"]), "prefix":"-".join(res["prefixes"]), "weightStr": self.weightString(dataMC,photon=photonCatVar.split("0")[0] if addMisIDSF else None,addMisIDSF=addMisIDSF and self.isPhotonSelection)}
 
+
+    def genSelection(self, dataMC,
+                        dileptonic=None, invertLepIso=None, addMisIDSF=None,
+                        nJet=None, nBTag=None, nPhoton=None,
+                        MET=None,
+                        zWindow=None, m3Window=None, leptonEta=None, leptonPt=None,
+                        photonIso=None, processCut=None,
+                        channel="all"):
+
+        # define input similar to selection() eventhough not used
+        """Define full selection
+           channel: all, e or mu, eetight, mumutight, SFtight
+           zWindow: offZeg, onZeg, onZSFllTight, onZSFllgTight or all
+           m3Window: offM3, onM3 or all
+        """
+        if not nJet:         nJet         = self.parameters["nJet"]
+        if not nBTag:        nBTag        = self.parameters["nBTag"]
+        if not nPhoton:      nPhoton      = self.parameters["nPhoton"]
+        if not MET:          MET          = self.parameters["MET"]
+        if not zWindow:      zWindow      = self.parameters["zWindow"]
+        if not leptonEta:    leptonEta    = self.parameters["leptonEta"]
+        if not leptonPt:     leptonPt     = self.parameters["leptonPt"]
+        if not m3Window:     m3Window     = self.parameters["m3Window"]
+
+        #Consistency checks
+        assert channel in allChannels, "channel must be one of "+",".join(allChannels)+". Got %r."%channel
+        assert zWindow in ["offZeg", "onZeg", "onZSFllTight", "onZSFllgTight", "all"], "zWindow must be one of onZeg, offZeg, onZSFllTight, onZSFllgTight, all. Got %r"%zWindow
+        assert m3Window in ["offM3", "onM3", "all"], "m3Window must be one of onM3, offM3, all. Got %r"%m3Window
+
+        res={"cuts":[], "prefixes":[]}
+
+        # default lepton selections
+        tightLepton  = "nLepTight1"
+        jetCutVar    = "nJetGood"
+        jetPrefix    = "nJet"
+        btagCutVar   = "nBTagGood"
+        btagPrefix   = "nBTag"
+        photonCutVar = "nPhotonGood"
+        photonPrefix = "nPhoton"
+        leptonEtaCutVar = "abs(LeptonTight0_eta)"
+        leptonEtaPrefix = "etal"
+        leptonPtCutVar = "LeptonTight0_pt"
+        leptonPtPrefix = "ptl"
+
+        #leptons or inv. iso leptons
+        res["prefixes"].append( tightLepton )
+        lepSel = cutInterpreter.cutString( tightLepton )
+        res["cuts"].append( lepSel )
+              
+        #lepton channel or inv. iso lepton channel
+        res["prefixes"].append( channel )
+        chStr = cutInterpreter.cutString( channel )
+        res["cuts"].append(chStr)
+
+        if nJet and not (nJet[0]==0 and nJet[1]<0):
+            assert nJet[0]>=0 and (nJet[1]>=nJet[0] or nJet[1]<0), "Not a good nJet selection: %r"%nJet
+            njetsstr = jetCutVar+">="+str(nJet[0])
+            prefix   = jetPrefix+str(nJet[0])
+            if nJet[1]>=0:
+                njetsstr+= "&&"+jetCutVar+"<="+str(nJet[1])
+                if nJet[1]!=nJet[0]: prefix+=str(nJet[1])
+            else:
+                prefix+="p"
+            res["cuts"].append(njetsstr)
+            res["prefixes"].append(prefix)
+
+        if nBTag and not (nBTag[0]==0 and nBTag[1]<0):
+            assert nBTag[0]>=0 and (nBTag[1]>=nBTag[0] or nBTag[1]<0), "Not a good nBTag selection: %r"% nBTag
+            nbtstr = btagCutVar+">="+str(nBTag[0])
+            prefix = btagPrefix+str(nBTag[0])
+            if nBTag[1]>=0:
+                nbtstr+= "&&"+btagCutVar+"<="+str(nBTag[1])
+                if nBTag[1]!=nBTag[0]: prefix+=str(nBTag[1])
+            else:
+                prefix+="p"
+            res["cuts"].append(nbtstr)
+            res["prefixes"].append(prefix)
+
+        photonSel = nPhoton and not (nPhoton[0]==0 and nPhoton[1]<=0)
+
+        if photonSel:
+            #photon cut
+            assert nPhoton[0]>=0 and (nPhoton[1]>=nPhoton[0] or nPhoton[1]<0), "Not a good nPhoton selection: %r"%nPhoton
+            nphotonsstr = photonCutVar+">="+str(nPhoton[0])
+            prefix      = photonPrefix+str(nPhoton[0])
+            if nPhoton[1]>=0:
+                nphotonsstr+= "&&"+photonCutVar+"<="+str(nPhoton[1])
+                if nPhoton[1]!=nPhoton[0]: prefix+="To"+str(nPhoton[1])
+            else:
+                prefix+="p"
+            res["cuts"].append(nphotonsstr)
+            res["prefixes"].append(prefix)
+
+        else:
+            res["cuts"].append(photonCutVar+"==0")
+            res["prefixes"].append(photonPrefix+"0")
+
+        #leptonEta cut
+        if leptonEta and not (leptonEta[0]==0 and leptonEta[1]<0):
+            assert leptonEta[0]>=0 and (leptonEta[1]>=leptonEta[0] or leptonEta[1]<0) and leptonEta[1]!=leptonEta[0], "Not a good leptonEta selection: %r"%leptonEta
+            leptonEtastr = leptonEtaCutVar+">="+str(leptonEta[0])
+            prefix       = leptonEtaPrefix+str(leptonEta[0])
+            if leptonEta[1]>=0:
+                leptonEtastr += "&&"+leptonEtaCutVar+"<"+str(leptonEta[1])
+                prefix       += "To"+str(leptonEta[1])
+            res["cuts"].append(leptonEtastr)
+            res["prefixes"].append(prefix)
+
+        #leptonPt cut
+        if leptonPt and not (leptonPt[0]==0 and leptonPt[1]<0):
+            assert leptonPt[0]>=0 and (leptonPt[1]>=leptonPt[0] or leptonPt[1]<0) and leptonPt[1]!=leptonPt[0], "Not a good leptonPt selection: %r"%leptonPt
+            leptonPtstr = leptonPtCutVar+">="+str(leptonPt[0])
+            prefix       = leptonPtPrefix+str(leptonPt[0])
+            if leptonPt[1]>=0:
+                leptonPtstr += "&&"+leptonPtCutVar+"<"+str(leptonPt[1])
+                prefix       += "To"+str(leptonPt[1])
+            res["cuts"].append(leptonPtstr)
+            res["prefixes"].append(prefix)
+
+        #MET cut
+        if MET and not (MET[0]==0 and MET[1]<0):
+            assert MET[0]>=0 and (MET[1]>=MET[0] or MET[1]<0), "Not a good MET selection: %r"%MET
+            metsstr = "MET_pt"+">="+str(MET[0])
+            prefix   = "met"+str(MET[0])
+            if MET[1]>=0:
+                metsstr+= "&&"+"MET_pt"+"<"+str(MET[1])
+                if MET[1]!=MET[0]: prefix+="To"+str(MET[1])
+            res["cuts"].append(metsstr)
+            res["prefixes"].append(prefix)
+
+        #Z window
+        if not "all" in zWindow:
+            res["prefixes"].append( zWindow )
+            preselZWindow = cutInterpreter.cutString( zWindow )
+            res["cuts"].append( preselZWindow )
+
+        #M3 window
+        if m3Window != "all":
+            res["prefixes"].append( m3Window )
+            preselM3Window = cutInterpreter.cutString( m3Window )
+            res["cuts"].append( preselM3Window )
+
+        return {"cut":"&&".join(res["cuts"]), "prefix":"-".join(res["prefixes"])}
+
+
+
 if __name__ == "__main__":
     setup = Setup( year=2016 )
     for name, dict in allRegions.items():
@@ -540,10 +680,10 @@ if __name__ == "__main__":
             print
             print channel
             print
-            res = setup.selection("MC", channel=channel, **setup.defaultParameters( update=dict["parameters"] ))
+            res = setup.genSelection("MC", channel=channel, **setup.defaultParameters( update=dict["parameters"] ))
             print res["cut"]
             print res["prefix"]
-            print res["weightStr"]
+#            print res["weightStr"]
 
 
 
