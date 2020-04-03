@@ -355,10 +355,13 @@ def wrapper():
                     for pName, pList in setup.processes.items():
 
                         #yields einlesen und ratio berechnen
-                        smyieldkey = (setup.name, str(r),channel,  "ctZ_0_ctZI_0")
-                        smyield = yieldCache.get(smyieldkey)["val"]
-                        yieldkey = (setup.name, str(r),channel,  "ctZ_0.25_ctZI_0.25")
-                        ratio = yieldCache.get(yieldkey)["val"]
+                        smyieldkey  =  (setup.name, str(r),channel,  "ctZ_0_ctZI_0")
+                        smyield     =  yieldCache.get(smyieldkey)["val"]
+                        eft         =  "_".join(EFTparams)
+                        yieldkey    =  (setup.name, str(r),channel, str(eft))
+                        print yieldkey
+
+                        ratio  = yieldCache.get(yieldkey)["val"]
 
                         ratio /= smyield
                             
