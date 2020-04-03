@@ -72,6 +72,13 @@ allPhotonRegions = allRegions[args.controlRegion]["inclRegion"] + allRegions[arg
 setup            = Setup( year=2016, checkOnly=args.checkOnly )
 setup            = setup.sysClone( parameters=parameters )
 
+#sh file 
+#file = open("run_limit_EFT.sh","w")
+#for i in eftParameterRange["ctZ"]:
+ #   for j in eftParameterRange["ctZ"]: 
+ #      file.write("python run_limit_EFT.py --overwrite --year 2016 --inclRegion --useRegions misTT2 misDY4p VG4p SR4pM3 --parameters ctZ " +  str(i)  + " ctZI " + str(j) + "\n")
+#file.close
+
 def wrapper(arg):
     r,channel,setup,(ctZ,ctZI) = arg
     EFTparams = [ "ctZ", str(ctZ), "ctZI", str(ctZI) ]

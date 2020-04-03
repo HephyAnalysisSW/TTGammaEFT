@@ -212,7 +212,8 @@ def getPSUnc(name, r, channel, setup):
     return max(0.001, PSUnc)
 
 configlist = regionNames + EFTparams
-configlist.append(str(args.inclRegion))
+configlist.append("incl" if args.inclRegion else "diff")
+configlist.append("expected" if args.expected else "observed")
 
 sConfig = "_".join(configlist)
 print nllCache.get(sConfig)
@@ -360,7 +361,10 @@ def wrapper():
                         smyieldkey  =  (setup.name, str(r),channel,  "ctZ_0_ctZI_0")
                         smyield     =  yieldCache.get(smyieldkey)["val"]
                         yieldkey    =  (setup.name, str(r),channel, str(eft))
-                        ratio       =  yieldCache.get(yieldkey)["val"]
+                        if yieldCache.contains( yieldkey ): 
+                            ratio       =  yieldCache.get(yieldkey)["val"]
+                        else:
+                            raise Exception("yieldCache does not contain key")
 
                         ratio /= smyield
                             
