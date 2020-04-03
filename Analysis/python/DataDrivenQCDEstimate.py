@@ -601,7 +601,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                     logger.info("yield (data-other):        " + str(normRegYield))
                     logger.info("transfer factor:           " + str(transferFac))
 
-        logger.info("Estimate for QCD in " + channel + " channel" + (" (lumi=" + str(setup.lumi) + "/pb)" if channel != "all" else "") + ": " + str(estimate) + (" (negative estimated being replaced by 0)" if estimate < 0 else ""))
+#        logger.info("Estimate for QCD in " + channel + " channel" + (" (lumi=" + str(setup.lumi) + "/pb)" if channel != "all" else "") + ": " + str(estimate) + (" (negative estimated being replaced by 0)" if estimate < 0 else ""))
         return qcd_yield if qcd_yield > 1 else u_float(1, 1)
 
 if __name__ == "__main__":
