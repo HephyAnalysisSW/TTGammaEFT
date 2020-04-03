@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
-import os, copy, time
+import os, copy, time, pickle
 import ROOT
 from shutil                              import copyfile
 from math                                import sqrt
 from helpers                             import uniqueKey
+
+from RootTools.core.standard             import *
 
 from TTGammaEFT.Analysis.EstimatorList   import EstimatorList
 from TTGammaEFT.Analysis.Setup           import Setup
@@ -18,6 +20,34 @@ from Analysis.Tools.MergingDirDB         import MergingDirDB
 from Analysis.Tools.u_float              import u_float
 from Analysis.Tools.cardFileWriter       import cardFileWriter
 from Analysis.Tools.getPostFit           import getPrePostFitFromMLF, getFitResults
+from TTGammaEFT.Tools.cutInterpreter     import cutInterpreter
+
+# load and define the EFT sample
+from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed      import *
+eftSample = TTG_4WC_ref
+
+# load samples
+# we have a photon skim (smaller samples if you plot a selection containing a photon)
+# Set it to "True" if you want to use it, which will make the plot script much faster
+# can only be used if you have a selection with at least one photon
+#os.environ["gammaSkim"]= "False"
+#if args.year == 2016:
+#    from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed      import *
+##    if not args.noData:
+#        from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
+#
+#elif args.year == 2017:
+#    from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed        import *
+#    if not args.noData:
+#        from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
+#
+#elif args.year == 2018:
+#    from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed      import *
+#    if not args.noData:
+#        from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
+
+# EFT Reweighting
+from Analysis.Tools.WeightInfo          import WeightInfo
 
 # Default Parameter
 loggerChoices = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTSET"]
@@ -55,7 +85,9 @@ argParser.add_argument( "--checkOnly",          action="store_true",            
 argParser.add_argument( "--bkgOnly",            action="store_true",                                                        help="background only")
 argParser.add_argument( "--unblind",            action="store_true",                                                        help="unblind 2017/2018")
 argParser.add_argument( "--plot",               action="store_true",                                                        help="run plots?")
+argParser.add_argument('--order',              action='store',      default=2, type=int,                                                             help='Polynomial order of weight string (e.g. 2)')  
 argParser.add_argument('--parameters',         action='store',      default=['ctZI', '2', 'ctWI', '2', 'ctZ', '2', 'ctW', '2'], type=str, nargs='+', help = "argument parameters")
+argParser.add_argument('--mode',               action='store',      default="all", type=str, choices=["mu", "e", "all"],               help="plot lepton mode" )
 args=argParser.parse_args()
 
 # Logging
@@ -69,6 +101,49 @@ if args.useChannels and "e"    in args.useChannels: args.useChannels += ["eetigh
 if args.useChannels and "mu"   in args.useChannels: args.useChannels += ["mumutight"]
 if args.useChannels and "all"  in args.useChannels: args.useChannels  = None
 
+#settings for eft reweighting
+w = WeightInfo( eftSample.reweight_pkl )
+w.set_order( args.order )
+variables = w.variables
+
+#weightratio 
+def get_weight_string( parameters ):
+    return w.get_weight_string( **parameters )
+
+selection = cutInterpreter.cutString('nLepTight1-nLepVeto1-nJet4p-nBTag1p-nPhoton1'  + "-" + args.mode )
+
+smweightstring = smweightString = get_weight_string({})
+smyield = eftSample.getYieldFromDraw(selectionString=selection, weightString=smweightString)
+smyield = smyield.val
+
+#format the EFT parameter
+params = []
+if args.parameters:
+    coeffs = args.parameters[::2]
+    str_vals = args.parameters[1::2]
+    vals = list( map( float, str_vals ) )
+    for i_param, (coeff, val, str_val, ) in enumerate(zip(coeffs, vals, str_vals)):
+        bsmweightstring = get_weight_string({coeff:val})
+        bsmyield = eftSample.getYieldFromDraw(selectionString=selection, weightString=bsmweightstring)
+        bsmyield = bsmyiel.val
+        #bsmHisto.Scale( 1./bsmHisto.Integral() )
+        #copyHisto = Histo.Clone(str(i_param))
+        bsmyield /= smyield
+        params.append( {
+            'WC' : { coeff:val },
+            'yield':  bsmyield,
+            #'name': 'ttgamma'
+            })
+
+
+#ptweight
+#def pt_weight( event, sample ):
+ #   if sample.name != 'ttgamma': return
+  #  if event.PhotonGood0_pt >= 400: binNumber = 20
+   # else: binNumber = sample.params["histo"].FindBin( event.PhotonGood0_pt )
+   # eftweight = sample.params["histo"].GetBinContent( binNumber )
+   # event.weight *= eftweight
+
 # read the EFT parameters
 EFTparams = []
 if args.parameters:
@@ -77,7 +152,8 @@ if args.parameters:
     for i_param, (coeff, str_val, ) in enumerate(zip(coeffs, str_vals)):
         EFTparams.append(coeff)
         EFTparams.append(str_val)
-print EFTparams
+
+###
 
 useCache = True
 if args.keepCard:
@@ -199,10 +275,14 @@ def getPSUnc(name, r, channel, setup):
     PSUnc = psUncCache.get( key )
     return max(0.001, PSUnc)
 
+sConfig = "_".join(regionNames + EFTparams)
+print nllCache.get(sConfig)
+print nllCache.contains(sConfig)
+if not args.overwrite and nllCache.contains( sConfig ): sys.exit(0)
+
 def wrapper():
     c = cardFileWriter.cardFileWriter()
     c.releaseLocation = combineReleaseLocation
-
     
     cardFileNameTxt   = os.path.join( limitDir, "_".join( regionNames ) + ".txt" )
     cardFileNameShape = cardFileNameTxt.replace( ".txt", "_shape.root" )

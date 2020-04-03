@@ -12,6 +12,9 @@ from TTGammaEFT.Analysis.SetupHelpers    import dilepChannels, lepChannels, allP
 from TTGammaEFT.Tools.user               import cache_directory
 from Analysis.Tools.MergingDirDB         import MergingDirDB
 
+# EFT Reweighting
+from Analysis.Tools.WeightInfo          import WeightInfo
+
 loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET']
 CRChoices     = allRegions.keys()
 # Arguments
@@ -25,6 +28,9 @@ argParser.add_argument("--controlRegion",    action="store",  default="SR4pM3", 
 argParser.add_argument("--overwrite",        action="store_true",                                              help="overwrite existing results?")
 argParser.add_argument("--checkOnly",        action="store_true",                                              help="check values?")
 argParser.add_argument('--parameters',         action='store',      default=['ctZI', '2', 'ctWI', '2', 'ctZ', '2', 'ctW', '2'], type=str, nargs='+', help = "argument parameters")
+argParser.add_argument('--order',              action='store',      default=2, type=int,                                                             help='Polynomial order of weight string(e.g. 2)') 
+argParser.add_argument('--mode',               action='store',      default="all", type=str, choices=["mu", "e", "all"],               help="plot lepton mode" )
+
 args = argParser.parse_args()
 
 # Logging
@@ -66,6 +72,14 @@ setup            = setup.sysClone( parameters=parameters )
 
 print setup.defaultParameters()
 
+#settings for eft reweighting
+w = WeightInfo( eftSample.reweight_pkl )
+w.set_order( args.order )
+variables = w.variables
+
+def get_weight_string( parameters ):
+    return w.get_weight_string( **parameters )
+
 def wrapper(arg):
     r,channel,setup = arg
     key = (args.controlRegion, str(r), "_".join(EFTparams))
@@ -74,9 +88,17 @@ def wrapper(arg):
     else:
         selection = setup.genSelection( "MC", channel=channel, **setup.defaultParameters())["cut"]
         selection = "&&".join( [ selection, r.cutString() ] )
-        weightString = # FIXME
-        res = eftSample.getYieldFromDraw( selectionString=selection, weightString=weightString )
+        smweightString = get_weight_string({})
+        res = eftSample.getYieldFromDraw( selectionString=selection, weightString=smweightString)
         cache.add( key, res, overwrite=True )
+        if args.parameters:
+            coeffs = args.parameters[::2]
+            str_vals = args.parameters[1::2]
+            vals = list( map( float, str_vals ) )
+            for i_param, (coeff, val, str_val, ) in enumerate(zip(coeffs, vals, str_vals)):
+                weightString = get_weight_string({coeff:val}) 
+                res = eftSample.getYieldFromDraw( selectionString=selection, weightString=weightString )
+                cache.add( key, res, overwrite=True )
     return ( key, res )
 
 
