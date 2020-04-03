@@ -355,13 +355,14 @@ def wrapper():
                     for pName, pList in setup.processes.items():
 
                         #yields einlesen und ratio berechnen
-                        smyieldkey = (setup.name, r,channel,  "ctz_0_ctzI_0")
-                        smyield = yieldCache.get(smyieldkey)
-                        yieldkey = (setup.name, r,channel,  "ctz_0.25_ctzI_0.25")
-                        ratio = yieldCache.get(yieldkey)
+                        smyieldkey = (setup.name, str(r),channel,  "ctZ_0_ctZI_0")
+                        smyield = yieldCache.get(smyieldkey)["val"]
+                        yieldkey = (setup.name, str(r),channel,  "ctZ_0.25_ctZI_0.25")
+                        ratio = yieldCache.get(yieldkey)["val"]
 
-                        ratio.val /= smyield.val
-
+                        ratio /= smyield
+                            
+                        print ratio
                         if pName == "Data": continue
                         misIDPOI = "misID" in pName and args.misIDPOI
                         vgPOI    = ("WG" in pName or "ZG" in pName or "VG" in pName) and args.vgPOI

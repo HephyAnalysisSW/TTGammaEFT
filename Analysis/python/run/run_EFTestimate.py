@@ -88,7 +88,6 @@ def wrapper(arg):
         weightString = "ref_weight*(" + get_weight_string(params) + ")"
         res = eftSample.getYieldFromDraw( selectionString=selection, weightString=weightString )
         cache.add( key, res, overwrite=True )
-        print key
     return ( key, res )
 
 jobs=[]
