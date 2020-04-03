@@ -18,6 +18,9 @@ from helpers                             import chunks, splitList
 # EFT Reweighting
 from Analysis.Tools.WeightInfo          import WeightInfo
 
+# EFT Reweighting
+from Analysis.Tools.WeightInfo          import WeightInfo
+
 loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET']
 CRChoices     = allRegions.keys()
 # Arguments
@@ -90,16 +93,12 @@ def wrapper(arg):
         cache.add( key, res, overwrite=True )
     return ( key, res )
 
-
 jobs=[]
 for channel in channels:
     for (i, r) in enumerate(allPhotonRegions):
         for ctZ in eftParameterRange["ctZ"]:
             for ctZI in eftParameterRange["ctZ"]:
                 jobs.append((r, channel, setup, (ctZ, ctZI)))
-
-print args.controlRegion, len(jobs)
-sys.exit(0)
 
 if args.nJobs > len(jobs):
     logger.info("Batch mode job splitting larger than number of points. Setting nJobs to %i"%len(jobs))
