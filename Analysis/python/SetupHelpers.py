@@ -279,26 +279,31 @@ SSMSF_val[2017] = u_float( 0.8, 0.08 ) #26012020
 SSMSF_val[2018] = u_float( 0.8, 0.08 ) #26012020
 
 WJetsSF_val = {}
-WJetsSF_val[2016] = u_float( 1.14*1.12, 0.13 ) #12022020
-WJetsSF_val[2017] = u_float( 1.08*1.14, 0.13 )
-WJetsSF_val[2018] = u_float( 1.04*1.11, 0.13 )
+WJetsSF_val[2016] = u_float( 1.12*0.85, 0.13 ) #12022020
+WJetsSF_val[2017] = u_float( 1.15*0.84, 0.13 )
+WJetsSF_val[2018] = u_float( 1.15*0.85, 0.13 )
+
+QCDSF_val = {}
+QCDSF_val[2016] = u_float( 1.00, 0.1 ) #12022020
+QCDSF_val[2017] = u_float( 1.00, 0.1 )
+QCDSF_val[2018] = u_float( 1.00, 0.1 )
 
 TTSF_val = {}
 TTSF_val[2016] = u_float( 1.00, 0.07 ) #12022020
 TTSF_val[2017] = u_float( 1.00, 0.06 )
-TTSF_val[2018] = u_float( 1.00, 0.08 )
+TTSF_val[2018] = u_float( 1.02, 0.08 )
 
 DYSF_val = {}
-DYSF_val[2016] = u_float( 1.06, 0.08 ) #12022020
-DYSF_val[2017] = u_float( 1.03, 0.13 )
-DYSF_val[2018] = u_float( 1.04, 0.05 )
+DYSF_val[2016] = u_float( 1.13, 0.08 ) #12022020
+DYSF_val[2017] = u_float( 1.13, 0.13 )
+DYSF_val[2018] = u_float( 1.17, 0.05 )
 
 
 
 misIDSF_val = {}
-misIDSF_val[2016] = u_float( 2.61, 0.39 ) #12022020
-misIDSF_val[2017] = u_float( 2.50, 0.6 )
-misIDSF_val[2018] = u_float( 1.72, 0.34 )
+misIDSF_val[2016] = u_float( 2.47, 0.36 ) #12022020
+misIDSF_val[2017] = u_float( 2.45, 0.6 )
+misIDSF_val[2018] = u_float( 1.54, 0.34 )
 
 fakeSF_val = {}
 fakeSF_val[2016] = u_float( 1.00, 0.09 )
@@ -306,19 +311,19 @@ fakeSF_val[2017] = u_float( 1.00, 0.09 )
 fakeSF_val[2018] = u_float( 1.00, 0.09 )
 
 WGSF_val = {}
-WGSF_val[2016] = u_float( 1.10, 0.15 ) #12022020
-WGSF_val[2017] = u_float( 1.34, 0.21 ) #2020 01 20
-WGSF_val[2018] = u_float( 1.30, 0.27 ) #2020 01 20
+WGSF_val[2016] = u_float( 1.12, 0.15 ) #12022020
+WGSF_val[2017] = u_float( 1.10, 0.21 ) # currently 1.07 in 3jets, 1.35 in 4jets
+WGSF_val[2018] = u_float( 1.10, 0.25 ) #2020 01 20
 
 otherSF_val = {}
 otherSF_val[2016] = u_float( 1.10, 0.2 ) #12022020
-otherSF_val[2017] = u_float( 1.05, 0.2 ) #2020 01 20
-otherSF_val[2018] = u_float( 0.98, 0.2 ) #2020 01 20
+otherSF_val[2017] = u_float( 1.00, 0.2 ) #2020 01 20
+otherSF_val[2018] = u_float( 0.95, 0.2 ) #2020 01 20
 
 ZGSF_val = {}
-ZGSF_val[2016] = u_float( 0.90, 0.08 )  #12022020
-ZGSF_val[2017] = u_float( 1.02, 0.10 )  #2020 01 20
-ZGSF_val[2018] = u_float( 1.01, 0.10 )  #2020 01 20
+ZGSF_val[2016] = u_float( 0.90, 0.10 )  # currently 0.9 in 3jets, 1.05 in 4jets
+ZGSF_val[2017] = u_float( 1.00, 0.10 )  #2020 01 20
+ZGSF_val[2018] = u_float( 1.00, 0.10 )  #2020 01 20
 
 # all processes are all samples + them splitted in photon categories
 allProcesses            = copy.copy(default_sampleList)
@@ -1064,3 +1069,15 @@ limitOrdering += pCRfake
 pSR = [ key for key, val in signalRegions.items() ]
 pSR.sort()
 limitOrdering += pSR
+
+
+# EFT parameter ranges:
+# 20 bins from -1 to 1 + the SM value 0, calc value in the middle of the bin
+xRange       = np.linspace( -1, 1, 20, endpoint=False)
+halfstepsize = 0.5 * ( xRange[1] - xRange[0] )
+xRange       = [ round(el + halfstepsize, 3) for el in xRange ] + [0]
+xRange.sort()
+
+eftParameterRange = {}
+eftParameterRange["ctZ"]  = xRange
+eftParameterRange["ctZI"] = xRange
