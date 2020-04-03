@@ -85,6 +85,8 @@ if args.parameters:
         EFTparams.append(coeff)
         EFTparams.append(str_val)
 
+eft =  "_".join(EFTparams)
+
 useCache = True
 if args.keepCard:
     args.overwrite = False
@@ -221,7 +223,7 @@ def wrapper():
     c = cardFileWriter.cardFileWriter()
     c.releaseLocation = combineReleaseLocation
     
-    cardFileNameTxt   = os.path.join( limitDir, "_".join( regionNames ) + ".txt" )
+    cardFileNameTxt   = os.path.join( limitDir, "_".join( regionNames ), eft + ".txt" )
     cardFileNameShape = cardFileNameTxt.replace( ".txt", "_shape.root" )
     cardFileName      = cardFileNameTxt
     if ( not os.path.exists(cardFileNameTxt) or ( not os.path.exists(cardFileNameShape) and not args.useTxt ) ) or args.overwrite:
@@ -357,11 +359,8 @@ def wrapper():
                         #yields einlesen und ratio berechnen
                         smyieldkey  =  (setup.name, str(r),channel,  "ctZ_0_ctZI_0")
                         smyield     =  yieldCache.get(smyieldkey)["val"]
-                        eft         =  "_".join(EFTparams)
                         yieldkey    =  (setup.name, str(r),channel, str(eft))
-                        print yieldkey
-
-                        ratio  = yieldCache.get(yieldkey)["val"]
+                        ratio       =  yieldCache.get(yieldkey)["val"]
 
                         ratio /= smyield
                             
