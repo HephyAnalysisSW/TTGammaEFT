@@ -6,8 +6,6 @@ from shutil                              import copyfile
 from math                                import sqrt
 from helpers                             import uniqueKey
 
-from RootTools.core.standard             import *
-
 from TTGammaEFT.Analysis.EstimatorList   import EstimatorList
 from TTGammaEFT.Analysis.Setup           import Setup
 from TTGammaEFT.Analysis.DataObservation import DataObservation
@@ -23,31 +21,8 @@ from Analysis.Tools.getPostFit           import getPrePostFitFromMLF, getFitResu
 from TTGammaEFT.Tools.cutInterpreter     import cutInterpreter
 
 # load and define the EFT sample
-from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed      import *
+from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed  import *
 eftSample = TTG_4WC_ref
-
-# load samples
-# we have a photon skim (smaller samples if you plot a selection containing a photon)
-# Set it to "True" if you want to use it, which will make the plot script much faster
-# can only be used if you have a selection with at least one photon
-#os.environ["gammaSkim"]= "False"
-#if args.year == 2016:
-#    from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed      import *
-##    if not args.noData:
-#        from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
-#
-#elif args.year == 2017:
-#    from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed        import *
-#    if not args.noData:
-#        from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
-#
-#elif args.year == 2018:
-#    from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed      import *
-#    if not args.noData:
-#        from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
-
-# EFT Reweighting
-from Analysis.Tools.WeightInfo          import WeightInfo
 
 # Default Parameter
 loggerChoices = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTSET"]
@@ -101,49 +76,6 @@ if args.useChannels and "e"    in args.useChannels: args.useChannels += ["eetigh
 if args.useChannels and "mu"   in args.useChannels: args.useChannels += ["mumutight"]
 if args.useChannels and "all"  in args.useChannels: args.useChannels  = None
 
-#settings for eft reweighting
-w = WeightInfo( eftSample.reweight_pkl )
-w.set_order( args.order )
-variables = w.variables
-
-#weightratio 
-def get_weight_string( parameters ):
-    return w.get_weight_string( **parameters )
-
-selection = cutInterpreter.cutString('nLepTight1-nLepVeto1-nJet4p-nBTag1p-nPhoton1'  + "-" + args.mode )
-
-smweightstring = smweightString = get_weight_string({})
-smyield = eftSample.getYieldFromDraw(selectionString=selection, weightString=smweightString)
-smyield = smyield.val
-
-#format the EFT parameter
-params = []
-if args.parameters:
-    coeffs = args.parameters[::2]
-    str_vals = args.parameters[1::2]
-    vals = list( map( float, str_vals ) )
-    for i_param, (coeff, val, str_val, ) in enumerate(zip(coeffs, vals, str_vals)):
-        bsmweightstring = get_weight_string({coeff:val})
-        bsmyield = eftSample.getYieldFromDraw(selectionString=selection, weightString=bsmweightstring)
-        bsmyield = bsmyiel.val
-        #bsmHisto.Scale( 1./bsmHisto.Integral() )
-        #copyHisto = Histo.Clone(str(i_param))
-        bsmyield /= smyield
-        params.append( {
-            'WC' : { coeff:val },
-            'yield':  bsmyield,
-            #'name': 'ttgamma'
-            })
-
-
-#ptweight
-#def pt_weight( event, sample ):
- #   if sample.name != 'ttgamma': return
-  #  if event.PhotonGood0_pt >= 400: binNumber = 20
-   # else: binNumber = sample.params["histo"].FindBin( event.PhotonGood0_pt )
-   # eftweight = sample.params["histo"].GetBinContent( binNumber )
-   # event.weight *= eftweight
-
 # read the EFT parameters
 EFTparams = []
 if args.parameters:
@@ -152,8 +84,6 @@ if args.parameters:
     for i_param, (coeff, str_val, ) in enumerate(zip(coeffs, str_vals)):
         EFTparams.append(coeff)
         EFTparams.append(str_val)
-
-###
 
 useCache = True
 if args.keepCard:
@@ -259,6 +189,10 @@ pdfUncCache     = MergingDirDB( cacheFileName )
 cacheFileName   = os.path.join( cacheDir, "PS" )
 psUncCache      = MergingDirDB( cacheFileName )
 
+baseDir       = os.path.join( cache_directory, "analysis", "eft" )
+cacheFileName = os.path.join( baseDir, eftSample.name )
+yieldCache    = MergingDirDB( cacheFileName )
+
 
 def getScaleUnc(name, r, channel, setup):
     key      = uniqueKey( name, r, channel, setup ) + tuple(str(args.year))
@@ -275,7 +209,10 @@ def getPSUnc(name, r, channel, setup):
     PSUnc = psUncCache.get( key )
     return max(0.001, PSUnc)
 
-sConfig = "_".join(regionNames + EFTparams)
+configlist = regionNames + EFTparams
+configlist.append(str(args.inclRegion))
+
+sConfig = "_".join(configlist)
 print nllCache.get(sConfig)
 print nllCache.contains(sConfig)
 if not args.overwrite and nllCache.contains( sConfig ): sys.exit(0)
@@ -417,6 +354,14 @@ def wrapper():
                     sigUnc = {}
                     for pName, pList in setup.processes.items():
 
+                        #yields einlesen und ratio berechnen
+                        smyieldkey = (setup.name, r,channel,  "ctz_0_ctzI_0")
+                        smyield = yieldCache.get(smyieldkey)
+                        yieldkey = (setup.name, r,channel,  "ctz_0.25_ctzI_0.25")
+                        ratio = yieldCache.get(yieldkey)
+
+                        ratio.val /= smyield.val
+
                         if pName == "Data": continue
                         misIDPOI = "misID" in pName and args.misIDPOI
                         vgPOI    = ("WG" in pName or "ZG" in pName or "VG" in pName) and args.vgPOI
@@ -432,8 +377,9 @@ def wrapper():
                         signal   = True if newPOI else pName == "signal"
                         expected = u_float(0.,0.)
 
-                        for e in pList:
+                        for e in pList:                           
                             exp_yield = e.cachedEstimate( r, channel, setup )
+                            if signal: exp_yield *= ratio
                             if signal and args.addSSM:
                                 exp_yield *= SSMSF_val[args.year].val
                                 logger.info( "Scaling signal by %f"%(SSMSF_val[args.year].val) )
@@ -679,7 +625,7 @@ def wrapper():
         cardFileName      = cardFileNameTxt if args.useTxt else cardFileNameShape
     
 
-    sConfig = "_".join(regionNames + EFTparams)
+    sConfig = "_".join(configlist)
 
     nll          = c.calcNLL( cardFileName )
     nll_prefit   = nll['nll0']

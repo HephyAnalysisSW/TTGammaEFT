@@ -18,9 +18,6 @@ from helpers                             import chunks, splitList
 # EFT Reweighting
 from Analysis.Tools.WeightInfo          import WeightInfo
 
-# EFT Reweighting
-from Analysis.Tools.WeightInfo          import WeightInfo
-
 loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET']
 CRChoices     = allRegions.keys()
 # Arguments
@@ -79,7 +76,7 @@ def wrapper(arg):
     r,channel,setup,(ctZ,ctZI) = arg
     EFTparams = [ "ctZ", str(ctZ), "ctZI", str(ctZI) ]
     params    = { "ctZ":ctZ, "ctZI":ctZI }
-    key = (args.controlRegion, str(r), "_".join(EFTparams))
+    key = (args.controlRegion, str(r),channel, "_".join(EFTparams))
 
     if cache.contains( key ) and not args.overwrite:
         res = cache.get( key )
@@ -91,6 +88,7 @@ def wrapper(arg):
         weightString = "ref_weight*(" + get_weight_string(params) + ")"
         res = eftSample.getYieldFromDraw( selectionString=selection, weightString=weightString )
         cache.add( key, res, overwrite=True )
+        print key
     return ( key, res )
 
 jobs=[]
