@@ -5,7 +5,6 @@ import operator, ctypes
 import ROOT
 from shutil                              import copyfile
 from math                                import sqrt
-from helpers                             import uniqueKey
 
 import numpy as np
 
@@ -67,12 +66,9 @@ logger = logger.get_logger(       args.logLevel, logFile = None )
 import RootTools.core.logger as logger_rt
 logger_rt = logger_rt.get_logger( args.logLevel, logFile = None )
 
-# Gen Samples
-from TTGammaEFT.Samples.genTuples_TTGamma_postProcessed                    import *
-
-#signalSample = TTG_SingleLeptFromT_1L_test_EFT
-genSignalSample = TTG_DiLept_1L_EFT
-subdir          = genSignalSample.name
+# load and define the EFT sample
+from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed  import *
+eftSample = TTG_4WC_ref
 
 useCache = True
 if args.keepCard:
@@ -89,15 +85,8 @@ regionNames.append("misDY4p")
 regionNames.append("VG4p")
 regionNames.append("SR4pM3")
 
-baseDir       = os.path.join( cache_directory, "analysis",  str(args.year), "limits" )
-limitDir      = os.path.join( baseDir, "cardFiles", args.label, "expected" if args.expected else "observed" )
-if not os.path.exists( limitDir ): os.makedirs( limitDir )
-
 cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
-
-''' Plot script WC parameter LogLikelihood
-'''
 
 plot_directory_ = os.path.join( plot_directory, "NLLPlots%s"%("Incl" if args.inclusive else ""), y, sel, "_".join(args.variables) )
 
@@ -109,8 +98,8 @@ if not os.path.isdir( plot_directory_ ):
 xRange = eftParameterRange["ctZ"] 
 
 def getNllData( var1, var2):
+    var2 = 0
     for var1 in eftParameterRange["ctZ"]:
-        for var2 in eftParameterRange["ctZ"]: 
             EFTparams = ["ctZ", str(var1), "ctZI", str(var2)]
             configlist = regionNames + EFTparams
             configlist.append("incl" if args.inclRegion else "diff")
@@ -119,22 +108,19 @@ def getNllData( var1, var2):
             nll = nllCache.get(sConfig)
     return float(nll)
 
-
+var2 = 0 
 logger.info("Loading cache data" )
 points2D = [ (0, 0) ] #SM point
-points2D += [ (0, varY) for varY in yRange] #1D plots
 points2D += [ (varX, 0) for varX in xRange] #1D plots
-points2D += [ (varX, varY) for varY in yRange for varX in xRange] #2D plots
 
 nllData  = [ (var1, var2, getNllData( var1, var2 )) for var1, var2 in points2D ]
-sm_nll   = filter( lambda (x, y, nll): x==0 and y==0, nllData )[0][2]
-nllData  = [ (x, y, 2*(nll - sm_nll)) for x, y, nll in nllData ]
+sm_nll   = filter( lambda (x, nll): x==0, nllData )[0][2]
+nllData  = [ (x, 2*(nll - sm_nll)) for x, nll in nllData ]
 
 # Remove white spots in plots
 #nllData  = [ (x, y, nll) if nll > 1e-5 else (x, y, 0) for x, y, nll in nllData ]
 
 xNLL     = [ (x, nll) for x, y, nll in nllData if y==0 ]
-yNLL     = [ (y, nll) for x, y, nll in nllData if x==0 ]
 
 tmp = nllData
 tmp.sort( key = lambda res: (res[0], res[2]) )
@@ -142,12 +128,6 @@ xNLL_profiled = []
 for key, group in itertools.groupby( tmp, operator.itemgetter(0) ):
     x, y, res = list(group)[0]
     xNLL_profiled.append((x, res))
-
-tmp.sort( key = lambda res: (res[1], res[2]) )
-yNLL_profiled = []
-for key, group in itertools.groupby( tmp, operator.itemgetter(1) ):
-    x, y, res = list(group)[0]
-    yNLL_profiled.append((y, res))
 
 def toGraph( name, title, data ):
     result  = ROOT.TGraph( len(data) )
@@ -163,7 +143,7 @@ def toGraph( name, title, data ):
     return result
 
 polString = "[0]*x**2+[1]*x**3+[2]*x**4+[3]*x**5+[4]*x**6+[5]*x**7+[6]*x**8+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
-xPlotLow, xPlotHigh, yPlotLow, yPlotHigh = args.xyRange
+xPlotLow, xPlotHigh = args.xyRange
 
 def plot1D( dat, var, xmin, xmax, profiled=False ):
     # get TGraph from results data list
@@ -289,17 +269,5 @@ def plot1D( dat, var, xmin, xmax, profiled=False ):
 #        cans.Print( plot_directory_ + "/%s%s%s"%(var, "_profiled" if profiled else "", e) )
 
 
-
-for i, dat in enumerate( [ xNLL, yNLL ] ):
-    xmin = [ xlow, ylow ][i]   if not [ xPlotLow, yPlotLow ][i]   else [ xPlotLow, yPlotLow ][i]
-    xmax = [ xhigh, yhigh ][i] if not [ xPlotHigh, yPlotHigh ][i] else [ xPlotHigh, yPlotHigh ][i]
-    var = args.variables[i]
-    plot1D( dat, var, xmin, xmax, profiled=False )
-
-for i, dat in enumerate( [ xNLL_profiled, yNLL_profiled ] ):
-    xmin = [ xlow, ylow ][i]   if not [ xPlotLow, yPlotLow ][i]   else [ xPlotLow, yPlotLow ][i]
-    xmax = [ xhigh, yhigh ][i] if not [ xPlotHigh, yPlotHigh ][i] else [ xPlotHigh, yPlotHigh ][i]
-    var = args.variables[i]
-    plot1D( dat, var, xmin, xmax, profiled=True )
 
 
