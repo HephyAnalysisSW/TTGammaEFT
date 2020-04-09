@@ -70,25 +70,17 @@ logger_rt = logger_rt.get_logger( args.logLevel, logFile = None )
 from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed  import *
 eftSample = TTG_4WC_ref
 
-useCache = True
-if args.keepCard:
-    args.overwrite = False
-
-def replaceDictKey( dict, fromKey, toKey ):
-    dict[toKey] = copy.copy(dict[fromKey])
-    del dict[fromKey]
-    return dict
-
 regionNames = []
 regionNames.append("misTT2")
 regionNames.append("misDY4p")
 regionNames.append("VG4p")
 regionNames.append("SR4pM3")
 
+baseDir       = os.path.join( cache_directory, "analysis",  str(args.years), "limits" )
 cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
 
-plot_directory_ = os.path.join( plot_directory, "NLLPlots%s"%("Incl" if args.inclusive else ""), y, sel, "_".join(args.variables) )
+plot_directory_ = os.path.join( plot_directory, "NLLPlots%s"%("Incl" if args.inclusive else ""), "_".join(args.variables) )
 
 if not os.path.isdir( plot_directory_ ):
     try: os.makedirs( plot_directory_ )
@@ -100,12 +92,19 @@ xRange = eftParameterRange["ctZ"]
 def getNllData( var1, var2):
     var2 = 0
     for var1 in eftParameterRange["ctZ"]:
-            EFTparams = ["ctZ", str(var1), "ctZI", str(var2)]
-            configlist = regionNames + EFTparams
-            configlist.append("incl" if args.inclRegion else "diff")
-            configlist.append("expected" if args.expected else "observed")
-            sConfig = "_".join(configlist)
-            nll = nllCache.get(sConfig)
+        EFTparams = ["ctZ", str(var1), "ctZI", str(var2)]
+        configlist = regionNames + EFTparams
+        configlist.append("incl" if args.inclRegion else "diff")
+        configlist.append("expected" if args.expected else "observed")
+        sConfig = "_".join(configlist)
+        cacheFiles = nllCache.contains(sConfig)
+        if cacheFiles:
+            cachedDict = nllCache.get(sConfig)
+            nll = cachedDict["nll_prefit"]
+        else: 
+            logger.info("Data for %s=%s and %s=%s not in cache!"%( args.variables[0], str(var1), args.variables[1], str(var2) ) )
+            if args.skipMissingPoints: nll = 999
+            else: sys.exit(1)
     return float(nll)
 
 var2 = 0 
@@ -268,6 +267,16 @@ def plot1D( dat, var, xmin, xmax, profiled=False ):
 #    for e in [".png",".pdf",".root"]:
 #        cans.Print( plot_directory_ + "/%s%s%s"%(var, "_profiled" if profiled else "", e) )
 
+for i, dat in enumerate( [ xNLL ] ):
+    xmin = [ xlow ][i]   if not [ xPlotLow ][i]   else [ xPlotLow ][i]
+    xmax = [ xhigh ][i] if not [ xPlotHigh ][i] else [ xPlotHigh ][i]
+    var = args.variables[i]
+    plot1D( dat, var, xmin, xmax, profiled=False )
 
+for i, dat in enumerate( [ xNLL_profiled ] ):
+    xmin = [ xlow ][i]   if not [ xPlotLow ][i]   else [ xPlotLow ][i]
+    xmax = [ xhigh ][i] if not [ xPlotHigh ][i] else [ xPlotHigh ][i]
+    var = args.variables[i]
+    plot1D( dat, var, xmin, xmax, profiled=True )
 
 
