@@ -365,8 +365,10 @@ def wrapper():
                             ratio       =  yieldCache.get(yieldkey)["val"]
                         else:
                             raise Exception("yieldCache does not contain key")
+                        
+                        if smyield > 0: ratio /= smyield
+                        else: ratio = 1 
 
-                        ratio /= smyield
                             
                         print ratio
                         if pName == "Data": continue
