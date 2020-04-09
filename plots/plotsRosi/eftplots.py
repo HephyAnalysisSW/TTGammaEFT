@@ -97,15 +97,9 @@ def getNllData( var1, var2):
         configlist.append("incl" if args.inclRegion else "diff")
         configlist.append("expected" if args.expected else "observed")
         sConfig = "_".join(configlist)
-        cacheFiles = nllCache.contains(sConfig)
-        if cacheFiles:
-            cachedDict = nllCache.get(sConfig)
-            nll = cachedDict["nll_prefit"]
-        else: 
-            logger.info("Data for %s=%s and %s=%s not in cache!"%( args.variables[0], str(var1), args.variables[1], str(var2) ) )
-            if args.skipMissingPoints: nll = 999
-            else: sys.exit(1)
-    return float(nll)
+        nll  = nllCache.get(sConfig)
+    print nll
+    #return float(nll)
 
 var2 = 0 
 logger.info("Loading cache data" )
@@ -123,10 +117,6 @@ xNLL     = [ (x, nll) for x, y, nll in nllData if y==0 ]
 
 tmp = nllData
 tmp.sort( key = lambda res: (res[0], res[2]) )
-xNLL_profiled = []
-for key, group in itertools.groupby( tmp, operator.itemgetter(0) ):
-    x, y, res = list(group)[0]
-    xNLL_profiled.append((x, res))
 
 def toGraph( name, title, data ):
     result  = ROOT.TGraph( len(data) )
@@ -144,7 +134,7 @@ def toGraph( name, title, data ):
 polString = "[0]*x**2+[1]*x**3+[2]*x**4+[3]*x**5+[4]*x**6+[5]*x**7+[6]*x**8+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
 xPlotLow, xPlotHigh = args.xyRange
 
-def plot1D( dat, var, xmin, xmax, profiled=False ):
+def plot1D( dat, var, xmin, xmax ):
     # get TGraph from results data list
     xhist = toGraph( var, var, dat )
     func  = ROOT.TF1("func", polString, xmin, xmax )
@@ -226,8 +216,8 @@ def plot1D( dat, var, xmin, xmax, profiled=False ):
 
     xhist.GetYaxis().SetTitle("-2 #Delta ln L")
 
-    funcName = "profiled log-likelihood ratio" if profiled else "log-likelihood ratio"
-    leg = ROOT.TLegend(0.25,0.7,0.6,0.87) if profiled else ROOT.TLegend(0.3,0.7,0.7,0.87)
+    funcName = "log-likelihood ratio"
+    leg = ROOT.TLegend(0.3,0.7,0.7,0.87)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.035)
     leg.AddEntry( func, funcName ,"l")
@@ -261,7 +251,7 @@ def plot1D( dat, var, xmin, xmax, profiled=False ):
     latex1.DrawLatex(0.15, 0.92, '#bf{CMS} #it{Simulation Preliminary} ' + addon),
     latex1.DrawLatex(0.64, 0.92, '#bf{%3.1f fb{}^{-1} (13 TeV)}' % lumi_scale)
 
-    plotname = "%s%s%s"%(var, "_profiled" if profiled else "", "_%s"%args.tag if args.tag != "combined" else "")
+    plotname = "%s%s%s"%(var, "", "_%s"%args.tag if args.tag != "combined" else "")
     for e in [".png",".pdf",".root"]:
         cans.Print( plot_directory_ + "/%s%s"%(plotname, e) )
 #    for e in [".png",".pdf",".root"]:
@@ -271,12 +261,6 @@ for i, dat in enumerate( [ xNLL ] ):
     xmin = [ xlow ][i]   if not [ xPlotLow ][i]   else [ xPlotLow ][i]
     xmax = [ xhigh ][i] if not [ xPlotHigh ][i] else [ xPlotHigh ][i]
     var = args.variables[i]
-    plot1D( dat, var, xmin, xmax, profiled=False )
-
-for i, dat in enumerate( [ xNLL_profiled ] ):
-    xmin = [ xlow ][i]   if not [ xPlotLow ][i]   else [ xPlotLow ][i]
-    xmax = [ xhigh ][i] if not [ xPlotHigh ][i] else [ xPlotHigh ][i]
-    var = args.variables[i]
-    plot1D( dat, var, xmin, xmax, profiled=True )
+    plot1D( dat, var, xmin, xmax )
 
 
