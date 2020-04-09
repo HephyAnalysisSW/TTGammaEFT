@@ -76,6 +76,7 @@ dirs["TTG_erdOn"]        = ["TTGLep_erdOn_LO", "TTGSingleLep_erdOn_LO"]
 dirs["singleTop"]        = ["TBar_tWch_incl", "T_tWch_incl", "T_tch_pow", "TBar_tch_pow", "TToLeptons_sch_amcatnlo" ] #"TBar_tWch_ext", "T_tWch_ext"
 
 dirs["ZG_lowMLL"]        = ["ZGToLLG_lowMLL"]
+dirs["ZG_loose"]         = ["ZGToLLG_LoosePtlPtg"]
 
 dirs["TG"]               = ["TGJets_comb"] #"TGJets_lep"
 #["TGJets_lep"]
@@ -161,8 +162,10 @@ TTGLep_16          = getMCSample(name="TTG",              redirector=redirector,
 WJets_16           = getMCSample(name="WJets",            redirector=redirector, color=color.W,               texName="W+jets",            directory=directories["WJets"], noCheckProxy=True, fromDPM=fromDPM)
 #WJets_HT_16        = getMCSample(name="WJets",            redirector=redirector, color=color.W,               texName="W+jets",            directory=directories["WJets_HT"], noCheckProxy=True, fromDPM=fromDPM)
 ZG_16              = getMCSample(name="ZG",               redirector=redirector, color=color.ZGamma,          texName="Z#gamma",           directory=directories["ZG_lowMLL"], noCheckProxy=True, fromDPM=fromDPM)
+ZG_loose_16        = getMCSample(name="ZG",               redirector=redirector, color=color.ZGamma,          texName="Z#gamma",           directory=directories["ZG_loose"], noCheckProxy=True, fromDPM=fromDPM)
 TG_16              = getMCSample(name="TG",               redirector=redirector, color=color.TGamma,          texName="t#gamma",           directory=directories["TG"], noCheckProxy=True, fromDPM=fromDPM)
 WG_16              = getMCSample(name="WG",               redirector=redirector, color=color.WGamma,          texName="W#gamma",           directory=directories["WG"], noCheckProxy=True, fromDPM=fromDPM)
+WG_NLO_16          = getMCSample(name="WG",               redirector=redirector, color=color.WGamma,          texName="W#gamma",           directory=directories["WG_NLO"], noCheckProxy=True, fromDPM=fromDPM)
 #W_16               = getMCSample(name="W",                redirector=redirector, color=color.WGamma,          texName="W#gamma+WJets",     directory=directories["W"], noCheckProxy=True, fromDPM=fromDPM)
 QCD_16             = getMCSample(name="QCD",              redirector=redirector, color=color.QCD,             texName="multijets",         directory=directories["QCD"], noCheckProxy=True, fromDPM=fromDPM)
 GJets_16           = getMCSample(name="GJets",            redirector=redirector, color=color.GJets,           texName="#gamma+jets",       directory=directories["GJets"], noCheckProxy=True, fromDPM=fromDPM)

@@ -332,7 +332,7 @@ def eleSelector( lepton_selection ):
             if not "pt" in removedCuts:
                 if l["pt"]          < 35:                    return False
             if not "eta" in removedCuts:
-                if abs(l["eta"])    > 2.1:                   return False
+                if abs(l["eta"])    > 2.4:                   return False
             if not electronVIDSelector( l, vidNestedWPBitMap["tight"], removedCuts=removedCuts ): return False
 #            if not "pfRelIso03_all" in removedCuts:
 #                if l['pfRelIso03_all']  > 0.12:              return False
@@ -518,7 +518,7 @@ def genLeptonSelector( selection=None ):
             if abs(l["pdgId"]) not in [11,13]: return False
             if abs(l["pdgId"]) == 11:
                 if l["pt"]       < 35:         return False
-                if abs(l["eta"]) > 2.1:        return False
+                if abs(l["eta"]) > 2.4:        return False
             elif abs(l["pdgId"]) == 13:
                 if l["pt"]       < 30:         return False
                 if abs(l["eta"]) > 2.4:        return False

@@ -50,11 +50,9 @@ class Setup:
         }
 
         self.isPhotonSelection = default_nPhoton[0] != 0
+        self.isSignalRegion    = self.parameters["nBTag"][0] == 1 and self.parameters["nPhoton"][0] == 1 and not self.parameters["photonIso"]
 
-#        self.sys = {"weight":"weight", "reweight":["reweightL1Prefire", "reweightPU", "reweightLeptonTightSF", "reweightLeptonTrackingTightSF", "reweightPhotonSF", "reweightPhotonElectronVetoSF", "reweightBTag_SF"], "selectionModifier":None} 
-        self.sys = {"weight":"weight", "reweight":["reweightTrigger", "reweightL1Prefire", "reweightPU", "reweightLeptonTightSF", "reweightLeptonTrackingTightSF", "reweightPhotonSF", "reweightPhotonElectronVetoSF", "reweightBTag_SF"], "selectionModifier":None} 
-#        if self.year == 2018:
-#            self.sys["reweight"] += ["reweightHEM"]
+        self.sys = {"weight":"weight", "reweight":["reweightHEM", "reweightTrigger", "reweightL1Prefire", "reweightPU", "reweightLeptonTightSF", "reweightLeptonTrackingTightSF", "reweightPhotonSF", "reweightPhotonElectronVetoSF", "reweightBTag_SF"], "selectionModifier":None} 
 
         if runOnLxPlus:
             # Set the redirector in the samples repository to the global redirector
@@ -191,6 +189,7 @@ class Setup:
                 res.parameters[k] = parameters[k]
 
         res.isPhotonSelection = res.parameters["nPhoton"][0] != 0
+        res.isSignalRegion    = res.parameters["nBTag"][0] == 1 and res.parameters["nPhoton"][0] == 1 and not self.parameters["photonIso"]
         return res
 
     def defaultParameters(self, update={} ):
@@ -203,6 +202,7 @@ class Setup:
         _weightString = {}
         _weightString["Data"] = "weight" 
         _weightString["MC"] = "*".join([self.sys["weight"]] + (self.sys["reweight"] if self.sys["reweight"] else []))
+
         if addMisIDSF and photon: _weightString["MC"] += "+%s*(%s0_photonCatMagic==2)*(%f-1)" %(_weightString["MC"], photon, misIDSF_val[self.year].val)
 
         if   dataMC == "DataMC": return _weightString
@@ -271,10 +271,10 @@ class Setup:
         photonPrefix = "nPhoton"
         photonCatVar = "PhotonGood0_photonCatMagic"
         photonCatPrefix = "photoncat"
-        photonVetoCutVar = None
-        photonVetoPrefix = None
-#        photonVetoCutVar = "nPhotonNoChgIsoNoSieie"
-#        photonVetoPrefix = "nHadPhoton"
+#        photonVetoCutVar = None
+#        photonVetoPrefix = None
+        photonVetoCutVar = "nPhotonNoChgIsoNoSieie"
+        photonVetoPrefix = "nHadPhoton"
         if channel in ["e","eetight"]:
             leptonEtaCutVar = "abs(LeptonTight0_eta+LeptonTight0_deltaEtaSC)"
             leptonEtaPrefix = "etascl"
@@ -294,7 +294,7 @@ class Setup:
             channel     += "Inv"
             zWindow     += "Inv"
             tightLepton  = "nInvLepTight1"
-            vetoLepton   = "nNoIsoLepVeto1"
+            vetoLepton   = "nLepVeto1"
             jetCutVar    = "nJetGoodInvLepIso"
             jetPrefix    = "nInvLJet"
             btagCutVar   = "nBTagGoodInvLepIso"
@@ -303,10 +303,10 @@ class Setup:
             photonPrefix = "nInvLPhoton"
             photonCatVar = "PhotonGoodInvLepIso0_photonCatMagic"
             photonCatPrefix = "invLphotoncat"
-            photonVetoCutVar = None
-            photonVetoPrefix = None
-#            photonVetoCutVar = "nPhotonNoChgIsoNoSieieInvLepIso"
-#            photonVetoPrefix = "nInvLHadPhoton"
+#            photonVetoCutVar = None
+#            photonVetoPrefix = None
+            photonVetoCutVar = "nPhotonNoChgIsoNoSieieInvLepIso"
+            photonVetoPrefix = "nInvLHadPhoton"
             if channel in ["eInv","eetightInv"]:
                 leptonEtaCutVar = "abs(LeptonTightInvIso0_eta+LeptonTightInvIso0_deltaEtaSC)"
                 leptonEtaPrefix = "etainvscl"
@@ -428,12 +428,12 @@ class Setup:
                 res["prefixes"].append(prefix)
 
             # for now add a dR(lep, gamma) > 0.4 cut in the script here
-            if invertLepIso:
-                res["cuts"].append("linvtight0GammadR>=0.4")
-                res["prefixes"].append("linvgDR0.4")
-            else:
-                res["cuts"].append("ltight0GammadR>=0.4")
-                res["prefixes"].append("lgDR0.4")
+#            if invertLepIso:
+#                res["cuts"].append("linvtight0GammadR>=0.4")
+#                res["prefixes"].append("linvgDR0.4")
+#            else:
+#                res["cuts"].append("ltight0GammadR>=0.4")
+#                res["prefixes"].append("lgDR0.4")
         else:
             addMisIDSF   = False
             res["cuts"].append(photonCutVar+"==0")
@@ -494,25 +494,26 @@ class Setup:
             res["cuts"].append( catCut )
 
         #badEEVeto
-#        if self.year == 2017 and photonSel:
+#        if self.year == 2017:
 #            res["prefixes"].append("BadEEJetVeto")
 #            badEEStr = cutInterpreter.cutString( "BadEEJetVeto" )
 #            res["cuts"].append( badEEStr )
 
+        if invertLepIso:
+            res["cuts"].append( "triggeredInvIso==1" )
+        else:
+            res["cuts"].append( "triggered==1" )
+
+        if self.year == 2018:
+            res["cuts"].append( "reweightHEM>0" )
+
         if dataMC == "MC":
             res["cuts"].append( "overlapRemoval==1" )
-#            res["prefixes"].append( "overlapRemoval" )
 
-#            tr            = TriggerSelector( self.year, singleLepton=(not dileptonic) )
-            tr            = TriggerSelector( self.year, singleLepton=True )
-            triggerCutMc  = tr.getSelection( "MC" )
+#            tr            = TriggerSelector( self.year, singleLepton=True )
+#            triggerCutMc  = tr.getSelection( "MC" )
 
-            res["cuts"].append( triggerCutMc )
-#            res["prefixes"].append( "trigger" )
-
-
-#        if dataMC=="Data" and self.year == 2018:
-#            res["cuts"].append("reweightHEM>0")
+#            res["cuts"].append( triggerCutMc )
 
         if dataMC != "DataMC":
             res["cuts"].append( getFilterCut(isData=(dataMC=="Data"), year=self.year, skipBadChargedCandidate=True) )

@@ -56,6 +56,10 @@ class SystematicEstimator:
                 tfCacheDirName = os.path.join(cacheDir, self.name+"_tf")
                 self.tfCache = MergingDirDB(tfCacheDirName)
                 if not self.tfCache: raise
+            elif self.name.count("had"):
+                helperCacheDirName = os.path.join(cacheDir, "had_helper")
+                self.helperCache = MergingDirDB(helperCacheDirName)
+                if not self.helperCache: raise
             else:
                 self.helperCache=None
                 self.tfCache=None
@@ -134,6 +138,21 @@ class SystematicEstimator:
             res = u_float(-1,0)
         return res if res > 0 or checkOnly else u_float(0,0)
 
+    def cachedFakeFactor(self, region, channel, setup, overwrite=False, checkOnly=False):
+        key =  self.uniqueKey(region, channel, setup)
+        if (self.helperCache and self.helperCache.contains(key)) and not overwrite:
+            res = self.helperCache.get(key)
+            logger.debug( "Loading cached %s result for %r : %r"%(self.name, key, res) )
+        elif self.helperCache and not checkOnly:
+            logger.debug( "Calculating %s result for %r"%(self.name, key) )
+            res = self._dataDrivenFakeCorrectionFactor( region, channel, setup, overwrite=overwrite )
+            _res = self.helperCache.add( key, res, overwrite=True )
+            logger.debug( "Adding cached transfer factor for %r : %r" %(key, res) )
+        elif not checkOnly:
+            res = self._dataDrivenFakeCorrectionFactor( region, channel, setup, overwrite=overwrite )
+        else:
+            res = u_float(-1,0)
+        return res if res > 0 or checkOnly else u_float(0,0)
 
     @abc.abstractmethod
     def _estimate(self, region, channel, setup, signalAddon=None, overwrite=False):
@@ -150,6 +169,10 @@ class SystematicEstimator:
 
     def _fittedTransferFactor(self, channel, setup, qcdUpdates=None, overwrite=False):
         """Estimate transfer factor for QCD in "region" using setup"""
+        return
+
+    def _dataDrivenFakeCorrectionFactor(self, region, channel, setup, overwrite=False):
+        """Estimate fake factor for hadronic fakes in "region" using setup"""
         return
 
     def TransferFactorStatistic(self, region, channel, setup):

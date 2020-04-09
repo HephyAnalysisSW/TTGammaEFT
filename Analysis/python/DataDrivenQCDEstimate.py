@@ -6,6 +6,7 @@ from math import sqrt
 from TTGammaEFT.Analysis.SystematicEstimator import SystematicEstimator
 from TTGammaEFT.Analysis.SetupHelpers        import *
 from TTGammaEFT.Tools.user                   import analysis_results, cache_directory
+from TTGammaEFT.Tools.cutInterpreter  import cutInterpreter, zMassRange
 
 from Analysis.Tools.MergingDirDB             import MergingDirDB
 from Analysis.Tools.u_float                  import u_float
@@ -272,7 +273,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         selection_MC_SR     = setup.selection("MC",   channel=channel, **setup.defaultParameters( update=qcdUpdates["SR"] if qcdUpdates else QCDTF_updates["SR"] ))
         selection_Data_SR   = setup.selection("Data", channel=channel, **setup.defaultParameters( update=qcdUpdates["SR"] if qcdUpdates else QCDTF_updates["SR"] ))
 
-        weight_MC_CR      = selection_MC_CR["weightStr"].replace("reweightTrigger","reweightInvTrigger") # w/ misID SF #.replace("*reweightLeptonTrackingTightSF","").replace("*reweightLeptonTightSF","") # w/ misID SF
+        weight_MC_CR      = selection_MC_CR["weightStr"].replace("reweightTrigger","reweightInvIsoTrigger").replace("reweightLeptonTrackingTightSF","reweightLeptonTrackingTightSFInvIso").replace("reweightLeptonTightSF","reweightLeptonTightSFInvIso") # w/ misID SF
         weight_Data_CR    = selection_Data_CR["weightStr"]
         weight_MC_SR      = selection_MC_SR["weightStr"] # w/ misID SF
         weight_Data_SR    = selection_Data_SR["weightStr"]
@@ -287,12 +288,11 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         cut_MC_SR     = selection_MC_SR["cut"]
         cut_Data_SR   = selection_Data_SR["cut"]
 
-#        if channel == "e":
-#            cut_MC_CR += "&&LeptonTightInvIso0_pfRelIso03_all<0.2"
-#            cut_Data_CR += "&&LeptonTightInvIso0_pfRelIso03_all<0.2"
-#        else:
-#            cut_MC_CR += "&&LeptonTightInvIso0_pfRelIso04_all<0.4"
-#            cut_Data_CR += "&&LeptonTightInvIso0_pfRelIso04_all<0.4"
+        if setup.year == 2017:
+            cut_MC_CR   += "&&(" + cutInterpreter.cutString("BadEEJetVeto") + ")"
+            cut_Data_CR += "&&(" + cutInterpreter.cutString("BadEEJetVeto") + ")"
+            cut_MC_SR   += "&&(" + cutInterpreter.cutString("BadEEJetVeto") + ")"
+            cut_Data_SR += "&&(" + cutInterpreter.cutString("BadEEJetVeto") + ")"
 
         print( "Using QCD TF CR MC total cut %s"%(cut_MC_CR) )
         print( "Using QCD TF CR Data total cut %s"%(cut_Data_CR) )
@@ -481,7 +481,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
 #                selection_Data_CR["cut"] += "&&LeptonTightInvIso0_pfRelIso04_all<0.4"
 
             weight_Data_CR    = selection_Data_CR["weightStr"]
-            weight_MC_CR      = selection_MC_CR["weightStr"].replace("*reweightTrigger","reweightInvTrigger") # w/ misID SF
+            weight_MC_CR      = selection_MC_CR["weightStr"].replace("reweightTrigger","reweightInvIsoTrigger").replace("reweightLeptonTrackingTightSF","reweightLeptonTrackingTightSFInvIso").replace("reweightLeptonTightSF","reweightLeptonTightSFInvIso") # w/ misID SF
 
             regionCut_CR      = region.cutString()
 
@@ -527,10 +527,11 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                     QCDTF_updates_nJ["SR"]["leptonEta"] = ( etaLow, etaHigh )
                     QCDTF_updates_nJ["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
 
+                    # Remove that for now
                     # define the 2016 e-channel QCD sideband in barrel only (bad mT fit in EC)
-#                    if channel == "e" and setup.year == 2016 and (etaHigh > 1.479 or etaHigh < 0):
-#                        QCDTF_updates_2J["CR"]["leptonEta"] = ( 0, 1.479 )
-#                        QCDTF_updates_nJ["CR"]["leptonEta"] = ( 0, 1.479 )
+                    if False and channel == "e" and setup.year == 2016 and (etaHigh > 1.479 or etaHigh < 0):
+                        QCDTF_updates_2J["CR"]["leptonEta"] = ( 0, 1.479 )
+                        QCDTF_updates_nJ["CR"]["leptonEta"] = ( 0, 1.479 )
 
                     qcdUpdates  = { "CR":QCDTF_updates_2J["CR"], "SR":QCDTF_updates_2J["SR"] }
                     transferFac = self.cachedTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=overwrite, checkOnly=False )
@@ -543,19 +544,16 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                     transferFac.sigma = abs( transferFac.val - transferFac_nJ.val )
                     if transferFac.sigma > transferFac.val: transferFac.sigma = transferFac.val #upper bound of 100%
 
-                    leptonPtEtaCut = [ leptonEtaCutVar + ">=" + str(etaLow), leptonPtCutVar + ">=" + str(ptLow) ]
-                    if etaHigh > 0: leptonPtEtaCut += [ leptonEtaCutVar + "<" + str(etaHigh) ]
-                    if ptHigh > 0:  leptonPtEtaCut += [ leptonPtCutVar + "<" + str(ptHigh) ]
-
                     # define the 2016 e-channel QCD sideband in barrel only (bad mT fit in EC)
-#                    if channel == "e" and setup.year == 2016 and (etaHigh > 1.479 or etaHigh < 0):
-#                        leptonPtEtaCut  = [ leptonEtaCutVar + ">=0", leptonPtCutVar + ">=" + str(ptLow) ]
-#                        leptonPtEtaCut += [ leptonEtaCutVar + "<1.479" ]
-#                        if ptHigh > 0:  leptonPtEtaCut += [ leptonPtCutVar + "<" + str(ptHigh) ]
-#                    else:
-#                        leptonPtEtaCut = [ leptonEtaCutVar + ">=" + str(etaLow), leptonPtCutVar + ">=" + str(ptLow) ]
-#                        if etaHigh > 0: leptonPtEtaCut += [ leptonEtaCutVar + "<" + str(etaHigh) ]
-#                        if ptHigh > 0:  leptonPtEtaCut += [ leptonPtCutVar + "<" + str(ptHigh) ]
+                    # Remove that for now
+                    if False and channel == "e" and setup.year == 2016 and (etaHigh > 1.479 or etaHigh < 0):
+                        leptonPtEtaCut  = [ leptonEtaCutVar + ">=0", leptonPtCutVar + ">=" + str(ptLow) ]
+                        leptonPtEtaCut += [ leptonEtaCutVar + "<1.479" ]
+                        if ptHigh > 0:  leptonPtEtaCut += [ leptonPtCutVar + "<" + str(ptHigh) ]
+                    else:
+                        leptonPtEtaCut = [ leptonEtaCutVar + ">=" + str(etaLow), leptonPtCutVar + ">=" + str(ptLow) ]
+                        if etaHigh > 0: leptonPtEtaCut += [ leptonEtaCutVar + "<" + str(etaHigh) ]
+                        if ptHigh > 0:  leptonPtEtaCut += [ leptonPtCutVar + "<" + str(ptHigh) ]
 
                     leptonPtEtaCut = "&&".join( leptonPtEtaCut )
 
@@ -602,7 +600,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                     logger.info("transfer factor:           " + str(transferFac))
 
 #        logger.info("Estimate for QCD in " + channel + " channel" + (" (lumi=" + str(setup.lumi) + "/pb)" if channel != "all" else "") + ": " + str(estimate) + (" (negative estimated being replaced by 0)" if estimate < 0 else ""))
-        return qcd_yield if qcd_yield > 1 else u_float(1, 1)
+        return qcd_yield if qcd_yield > 0 else u_float(0, 0)
 
 if __name__ == "__main__":
     from TTGammaEFT.Analysis.regions      import regionsTTG, noPhotonRegionTTG, inclRegionsTTG

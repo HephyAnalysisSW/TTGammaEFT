@@ -107,3 +107,10 @@ class TriggerSelector:
 
             return "(%s)" %cutString
 
+if __name__=="__main__":
+    tr            = TriggerSelector( 2016, singleLepton=True )
+    triggerCutMc  = tr.getSelection( "MC" )
+    print triggerCutMc
+    Ts          = TriggerSelector( 2016, singleLepton=True )
+    triggerCond = Ts.getSelection( "SingleMuon" )
+    print triggerCond
