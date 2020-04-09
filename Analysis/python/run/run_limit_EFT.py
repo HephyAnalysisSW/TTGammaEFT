@@ -422,7 +422,9 @@ def wrapper():
                         else:
                             c.specifyExpectation( binname, pName, expected.val )
 
-                        total_exp_bkg += expected.val
+                        if signal: total_exp_bkg += (expected.val/ratio)
+                        else: total_exp_bkg += expected.val
+
                         if signal and expected.val <= 0.01: mute = True
 
                         tune, erdOn, pu, jec, jer, sfb, sfl, trigger, lepSF, lepTrSF, phSF, eVetoSF, pfSF = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
