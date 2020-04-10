@@ -45,7 +45,7 @@ argParser.add_argument('--selection1l',        action='store',      default='nLe
 argParser.add_argument('--selection2l',        action='store',      default='dilepOS-nLepVeto2-pTG20-nPhoton1p-offZSFllg-offZSFll-mll40-nJet2p-nBTag1p')
 argParser.add_argument('--variables' ,         action='store',      default = ['ctZ', 'ctZI'], type=str, nargs=2,                                    help="argument plotting variables")
 argParser.add_argument('--small',              action='store_true',                                                                                  help='Run only on a small subset of the data?', )
-argParser.add_argument('--years',              action='store',      default=[ 2016, 2017 ], type=int, choices=[2016, 2017, 2018], nargs="*",         help="Which years to combine?")
+argParser.add_argument( "--year",               action="store",      default=2016,   type=int,                              help="Which year?" )
 argParser.add_argument('--selections',         action='store',      default=[ "1l", "2l" ], type=str, choices=["1l", "2l"], nargs="*",               help="Which selections to combine?")
 argParser.add_argument('--contours',           action='store_true',                                                                                  help='draw 1sigma and 2sigma contour line?')
 argParser.add_argument('--smooth',             action='store_true',                                                                                  help='smooth histogram?')
@@ -71,12 +71,12 @@ from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed  import *
 eftSample = TTG_4WC_ref
 
 regionNames = []
-regionNames.append("misTT2")
-regionNames.append("misDY4p")
-regionNames.append("VG4p")
 regionNames.append("SR4pM3")
+regionNames.append("VG4p")
+regionNames.append("misDY4p")
+regionNames.append("misTT2")
 
-baseDir       = os.path.join( cache_directory, "analysis",  str(args.years), "limits" )
+baseDir       = os.path.join( cache_directory, "analysis",  str(args.year), "limits" )
 cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
 
@@ -90,30 +90,29 @@ if not os.path.isdir( plot_directory_ ):
 xRange = eftParameterRange["ctZ"] 
 
 def getNllData( var1, var2):
-    var2 = 0
-    for var1 in eftParameterRange["ctZ"]:
-        EFTparams = ["ctZ", str(var1), "ctZI", str(var2)]
-        configlist = regionNames + EFTparams
-        configlist.append("incl" if args.inclRegion else "diff")
-        configlist.append("expected" if args.expected else "observed")
-        sConfig = "_".join(configlist)
-        nll  = nllCache.get(sConfig)
-    print nll
-    #return float(nll)
+    EFTparams = ["ctZ", str(var1), "ctZI", str(var2)]
+    configlist = regionNames + EFTparams
+    configlist.append("incl" if args.inclRegion else "diff")
+    configlist.append("expected" if args.expected else "observed")
+    sConfig = "_".join(configlist)
+    nll  = nllCache.get(sConfig)
+    return float(nll)
 
-var2 = 0 
+
 logger.info("Loading cache data" )
 points2D = [ (0, 0) ] #SM point
 points2D += [ (varX, 0) for varX in xRange] #1D plots
 
-nllData  = [ (var1, var2, getNllData( var1, var2 )) for var1, var2 in points2D ]
-sm_nll   = filter( lambda (x, nll): x==0, nllData )[0][2]
-nllData  = [ (x, 2*(nll - sm_nll)) for x, nll in nllData ]
+nllData  = [ [var1, var2, getNllData( var1, var2 )] for var1, var2 in points2D ]
+sm_nll   = getNllData(0,0)
 
-# Remove white spots in plots
-#nllData  = [ (x, y, nll) if nll > 1e-5 else (x, y, 0) for x, y, nll in nllData ]
+#nllData  = [ (x, 2*(nll - sm_nll)) for x, nll in nllData ]
+length = len(nllData)
+for i in range(length):
+    nllData[i][2] = 2*(nllData[i][2]-sm_nll)
+    nllData[i] = tuple(nllData[i])
 
-xNLL     = [ (x, nll) for x, y, nll in nllData if y==0 ]
+xNLL     = [ (x, nll) for x, nll in nllData ]
 
 tmp = nllData
 tmp.sort( key = lambda res: (res[0], res[2]) )
