@@ -160,7 +160,6 @@ if args.addZGSF:     regionNames.append("addZGSF")
 if args.addSSM:      regionNames.append("addSSM")
 if args.addMisIDSF:  regionNames.append("addMisIDSF")
 if args.addFakeSF:   regionNames.append("addFakeSF")
-if args.inclRegion:  regionNames.append("incl")
 if args.misIDPOI:    regionNames.append("misIDPOI")
 if args.vgPOI:       regionNames.append("vgPOI")
 if args.wJetsPOI:    regionNames.append("wJetsPOI")
@@ -173,7 +172,6 @@ if not os.path.exists( limitDir ): os.makedirs( limitDir )
 
 cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
-print cacheFileName
 
 cacheFileName   = os.path.join( baseDir, "calculatedLimits" )
 limitCache      = MergingDirDB( cacheFileName )

@@ -43,7 +43,7 @@ argParser.add_argument('--genSelection1l',     action='store',      default='dil
 argParser.add_argument('--genSelection2l',     action='store',      default='dilepOS-pTG20-nPhoton1p-offZSFllg-offZSFll-mll40-nJet2p-nBTag1p')
 argParser.add_argument('--selection1l',        action='store',      default='nLepTight1-nLepVeto1-nJet4p-nBTag1p-pTG20-nPhoton1p')
 argParser.add_argument('--selection2l',        action='store',      default='dilepOS-nLepVeto2-pTG20-nPhoton1p-offZSFllg-offZSFll-mll40-nJet2p-nBTag1p')
-argParser.add_argument('--variables' ,         action='store',      default = ['ctZ'], type=str, nargs=1,                                    help="argument plotting variables")
+argParser.add_argument('--variables' ,         action='store',      default = ['ctZI'], type=str, nargs=1,                                    help="argument plotting variables")
 argParser.add_argument('--small',              action='store_true',                                                                                  help='Run only on a small subset of the data?', )
 argParser.add_argument( "--year",               action="store",      default=2016,   type=int,                              help="Which year?" )
 argParser.add_argument('--binning',            action='store',      default=[20, -1, 1], type=float, nargs=3,                            help="argument parameters")
@@ -55,10 +55,10 @@ argParser.add_argument('--xyRange',            action='store',      default=[Non
 argParser.add_argument('--binMultiplier',      action='store',      default=3,                 type=int,                                             help='bin multiplication factor')
 argParser.add_argument('--skipMissingPoints',  action='store_true',                                                                                  help='Set missing NLL points to 999?')
 argParser.add_argument('--plotData',           action='store_true',                                                                                  help='Plot data points?')
-argParser.add_argument('--inclusive',          action='store_true',                                                                                  help='run inclusive regions', )
 argParser.add_argument('--tag',                action='store',      default="combined",        type=str,                                             help='tag for unc studies')
 argParser.add_argument( "--expected",           action="store_true",                                                        help="Use sum of backgrounds instead of data." )
 argParser.add_argument( "--inclRegion",         action="store_true",                                                        help="use inclusive photon pt region" )
+argParser.add_argument( "--useRegions",         action="store",      nargs='*',       type=str, choices=allRegions.keys(),  help="Which regions to use?" )
 args = argParser.parse_args()
 
 # Logging
@@ -72,17 +72,22 @@ from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed  import *
 eftSample = TTG_4WC_ref
 
 regionNames = []
-regionNames.append("SR4pM3")
-regionNames.append("VG4p")
-regionNames.append("misDY4p")
-regionNames.append("misTT2")
+if args.useRegions: regionNames = args.useRegions
+print regionNames
+regionNames.sort() 
+print regionNames
 
 baseDir       = os.path.join( cache_directory, "analysis",  str(args.year), "limits" )
 cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
 
-plot_directory_ = os.path.join( plot_directory, "NLLPlots%s"%("Incl" if args.inclusive else "" "expected" if args.expected else ""), "_".join(args.variables) )
 
+directory = os.path.join( plot_directory, "NLLPlots", str(args.year), "_".join( regionNames ))
+if args.inclRegion and not args.expected: direc = os.path.join( directory, "inclusive")
+if not args.inclRegion and args.expected: direc = os.path.join( directory, "expected")
+if args.inclRegion and args.expected: direc = os.path.join( directory, "inclusive and expected")
+plot_directory_ = os.path.join( direc, "_".join(args.variables) )
+print plot_directory_
 if not os.path.isdir( plot_directory_ ):
     try: os.makedirs( plot_directory_ )
     except: pass
@@ -93,13 +98,11 @@ elif args.year == 2018: lumi_scale = 59.74
 
 #binning range
 xbins, xlow, xhigh = args.binning[:3]
-xRange = eftParameterRange["ctZ"] 
+xRange = eftParameterRange["ctZI"] 
 
 def getNllData( var1):
-    EFTparams = ["ctZ", str(var1), "ctZI", str(0)]
-    configlist = regionNames + EFTparams 
-#    if args.inclRegion: configlist.append("incl")
-#    configlist.append(EFTparams)
+    EFTparams = ["ctZ", str(0), "ctZI", str(var1)]
+    configlist = regionNames + EFTparams
     configlist.append("incl" if args.inclRegion else "diff")
     configlist.append("expected" if args.expected else "observed")
     sConfig = "_".join(configlist)
@@ -173,8 +176,8 @@ def plot1D( dat, var, xmin, xmax ):
     # Plot
     cans = ROOT.TCanvas("cans","cans",500,500)
 
-    if not None in args.zRange:
-        xhist.GetYaxis().SetRangeUser( 0, 10 )
+    #if not None in args.zRange:
+    xhist.GetYaxis().SetRangeUser( 0, 10 )
     xhist.GetXaxis().SetRangeUser( xmin, xmax )
 
 
@@ -192,10 +195,10 @@ def plot1D( dat, var, xmin, xmax ):
     func68.SetLineWidth(0)
     func68.SetNpx(1000)
 
-    if not None in args.zRange:
-        func.GetYaxis().SetRangeUser( args.zRange[0], args.zRange[1] )
-        func68.GetYaxis().SetRangeUser( args.zRange[0], args.zRange[1] )
-        func95.GetYaxis().SetRangeUser( args.zRange[0], args.zRange[1] )
+    #if not None in args.zRange:
+     #   func.GetYaxis().SetRangeUser( args.zRange[0], args.zRange[1] )
+      #  func68.GetYaxis().SetRangeUser( args.zRange[0], args.zRange[1] )
+       # func95.GetYaxis().SetRangeUser( args.zRange[0], args.zRange[1] )
     func.GetXaxis().SetRangeUser( xmin, xmax )
     func68.GetXaxis().SetRangeUser( xmin, xmax )
     func95.GetXaxis().SetRangeUser( xmin, xmax )
