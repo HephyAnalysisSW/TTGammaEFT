@@ -240,7 +240,7 @@ def getjetswoetacut( event,sample ):
         event.JetGoodwoetacut_index[iJet] = jet['index']
         for b in jetVarNames:
             getattr(event, "JetGoodwoetacut_"+b)[iJet] = jet[b]
-        event.abseta = abs( jet['eta'] )
+        event.abseta[iJet] = abs( jet['eta'] )
         getattr(event, "abseta")[iJet]
 
 sequence.append( getjetswoetacut )
