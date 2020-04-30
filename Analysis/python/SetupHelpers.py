@@ -17,9 +17,10 @@ DY          = ["DY_LO_gen","DY_LO_had"]
 TT_misID    = ["TT_pow_misID"]
 TT          = ["TT_pow_gen","TT_pow_had","TTG_had"]
 WG          = ["WG_gen","WG_had"]
+WG_misID    = ["WG_misID"]
 ZG          = ["ZG_gen","ZG_had"]
-VG          = ["WG_gen","WG_had","ZG_gen","ZG_had"]
-other_misID = ["WJets_misID","other_misID","WG_misID","ZG_misID"]
+ZG_misID    = ["ZG_misID"]
+other_misID = ["WJets_misID","other_misID"] #,"WG_misID","ZG_misID"]
 other       = ["other_gen","other_had"]
 WJets       = ["WJets_gen","WJets_had"]
 QCD         = ["QCD-DD"]
@@ -36,8 +37,9 @@ processes = {
              "TT":          { "process":TT,          "color":color.TT,           "texName":"tt+tt#gamma (had)"     },
              "TT_misID":    { "process":TT_misID,    "color":color.TT_misID,     "texName":"tt (misID)"            },
              "WG":          { "process":WG,          "color":color.WGamma,       "texName":"W#gamma (gen, had)"    },
+             "WG_misID":    { "process":WG_misID,    "color":color.WG_misID,     "texName":"W#gamma (misID)"       },
              "ZG":          { "process":ZG,          "color":color.ZGamma,       "texName":"Z#gamma (gen, had)"    },
-#             "VG":          { "process":VG,          "color":color.VGamma,       "texName":"V#gamma (gen, had)"    },
+             "ZG_misID":    { "process":ZG_misID,    "color":color.ZG_misID,     "texName":"Z#gamma (misID)"       },
              "WJets":       { "process":WJets,       "color":color.WJets,        "texName":"WJets (gen, had)"      },
              "other":       { "process":other,       "color":color.Other,        "texName":"other (gen, had)"      },
              "other_misID": { "process":other_misID, "color":color.Other_misID,  "texName":"WJets+V#gamma+other (misID)" },
@@ -52,8 +54,9 @@ processesNoPhoton = {
                      "TT":          { "process":["TT_pow"],   "color":color.TT,           "texName":"tt+tt#gamma (had)"     },
                      "TT_misID":    { "process":[],           "color":color.TT_misID,     "texName":"tt (misID)"            },
                      "WG":          { "process":["WG"],       "color":color.WGamma,       "texName":"W#gamma (gen, had)"    },
+                     "WG_misID":    { "process":[],           "color":color.WG_misID,     "texName":"W#gamma (misID)"       },
                      "ZG":          { "process":["ZG"],       "color":color.ZGamma,       "texName":"Z#gamma (gen, had)"    },
-#                     "VG":          { "process":["WG","ZG"],  "color":color.VGamma,       "texName":"V#gamma (gen, had)"    },
+                     "ZG_misID":    { "process":[],           "color":color.ZG_misID,     "texName":"Z#gamma (misID)"       },
                      "WJets":       { "process":["WJets"],    "color":color.WJets,        "texName":"WJets (gen, had)"      },
                      "other":       { "process":["other"],    "color":color.Other,        "texName":"other (gen, had)"      },
                      "other_misID": { "process":[],           "color":color.Other_misID,  "texName":"WJets+V#gamma+other (misID)" },
@@ -68,8 +71,9 @@ default_processes = {
              "TT":          { "process":["TT_pow"]+TT,   "color":color.TT,           "texName":"tt+tt#gamma (had)"     },
              "TT_misID":    { "process":TT_misID,        "color":color.TT_misID,     "texName":"tt (misID)"            },
              "WG":          { "process":["WG"]+WG,       "color":color.WGamma,       "texName":"W#gamma (gen, had)"    },
+             "WG_misID":    { "process":WG_misID,        "color":color.WG_misID,     "texName":"W#gamma (misID)"       },
              "ZG":          { "process":["ZG"]+ZG,       "color":color.ZGamma,       "texName":"Z#gamma (gen, had)"    },
-#             "VG":          { "process":["WG","ZG"]+VG,  "color":color.VGamma,       "texName":"V#gamma (gen, had)"    },
+             "ZG_misID":    { "process":ZG_misID,        "color":color.ZG_misID,     "texName":"Z#gamma (misID)"       },
              "WJets":       { "process":["WJets"]+WJets, "color":color.WJets,        "texName":"WJets (gen, had)"      },
              "other":       { "process":["other"]+other, "color":color.Other,        "texName":"other (gen, had)"      },
              "other_misID": { "process":other_misID,     "color":color.Other_misID,  "texName":"WJets+V#gamma+other (misID)" },
@@ -83,8 +87,9 @@ processesMisIDPOI = {
              "DY":          { "process":DY,                            "color":color.DY,           "texName":"DY (gen, had)"         },
              "TT":          { "process":TT,                            "color":color.TT,           "texName":"tt+tt#gamma (had)"     },
              "WG":          { "process":WG,                            "color":color.WGamma,       "texName":"W#gamma (gen, had)"    },
+             "WG_misID":    { "process":WG_misID,                      "color":color.WG_misID,     "texName":"W#gamma (misID)"       },
              "ZG":          { "process":ZG,                            "color":color.ZGamma,       "texName":"Z#gamma (gen, had)"    },
-#             "VG":          { "process":VG,                            "color":color.VGamma,       "texName":"V#gamma (gen, had)"    },
+             "ZG_misID":    { "process":ZG_misID,                      "color":color.ZG_misID,     "texName":"Z#gamma (misID)"       },
              "WJets":       { "process":WJets,                         "color":color.WJets,        "texName":"WJets (gen, had)"      },
              "other":       { "process":other,                         "color":color.Other,        "texName":"other (gen, had)"      },
              "QCD":         { "process":QCD,                           "color":color.QCD,          "texName":"multijets"             },
@@ -97,29 +102,35 @@ processesWJetsPOI = {
              "DY":          { "process":DY,                            "color":color.DY,           "texName":"DY"         },
              "TT":          { "process":TT,                            "color":color.TT,           "texName":"tt"     },
              "WG":          { "process":WG,                            "color":color.WGamma,       "texName":"W#gamma"    },
+             "WG_misID":    { "process":WG_misID,                      "color":color.WG_misID,     "texName":"W#gamma (misID)"       },
              "ZG":          { "process":ZG,                            "color":color.ZGamma,       "texName":"Z#gamma"    },
+             "ZG_misID":    { "process":ZG_misID,                      "color":color.ZG_misID,     "texName":"Z#gamma (misID)"       },
              "other":       { "process":other,                         "color":color.Other,        "texName":"other"      },
              "QCD":         { "process":QCD,                           "color":color.QCD,          "texName":"multijets"             },
 }
 
 processesTTPOI = {
-             "signal":      { "process":TT,                         "color":color.TT,        "texName":"tt" },
+             "signal":      { "process":TT,                            "color":color.TT,           "texName":"tt" },
              "TTG":         { "process":signal,                        "color":color.TTG,          "texName":"tt#gamma" },
              "DY":          { "process":DY,                            "color":color.DY,           "texName":"DY"         },
-             "WJets":       { "process":WJets,                            "color":color.WJets,           "texName":"WJets"     },
+             "WJets":       { "process":WJets,                         "color":color.WJets,        "texName":"WJets"     },
              "WG":          { "process":WG,                            "color":color.WGamma,       "texName":"W#gamma"    },
+             "WG_misID":    { "process":WG_misID,                      "color":color.WG_misID,     "texName":"W#gamma (misID)"       },
              "ZG":          { "process":ZG,                            "color":color.ZGamma,       "texName":"Z#gamma"    },
+             "ZG_misID":    { "process":ZG_misID,                      "color":color.ZG_misID,     "texName":"Z#gamma (misID)"       },
              "other":       { "process":other,                         "color":color.Other,        "texName":"other"      },
              "QCD":         { "process":QCD,                           "color":color.QCD,          "texName":"multijets"             },
 }
 
 processesDYPOI = {
-             "signal":      { "process":DY,                         "color":color.DY,        "texName":"DY" },
+             "signal":      { "process":DY,                            "color":color.DY,           "texName":"DY" },
              "TTG":         { "process":signal,                        "color":color.TTG,          "texName":"tt#gamma" },
              "TT":          { "process":TT,                            "color":color.TT,           "texName":"tt"         },
-             "WJets":       { "process":WJets,                            "color":color.WJets,           "texName":"WJets"     },
+             "WJets":       { "process":WJets,                         "color":color.WJets,        "texName":"WJets"     },
              "WG":          { "process":WG,                            "color":color.WGamma,       "texName":"W#gamma"    },
+             "WG_misID":    { "process":WG_misID,                      "color":color.WG_misID,     "texName":"W#gamma (misID)"       },
              "ZG":          { "process":ZG,                            "color":color.ZGamma,       "texName":"Z#gamma"    },
+             "ZG_misID":    { "process":ZG_misID,                      "color":color.ZG_misID,     "texName":"Z#gamma (misID)"       },
              "other":       { "process":other,                         "color":color.Other,        "texName":"other"      },
              "QCD":         { "process":QCD,                           "color":color.QCD,          "texName":"multijets"             },
 }
@@ -309,36 +320,146 @@ default_m3Window     = "all"
 default_photonIso    = None
 
 SSMSF_val = {}
-SSMSF_val[2016] = u_float( 0.8, 0.08 ) #26012020
-SSMSF_val[2017] = u_float( 0.8, 0.08 ) #26012020
-SSMSF_val[2018] = u_float( 0.8, 0.08 ) #26012020
+SSMSF_val[2016] = u_float( 0.78, 0.08 ) #26012020
+SSMSF_val[2017] = u_float( 0.78, 0.08 ) #26012020
+SSMSF_val[2018] = u_float( 0.78, 0.08 ) #26012020
 
 WJetsSF_val = {}
-WJetsSF_val[2016] = u_float( 1.14, 0.13 ) #12022020
+WJetsSF_val[2016] = u_float( 1.14, 0.13 )
 WJetsSF_val[2017] = u_float( 1.09, 0.13 )
 WJetsSF_val[2018] = u_float( 1.09, 0.13 )
 
 QCDSF_val = {}
-QCDSF_val[2016] = u_float( 1.00, 0.1 ) #12022020
-QCDSF_val[2017] = u_float( 1.00, 0.1 )
-QCDSF_val[2018] = u_float( 1.00, 0.1 )
+QCDSF_val[2016] = u_float( 1.39, 0.0 )
+QCDSF_val[2017] = u_float( 1.11, 0.0 )
+QCDSF_val[2018] = u_float( 0.82, 0.0 )
+
+QCD2SF_val = {}
+QCD2SF_val[2016] = u_float( 1.16, 0.0 )
+QCD2SF_val[2017] = u_float( 1.25, 0.0 )
+QCD2SF_val[2018] = u_float( 0.72, 0.0 )
+
+QCD3SF_val = {}
+QCD3SF_val[2016] = u_float( 1.39, 0.0 )
+QCD3SF_val[2017] = u_float( 1.11, 0.0 )
+QCD3SF_val[2018] = u_float( 0.82, 0.0 )
+
+QCD4SF_val = {}
+QCD4SF_val[2016] = u_float( 1.25, 0.0 )
+QCD4SF_val[2017] = u_float( 0.74, 0.0 )
+QCD4SF_val[2018] = u_float( 0.59, 0.0 )
+
+QCD5SF_val = {}
+QCD5SF_val[2016] = u_float( 1.13, 0.0 )
+QCD5SF_val[2017] = u_float( 1.01, 0.0 )
+QCD5SF_val[2018] = u_float( 0.87, 0.0 )
+
+QCD2pSF_val = {}
+QCD2pSF_val[2016] = u_float( 1.28, 0.0 )
+QCD2pSF_val[2017] = u_float( 0.83, 0.0 )
+QCD2pSF_val[2018] = u_float( 0.73, 0.0 )
+
+QCD3pSF_val = {}
+QCD3pSF_val[2016] = u_float( 1.10, 0.0 )
+QCD3pSF_val[2017] = u_float( 1.03, 0.0 )
+QCD3pSF_val[2018] = u_float( 0.85, 0.0 )
+
+QCD4pSF_val = {}
+QCD4pSF_val[2016] = u_float( 1.32, 0.0 )
+QCD4pSF_val[2017] = u_float( 0.85, 0.0 )
+QCD4pSF_val[2018] = u_float( 0.84, 0.0 )
 
 TTSF_val = {}
-TTSF_val[2016] = u_float( 1.00, 0.07 ) #12022020
-TTSF_val[2017] = u_float( 1.00, 0.06 )
-TTSF_val[2018] = u_float( 1.02, 0.08 )
+TTSF_val[2016] = u_float( 1.00, 0.0 )
+TTSF_val[2017] = u_float( 1.00, 0.0 )
+TTSF_val[2018] = u_float( 1.00, 0.0 )
 
+
+# SF with systematics, pull from JEC
 DYSF_val = {}
-DYSF_val[2016] = u_float( 1.19, 0.05 ) #12022020
-DYSF_val[2017] = u_float( 1.14, 0.04 )
-DYSF_val[2018] = u_float( 1.18, 0.05 )
+DYSF_val[2016] = u_float( 1.21, 0.09 )
+DYSF_val[2017] = u_float( 1.17, 0.12 )
+DYSF_val[2018] = u_float( 1.16, 0.12 )
+
+DY2SF_val = {}
+DY2SF_val[2016] = u_float( 1.18, 0.07 )
+DY2SF_val[2017] = u_float( 1.16, 0.09 )
+DY2SF_val[2018] = u_float( 1.18, 0.10 )
+
+DY3SF_val = {}
+DY3SF_val[2016] = u_float( 1.21, 0.09 )
+DY3SF_val[2017] = u_float( 1.17, 0.12 )
+DY3SF_val[2018] = u_float( 1.16, 0.12 )
+
+DY4SF_val = {}
+DY4SF_val[2016] = u_float( 1.09, 0.09 )
+DY4SF_val[2017] = u_float( 1.13, 0.12 )
+DY4SF_val[2018] = u_float( 1.10, 0.13 )
+
+DY5SF_val = {}
+DY5SF_val[2016] = u_float( 1.03, 0.10 )
+DY5SF_val[2017] = u_float( 1.19, 0.16 )
+DY5SF_val[2018] = u_float( 1.18, 0.18 )
+
+DY2pSF_val = {}
+DY2pSF_val[2016] = u_float( 1.18, 0.08 )
+DY2pSF_val[2017] = u_float( 1.16, 0.10 )
+DY2pSF_val[2018] = u_float( 1.17, 0.10 )
+
+DY3pSF_val = {}
+DY3pSF_val[2016] = u_float( 1.18, 0.09 )
+DY3pSF_val[2017] = u_float( 1.16, 0.12 )
+DY3pSF_val[2018] = u_float( 1.15, 0.12 )
+
+DY4pSF_val = {}
+DY4pSF_val[2016] = u_float( 1.08, 0.09 )
+DY4pSF_val[2017] = u_float( 1.14, 0.13 )
+DY4pSF_val[2018] = u_float( 1.12, 0.14 )
+
 
 
 
 misIDSF_val = {}
-misIDSF_val[2016] = u_float( 2.13, 0.32 ) #12022020
-misIDSF_val[2017] = u_float( 2.55, 0.34 )
-misIDSF_val[2018] = u_float( 1.50, 0.16 )
+misIDSF_val[2016] = u_float( 2.25, 0.40 )
+misIDSF_val[2017] = u_float( 2.60, 0.50 )
+misIDSF_val[2018] = u_float( 1.59, 0.31 )
+
+misID2SF_val = {}
+misID2SF_val[2016] = u_float( 2.32, 0.34 )
+misID2SF_val[2017] = u_float( 2.90, 0.50 )
+misID2SF_val[2018] = u_float( 1.53, 0.23 )
+
+misID3SF_val = {}
+misID3SF_val[2016] = u_float( 2.25, 0.40 )
+misID3SF_val[2017] = u_float( 2.60, 0.50 )
+misID3SF_val[2018] = u_float( 1.59, 0.31 )
+
+misID4SF_val = {}
+misID4SF_val[2016] = u_float( 1.95, 0.41 )
+misID4SF_val[2017] = u_float( 2.80, 1.00 )
+misID4SF_val[2018] = u_float( 1.70, 0.43 )
+
+misID5SF_val = {}
+misID5SF_val[2016] = u_float( 1.50, 1.00 )
+misID5SF_val[2017] = u_float( 2.00, 1.40 )
+misID5SF_val[2018] = u_float( 1.00, 0.60 )
+
+misID2pSF_val = {}
+misID2pSF_val[2016] = u_float( 2.27, 0.33 )
+misID2pSF_val[2017] = u_float( 2.80, 0.50 )
+misID2pSF_val[2018] = u_float( 1.50, 0.23 )
+
+misID3pSF_val = {}
+misID3pSF_val[2016] = u_float( 1.94, 0.34 )
+misID3pSF_val[2017] = u_float( 2.80, 0.50 )
+misID3pSF_val[2018] = u_float( 1.55, 0.29 )
+
+misID4pSF_val = {}
+misID4pSF_val[2016] = u_float( 1.95, 0.39 )
+misID4pSF_val[2017] = u_float( 3.00, 0.90 )
+misID4pSF_val[2018] = u_float( 1.72, 0.41 )
+
+
 
 fakeSF_val = {}
 fakeSF_val[2016] = u_float( 1.00, 0.09 )
@@ -346,19 +467,89 @@ fakeSF_val[2017] = u_float( 1.00, 0.09 )
 fakeSF_val[2018] = u_float( 1.00, 0.09 )
 
 WGSF_val = {}
-WGSF_val[2016] = u_float( 0.96, 0.17 ) #12022020
-WGSF_val[2017] = u_float( 1.20, 0.12 ) # currently 1.07 in 3jets, 1.35 in 4jets
-WGSF_val[2018] = u_float( 1.17, 0.15 ) #2020 01 20
+WGSF_val[2016] = u_float( 1.03, 0.15 )
+WGSF_val[2017] = u_float( 1.22, 0.18 )
+WGSF_val[2018] = u_float( 1.75, 0.34 )
+
+WG2SF_val = {}
+WG2SF_val[2016] = u_float( 1.18, 0.10 )
+WG2SF_val[2017] = u_float( 1.10, 0.10 )
+WG2SF_val[2018] = u_float( 1.22, 0.23 )
+
+WG3SF_val = {}
+WG3SF_val[2016] = u_float( 1.03, 0.15 )
+WG3SF_val[2017] = u_float( 1.21, 0.16 )
+WG3SF_val[2018] = u_float( 1.41, 0.27 )
+
+WG4SF_val = {}
+WG4SF_val[2016] = u_float( 1.23, 0.19 )
+WG4SF_val[2017] = u_float( 1.42, 0.28 )
+WG4SF_val[2018] = u_float( 1.00, 0. )
+
+WG5SF_val = {}
+WG5SF_val[2016] = u_float( 1.27, 0.39 )
+WG5SF_val[2017] = u_float( 1.80, 0.4 )
+WG5SF_val[2018] = u_float( 1.70, 0.5 )
+
+WG2pSF_val = {}
+WG2pSF_val[2016] = u_float( 1.14, 0.10 )
+WG2pSF_val[2017] = u_float( 1.16, 0.11 )
+WG2pSF_val[2018] = u_float( 1.23, 0.22 )
+
+WG3pSF_val = {}
+WG3pSF_val[2016] = u_float( 1.16, 0.14 )
+WG3pSF_val[2017] = u_float( 1.30, 0.17 )
+WG3pSF_val[2018] = u_float( 1.38, 0.27 )
+
+WG4pSF_val = {}
+WG4pSF_val[2016] = u_float( 1.26, 0.21 )
+WG4pSF_val[2017] = u_float( 1.51, 0.29 )
+WG4pSF_val[2018] = u_float( 1.64, 0.35 )
 
 otherSF_val = {}
-otherSF_val[2016] = u_float( 1.00, 0.2 ) #12022020
-otherSF_val[2017] = u_float( 1.00, 0.2 ) #2020 01 20
-otherSF_val[2018] = u_float( 1.00, 0.2 ) #2020 01 20
+otherSF_val[2016] = u_float( 1.00, 0.2 )
+otherSF_val[2017] = u_float( 1.00, 0.2 )
+otherSF_val[2018] = u_float( 1.00, 0.2 )
 
 ZGSF_val = {}
-ZGSF_val[2016] = u_float( 0.93, 0.19 )  # currently 0.9 in 3jets, 1.05 in 4jets
-ZGSF_val[2017] = u_float( 0.84, 0.12 )  #2020 01 20
-ZGSF_val[2018] = u_float( 0.97, 0.19 )  #2020 01 20
+ZGSF_val[2016] = u_float( 1.06, 0.0 )
+ZGSF_val[2017] = u_float( 0.91, 0.0 )
+ZGSF_val[2018] = u_float( 1.03, 0.0 )
+
+ZG2SF_val = {}
+ZG2SF_val[2016] = u_float( 0.89, 0.0 )
+ZG2SF_val[2017] = u_float( 0.90, 0. )
+ZG2SF_val[2018] = u_float( 0.98, 0.0 )
+
+ZG3SF_val = {}
+ZG3SF_val[2016] = u_float( 1.06, 0.0 )
+ZG3SF_val[2017] = u_float( 0.91, 0.0 )
+ZG3SF_val[2018] = u_float( 1.03, 0.0 )
+
+ZG4SF_val = {}
+ZG4SF_val[2016] = u_float( 1.08, 0.0 )
+ZG4SF_val[2017] = u_float( 1.02, 0.0 )
+ZG4SF_val[2018] = u_float( 1.09, 0.0 )
+
+ZG5SF_val = {}
+ZG5SF_val[2016] = u_float( 1.01, 0.0 )
+ZG5SF_val[2017] = u_float( 1.07, 0.0 )
+ZG5SF_val[2018] = u_float( 1.02, 0.0)
+
+ZG2pSF_val = {}
+ZG2pSF_val[2016] = u_float( 0.93, 0. )
+ZG2pSF_val[2017] = u_float( 0.88, 0. )
+ZG2pSF_val[2018] = u_float( 1.00, 0. )
+
+ZG3pSF_val = {}
+ZG3pSF_val[2016] = u_float( 1.01, 0.0 )
+ZG3pSF_val[2017] = u_float( 1.00, 0.0 )
+ZG3pSF_val[2018] = u_float( 1.10, 0.0 )
+
+ZG4pSF_val = {}
+ZG4pSF_val[2016] = u_float( 1.08, 0.0 )
+ZG4pSF_val[2017] = u_float( 1.08, 0.0 )
+ZG4pSF_val[2018] = u_float( 1.13, 0.0 )
 
 # all processes are all samples + them splitted in photon categories
 allProcesses            = copy.copy(default_sampleList)
@@ -442,7 +633,15 @@ controlRegions["fake4plow"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), 
 
 # dileptonic ee/mumu all m(l,l) nBTag0 nPhoton0 CR for DY ScaleFactor
 controlRegions["DY2"]  = { "parameters": { "dileptonic":True, "zWindow":"onZSFllTight", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0) },
-                           "channels":   dilepChannels,
+                           "channels":   ["SFtight"],
+                           "regions":    noPhotonRegionTTG,
+                           "inclRegion": noPhotonRegionTTG,
+                           "noPhotonCR": True,
+                           "processes":  processesNoPhoton,
+                         }
+                            
+controlRegions["DY2p"]  = { "parameters": { "dileptonic":True, "zWindow":"onZSFllTight", "nJet":(2,-1),  "nBTag":(0,0), "nPhoton":(0,0) },
+                           "channels":   ["SFtight"],
                            "regions":    noPhotonRegionTTG,
                            "inclRegion": noPhotonRegionTTG,
                            "noPhotonCR": True,
@@ -450,7 +649,7 @@ controlRegions["DY2"]  = { "parameters": { "dileptonic":True, "zWindow":"onZSFll
                          }
                             
 controlRegions["DY3"]  = { "parameters": { "dileptonic":True, "zWindow":"onZSFllTight", "nJet":(3,3),  "nBTag":(0,0), "nPhoton":(0,0) },
-                           "channels":   dilepChannels,
+                           "channels":   ["SFtight"],
                            "regions":    noPhotonRegionTTG,
                            "inclRegion": noPhotonRegionTTG,
                            "noPhotonCR": True,
@@ -458,7 +657,7 @@ controlRegions["DY3"]  = { "parameters": { "dileptonic":True, "zWindow":"onZSFll
                          }
 
 controlRegions["DY3p"]  = { "parameters": { "dileptonic":True, "zWindow":"onZSFllTight", "nJet":(3,-1),  "nBTag":(0,0), "nPhoton":(0,0) },
-                           "channels":   dilepChannels,
+                           "channels":   ["SFtight"],
                            "regions":    noPhotonRegionTTG,
                            "inclRegion": noPhotonRegionTTG,
                            "noPhotonCR": True,
@@ -466,7 +665,7 @@ controlRegions["DY3p"]  = { "parameters": { "dileptonic":True, "zWindow":"onZSFl
                          }
 
 controlRegions["DY4"]  = { "parameters":{"dileptonic":True, "zWindow":"onZSFllTight", "nJet":(4,4),  "nBTag":(0,0), "nPhoton":(0,0) },
-                           "channels":   dilepChannels,
+                           "channels":   ["SFtight"],
                            "regions":    noPhotonRegionTTG,
                            "inclRegion": noPhotonRegionTTG,
                            "noPhotonCR": True,
@@ -474,7 +673,7 @@ controlRegions["DY4"]  = { "parameters":{"dileptonic":True, "zWindow":"onZSFllTi
                          }
 
 controlRegions["DY5"]  = { "parameters": { "dileptonic":True, "zWindow":"onZSFllTight", "nJet":(5,5),  "nBTag":(0,0), "nPhoton":(0,0) },
-                           "channels":   dilepChannels,
+                           "channels":   ["SFtight"],
                            "regions":    noPhotonRegionTTG,
                            "inclRegion": noPhotonRegionTTG,
                            "noPhotonCR": True,
@@ -482,7 +681,7 @@ controlRegions["DY5"]  = { "parameters": { "dileptonic":True, "zWindow":"onZSFll
                          }
 
 controlRegions["DY4p"] = { "parameters": { "dileptonic":True, "zWindow":"onZSFllTight", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(0,0) },
-                           "channels":   dilepChannels,
+                           "channels":   ["SFtight"],
                            "regions":    noPhotonRegionTTG,
                            "inclRegion": noPhotonRegionTTG,
                            "noPhotonCR": True,
@@ -565,183 +764,6 @@ controlRegions["WJets4p"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "n
                               "processes":  processesNoPhoton,
                          }
 
-
-controlRegions["WJets2Eta0003"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(0.0,0.3) },
-                                     "channels":   lepChannels,
-                                     "regions":    noPhotonRegionTTG,
-                                     "inclRegion": noPhotonRegionTTG,
-                                     "noPhotonCR": True,
-                                     "processes":  processesNoPhoton,
-                                   }
-
-controlRegions["WJets2Eta0306"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(0.3,0.6) },
-                                     "channels":   lepChannels,
-                                     "regions":    noPhotonRegionTTG,
-                                     "inclRegion": noPhotonRegionTTG,
-                                     "noPhotonCR": True,
-                                     "processes":  processesNoPhoton,
-                                   }
-
-
-controlRegions["WJets2Eta0609"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(0.6,0.9) },
-                                     "channels":   lepChannels,
-                                     "regions":    noPhotonRegionTTG,
-                                     "inclRegion": noPhotonRegionTTG,
-                                     "noPhotonCR": True,
-                                     "processes":  processesNoPhoton,
-                                   }
-
-
-controlRegions["WJets2Eta0912"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(0.9,1.2) },
-                                     "channels":   lepChannels,
-                                     "regions":    noPhotonRegionTTG,
-                                     "inclRegion": noPhotonRegionTTG,
-                                     "noPhotonCR": True,
-                                     "processes":  processesNoPhoton,
-                                   }
-
-
-controlRegions["WJets2Eta1215"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(1.2,1.5) },
-                                     "channels":   lepChannels,
-                                     "regions":    noPhotonRegionTTG,
-                                     "inclRegion": noPhotonRegionTTG,
-                                     "noPhotonCR": True,
-                                     "processes":  processesNoPhoton,
-                                   }
-
-
-controlRegions["WJets2Eta1518"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(1.5,1.8) },
-                                     "channels":   lepChannels,
-                                     "regions":    noPhotonRegionTTG,
-                                     "inclRegion": noPhotonRegionTTG,
-                                     "noPhotonCR": True,
-                                     "processes":  processesNoPhoton,
-                                   }
-
-
-controlRegions["WJets2Eta1821"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(1.8,2.1) },
-                                     "channels":   lepChannels,
-                                     "regions":    noPhotonRegionTTG,
-                                     "inclRegion": noPhotonRegionTTG,
-                                     "noPhotonCR": True,
-                                     "processes":  processesNoPhoton,
-                                   }
-
-
-controlRegions["WJets2Eta2124"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(2.1,2.4) },
-                                     "channels":   lepChannels,
-                                     "regions":    noPhotonRegionTTG,
-                                     "inclRegion": noPhotonRegionTTG,
-                                     "noPhotonCR": True,
-                                     "processes":  processesNoPhoton,
-                                   }
-
-
-controlRegions["WJetsEC2"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(1.479,-1) },
-                              "channels":   lepChannels,
-                              "regions":    noPhotonRegionTTG,
-                              "inclRegion": noPhotonRegionTTG,
-                              "noPhotonCR": True,
-                              "processes":  processesNoPhoton,
-                         }
-
-controlRegions["WJetsEC3"]  = { "parameters": { "zWindow":"all", "nJet":(3,3),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(1.479,-1) },
-                              "channels":   lepChannels,
-                              "regions":    noPhotonRegionTTG,
-                              "inclRegion": noPhotonRegionTTG,
-                              "noPhotonCR": True,
-                              "processes":  processesNoPhoton,
-                         }
-
-controlRegions["WJetsEC3p"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(1.479,-1) },
-                              "channels":   lepChannels,
-                              "regions":    noPhotonRegionTTG,
-                              "inclRegion": noPhotonRegionTTG,
-                              "noPhotonCR": True,
-                              "processes":  processesNoPhoton,
-                         }
-
-controlRegions["WJetsEC4p"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(1.479,-1) },
-                              "channels":   lepChannels,
-                              "regions":    noPhotonRegionTTG,
-                              "inclRegion": noPhotonRegionTTG,
-                              "noPhotonCR": True,
-                              "processes":  processesNoPhoton,
-                         }
-
-controlRegions["WJetsBarrel2"]  = { "parameters": { "zWindow":"all", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(0,1.479) },
-                              "channels":   lepChannels,
-                              "regions":    noPhotonRegionTTG,
-                              "inclRegion": noPhotonRegionTTG,
-                              "noPhotonCR": True,
-                              "processes":  processesNoPhoton,
-                         }
-
-controlRegions["WJetsBarrel3"]  = { "parameters": { "zWindow":"all", "nJet":(3,3),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(0,1.479) },
-                              "channels":   lepChannels,
-                              "regions":    noPhotonRegionTTG,
-                              "inclRegion": noPhotonRegionTTG,
-                              "noPhotonCR": True,
-                              "processes":  processesNoPhoton,
-                         }
-
-controlRegions["WJetsBarrel3p"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1),  "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(0,1.479) },
-                              "channels":   lepChannels,
-                              "regions":    noPhotonRegionTTG,
-                              "inclRegion": noPhotonRegionTTG,
-                              "noPhotonCR": True,
-                              "processes":  processesNoPhoton,
-                         }
-
-controlRegions["WJetsBarrel4p"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(0,0), "leptonEta":(0,1.479) },
-                              "channels":   lepChannels,
-                              "regions":    noPhotonRegionTTG,
-                              "inclRegion": noPhotonRegionTTG,
-                              "noPhotonCR": True,
-                              "processes":  processesNoPhoton,
-                         }
-
-#controlRegions["WJets3MET"]  = { "parameters": { "zWindow":"all", "nJet":(3,3),  "nBTag":(0,0), "nPhoton":(0,0), "MET":(80,-1) },
-#                                 "channels":   lepChannels,
-#                                 "regions":    noPhotonRegionTTG,
-#                                 "inclRegion": noPhotonRegionTTG,
-#                                 "noPhotonCR": True,
-#                                 "processes":  processesNoPhoton,
-#                            }
-
-#controlRegions["WJets4pMET"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(0,0), "MET":(80,-1) },
-#                                 "channels":   lepChannels,
-#                                 "regions":    noPhotonRegionTTG,
-#                                 "inclRegion": noPhotonRegionTTG,
-#                                 "noPhotonCR": True,
-#                                 "processes":  processesNoPhoton,
-#                             }
-
-
-controlRegions["ZG3"]  = { "parameters": { "dileptonic":True, "zWindow":"onZSFllgTight", "nJet":(3,3),  "nBTag":(0,0), "nPhoton":(1,1) },
-                           "channels":   dilepChannels,
-                           "regions":    inclRegionsTTG,
-                           "inclRegion": inclRegionsTTG,
-                           "noPhotonCR": False,
-                           "processes":  processesNoPhoton,
-                         }
-
-controlRegions["ZG3p"]  = { "parameters": { "dileptonic":True, "zWindow":"onZSFllgTight", "nJet":(3,-1),  "nBTag":(0,0), "nPhoton":(1,1) },
-                           "channels":   dilepChannels,
-                           "regions":    inclRegionsTTG,
-                           "inclRegion": inclRegionsTTG,
-                           "noPhotonCR": False,
-                           "processes":  processesNoPhoton,
-                         }
-
-controlRegions["ZG4p"]  = { "parameters":{"dileptonic":True, "zWindow":"onZSFllgTight", "nJet":(4,-1),  "nBTag":(0,0), "nPhoton":(1,1) },
-                           "channels":   dilepChannels,
-                           "regions":    inclRegionsTTG,
-                           "inclRegion": inclRegionsTTG,
-                           "noPhotonCR": False,
-                           "processes":  processesNoPhoton,
-                         }
-
 # nPhoton1 nBTag0 offZeg m(e,gamma) CR for V+Gamma
 controlRegions["VG2p"]  = { "parameters": { "zWindow":"offZeg", "nJet":(2,-1), "nBTag":(0,0), "nPhoton":(1,1) },
                            "channels":   lepChannels,
@@ -767,39 +789,7 @@ controlRegions["VG3"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,3), "nB
                            "processes":  processes,
                          }
 
-controlRegions["VGBarrel3"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1), "leptonEta":(0,1.479) },
-                           "channels":   lepChannels,
-                           "regions":    mLgPtRegions,
-                           "inclRegion": mLgRegions,
-                           "noPhotonCR": False,
-                           "processes":  processes,
-                         }
-
-controlRegions["VGEC3"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1), "leptonEta":(1.479,-1) },
-                           "channels":   lepChannels,
-                           "regions":    mLgPtRegions,
-                           "inclRegion": mLgRegions,
-                           "noPhotonCR": False,
-                           "processes":  processes,
-                         }
-
 controlRegions["VG3p"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,-1), "nBTag":(0,0), "nPhoton":(1,1) },
-                           "channels":   lepChannels,
-                           "regions":    mLgPtRegions,
-                           "inclRegion": mLgRegions,
-                           "noPhotonCR": False,
-                           "processes":  processes,
-                         }
-
-controlRegions["VGBarrel3p"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,-1), "nBTag":(0,0), "nPhoton":(1,1), "leptonEta":(0,1.479) },
-                           "channels":   lepChannels,
-                           "regions":    mLgPtRegions,
-                           "inclRegion": mLgRegions,
-                           "noPhotonCR": False,
-                           "processes":  processes,
-                         }
-
-controlRegions["VGEC3p"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,-1), "nBTag":(0,0), "nPhoton":(1,1), "leptonEta":(1.479,-1) },
                            "channels":   lepChannels,
                            "regions":    mLgPtRegions,
                            "inclRegion": mLgRegions,
@@ -830,39 +820,6 @@ controlRegions["VG4p"] = { "parameters": { "zWindow":"offZeg", "nJet":(4,-1), "n
                            "noPhotonCR": False,
                            "processes":  processes,
                          }
-
-controlRegions["VGBarrel4p"] = { "parameters": { "zWindow":"offZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1), "leptonEta":(0,1.479) },
-                           "channels":   lepChannels,
-                           "regions":    mLgPtRegions,
-                           "inclRegion": mLgRegions,
-                           "noPhotonCR": False,
-                           "processes":  processes,
-                         }
-
-controlRegions["VGEC4p"] = { "parameters": { "zWindow":"offZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1), "leptonEta":(1.479,-1) },
-                           "channels":   lepChannels,
-                           "regions":    mLgPtRegions,
-                           "inclRegion": mLgRegions,
-                           "noPhotonCR": False,
-                           "processes":  processes,
-                         }
-
-controlRegions["VG3MET"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1), "MET":(50,-1) },
-                              "channels":   lepChannels,
-                              "regions":    mLgPtRegions,
-                              "inclRegion": mLgRegions,
-                              "noPhotonCR": False,
-                              "processes":  processes,
-                            }
-
-controlRegions["VG4pMET"] = { "parameters": { "zWindow":"offZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1), "MET":(50,-1)  },
-                              "channels":   lepChannels,
-                              "regions":    mLgPtRegions,
-                              "inclRegion": mLgRegions,
-                              "noPhotonCR": False,
-                              "processes":  processes,
-                            }
-
 
 # both VG + misID
 controlRegions["VGmis2p"]  = { "parameters": { "zWindow":"all", "nJet":(2,-1), "nBTag":(0,0), "nPhoton":(1,1) },
@@ -938,39 +895,7 @@ controlRegions["misDY3"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,3), "
                               "processes":  processes,
                             }
 
-controlRegions["misDYBarrel3"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1) },
-                              "channels":   ["e"],
-                              "regions":    regionsTTG,
-                              "inclRegion": inclRegionsTTG,
-                              "noPhotonCR": False,
-                              "processes":  processes,
-                            }
-
-controlRegions["misDYEC3"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1) },
-                              "channels":   ["e"],
-                              "regions":    regionsTTG,
-                              "inclRegion": inclRegionsTTG,
-                              "noPhotonCR": False,
-                              "processes":  processes,
-                            }
-
 controlRegions["misDY3p"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,-1), "nBTag":(0,0), "nPhoton":(1,1) },
-                              "channels":   ["e"],
-                              "regions":    regionsTTG,
-                              "inclRegion": inclRegionsTTG,
-                              "noPhotonCR": False,
-                              "processes":  processes,
-                            }
-
-controlRegions["misDYBarrel3p"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,-1), "nBTag":(0,0), "nPhoton":(1,1) },
-                              "channels":   ["e"],
-                              "regions":    regionsTTG,
-                              "inclRegion": inclRegionsTTG,
-                              "noPhotonCR": False,
-                              "processes":  processes,
-                            }
-
-controlRegions["misDYEC3p"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,-1), "nBTag":(0,0), "nPhoton":(1,1) },
                               "channels":   ["e"],
                               "regions":    regionsTTG,
                               "inclRegion": inclRegionsTTG,
@@ -1001,42 +926,6 @@ controlRegions["misDY4p"] = { "parameters": { "zWindow":"onZeg", "nJet":(4,-1), 
                               "noPhotonCR": False,
                               "processes":  processes,
                             }
-
-
-controlRegions["misDYBarrel4p"] = { "parameters": { "zWindow":"onZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1) },
-                              "channels":   ["e"],
-                              "regions":    regionsTTG,
-                              "inclRegion": inclRegionsTTG,
-                              "noPhotonCR": False,
-                              "processes":  processes,
-                            }
-
-
-controlRegions["misDYEC4p"] = { "parameters": { "zWindow":"onZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1) },
-                              "channels":   ["e"],
-                              "regions":    regionsTTG,
-                              "inclRegion": inclRegionsTTG,
-                              "noPhotonCR": False,
-                              "processes":  processes,
-                            }
-
-
-#controlRegions["misDY3MET"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1), "MET":(50,-1) },
-#                                 "channels":   ["e"],
-#                                 "regions":    regionsTTG,
-#                                 "inclRegion": inclRegionsTTG,
-#                                 "noPhotonCR": False,
-#                                 "processes":  processes,
-#                               }
-
-#controlRegions["misDY4pMET"] = { "parameters": { "zWindow":"onZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1), "MET":(50,-1) },
-#                                 "channels":   ["e"],
-#                                 "regions":    regionsTTG,
-#                                 "inclRegion": inclRegionsTTG,
-#                                 "noPhotonCR": False,
-#                                 "processes":  processes,
-#                               }
-
 
 # nPhoton1p nBTag2 nJet2 offZeg m(e,gamma) CR for misID ScaleFactor TTbar
 controlRegions["misTT2"] = { "parameters": { "zWindow":"offZeg", "nJet":(2,2), "nBTag":(2,2), "nPhoton":(1,1) },
@@ -1113,10 +1002,6 @@ allRegions.update(signalRegions)
 # RegionPlot ordering
 limitOrdering  = []
 
-noPCR = [ key for key, val in allRegions.items() if val["noPhotonCR"] ]
-noPCR.sort()
-limitOrdering += noPCR
-
 pCR = [ key for key, val in controlRegions.items() if not val["noPhotonCR"] and not "fake" in key]
 pCR.sort()
 limitOrdering += pCR
@@ -1124,6 +1009,10 @@ limitOrdering += pCR
 pCRfake = [ key for key, val in controlRegions.items() if not val["noPhotonCR"] and "fake" in key]
 pCRfake.sort()
 limitOrdering += pCRfake
+
+noPCR = [ key for key, val in allRegions.items() if val["noPhotonCR"] ]
+noPCR.sort()
+limitOrdering += noPCR
 
 pSR = [ key for key, val in signalRegions.items() ]
 pSR.sort()
@@ -1141,3 +1030,4 @@ eftParameterRange = {}
 eftParameterRange["ctZ"]  = xRange
 eftParameterRange["ctZI"] = xRange
 #print xRange
+
