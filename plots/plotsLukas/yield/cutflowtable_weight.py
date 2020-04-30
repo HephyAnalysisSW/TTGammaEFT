@@ -14,7 +14,7 @@ from RootTools.core.standard             import *
 # Internal Imports
 from TTGammaEFT.Tools.user               import plot_directory
 from TTGammaEFT.Tools.cutInterpreter     import cutInterpreter
-from TTGammaEFT.Tools.TriggerSelector    import TriggerSelector
+from TTGammaEFT.Tools.TriggerSelector_postprocessed    import TriggerSelector
 
 from Analysis.Tools.metFilters           import getFilterCut
 from Analysis.Tools.u_float              import u_float
@@ -111,9 +111,11 @@ def calculation( arg ):
     selCut = args.selection
     selCuts = [ cutInterpreter.cutString( "-".join( [ selCut, cat ] ) ) ]
 
-    filterCutMc   = getFilterCut( int(mode), isData=False, skipBadChargedCandidate=True )
-    tr            = TriggerSelector( int(mode), singleLepton=args.selection.count("nLepTight1") )
-    triggerCutMc  = tr.getSelection( "MC" )
+    filterCutMc   = getFilterCut( int(mode), isData=False, skipBadChargedCandidate=True, skipVertexFilter=False )
+    tr            = TriggerSelector( int(mode) )
+    triggerCutMc  = tr.getSelection( )
+#    tr            = TriggerSelector( int(mode), singleLepton=args.selection.count("nLepTight1") )
+#    triggerCutMc  = tr.getSelection( "MC" )
 
     selCuts += [triggerCutMc]
     selCuts += [filterCutMc]

@@ -14,7 +14,7 @@ from RootTools.core.standard             import *
 # Internal Imports
 from TTGammaEFT.Tools.user               import plot_directory
 from TTGammaEFT.Tools.cutInterpreter     import cutInterpreter
-from TTGammaEFT.Tools.TriggerSelector    import TriggerSelector
+from TTGammaEFT.Tools.TriggerSelector_postprocessed    import TriggerSelector
 
 from Analysis.Tools.metFilters           import getFilterCut
 from Analysis.Tools.u_float              import u_float
@@ -39,9 +39,11 @@ logger    = logger.get_logger(   args.logLevel, logFile = None)
 logger_rt = logger_rt.get_logger(args.logLevel, logFile = None)
 
 #os.environ["gammaSkim"]="True" if "hoton" in args.selection or "pTG" in args.selection else "False"
-from TTGammaEFT.Samples.nanoTuples_Summer16_private_incl_postProcessed      import TTG_NoFullyHad_fnal_16 as TTG_16
-from TTGammaEFT.Samples.nanoTuples_Fall17_private_incl_postProcessed        import TTG_NoFullyHad_fnal_17 as TTG_17
-from TTGammaEFT.Samples.nanoTuples_Autumn18_private_incl_postProcessed      import TTG_NoFullyHad_fnal_18 as TTG_18
+#from TTGammaEFT.Samples.nanoTuples_Sync_semilep_postProcessed      import TTG_sync_16 as TTG_16
+from TTGammaEFT.Samples.nanoTuples_Sync_semilep_postProcessed      import TT_sync_16  as TTG_16
+#from TTGammaEFT.Samples.nanoTuples_Summer16_private_incl_postProcessed      import TTG_NoFullyHad_fnal_16 as TTG_16
+#from TTGammaEFT.Samples.nanoTuples_Fall17_private_incl_postProcessed        import TTG_NoFullyHad_fnal_17 as TTG_17
+#from TTGammaEFT.Samples.nanoTuples_Autumn18_private_incl_postProcessed      import TTG_NoFullyHad_fnal_18 as TTG_18
 #from TTGammaEFT.Samples.nanoTuples_Summer16_private_incl_postProcessed      import TTG_NoFullyHad_priv_16 as TTG_16
 #from TTGammaEFT.Samples.nanoTuples_Fall17_private_incl_postProcessed        import TTG_NoFullyHad_priv_17 as TTG_17
 #from TTGammaEFT.Samples.nanoTuples_Autumn18_private_incl_postProcessed      import TTG_NoFullyHad_priv_18 as TTG_18
@@ -99,9 +101,10 @@ def calculation( arg ):
 
     mode, cat, sel = arg
 
-    if   mode == "2016": TTG = TTG_16
-    elif mode == "2017": TTG = TTG_17
-    elif mode == "2018": TTG = TTG_18
+    TTG = TTG_16
+#    if   mode == "2016": TTG = TTG_16
+#    elif mode == "2017": TTG = TTG_17
+#    elif mode == "2018": TTG = TTG_18
 
     triggercut = False
     filtercut  = False
@@ -135,18 +138,20 @@ def calculation( arg ):
 
     selCuts = [ cutInterpreter.cutString( "-".join( [ selCut, cat ] ) ) ]
 
-    filterCutMc   = getFilterCut( int(mode), isData=False, skipBadChargedCandidate=True )
-    tr            = TriggerSelector( int(mode), singleLepton=args.selection.count("nLepTight1") )
-    triggerCutMc  = tr.getSelection( "MC" )
+    filterCutMc   = getFilterCut( int(mode), isData=False, skipBadChargedCandidate=True, skipVertexFilter=False )
+    tr            = TriggerSelector( int(mode) )
+    triggerCutMc  = tr.getSelection()
+#    tr            = TriggerSelector( int(mode), singleLepton=True )
+#    triggerCutMc  = tr.getSelection( "MC" )
 
     if triggercut: selCuts += [triggerCutMc]
     if filtercut:  selCuts += [filterCutMc]
     if overlapcut: selCuts += ["overlapRemoval==1"]
 
     preSelectionSR = "&&".join( selCuts )
-    if not args.useCorrectedIsoVeto: preSelectionSR = preSelectionSR.replace("nLeptonVetoIsoCorr","nLeptonVeto")
+#    if not args.useCorrectedIsoVeto: preSelectionSR = preSelectionSR.replace("nLeptonVetoIsoCorr","nLeptonVeto")
 
-    if not "hoton" in selCut and cat != noCat_sel:
+    if mode != "2016" or (not "hoton" in selCut and cat != noCat_sel):
         yields[mode][cat][sel] = -1
         return
 

@@ -14,7 +14,7 @@ from RootTools.core.standard             import *
 # Internal Imports
 from TTGammaEFT.Tools.user               import plot_directory
 from TTGammaEFT.Tools.cutInterpreter     import cutInterpreter
-from TTGammaEFT.Tools.TriggerSelector    import TriggerSelector
+from TTGammaEFT.Tools.TriggerSelector_postprocessed    import TriggerSelector
 
 from Analysis.Tools.metFilters           import getFilterCut
 from Analysis.Tools.u_float              import u_float
@@ -167,10 +167,12 @@ if args.small:
         sample.reduceFiles( factor=15 )
         sample.scale /= sample.normalization
 
-filterCutData = getFilterCut( args.year, isData=True, skipBadChargedCandidate=True )
-filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )
-tr            = TriggerSelector( args.year, singleLepton=args.selection.count("nLepTight1") )
-triggerCutMc  = tr.getSelection( "MC" )
+filterCutData = getFilterCut( args.year, isData=True, skipBadChargedCandidate=True, skipVertexFilter=False )
+filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True, skipVertexFilter=False )
+tr            = TriggerSelector( args.year )
+triggerCutMc  = tr.getSelection()
+#tr            = TriggerSelector( args.year, singleLepton=args.selection.count("nLepTight1") )
+#triggerCutMc  = tr.getSelection( "MC" )
 
 # Loop over channels
 #allModes = [ 'mumu', 'mue', 'ee', 'SF', 'all' ]
