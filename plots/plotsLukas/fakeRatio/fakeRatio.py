@@ -149,7 +149,9 @@ read_variables  = ["weight/F",
                   ]
 
 read_variables += [ "PhotonNoChgIsoNoSieie0_photonCat/I" ]
+read_variables += [ "PhotonNoChgIsoNoSieie0_photonCatMagic/I" ]
 read_variables += [ "PhotonGood0_photonCat/I" ]
+read_variables += [ "PhotonGood0_photonCatMagic/I" ]
 
 #read_variables += [ VectorTreeVariable.fromString('Lepton[%s]'%leptonVarString, nMax=10) ]
 #read_variables += [ VectorTreeVariable.fromString('Photon[%s]'%photonVarString, nMax=10) ]
