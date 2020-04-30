@@ -109,18 +109,16 @@ import Samples.Tools.logger as logger_samples
 logger_samples = logger_samples.get_logger(options.logLevel, logFile = None )
 
 # Flags 
-isDiLepGamma   = options.skim.lower().startswith('dilepgamma')
-isDiLep        = options.skim.lower().startswith('dilep') and not isDiLepGamma
 isSemiLepGamma = options.skim.lower().startswith('semilepgamma')
 isSemiLep      = options.skim.lower().startswith('semilep') and not isSemiLepGamma
 
 twoJetCond             = "(Sum$(Jet_pt>=29&&abs(Jet_eta)<=2.41)>=2)"
 
-semilepNoIsoCond_ele   = "(Sum$(Electron_pt>=34&&abs(Electron_eta)<=2.11)>=1)"
+semilepNoIsoCond_ele   = "(Sum$(Electron_pt>=34&&abs(Electron_eta)<=2.41)>=1)"
 semilepNoIsoCond_mu    = "(Sum$(Muon_pt>=29&&abs(Muon_eta)<=2.41)>=1)"
 semilepNoIsoCond       = "(" + "||".join( [semilepNoIsoCond_ele, semilepNoIsoCond_mu] ) + ")"
 
-semilepCond_ele        = "(Sum$(Electron_pt>=34&&abs(Electron_eta)<=2.11&&Electron_cutBased>=4)>=1)"
+semilepCond_ele        = "(Sum$(Electron_pt>=34&&abs(Electron_eta)<=2.41&&Electron_cutBased>=4)>=1)"
 semilepCond_mu         = "(Sum$(Muon_pt>=29&&abs(Muon_eta)<=2.41&&Muon_tightId&&Muon_pfRelIso04_all<=0.16)>=1)"
 semilepCond            = "(" + "||".join( [semilepCond_ele, semilepCond_mu] ) + ")"
 
@@ -134,11 +132,7 @@ gammaCond              = "(Sum$(Photon_pt>=19&&abs(Photon_eta)<=1.5&&Photon_elec
 addCond                = "(1)"
 
 skimConds = []
-if isDiLepGamma:
-    skimConds += [dilepCond, gammaCond, addCond]
-elif isDiLep:
-    skimConds += [dilepCond, addCond]
-elif isSemiLepGamma:
+if isSemiLepGamma:
     skimConds += [semilepCond, gammaCond, addCond]  #performance: ~1.5k events left (1 ttbar semilep file)
 elif isSemiLep:
     skimConds += [semilepNoIsoCond, addCond] #performance: ~75k events left (1 ttbar semilep file)
@@ -165,6 +159,7 @@ if "lxplus" in hostname:
 if options.year == 2016:
 #    from Samples.nanoAOD.Summer16_private_legacy_v1 import *
 #    from Samples.nanoAOD.Run2016_17Jul2018_private  import *
+    from TTGammaEFT.Samples.Summer16_nanoAODv5      import *
     from TTGammaEFT.Samples.Summer16_nanoAODv6      import *
     from Samples.nanoAOD.Run2016_nanoAODv6          import *
 elif options.year == 2017:
@@ -192,15 +187,19 @@ isMC   = True  not in [s.isData for s in samples]
 assert isData or len(set([s.xSection for s in samples]))==1, "Not all samples have the same xSection: %s !"%( ", ".join( [s.name for s in samples] ) )
 assert isMC   or len(samples)==1,                            "Don't concatenate data samples"
 
+isMuonPD     = isData and "Muon" in options.samples[0]
+isElectronPD = isData and ( "Electron" in options.samples[0] or "EGamma" in options.samples[0] )
+
 # systematic variations
 addSystematicVariations = (not isData) and (not options.skipSystematicVariations)
 
+from TTGammaEFT.Tools.TriggerSelector import TriggerSelector
+Ts = TriggerSelector( options.year )
 # Trigger selection
 if isData and options.triggerSelection:
-    from TTGammaEFT.Tools.TriggerSelector import TriggerSelector
-    Ts          = TriggerSelector( options.year, singleLepton=(isSemiLep or isSemiLepGamma) )
-    triggerCond = Ts.getSelection( options.samples[0] )
+    triggerCond = Ts.getDataTrigger( options.samples[0] )
     logger.info("Sample will have the following trigger skim: %s"%triggerCond)
+    print triggerCond
     skimConds.append( triggerCond )
 
 #Samples: combine if more than one
@@ -400,7 +399,8 @@ if not options.skipSF:
 #branches to be kept for data and MC
 branchKeepStrings_DATAMC = [\
     "run", "luminosityBlock", "event",
-    "PV_npvs", "PV_npvsGood",
+    "PV_*",
+    "nJet", "Jet_*",
     "fixed*",
     "MET_*",
     "Flag_*", "HLT_*",
@@ -478,7 +478,7 @@ writeLeptonVariables  = NanoVars.getVariables( "Lepton",   postprocessed=True,  
 writePhotonVariables  = NanoVars.getVariables( "Photon",   postprocessed=True,  data=sample.isData )
 
 # Read Variables
-read_variables  = map( TreeVariable.fromString, ['run/I', 'luminosityBlock/I', 'event/l'] )
+read_variables  = map( TreeVariable.fromString, ['run/I', 'luminosityBlock/I', 'event/l'] + Ts.getTriggerVariableList() )
 read_variables += map( TreeVariable.fromString, ['MET_pt/F', 'MET_phi/F'] )
 
 if not options.skipNanoTools:
@@ -509,11 +509,11 @@ if isMC:
 
 # Write Variables
 new_variables  = []
-new_variables += [ 'weight/F' ]
-new_variables += [ 'triggerDecision/I', 'isData/I']
+new_variables += [ 'weight/F', 'year/I' ]
+new_variables += [ 'triggered/I', 'triggeredInvIso/I', 'triggeredNoIso/I', 'isData/I']
 
 # Jets
-new_variables += [ 'nJet/I' ]
+#new_variables += [ 'nJet/I' ]
 
 new_variables += [ 'nJetGood/I' ] 
 new_variables += [ 'nJetGoodMVA/I' ] 
@@ -542,7 +542,7 @@ new_variables += [ 'nJetGoodInvChgIsoInvLepIso/I' ]
 new_variables += [ 'nJetGoodInvSieieInvLepIso/I' ] 
 new_variables += [ 'nJetGoodInvChgIsoInvSieieInvLepIso/I' ] 
 
-new_variables += [ 'Jet[%s]'      %writeJetVarString ]
+#new_variables += [ 'Jet[%s]'      %writeJetVarString ]
 new_variables += [ 'JetGood0_'  + var for var in writeJetVariables ]
 new_variables += [ 'JetGood1_'  + var for var in writeJetVariables ]
 new_variables += [ 'JetGoodInvLepIso0_'  + var for var in writeJetVariables ]
@@ -618,6 +618,7 @@ new_variables += [ 'Lepton[%s]'     %writeLeptonVarString ]
 new_variables += [ 'LeptonGood0_'        + var for var in writeLeptonVariables ]
 new_variables += [ 'LeptonGood1_'        + var for var in writeLeptonVariables ]
 new_variables += [ 'LeptonTight0_'       + var for var in writeLeptonVariables ]
+new_variables += [ 'LeptonVeto0_'        + var for var in writeLeptonVariables ]
 new_variables += [ 'LeptonTight1_'       + var for var in writeLeptonVariables ]
 new_variables += [ 'LeptonTightInvIso0_' + var for var in writeLeptonVariables ]
 new_variables += [ 'LeptonTightNoIso0_'  + var for var in writeLeptonVariables ]
@@ -744,9 +745,14 @@ if isMC:
 #        new_variables += [ 'reweightLeptonTrackingMediumSF/F', 'reweightLeptonTrackingMediumSFUp/F', 'reweightLeptonTrackingMediumSFDown/F' ]
         new_variables += [ 'reweightLeptonTightSF/F', 'reweightLeptonTightSFUp/F', 'reweightLeptonTightSFDown/F' ]
         new_variables += [ 'reweightLeptonTrackingTightSF/F', 'reweightLeptonTrackingTightSFUp/F', 'reweightLeptonTrackingTightSFDown/F' ]
+        new_variables += [ 'reweightLeptonTightSFInvIso/F', 'reweightLeptonTightSFInvIsoUp/F', 'reweightLeptonTightSFInvIsoDown/F' ]
+        new_variables += [ 'reweightLeptonTrackingTightSFInvIso/F', 'reweightLeptonTrackingTightSFInvIsoUp/F', 'reweightLeptonTrackingTightSFInvIsoDown/F' ]
+        new_variables += [ 'reweightLeptonTightSFNoIso/F', 'reweightLeptonTightSFNoIsoUp/F', 'reweightLeptonTightSFNoIsoDown/F' ]
+        new_variables += [ 'reweightLeptonTrackingTightSFNoIso/F', 'reweightLeptonTrackingTightSFNoIsoUp/F', 'reweightLeptonTrackingTightSFNoIsoDown/F' ]
 
         new_variables += [ 'reweightTrigger/F', 'reweightTriggerUp/F', 'reweightTriggerDown/F' ]
-        new_variables += [ 'reweightInvTrigger/F', 'reweightInvTriggerUp/F', 'reweightInvTriggerDown/F' ]
+        new_variables += [ 'reweightInvIsoTrigger/F', 'reweightInvIsoTriggerUp/F', 'reweightInvIsoTriggerDown/F' ]
+        new_variables += [ 'reweightNoIsoTrigger/F', 'reweightNoIsoTriggerUp/F', 'reweightNoIsoTriggerDown/F' ]
 
         new_variables += [ 'reweightPhotonSF/F', 'reweightPhotonSFUp/F', 'reweightPhotonSFDown/F' ]
         new_variables += [ 'reweightPhotonElectronVetoSF/F', 'reweightPhotonElectronVetoSFUp/F', 'reweightPhotonElectronVetoSFDown/F' ]
@@ -933,6 +939,7 @@ def filler( event ):
     r = reader.event
 
     event.isData = isData
+    event.year   = options.year
 
     if options.addPreFiringFlag:
         event.unPreFirableEvent = ( int(r.event), int(r.run) ) in unPreFirableEvents
@@ -1066,7 +1073,7 @@ def filler( event ):
         GenBJetCMSUnfold   = filter( lambda j: genJetSel_CMSUnfold(j), filterGenBJets( gJets ) )
 
         # CMS Unfolding cleaning
-        GenPhotonCMSUnfold = deltaRCleaning( GenPhotonCMSUnfold, GenLeptonCMSUnfold, dRCut=0.1 )
+        GenPhotonCMSUnfold = deltaRCleaning( GenPhotonCMSUnfold, GenLeptonCMSUnfold, dRCut=0.4 )
         GenJetCMSUnfold    = deltaRCleaning( GenJetCMSUnfold,    GenLeptonCMSUnfold, dRCut=0.4 )
         GenBJetCMSUnfold   = deltaRCleaning( GenBJetCMSUnfold,   GenLeptonCMSUnfold, dRCut=0.4 )
         GenJetCMSUnfold    = deltaRCleaning( GenJetCMSUnfold,    GenPhotonCMSUnfold, dRCut=0.1 )
@@ -1161,11 +1168,15 @@ def filler( event ):
     convertUnits( allElectrons )
     convertUnits( allMuons )
 
+    # HEM electrons (susy recommendations)
+    nHEMElectrons = len( filter( lambda j:j['pt']>30 and j['eta']>-3.0 and j['eta']<-1.4 and j['phi']>-1.57 and j['phi']<-0.87, allElectrons ))
+    nHEMPhotons   = len( filter( lambda j:j['pt']>15 and j['eta']>-3.0 and j['eta']<-1.4 and j['phi']>-1.57 and j['phi']<-0.87, allPhotons ))
+
     vetoMuons     = list( filter( lambda l: recoMuonSel_veto(l),     allMuons ) )
 
-
     # similar to Ghent, remove electrons in dR<0.02 to muons
-    allElectrons = deltaRCleaning( allElectrons, vetoMuons, dRCut=0.02 )
+    # remove that in syncing with Danny
+#    allElectrons = deltaRCleaning( allElectrons, vetoMuons, dRCut=0.02 )
 
     allLeptons = allElectrons + allMuons
     allLeptons.sort( key = lambda l: -l['pt'] )
@@ -1224,12 +1235,14 @@ def filler( event ):
     tightLeptons   = tightElectrons + tightMuons
     tightLeptons.sort( key = lambda l: -l['pt'] )
 
-    tightNoIsoElectrons = list( filter( lambda l: recoElectronSel_tight(l, removedCuts=["pfRelIso03_all"]), allElectrons ) )
-    tightNoIsoMuons     = list( filter( lambda l: recoMuonSel_tight(l,     removedCuts=["pfRelIso04_all"]), allMuons ) )
+    # tight electrons with >= veto isolation criteria
+    tightNoIsoElectrons = list( filter( lambda l: recoElectronSel_tight(l, removedCuts=["pfRelIso03_all"]), vetoElectrons ) )
+    tightNoIsoMuons     = list( filter( lambda l: recoMuonSel_tight(l,     removedCuts=["pfRelIso04_all"]), vetoMuons ) )
     tightNoIsoLeptons   = tightNoIsoElectrons + tightNoIsoMuons
     tightNoIsoLeptons.sort( key = lambda l: -l['pt'] )
 
-    tightInvIsoElectrons = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt"], l["eta"]+l["deltaEtaSC"], id="tight" ) and l["pfRelIso03_all"]<getElectronIsoCutV2( l["pt"], l["eta"]+l["deltaEtaSC"], id="veto" ), tightNoIsoElectrons) )
+    # tight electrons with >= veto isolation criteria && < tight Isolation criteria
+    tightInvIsoElectrons = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt"], l["eta"]+l["deltaEtaSC"], id="tight" ), tightNoIsoElectrons) )
     tightInvIsoMuons     = list( filter( lambda l: l["pfRelIso04_all"]>muonRelIsoCut and l["pfRelIso04_all"]<muonRelIsoCutVeto, tightNoIsoMuons ) )
     tightInvIsoLeptons   = tightInvIsoElectrons + tightInvIsoMuons
     tightInvIsoLeptons.sort( key = lambda l: -l['pt'] )
@@ -1313,9 +1326,22 @@ def filler( event ):
     selectedInvIsoTightLepton = tightInvIsoLeptons[:1]
     selectedNoIsoTightLepton  = tightNoIsoLeptons[:1]
 
+    # trigger flag
+    # check if muons are triggered by muon triggers, electrons by electron triggers
+    # for data:  use only SingleMuon dataset for tight muons and SingleElectron/EGamma dataset for tight electrons, set triggered=0 if this is not the case
+    event.triggered       = int(Ts.getTriggerDecision( abs(tightLeptons[0]["pdgId"]) )(r))        if tightLeptons       else 0
+    event.triggeredInvIso = int(Ts.getTriggerDecision( abs(tightInvIsoLeptons[0]["pdgId"]) )(r))  if tightInvIsoLeptons else 0
+    event.triggeredNoIso  = int(Ts.getTriggerDecision( abs(tightNoIsoLeptons[0]["pdgId"]) )(r))   if tightNoIsoLeptons  else 0
+
+    # overlap removal
+    if isData and event.triggered       and ( (abs(tightLeptons[0]["pdgId"])==11       and isMuonPD) or (abs(tightLeptons[0]["pdgId"])==13       and isElectronPD) ): event.triggered       = 0
+    if isData and event.triggeredInvIso and ( (abs(tightInvIsoLeptons[0]["pdgId"])==11 and isMuonPD) or (abs(tightInvIsoLeptons[0]["pdgId"])==13 and isElectronPD) ): event.triggeredInvIso = 0
+    if isData and event.triggeredNoIso  and ( (abs(tightNoIsoLeptons[0]["pdgId"])==11  and isMuonPD) or (abs(tightNoIsoLeptons[0]["pdgId"])==13  and isElectronPD) ): event.triggeredNoIso  = 0
+
     # Store analysis Leptons + 2 default Leptons for a faster plotscript
     l0, l1         = ( selectedLeptons    + [None,None] )[:2]
     lt0, lt1       = ( tightLeptons       + [None,None] )[:2]
+    lv0, lv1       = ( vetoLeptons        + [None,None] )[:2]
     ltinv0, ltinv1 = ( tightInvIsoLeptons + [None,None] )[:2]
     ltno0, ltno1   = ( tightNoIsoLeptons  + [None,None] )[:2]
     # Dileptonic analysis
@@ -1323,6 +1349,7 @@ def filler( event ):
     fill_vector( event, "LeptonGood1",  writeLeptonVarList, l1 )
     # Semi-leptonic analysis
     fill_vector( event, "LeptonTight0", writeLeptonVarList, lt0 )
+    fill_vector( event, "LeptonVeto0",  writeLeptonVarList, lv0 )
     fill_vector( event, "LeptonTight1", writeLeptonVarList, lt1 )
     fill_vector( event, "LeptonTightInvIso0", writeLeptonVarList, ltinv0 )
     fill_vector( event, "LeptonTightNoIso0",  writeLeptonVarList, ltno0 )
@@ -1337,7 +1364,7 @@ def filler( event ):
 #            g["genPartIdx"] = getGenPartIdx( g, gPart, coneSize=0.4, ptCut=5., excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ] )
             genMatch = filter( lambda p: p['index'] == g['genPartIdx'], gPart )[0] if g['genPartIdx'] >= 0 else None
             g['photonCat']    = getPhotonCategory( genMatch, gPart )# if g['genPartIdx'] != -2 else 4 # magic photons
-            g['photonCatMagic']    = getAdvancedPhotonCategory( g, gPart, coneSize=0.2, ptCut=5., excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ] )
+            g['photonCatMagic']    = getAdvancedPhotonCategory( g, gPart, coneSize=0.3, ptCut=5., excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ] )
             g['leptonMother'] = hasLeptonMother( genMatch, gPart )
             g['mother']       = getPhotonMother( genMatch, gPart )
     else:
@@ -1359,32 +1386,32 @@ def filler( event ):
     mediumPhotonsInvChgIsoInvSieie = list( filter( lambda g: g["sieie"] > highSieieThresh and g["pfRelIso03_chg"]*g["pt"] > chgIsoThresh, mediumPhotonsNoChgIsoNoSieie ) )
 
     # DeltaR cleaning
-    mediumPhotonsInvLepIso                = deltaRCleaning( mediumPhotons,                selectedInvIsoTightLepton, dRCut=0.1 )
-    mvaPhotonsInvLepIso                   = deltaRCleaning( mvaPhotons,                   selectedInvIsoTightLepton, dRCut=0.1 )
-    mediumPhotonsNoChgIsoInvLepIso        = deltaRCleaning( mediumPhotonsNoChgIso,        selectedInvIsoTightLepton, dRCut=0.1 )
-    mediumPhotonsNoSieieInvLepIso         = deltaRCleaning( mediumPhotonsNoSieie,         selectedInvIsoTightLepton, dRCut=0.1 )
-    mediumPhotonsNoChgIsoNoSieieInvLepIso = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie, selectedInvIsoTightLepton, dRCut=0.1 )
-    mediumPhotonsInvChgIsoInvLepIso         = deltaRCleaning( mediumPhotonsInvChgIso,         selectedInvIsoTightLepton, dRCut=0.1 )
-    mediumPhotonsInvSieieInvLepIso          = deltaRCleaning( mediumPhotonsInvSieie,          selectedInvIsoTightLepton, dRCut=0.1 )
-    mediumPhotonsInvChgIsoInvSieieInvLepIso = deltaRCleaning( mediumPhotonsInvChgIsoInvSieie, selectedInvIsoTightLepton, dRCut=0.1 )
+    mediumPhotonsInvLepIso                = deltaRCleaning( mediumPhotons,                selectedInvIsoTightLepton, dRCut=0.4 )
+    mvaPhotonsInvLepIso                   = deltaRCleaning( mvaPhotons,                   selectedInvIsoTightLepton, dRCut=0.4 )
+    mediumPhotonsNoChgIsoInvLepIso        = deltaRCleaning( mediumPhotonsNoChgIso,        selectedInvIsoTightLepton, dRCut=0.4 )
+    mediumPhotonsNoSieieInvLepIso         = deltaRCleaning( mediumPhotonsNoSieie,         selectedInvIsoTightLepton, dRCut=0.4 )
+    mediumPhotonsNoChgIsoNoSieieInvLepIso = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie, selectedInvIsoTightLepton, dRCut=0.4 )
+    mediumPhotonsInvChgIsoInvLepIso         = deltaRCleaning( mediumPhotonsInvChgIso,         selectedInvIsoTightLepton, dRCut=0.4 )
+    mediumPhotonsInvSieieInvLepIso          = deltaRCleaning( mediumPhotonsInvSieie,          selectedInvIsoTightLepton, dRCut=0.4 )
+    mediumPhotonsInvChgIsoInvSieieInvLepIso = deltaRCleaning( mediumPhotonsInvChgIsoInvSieie, selectedInvIsoTightLepton, dRCut=0.4 )
 
-    mediumPhotonsNoLepIso                = deltaRCleaning( mediumPhotons,                selectedNoIsoTightLepton, dRCut=0.1 )
-    mvaPhotonsNoLepIso                   = deltaRCleaning( mvaPhotons,                   selectedNoIsoTightLepton, dRCut=0.1 )
-    mediumPhotonsNoChgIsoNoLepIso        = deltaRCleaning( mediumPhotonsNoChgIso,        selectedNoIsoTightLepton, dRCut=0.1 )
-    mediumPhotonsNoSieieNoLepIso         = deltaRCleaning( mediumPhotonsNoSieie,         selectedNoIsoTightLepton, dRCut=0.1 )
-    mediumPhotonsNoChgIsoNoSieieNoLepIso = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie, selectedNoIsoTightLepton, dRCut=0.1 )
-    mediumPhotonsInvChgIsoNoLepIso         = deltaRCleaning( mediumPhotonsInvChgIso,         selectedNoIsoTightLepton, dRCut=0.1 )
-    mediumPhotonsInvSieieNoLepIso          = deltaRCleaning( mediumPhotonsInvSieie,          selectedNoIsoTightLepton, dRCut=0.1 )
-    mediumPhotonsInvChgIsoInvSieieNoLepIso = deltaRCleaning( mediumPhotonsInvChgIsoInvSieie, selectedNoIsoTightLepton, dRCut=0.1 )
+    mediumPhotonsNoLepIso                = deltaRCleaning( mediumPhotons,                selectedNoIsoTightLepton, dRCut=0.4 )
+    mvaPhotonsNoLepIso                   = deltaRCleaning( mvaPhotons,                   selectedNoIsoTightLepton, dRCut=0.4 )
+    mediumPhotonsNoChgIsoNoLepIso        = deltaRCleaning( mediumPhotonsNoChgIso,        selectedNoIsoTightLepton, dRCut=0.4 )
+    mediumPhotonsNoSieieNoLepIso         = deltaRCleaning( mediumPhotonsNoSieie,         selectedNoIsoTightLepton, dRCut=0.4 )
+    mediumPhotonsNoChgIsoNoSieieNoLepIso = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie, selectedNoIsoTightLepton, dRCut=0.4 )
+    mediumPhotonsInvChgIsoNoLepIso         = deltaRCleaning( mediumPhotonsInvChgIso,         selectedNoIsoTightLepton, dRCut=0.4 )
+    mediumPhotonsInvSieieNoLepIso          = deltaRCleaning( mediumPhotonsInvSieie,          selectedNoIsoTightLepton, dRCut=0.4 )
+    mediumPhotonsInvChgIsoInvSieieNoLepIso = deltaRCleaning( mediumPhotonsInvChgIsoInvSieie, selectedNoIsoTightLepton, dRCut=0.4 )
 
-    mediumPhotons                = deltaRCleaning( mediumPhotons,                selectedLeptons if isDiLep else selectedTightLepton, dRCut=0.1 )
-    mvaPhotons                   = deltaRCleaning( mvaPhotons,                   selectedLeptons if isDiLep else selectedTightLepton, dRCut=0.1 )
-    mediumPhotonsNoChgIso        = deltaRCleaning( mediumPhotonsNoChgIso,        selectedLeptons if isDiLep else selectedTightLepton, dRCut=0.1 )
-    mediumPhotonsNoSieie         = deltaRCleaning( mediumPhotonsNoSieie,         selectedLeptons if isDiLep else selectedTightLepton, dRCut=0.1 )
-    mediumPhotonsNoChgIsoNoSieie = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie, selectedLeptons if isDiLep else selectedTightLepton, dRCut=0.1 )
-    mediumPhotonsInvChgIso         = deltaRCleaning( mediumPhotonsInvChgIso,         selectedLeptons if isDiLep else selectedTightLepton, dRCut=0.1 )
-    mediumPhotonsInvSieie          = deltaRCleaning( mediumPhotonsInvSieie,          selectedLeptons if isDiLep else selectedTightLepton, dRCut=0.1 )
-    mediumPhotonsInvChgIsoInvSieie = deltaRCleaning( mediumPhotonsInvChgIsoInvSieie, selectedLeptons if isDiLep else selectedTightLepton, dRCut=0.1 )
+    mediumPhotons                = deltaRCleaning( mediumPhotons,                tightLeptons, dRCut=0.4 )
+    mvaPhotons                   = deltaRCleaning( mvaPhotons,                   tightLeptons, dRCut=0.4 )
+    mediumPhotonsNoChgIso        = deltaRCleaning( mediumPhotonsNoChgIso,        tightLeptons, dRCut=0.4 )
+    mediumPhotonsNoSieie         = deltaRCleaning( mediumPhotonsNoSieie,         tightLeptons, dRCut=0.4 )
+    mediumPhotonsNoChgIsoNoSieie = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie, tightLeptons, dRCut=0.4 )
+    mediumPhotonsInvChgIso         = deltaRCleaning( mediumPhotonsInvChgIso,         tightLeptons, dRCut=0.4 )
+    mediumPhotonsInvSieie          = deltaRCleaning( mediumPhotonsInvSieie,          tightLeptons, dRCut=0.4 )
+    mediumPhotonsInvChgIsoInvSieie = deltaRCleaning( mediumPhotonsInvChgIsoInvSieie, tightLeptons, dRCut=0.4 )
 
     # misID electrons
     if mediumPhotons and allLeptons:
@@ -1393,27 +1420,28 @@ def filler( event ):
 
     # Jets
     allJets  = getParticles( r, collVars=readJetVarList, coll="Jet" )
-    nHEMJets = len( filter( lambda j:j['pt']>20 and j['eta']>-3.2 and j['eta']<-1.0 and j['phi']>-2.0 and j['phi']<-0.5, allJets ))
+    nHEMJets = len( filter( lambda j:j['pt']>30 and j['eta']>-3.2 and j['eta']<-1.2 and j['phi']>-1.77 and j['phi']<-0.67, allJets ))
+    # hem (susy recommendations)
 
     if isMC and not options.skipSF:
         for j in allJets: BTagEff.addBTagEffToJet( j )
 
     # Loose jets w/o pt/eta requirement
     allGoodJets = list( filter( lambda j: recoJetSel(j, ptVar=ptVar, removedCuts=["pt", "eta"]), allJets ) )
-    addJetFlags( allGoodJets, selectedLeptons if isDiLep else selectedTightLepton, mediumPhotons )
+    addJetFlags( allGoodJets, tightLeptons, mediumPhotons )
     # Loose jets w/ pt/eta requirement (analysis jets)
     jets    = list( filter( lambda x: x["isGood"], allGoodJets ) )
 
     # DeltaR cleaning (now done in "isGood"
 
     # Store jets
-    event.nJet      = len(allGoodJets)
+#    event.nJet      = len(allGoodJets)
 
     # get nJet for jets cleaned against photons with relaxed cuts
     goodJets                = list( filter( lambda j: recoJetSel(j, ptVar=ptVar), allGoodJets ) )
     goodJetsInvLepIso       = deltaRCleaning( goodJets, selectedInvIsoTightLepton, dRCut=0.4 )
     goodJetsNoLepIso        = deltaRCleaning( goodJets, selectedNoIsoTightLepton, dRCut=0.4 )
-    goodJets                = deltaRCleaning( goodJets, selectedLeptons if isDiLep else selectedTightLepton, dRCut=0.4 ) # clean all jets against analysis leptons
+    goodJets                = deltaRCleaning( goodJets, tightLeptons, dRCut=0.4 ) # clean all jets against analysis leptons
 
     goodMVAJetsInvLepIso               = deltaRCleaning( goodJetsInvLepIso, mvaPhotons, dRCut=0.1 ) 
     goodNoChgIsoJetsInvLepIso          = deltaRCleaning( goodJetsInvLepIso, mediumPhotonsNoChgIso, dRCut=0.1 ) 
@@ -1442,10 +1470,11 @@ def filler( event ):
     goodInvChgIsoInvSieieJets = deltaRCleaning( goodJets, mediumPhotonsInvChgIsoInvSieie, dRCut=0.1 ) 
     goodJets                  = deltaRCleaning( goodJets, mediumPhotons, dRCut=0.1 ) 
 
-    allGoodJets                  = deltaRCleaning( allGoodJets, selectedLeptons if isDiLep else selectedTightLepton, dRCut=0.4 ) # clean all jets against analysis leptons
+    allGoodJets                  = deltaRCleaning( allGoodJets, tightLeptons, dRCut=0.4 ) # clean all jets against analysis leptons
     allGoodInvChgIsoJets         = deltaRCleaning( allGoodJets, mediumPhotonsInvChgIso, dRCut=0.1 ) 
     allGoodInvSieieJets          = deltaRCleaning( allGoodJets, mediumPhotonsInvSieie, dRCut=0.1 ) 
     allGoodInvChgIsoInvSieieJets = deltaRCleaning( allGoodJets, mediumPhotonsInvChgIsoInvSieie, dRCut=0.1 ) 
+    allGoodJets                  = deltaRCleaning( allGoodJets, mediumPhotons, dRCut=0.1 )
 
     event.nJetGood                = len(goodJets)
     event.nJetGoodInvLepIso       = len(goodJetsInvLepIso)
@@ -1476,7 +1505,7 @@ def filler( event ):
     event.nJetGoodInvChgIsoInvSieieInvLepIso = len(goodInvChgIsoInvSieieJetsInvLepIso)
 
     # store all loose jets
-    fill_vector_collection( event, "Jet", writeJetVarList, allGoodJets)
+#    fill_vector_collection( event, "Jet", writeJetVarList, allGoodJets)
 
     # Store analysis jets + 2 default jets for a faster plotscript
     j0, j1       = ( jets + [None,None] )[:2]
@@ -1764,26 +1793,28 @@ def filler( event ):
     bjetsInvChgIsoInvSieie_sys = {}
 
     if addSystematicVariations and not options.skipNanoTools and not options.skipSF:
-        for var in ['jesTotalUp', 'jesTotalDown', 'jerUp', 'jerDown']:
-            jets_sys[var]     = filter(lambda j: recoJetSel(j, ptVar="pt_"+var) and j["clean"], allGoodJets)
+        for var in ['jesTotalUp', 'jesTotalDown', 'jerUp', 'jerDown']: #, 'unclustEnUp', 'unclustEnDown']:
+
+            jets_sys[var] = filter(lambda j: recoJetSel(j, ptVar="pt_"+var), allGoodJets)
             bjets_sys[var]    = filter(lambda j: j["isBJet"], jets_sys[var])
+
             setattr(event, 'MET_pt_'+var, getattr(r, 'METFixEE2017_pt_'+var if options.year == 2017 else 'MET_pt_'+var) )
             setattr(event, "nJetGood_"+var,  len(jets_sys[var]))
             setattr(event, "nBTagGood_"+var, len(bjets_sys[var]))
             setattr(event, "ht_"+var,        sum([j['pt_'+var] for j in jets_sys[var]]))
             setattr(event, "m3_"+var,        m3(jets_sys[var])[0])
 
-            jetsInvChgIso_sys[var]     = filter(lambda j: recoJetSel(j, ptVar="pt_"+var) and j["clean"], allGoodInvChgIsoJets)
+            jetsInvChgIso_sys[var]     = filter(lambda j: recoJetSel(j, ptVar="pt_"+var), allGoodInvChgIsoJets)
             bjetsInvChgIso_sys[var]    = filter(lambda j: j["isBJet"], jetsInvChgIso_sys[var])
             setattr(event, "nJetGoodInvChgIso_"+var,  len(jetsInvChgIso_sys[var]))
             setattr(event, "nBTagGoodInvChgIso_"+var, len(bjetsInvChgIso_sys[var]))
 
-            jetsInvSieie_sys[var]     = filter(lambda j: recoJetSel(j, ptVar="pt_"+var) and j["clean"], allGoodInvSieieJets)
+            jetsInvSieie_sys[var]     = filter(lambda j: recoJetSel(j, ptVar="pt_"+var), allGoodInvSieieJets)
             bjetsInvSieie_sys[var]    = filter(lambda j: j["isBJet"], jetsInvSieie_sys[var])
             setattr(event, "nJetGoodInvSieie_"+var,  len(jetsInvSieie_sys[var]))
             setattr(event, "nBTagGoodInvSieie_"+var, len(bjetsInvSieie_sys[var]))
 
-            jetsInvChgIsoInvSieie_sys[var]     = filter(lambda j: recoJetSel(j, ptVar="pt_"+var) and j["clean"], allGoodInvChgIsoInvSieieJets)
+            jetsInvChgIsoInvSieie_sys[var]     = filter(lambda j: recoJetSel(j, ptVar="pt_"+var), allGoodInvChgIsoInvSieieJets)
             bjetsInvChgIsoInvSieie_sys[var]    = filter(lambda j: j["isBJet"], jetsInvChgIsoInvSieie_sys[var])
             setattr(event, "nJetGoodInvChgIsoInvSieie_"+var,  len(jetsInvChgIsoInvSieie_sys[var]))
             setattr(event, "nBTagGoodInvChgIsoInvSieie_"+var, len(bjetsInvChgIsoInvSieie_sys[var]))
@@ -1827,10 +1858,11 @@ def filler( event ):
             setParticle(event, "top",            solution.top) 
             setParticle(event, "topBar",         solution.topBar) 
 
+    nHEMObjects = nHEMJets + nHEMElectrons + nHEMPhotons
     if isData:
-        event.reweightHEM = (r.run>=319077 and nHEMJets==0) or r.run<319077 or options.year != 2018
+        event.reweightHEM = (r.run>=319077 and nHEMObjects==0) or r.run<319077 or options.year != 2018
     else:
-        event.reweightHEM = 1 if (nHEMJets==0 or options.year != 2018 ) else 0.3518 # 0.2% of Run2018B are HEM affected. Ignore that piece. Thus, if there is a HEM jet, scale the MC to 35.2% which is AB/ABCD
+        event.reweightHEM = 1 if ( nHEMObjects==0 or options.year != 2018 ) else 0.3518 # 0.2% of Run2018B are HEM affected. Ignore that piece. Thus, if there is a HEM jet, scale the MC to 35.2% which is AB/ABCD
 
     # Reweighting
     if isMC and not options.skipSF:
@@ -1852,17 +1884,33 @@ def filler( event ):
         event.reweightLepton2lSFUp   = reduce( mul, reweight2lUp, 1 )
         event.reweightLepton2lSFDown = reduce( mul, reweight2lDown, 1 )
 
-        event.reweightLeptonTightSF     = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta'])             ) for l in selectedTightLepton ], 1 )
-        event.reweightLeptonTightSFUp   = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = +1 ) for l in selectedTightLepton ], 1 )
-        event.reweightLeptonTightSFDown = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = -1 ) for l in selectedTightLepton ], 1 )
+        event.reweightLeptonTightSF     = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta'])             ) for l in tightLeptons ], 1 )
+        event.reweightLeptonTightSFUp   = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = +1 ) for l in tightLeptons ], 1 )
+        event.reweightLeptonTightSFDown = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = -1 ) for l in tightLeptons ], 1 )
+
+        event.reweightLeptonTightSFInvIso     = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta'])             ) for l in selectedInvIsoTightLepton ], 1 )
+        event.reweightLeptonTightSFInvIsoUp   = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = +1 ) for l in selectedInvIsoTightLepton ], 1 )
+        event.reweightLeptonTightSFInvIsoDown = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = -1 ) for l in selectedInvIsoTightLepton ], 1 )
+
+        event.reweightLeptonTightSFNoIso     = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta'])             ) for l in selectedNoIsoTightLepton ], 1 )
+        event.reweightLeptonTightSFNoIsoUp   = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = +1 ) for l in selectedNoIsoTightLepton ], 1 )
+        event.reweightLeptonTightSFNoIsoDown = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = -1 ) for l in selectedNoIsoTightLepton ], 1 )
 
         event.reweightLeptonTracking2lSF     = reduce( mul, [ LeptonTrackingSF.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta'])             ) for l in selectedLeptons ], 1 )
         event.reweightLeptonTracking2lSFUp   = reduce( mul, [ LeptonTrackingSF.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = +1 ) for l in selectedLeptons ], 1 )
         event.reweightLeptonTracking2lSFDown = reduce( mul, [ LeptonTrackingSF.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = -1 ) for l in selectedLeptons ], 1 )
 
-        event.reweightLeptonTrackingTightSF     = reduce( mul, [ LeptonTrackingSF.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta'])             ) for l in selectedTightLepton ], 1 )
-        event.reweightLeptonTrackingTightSFUp   = reduce( mul, [ LeptonTrackingSF.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = +1 ) for l in selectedTightLepton ], 1 )
-        event.reweightLeptonTrackingTightSFDown = reduce( mul, [ LeptonTrackingSF.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = -1 ) for l in selectedTightLepton ], 1 )
+        event.reweightLeptonTrackingTightSF     = reduce( mul, [ LeptonTrackingSF.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta'])             ) for l in tightLeptons ], 1 )
+        event.reweightLeptonTrackingTightSFUp   = reduce( mul, [ LeptonTrackingSF.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = +1 ) for l in tightLeptons ], 1 )
+        event.reweightLeptonTrackingTightSFDown = reduce( mul, [ LeptonTrackingSF.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = -1 ) for l in tightLeptons ], 1 )
+
+        event.reweightLeptonTrackingTightSFInvIso     = reduce( mul, [ LeptonTrackingSF.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta'])             ) for l in selectedInvIsoTightLepton ], 1 )
+        event.reweightLeptonTrackingTightSFInvIsoUp   = reduce( mul, [ LeptonTrackingSF.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = +1 ) for l in selectedInvIsoTightLepton ], 1 )
+        event.reweightLeptonTrackingTightSFInvIsoDown = reduce( mul, [ LeptonTrackingSF.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = -1 ) for l in selectedInvIsoTightLepton ], 1 )
+
+        event.reweightLeptonTrackingTightSFNoIso     = reduce( mul, [ LeptonTrackingSF.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta'])             ) for l in selectedNoIsoTightLepton ], 1 )
+        event.reweightLeptonTrackingTightSFNoIsoUp   = reduce( mul, [ LeptonTrackingSF.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = +1 ) for l in selectedNoIsoTightLepton ], 1 )
+        event.reweightLeptonTrackingTightSFNoIsoDown = reduce( mul, [ LeptonTrackingSF.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = -1 ) for l in selectedNoIsoTightLepton ], 1 )
 
         # Photon reweighting
         event.reweightPhotonSF     = reduce( mul, [ PhotonSF.getSF( pt=p['pt'], eta=p['eta']             ) for p in mediumPhotons ], 1 )
@@ -1891,14 +1939,25 @@ def filler( event ):
 
         if len(selectedInvIsoTightLepton) > 0:
             # Trigger reweighting
-            event.reweightInvTrigger     = TriggerEff.getSF( pdgId=abs(selectedInvIsoTightLepton[0]['pdgId']), pt=selectedInvIsoTightLepton[0]['pt'], eta=((selectedInvIsoTightLepton[0]['eta']+selectedInvIsoTightLepton[0]['deltaEtaSC']) if abs(selectedInvIsoTightLepton[0]['pdgId'])==11 else selectedInvIsoTightLepton[0]['eta']) )
-            event.reweightInvTriggerUp   = TriggerEff.getSF( pdgId=abs(selectedInvIsoTightLepton[0]['pdgId']), pt=selectedInvIsoTightLepton[0]['pt'], eta=((selectedInvIsoTightLepton[0]['eta']+selectedInvIsoTightLepton[0]['deltaEtaSC']) if abs(selectedInvIsoTightLepton[0]['pdgId'])==11 else selectedInvIsoTightLepton[0]['eta']), sigma=1 )
-            event.reweightInvTriggerDown = TriggerEff.getSF( pdgId=abs(selectedInvIsoTightLepton[0]['pdgId']), pt=selectedInvIsoTightLepton[0]['pt'], eta=((selectedInvIsoTightLepton[0]['eta']+selectedInvIsoTightLepton[0]['deltaEtaSC']) if abs(selectedInvIsoTightLepton[0]['pdgId'])==11 else selectedInvIsoTightLepton[0]['eta']), sigma=-1 )
+            event.reweightInvIsoTrigger     = TriggerEff.getSF( pdgId=abs(selectedInvIsoTightLepton[0]['pdgId']), pt=selectedInvIsoTightLepton[0]['pt'], eta=((selectedInvIsoTightLepton[0]['eta']+selectedInvIsoTightLepton[0]['deltaEtaSC']) if abs(selectedInvIsoTightLepton[0]['pdgId'])==11 else selectedInvIsoTightLepton[0]['eta']) )
+            event.reweightInvIsoTriggerUp   = TriggerEff.getSF( pdgId=abs(selectedInvIsoTightLepton[0]['pdgId']), pt=selectedInvIsoTightLepton[0]['pt'], eta=((selectedInvIsoTightLepton[0]['eta']+selectedInvIsoTightLepton[0]['deltaEtaSC']) if abs(selectedInvIsoTightLepton[0]['pdgId'])==11 else selectedInvIsoTightLepton[0]['eta']), sigma=1 )
+            event.reweightInvIsoTriggerDown = TriggerEff.getSF( pdgId=abs(selectedInvIsoTightLepton[0]['pdgId']), pt=selectedInvIsoTightLepton[0]['pt'], eta=((selectedInvIsoTightLepton[0]['eta']+selectedInvIsoTightLepton[0]['deltaEtaSC']) if abs(selectedInvIsoTightLepton[0]['pdgId'])==11 else selectedInvIsoTightLepton[0]['eta']), sigma=-1 )
 
         else:
-            event.reweightInvTrigger     = 1.
-            event.reweightInvTriggerUp   = 1.
-            event.reweightInvTriggerDown = 1.
+            event.reweightInvIsoTrigger     = 1.
+            event.reweightInvIsoTriggerUp   = 1.
+            event.reweightInvIsoTriggerDown = 1.
+
+        if len(selectedNoIsoTightLepton) > 0:
+            # Trigger reweighting
+            event.reweightNoIsoTrigger     = TriggerEff.getSF( pdgId=abs(selectedNoIsoTightLepton[0]['pdgId']), pt=selectedNoIsoTightLepton[0]['pt'], eta=((selectedNoIsoTightLepton[0]['eta']+selectedNoIsoTightLepton[0]['deltaEtaSC']) if abs(selectedNoIsoTightLepton[0]['pdgId'])==11 else selectedNoIsoTightLepton[0]['eta']) )
+            event.reweightNoIsoTriggerUp   = TriggerEff.getSF( pdgId=abs(selectedNoIsoTightLepton[0]['pdgId']), pt=selectedNoIsoTightLepton[0]['pt'], eta=((selectedNoIsoTightLepton[0]['eta']+selectedNoIsoTightLepton[0]['deltaEtaSC']) if abs(selectedNoIsoTightLepton[0]['pdgId'])==11 else selectedNoIsoTightLepton[0]['eta']), sigma=1 )
+            event.reweightNoIsoTriggerDown = TriggerEff.getSF( pdgId=abs(selectedNoIsoTightLepton[0]['pdgId']), pt=selectedNoIsoTightLepton[0]['pt'], eta=((selectedNoIsoTightLepton[0]['eta']+selectedNoIsoTightLepton[0]['deltaEtaSC']) if abs(selectedNoIsoTightLepton[0]['pdgId'])==11 else selectedNoIsoTightLepton[0]['eta']), sigma=-1 )
+
+        else:
+            event.reweightNoIsoTrigger     = 1.
+            event.reweightNoIsoTriggerUp   = 1.
+            event.reweightNoIsoTriggerDown = 1.
 
         # PreFiring
         if options.year == 2018:

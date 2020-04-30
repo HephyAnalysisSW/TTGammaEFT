@@ -8,7 +8,7 @@ mZ              = 91.1876
 mT              = 172.5
 zMassRange      = 10
 m3MassRange     = 50
-mLgThresh       = mZ - zMassRange
+mLgThresh       = mZ# - zMassRange
 isoThresh       = 2.2
 chgIsoThresh    = 1.141
 lowSieieThresh  = 0.01015
@@ -65,6 +65,7 @@ special_cuts = {
     "onZSFllgNoSieie":         "((abs(mllgammaNoSieie-%s)<=%s&&(nElectronGood==2||nMuonGood==2))||(nElectronGood==1&&nMuonGood==1))"%(mZ, zMassRange),                 # Cut Z-Window only for SF dilep events
     "onZSFllgNoChgIsoNoSieie": "((abs(mllgammaNoChgIsoNoSieie-%s)<=%s&&(nElectronGood==2||nMuonGood==2))||(nElectronGood==1&&nMuonGood==1))"%(mZ, zMassRange),                 # Cut Z-Window only for SF dilep events
 
+#    "onZSFllTight":      "((abs(mlltight-%s)<=%s&&(nElectronTight==2||nMuonTight==2))||(nElectronTight==1&&nMuonTight==1))"%("90", zMassRange),            # Cut Z-Window only for SF dilep events
     "onZSFllTight":      "((abs(mlltight-%s)<=%s&&(nElectronTight==2||nMuonTight==2))||(nElectronTight==1&&nMuonTight==1))"%(mZ, zMassRange),            # Cut Z-Window only for SF dilep events
     "onZSFllgTight":     "((abs(mllgammatight-%s)<=%s&&(nElectronTight==2||nMuonTight==2))||(nElectronTight==1&&nMuonTight==1))"%(mZ, zMassRange),       # Cut Z-Window only for SF dilep events
     "mumu":              "nElectronGood==0&&nMuonGood==2",
@@ -252,11 +253,15 @@ special_cuts = {
     "leptonMother":            "PhotonGood0_leptonMother==1",
     "noLeptonMother":          "PhotonGood0_leptonMother==0",
 
-    "BadEEJetVeto":        "Sum$((2.6<abs(Jet_eta)&&abs(Jet_eta)<3&&Jet_pt>30))==0&&Sum$((2.6<abs(Lepton_eta)&&abs(Lepton_eta)<3&&Lepton_pt>5&&abs(Lepton_pdgId)==11))==0",
+    "BadEEJetVeto":        "Sum$((2.6<abs(Jet_eta)&&abs(Jet_eta)<3&&Jet_pt>30))==0&&Sum$((2.6<abs(Photon_eta)&&abs(Photon_eta)<3&&Photon_pt>5))==0&&Sum$((2.6<abs(Lepton_eta)&&abs(Lepton_eta)<3&&Lepton_pt>5&&abs(Lepton_pdgId)==11))==0",
+    "advHEMVetoMuData":      "((Sum$(Lepton_pt>5&&Lepton_eta>-3.0&&Lepton_eta<-1.4&&Lepton_phi>-1.57&&Lepton_phi<-0.87)==0&&Sum$(Photon_pt>5&&Photon_eta>-3.0&&Photon_eta<-1.4&&Photon_phi>-1.57&&Photon_phi<-0.87)==0)||run<319077)",
+    "advHEMVetoMuMC":        "((Sum$(Lepton_pt>5&&Lepton_eta>-3.0&&Lepton_eta<-1.4&&Lepton_phi>-1.57&&Lepton_phi<-0.87)==0&&Sum$(Photon_pt>5&&Photon_eta>-3.0&&Photon_eta<-1.4&&Photon_phi>-1.57&&Photon_phi<-0.87)==0))",
+    "advHEMVetoPtData":      "((Sum$(abs(Lepton_pdgId)==11&&Lepton_pt>5&&Lepton_eta>-3.0&&Lepton_eta<-1.4&&Lepton_phi>-1.57&&Lepton_phi<-0.87)==0&&Sum$(Photon_pt>5&&Photon_eta>-3.0&&Photon_eta<-1.4&&Photon_phi>-1.57&&Photon_phi<-0.87)==0)||run<319077)",
+    "advHEMVetoPtMC":        "((Sum$(abs(Lepton_pdgId)==11&&Lepton_pt>5&&Lepton_eta>-3.0&&Lepton_eta<-1.4&&Lepton_phi>-1.57&&Lepton_phi<-0.87)==0&&Sum$(Photon_pt>5&&Photon_eta>-3.0&&Photon_eta<-1.4&&Photon_phi>-1.57&&Photon_phi<-0.87)==0))",
 
   }
 
-continous_variables  = [ ("glDR","photonLepdR"), ("mT", "mT"), ("metSig", "METSig"), ("mll", "mll"), ("mllgamma", "mllgamma"), ("mlgamma", "mLtight0Gamma"), ("met", "MET_pt"), ("pTG","PhotonGood0_pt"), ("pTj","Jet_pt[0]"), ("etaj","abs(JetGood0_eta)"), ("etak", "abs(JetGood1_eta)"), ("sip","LeptonTight0_sip3d"), ("dxyl","abs(LeptonTight0_dxy)"), ("dzl","abs(LeptonTight0_dz)"), ("etal","abs(LeptonTight0_eta)"), ("etainvl","abs(LeptonTightInvIso0_eta)"), ("ptl","LeptonTight0_pt"), ("ptinvl","LeptonTightInvIso0_pt") ]
+continous_variables  = [ ("glDR","photonLepdR"), ("mT", "mT"), ("metSig", "METSig"), ("mll", "mll"), ("mllgamma", "mllgamma"), ("mlgamma", "mLtight0Gamma"), ("met", "MET_pt"), ("pTG","PhotonGood0_pt"), ("phiG","PhotonGood0_phi"), ("pTj","Jet_pt[0]"), ("etaj","abs(JetGood0_eta)"), ("etak", "abs(JetGood1_eta)"), ("sip","LeptonTight0_sip3d"), ("dxyl","abs(LeptonTight0_dxy)"), ("dzl","abs(LeptonTight0_dz)"), ("etal","LeptonTight0_eta"), ("etainvl","LeptonTightInvIso0_eta"), ("ptl","LeptonTight0_pt"), ("ptinvl","LeptonTightInvIso0_pt") ]
 continous_variables += [ ("lnoIsorelIso","LeptonTightNoIso0_pfRelIso03_all") ]
 continous_variables += [ ("mt","mT"), ("lgDR","ltight0GammadR"), ("linvgDR","linvtight0GammadR") ]
 

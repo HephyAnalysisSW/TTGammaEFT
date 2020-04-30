@@ -18,7 +18,9 @@ vidNestedWPBitMap           = { 'fail':0, 'veto':1, 'loose':2, 'medium':3, 'tigh
 
 # the PhoAnyPFIsoWithEACut is used twice in the root info, thus I call one PhoAnyPFIsoWithEACut2 (they don't have the same cuts)
 # seems like the list is implemented reversed, thus the [::-1] at the end (values make more sense in that way)
-vidNestedWPBitMapNamingListPhoton = [ 'MinPtCut', 'PhoSCEtaMultiRangeCut', 'PhoSingleTowerHadOverEmCut', 'PhoFull5x5SigmaIEtaIEtaCut', 'PhoAnyPFIsoWithEACut', 'PhoAnyPFIsoWithEAAndQuadScalingCut', 'PhoAnyPFIsoWithEACut2' ][::-1]
+vidNestedWPBitMapNamingListPhoton = [ 'MinPtCut', 'PhoSCEtaMultiRangeCut', 'PhoSingleTowerHadOverEmCut', 'PhoFull5x5SigmaIEtaIEtaCut', 'PhoAnyPFIsoWithEACut', 'PhoAnyPFIsoWithEAAndQuadScalingCut', 'PhoAnyPFIsoWithEACut2' ][::-1] # HoverE (2), SIEIE (3), chgIso (4), NeuIso (5), PhoIso (6) cuts
+
+
 
 # Attention: only for nanoAOD v94x or higher (in 80x, only 2 bits are used)
 def jetIdBitMapToDict( val ):
@@ -128,8 +130,8 @@ def photonVIDSelector( p, idVal, removedCuts=[] ):
     # PhoAnyPFIsoWithEACut2 seems to be very close to all-iso cut, but not everywhere, sometimes it's the neutral-iso cut
     # no clue what PhoAnyPFIsoWithEAAndQuadScalingCut is, I think its the all-iso cut with additional pt**2 dependence, hard to check
     if ("pfRelIso03_all" in removedCuts):
-        vidDict = removekey( vidDict, "PhoAnyPFIsoWithEACut2" )
         vidDict = removekey( vidDict, "PhoAnyPFIsoWithEAAndQuadScalingCut" )
+        vidDict = removekey( vidDict, "PhoAnyPFIsoWithEACut2" )
     # no clue what the scEtaMultiRange cut really is, probably out of scope for this analysis as we only use SC barrel photons
     if ("scEtaMultiRange" in removedCuts):
         vidDict = removekey( vidDict, "PhoSCEtaMultiRangeCut" )
