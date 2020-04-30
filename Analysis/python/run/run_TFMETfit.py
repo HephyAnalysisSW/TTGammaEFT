@@ -121,7 +121,7 @@ read_variables = [ "weight/F",
 
 lumi_scale   = data_sample.lumi * 0.001
 weightString = "%f*weight*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
-weightString = "(%s)+(%s*%f*((nPhotonGood>0)*(PhotonGood0_photonCat==2)))"%(weightString,weightString,(misIDSF_val[args.year].val-1))
+weightString = "(%s)+(%s*%f*((nPhotonGood>0)*(PhotonGood0_photonCatMagic==2)))"%(weightString,weightString,(misIDSF_val[args.year].val-1))
 
 filterCutData = getFilterCut( args.year, isData=True,  skipBadChargedCandidate=True )
 filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )

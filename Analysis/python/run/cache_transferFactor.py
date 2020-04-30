@@ -81,7 +81,7 @@ def wrapper(arg):
 
 jobs=[]
 for channel in channels:
-    for nJet in [(2,2), (3,3), (4,-1), (3,-1)]:
+    for nJet in [(2,2), (3,3), (4,-1), (3,-1), (2,-1)]:
         for i_pt, pt in enumerate(ptBins[:-1]):
             for i_eta, eta in enumerate(etaBins[:-1]):
                 nJetLow, nJetHigh = nJet

@@ -290,6 +290,7 @@ read_variables  = ["weight/F",
                   ]
 
 read_variables += [ "%s_photonCat/I"%item for item in photonCatChoices if item != "None" ]
+read_variables += [ "%s_photonCatMagic/I"%item for item in photonCatChoices if item != "None" ]
 
 read_variables += map( lambda var: "PhotonMVA0_"              + var, photonVariables )
 read_variables += map( lambda var: "PhotonGood0_"             + var, photonVariables )
@@ -360,10 +361,10 @@ else:
     stack = Stack( mc )
 
 
-sampleWeight = lambda event, sample: (event.reweightTrigger*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)+((misIDSF_val[args.year].val-1)*(event.nPhotonGood>0)*(event.PhotonGood0_photonCat==2)*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)
+sampleWeight = lambda event, sample: (event.reweightTrigger*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)+((misIDSF_val[args.year].val-1)*(event.nPhotonGood>0)*(event.PhotonGood0_photonCatMagic==2)*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)
 weightString = "reweightL1Prefire*reweightTrigger*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"
 
-weightStringMisIDSF = "(%s)+(%s*%f*((nPhotonGood>0)*(PhotonGood0_photonCat==2)))"%(weightString,weightString,(misIDSF_val[args.year].val-1))
+weightStringMisIDSF = "(%s)+(%s*%f*((nPhotonGood>0)*(PhotonGood0_photonCatMagic==2)))"%(weightString,weightString,(misIDSF_val[args.year].val-1))
 
 for sample in mc:
     sample.read_variables = read_variables_MC
@@ -402,8 +403,7 @@ replaceSelection = {
     "nPhotonGood":        "nPhotonGoodInvLepIso",
     "nJetGood":           "nJetGoodInvLepIso",
     "nBTagGood":          "nBTagGoodInvLepIso",
-    "LeptonTight0_eta":   "LeptonTightInvIso0_eta",
-    "LeptonTight0_pt":    "LeptonTightInvIso0_pt",
+    "LeptonTight0":       "LeptonTightInvIso0",
 }
 
 if regionPlot:
