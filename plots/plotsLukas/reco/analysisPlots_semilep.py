@@ -60,7 +60,6 @@ argParser.add_argument('--replaceZG',          action='store_true', default=Fals
 argParser.add_argument('--mode',               action='store',      default="None", type=str, choices=["mu", "e", "all", "eetight", "mumutight", "SFtight", "muetight", "muInv", "eInv", "allNoIso", "muNoIso", "eNoIso"], help="plot lepton mode" )
 argParser.add_argument('--nJobs',              action='store',      default=1,      type=int, choices=[1,2,3,4,5],                     help="Maximum number of simultaneous jobs.")
 argParser.add_argument('--job',                action='store',      default=0,      type=int, choices=[0,1,2,3,4],                     help="Run only job i")
-argParser.add_argument('--addHEMWeight',       action='store_true', default=False,                                                     help="remove HEMWeight" )
 argParser.add_argument('--addBadEEJetVeto',    action='store_true', default=False,                                                     help="remove BadEEJetVeto" )
 argParser.add_argument('--noQCDDD',            action='store_true', default=False,                                                     help="no data driven QCD" )
 argParser.add_argument('--useEOS',             action='store_true', default=False,                                                     help="use lxplus with EOS space" )
@@ -184,8 +183,6 @@ def drawPlots( plots, mode, dataMCScale ):
             sc = "dy_"
         else:
             sc = ""
-        if args.addHEMWeight:
-            sc += "HEM_"
         sc += "log" if log else "lin"
         plot_directory_ = os.path.join( plot_directory, 'analysisPlots', str(args.year), args.plot_directory, selDir, mode.replace("NoIso",""), sc )
 
@@ -373,6 +370,7 @@ read_variables  = ["weight/F",
                   ]
 
 read_variables += [ "%s_photonCat/I"%item for item in photonCatChoices if item != "None" ]
+read_variables += [ "%s_photonCatMagic/I"%item for item in photonCatChoices if item != "None" ]
 
 read_variables += [ VectorTreeVariable.fromString('Lepton[%s]'%leptonVarString, nMax=100) ]
 read_variables += [ VectorTreeVariable.fromString('Photon[%s]'%photonVarString, nMax=100) ]
@@ -408,8 +406,10 @@ read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval
                      "reweightPU/F", "reweightPUDown/F", "reweightPUUp/F", "reweightPUVDown/F", "reweightPUVUp/F",
                      "reweightLeptonTightSF/F", "reweightLeptonTightSFUp/F", "reweightLeptonTightSFDown/F",
                      "reweightLeptonTrackingTightSF/F",
+                     "reweightLeptonTightSFInvIso/F", "reweightLeptonTightSFInvIsoUp/F", "reweightLeptonTightSFInvIsoDown/F",
+                     "reweightLeptonTrackingTightSFInvIso/F",
                      "reweightTrigger/F", "reweightTriggerUp/F", "reweightTriggerDown/F",
-                     "reweightInvTrigger/F", "reweightInvTriggerUp/F", "reweightInvTriggerDown/F",
+                     "reweightInvIsoTrigger/F", "reweightInvIsoTriggerUp/F", "reweightInvIsoTriggerDown/F",
                      "reweightPhotonSF/F", "reweightPhotonSFUp/F", "reweightPhotonSFDown/F",
                      "reweightPhotonElectronVetoSF/F",
                      "reweightBTag_SF/F", "reweightBTag_SF_b_Down/F", "reweightBTag_SF_b_Up/F", "reweightBTag_SF_l_Down/F", "reweightBTag_SF_l_Up/F",
@@ -836,24 +836,24 @@ else:
 stack.extend( [ [s] for s in signals ] )
 
 if addMisIDSF and addDYSF and not args.invLeptonIso:
-    sampleWeight = lambda event, sample: (misIDSF_val[args.year].val if event.nPhotonGood>0 and event.PhotonGood0_photonCat==2 else 1.)*(DYSF_val[args.year].val if "DY" in sample.name else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+    sampleWeight = lambda event, sample: (misIDSF_val[args.year].val if event.nPhotonGood>0 and event.PhotonGood0_photonCatMagic==2 else 1.)*(DYSF_val[args.year].val if "DY" in sample.name else 1.)*event.reweightL1Prefire*event.reweightHEM*event.reweightPU*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
 elif addDYSF and not args.invLeptonIso:
-    sampleWeight = lambda event, sample: (DYSF_val[args.year].val if "DY" in sample.name else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+    sampleWeight = lambda event, sample: (DYSF_val[args.year].val if "DY" in sample.name else 1.)*event.reweightL1Prefire*event.reweightHEM*event.reweightPU*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
 elif addMisIDSF and not args.invLeptonIso:
-    sampleWeight = lambda event, sample: (misIDSF_val[args.year].val if event.nPhotonGood>0 and event.PhotonGood0_photonCat==2 else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+    sampleWeight = lambda event, sample: (misIDSF_val[args.year].val if event.nPhotonGood>0 and event.PhotonGood0_photonCatMagic==2 else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
 elif addMisIDSF and addDYSF and args.invLeptonIso:
-    sampleWeight = lambda event, sample: (misIDSF_val[args.year].val if event.nPhotonGoodInvLepIso>0 and event.PhotonGoodInvLepIso0_photonCat==2 else 1.)*(DYSF_val[args.year].val if "DY" in sample.name else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+    sampleWeight = lambda event, sample: (misIDSF_val[args.year].val if event.nPhotonGoodInvLepIso>0 and event.PhotonGoodInvLepIso0_photonCatMagic==2 else 1.)*(DYSF_val[args.year].val if "DY" in sample.name else 1.)*event.reweightL1Prefire*event.reweightHEM*event.reweightPU*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
 elif addDYSF and args.invLeptonIso:
-    sampleWeight = lambda event, sample: (DYSF_val[args.year].val if "DY" in sample.name else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+    sampleWeight = lambda event, sample: (DYSF_val[args.year].val if "DY" in sample.name else 1.)*event.reweightL1Prefire*event.reweightHEM*event.reweightPU*event.reweightInvIsoTrigger*event.reweightLeptonTightSFInvIso*event.reweightLeptonTrackingTightSFInvIso*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
 elif addMisIDSF and args.invLeptonIso:
-    sampleWeight = lambda event, sample: (misIDSF_val[args.year].val if event.nPhotonGoodInvLepIso>0 and event.PhotonGoodInvLepIso0_photonCat==2 else 1.)*event.reweightL1Prefire*event.reweightPU*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+    sampleWeight = lambda event, sample: (misIDSF_val[args.year].val if event.nPhotonGoodInvLepIso>0 and event.PhotonGoodInvLepIso0_photonCatMagic==2 else 1.)*event.reweightL1Prefire*event.reweightHEM*event.reweightPU*event.reweightInvIsoTrigger*event.reweightLeptonTightSFInvIso*event.reweightLeptonTrackingTightSFInvIso*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+elif args.invLeptonIso:
+    sampleWeight = lambda event, sample: event.reweightL1Prefire*event.reweightHEM*event.reweightPU*event.reweightInvIsoTrigger*event.reweightLeptonTightSFInvIso*event.reweightLeptonTrackingTightSFInvIso*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
 else:
-    sampleWeight = lambda event, sample: event.reweightL1Prefire*event.reweightPU*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+    sampleWeight = lambda event, sample: event.reweightL1Prefire*event.reweightPU*event.reweightHEM*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
 
 # no misIDSF included in weightString!!
-weightString = "reweightL1Prefire*reweightPU*reweightTrigger*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"
-if args.addHEMWeight:
-    weightString += "*reweightHEM"
+weightString = "reweightL1Prefire*reweightHEM*reweightPU*reweightTrigger*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"
 
 for sample in mc + signals:
     sample.read_variables = read_variables_MC
@@ -869,9 +869,7 @@ if args.small:
         sample.reduceFiles( factor=20 )
         sample.scale /= sample.normalization
 
-weight_ = lambda event, sample: event.weight
-if args.addHEMWeight:
-    weight_ = lambda event, sample: event.weight*event.reweightHEM
+weight_ = lambda event, sample: event.weight*event.reweightHEM
 
 replaceSelection = {
     "nLeptonVetoIsoCorr": "nLeptonVetoNoIso",
@@ -1297,13 +1295,13 @@ else:
 
 filterCutData = getFilterCut( args.year, isData=True, skipBadChargedCandidate=True )
 filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )
-tr            = TriggerSelector( args.year, singleLepton=True ) #single lepton trigger also for DY CR
-triggerCutMc  = tr.getSelection( "MC" )
+#tr            = TriggerSelector( args.year, singleLepton=True ) #single lepton trigger also for DY CR
+#triggerCutMc  = tr.getSelection( "MC" )
 
-cat_sel0 = [ "%s_photonCat==0"%args.categoryPhoton ]
-cat_sel1 = [ "%s_photonCat==1"%args.categoryPhoton ]
-cat_sel2 = [ "%s_photonCat==2"%args.categoryPhoton ]
-cat_sel3 = [ "%s_photonCat==3"%args.categoryPhoton ]
+cat_sel0 = [ "%s_photonCatMagic==0"%args.categoryPhoton ]
+cat_sel1 = [ "%s_photonCatMagic==1"%args.categoryPhoton ]
+cat_sel2 = [ "%s_photonCatMagic==2"%args.categoryPhoton ]
+cat_sel3 = [ "%s_photonCatMagic==3"%args.categoryPhoton ]
 
 if "NoChgIso" in args.selection or "NoSieie" in args.selection or "nHadPhoton" in args.selection:
     photonCats = ["-photonhadcat0", "-photonhadcat1", "-photonhadcat2", "-photonhadcat3"]
@@ -1444,37 +1442,40 @@ for index, mode in enumerate( allModes ):
     leptonSelection       = invIsoleptonSelection if args.invLeptonIso and not categoryPlot and not args.leptonCategory else isoleptonSelection
 
     if not args.noData:
-        data_sample.setSelectionString( [ filterCutData, leptonSelection ] )
+        data_sample.setSelectionString( [ filterCutData, leptonSelection, "triggered==1" ] )
+        print data_sample.selectionString
+    if args.invLeptonIso:
+        data_sample.setSelectionString( [ filterCutData, leptonSelection, "triggeredInvIso==1" ] )
         print data_sample.selectionString
     if categoryPlot:
-        all_cat0.setSelectionString(  [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] + cat_sel0 )
-        all_cat1.setSelectionString(  [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] + cat_sel1 )
-        all_cat2.setSelectionString(  [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] + cat_sel2 )
-        all_cat3.setSelectionString(  [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] + cat_sel3 )
+        all_cat0.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_sel0 )
+        all_cat1.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_sel1 )
+        all_cat2.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_sel2 )
+        all_cat3.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_sel3 )
     elif args.leptonCategory:
-        ttg_2l.setSelectionString(    [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] + cat_gen2L )
-        ttg_l.setSelectionString(     [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] + cat_genL )
-        ttg_tau_l.setSelectionString( [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] + cat_genTau_l )
-        ttg_tau_q.setSelectionString( [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] + cat_genTau_q )
-        ttg_had.setSelectionString(   [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] + cat_genHad )
+        ttg_2l.setSelectionString(    [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_gen2L )
+        ttg_l.setSelectionString(     [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_genL )
+        ttg_tau_l.setSelectionString( [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_genTau_l )
+        ttg_tau_q.setSelectionString( [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_genTau_q )
+        ttg_had.setSelectionString(   [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_genHad )
 
-        tt_2l.setSelectionString(     [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] + cat_gen2L )
-        tt_l.setSelectionString(      [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] + cat_genL )
-        tt_tau_l.setSelectionString(  [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] + cat_genTau_l )
-        tt_tau_q.setSelectionString(  [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] + cat_genTau_q )
-        tt_had.setSelectionString(    [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] + cat_genHad )
+        tt_2l.setSelectionString(     [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_gen2L )
+        tt_l.setSelectionString(      [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_genL )
+        tt_tau_l.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_genTau_l )
+        tt_tau_q.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_genTau_q )
+        tt_had.setSelectionString(    [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_genHad )
 
-        all_noTT.setSelectionString(  [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] )
+        all_noTT.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] )
     else:
         for sample in mc + signals:
             if (sample.name.startswith("DY") and args.replaceZG): #no ZG sample
-                sample.setSelectionString( [ filterCutMc, leptonSelection, triggerCutMc ] )
+                sample.setSelectionString( [ filterCutMc, leptonSelection, "triggered==1" ] )
             else:
-                sample.setSelectionString( [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] )
+                sample.setSelectionString( [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] )
 
     if args.invLeptonIso and not regionPlot:
-        preSelectionSR = "&&".join( [ cutInterpreter.cutString( args.selection ), filterCutMc, isoleptonSelection,    triggerCutMc ] )#, "overlapRemoval==1"  ] )
-        preSelectionCR = "&&".join( [ preSelection,                               filterCutMc, invIsoleptonSelection, triggerCutMc ] )#, "overlapRemoval==1"  ] )
+        preSelectionSR = "&&".join( [ cutInterpreter.cutString( args.selection ), filterCutMc, isoleptonSelection,    "triggeredInvIso==1", "overlapRemoval==1"  ] )
+        preSelectionCR = "&&".join( [ preSelection,                               filterCutMc, invIsoleptonSelection, "triggeredInvIso==1", "overlapRemoval==1"  ] )
 
         yield_QCD_CR  = u_float( qcd.getYieldFromDraw(   selectionString=preSelectionCR, weightString="weight*%f*%s"%(lumi_scale,weightString) ) )
         yield_QCD_SR  = u_float( qcd.getYieldFromDraw(   selectionString=preSelectionSR, weightString="weight*%f*%s"%(lumi_scale,weightString) ) )
@@ -1529,7 +1530,7 @@ for index, mode in enumerate( allModes ):
             if "category" in plot.name: continue
 
             for i_m, m in enumerate(qcdModes):
-                res = "_".join( ["qcdHisto" if not args.addHEMWeight else "qcdHisto_hemWeight", args.selection, plot.name, str(args.year), m, "small" if args.small else "full"] + map( str, plot.binning ) )
+                res = "_".join( ["qcdHisto", args.selection, plot.name, str(args.year), m, "small" if args.small else "full"] + map( str, plot.binning ) )
 
                 if dirDB.contains(res) and not args.noQCDDD:
                     logger.info( "Adding QCD histogram from cache for plot %s"%plot.name )
