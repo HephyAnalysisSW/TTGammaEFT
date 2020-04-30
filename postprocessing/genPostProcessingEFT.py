@@ -203,7 +203,7 @@ new_variables += [ "dPhiBLepWLep/F", "dPhiWLepWHad/F", "dPhiBHadWHad/F", "dPhiBL
 new_variables += [ "dRLepGamma/F", "dRTopHadGamma/F", "dRWHadGamma/F", "dRTopLepGamma/F", "dRWLepGamma/F", "dRBHadGamma/F", "dRBLepGamma/F" ]
 new_variables += [ "dRBLepWLep/F", "dRWLepWHad/F", "dRBHadWHad/F", "dRBLepBHad/F", "dRTopLepTopHad/F" ]
 
-new_variables += [ "mT/F", "m3/F", "ht/F" ]
+new_variables += [ "mT/F", "m3/F", "ht/F", "mLtight0Gamma/F" ]
 
 
 new_variables += [ "nGenJets/I" ]
@@ -255,6 +255,8 @@ new_variables += [ "nLeptonVetoIsoCorr/I" ]
 new_variables += [ "nJetGood/I" ]
 new_variables += [ "nBTagGood/I" ]
 new_variables += [ "nPhotonGood/I" ]
+new_variables += [ "PhotonGood0_"  + var for var in genPhotonVarStringWrite.split(",") ]
+new_variables += [ "LeptonTight0_" + var for var in genLeptonVarStringWrite.split(",") ]
 
 new_variables += [ "nGenJetsCMSUnfold/I" ]
 new_variables += [ "nGenBJetCMSUnfold/I" ]
@@ -600,6 +602,7 @@ def filler( event ):
     GenPhotonCMSUnfold.sort( key = lambda p: -p["pt"] )
     genP0 = ( GenPhotonCMSUnfold[:1] + [None] )[0]
     if genP0: fill_vector( event, "GenPhotonCMSUnfold0",  genPhotonVars, genP0 )
+    if genP0: fill_vector( event, "PhotonGood0",          genPhotonVars, genP0 )
 
     GenPhotonATLASUnfold.sort( key = lambda p: -p["pt"] )
     genP0 = ( GenPhotonATLASUnfold[:1] + [None] )[0]
@@ -608,6 +611,7 @@ def filler( event ):
     GenLeptonCMSUnfold.sort( key = lambda p: -p["pt"] )
     genL0 = ( GenLeptonCMSUnfold[:1] + [None] )[0]
     if genL0: fill_vector( event, "GenLeptonCMSUnfold0",  genLeptonVars, genL0 )
+    if genL0: fill_vector( event, "LeptonTight0",         genLeptonVars, genL0 )
 
     GenJetCMSUnfold.sort( key = lambda p: -p["pt"] )
     genJ0, genJ1, genJ2 = ( GenJetCMSUnfold[:3] + [None,None,None] )[:3]
@@ -690,14 +694,18 @@ def filler( event ):
     if GenLeptonCMSUnfold:
         event.dPhiLepMET           = deltaPhi( GenLeptonCMSUnfold[0]["phi"], GenMET["phi"] )
 
-    event.hT = 0
-    event.m3 = -999
+    event.ht            = -999
+    event.m3            = -999
+    event.mT            = -999
+    event.mLtight0Gamma = -999
     if GenJetCMSUnfold:
-        event.hT = sum( [ j["pt"] for j in GenJetCMSUnfold ])
+        event.ht = sum( [ j["pt"] for j in GenJetCMSUnfold ])
         event.m3 = m3( GenJetCMSUnfold )[0]
 
     if GenLeptonCMSUnfold:
         event.mT = mT( GenLeptonCMSUnfold[0], GenMET )
+        if GenPhotonCMSUnfold:
+            event.mLtight0Gamma = ( get4DVec(GenLeptonCMSUnfold[0]) + get4DVec(GenPhotonCMSUnfold[0]) ).M()
 
 ##############################################
 ##############################################
