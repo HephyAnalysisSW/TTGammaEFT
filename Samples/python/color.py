@@ -23,6 +23,8 @@ color.QCD            = ROOT.kGreen-2 #+3
 color.GJets          = ROOT.kGreen+4
 color.PU             = ROOT.kGreen+4
 
+color.WG_misID       = ROOT.kAzure-2
+color.ZG_misID       = ROOT.kAzure+2
 color.DY_misID       = ROOT.kAzure-8
 color.VGamma_misID   = ROOT.kAzure-2
 color.TTG_had        = ROOT.kOrange-9
