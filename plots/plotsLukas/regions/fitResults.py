@@ -17,7 +17,7 @@ from Analysis.Tools.cardFileWriter.CombineResults    import CombineResults
 
 # TTGammaEFT
 from TTGammaEFT.Tools.user            import plot_directory, cache_directory
-from TTGammaEFT.Analysis.SetupHelpers import allRegions, processesMisIDPOI, default_processes
+from TTGammaEFT.Analysis.SetupHelpers import *
 
 # RootTools
 from RootTools.core.standard          import *
@@ -28,6 +28,10 @@ argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--small",                action="store_true",                            help="small?")
 argParser.add_argument("--logLevel",             action="store",                default="INFO",  help="log level?", choices=["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTSET"])
 argParser.add_argument("--blinded",              action="store_true")
+argParser.add_argument("--misIDPOI",             action="store_true",                            help="Use misID as POI")
+argParser.add_argument("--ttPOI",             action="store_true",                            help="Use w+jets as POI")
+argParser.add_argument("--wJetsPOI",             action="store_true",                            help="Use w+jets as POI")
+argParser.add_argument("--dyPOI",             action="store_true",                            help="Use w+jets as POI")
 argParser.add_argument("--overwrite",            action="store_true",                            help="Overwrite existing output files, bool flag set to True  if used")
 argParser.add_argument("--postFit",              action="store_true",                            help="Apply pulls?")
 argParser.add_argument("--expected",             action="store_true",                            help="Run expected?")
@@ -61,6 +65,11 @@ logger_rt = logger_rt.get_logger( args.logLevel, logFile = None )
 args.preliminary = True
 # make sure the list is always in the same order
 if args.plotNuisances: args.plotNuisances.sort()
+
+if args.misIDPOI: default_processes = processesMisIDPOI
+if args.ttPOI: default_processes = processesTTPOI
+if args.wJetsPOI: default_processes = processesWJetsPOI
+if args.dyPOI: default_processes = processesDYPOI
 
 if args.plotChannels and "all" in args.plotChannels: args.plotChannels += ["e","mu"]
 if args.plotChannels and "e"   in args.plotChannels: args.plotChannels += ["eetight"]
