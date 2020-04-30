@@ -66,39 +66,31 @@ if "dilep" in args.selection:
     if args.year == 2016:
         from TTGammaEFT.Samples.nanoTuples_Summer16_private_postProcessed      import *
         if not args.noData:
-            del postprocessing_directory
             from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_postProcessed import *
 
     elif args.year == 2017:
         from TTGammaEFT.Samples.nanoTuples_Fall17_private_postProcessed        import *
         if not args.noData:
-            del postprocessing_directory
             from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_postProcessed import *
 
     elif args.year == 2018:
         from TTGammaEFT.Samples.nanoTuples_Autumn18_private_postProcessed      import *
         if not args.noData:
-            del postprocessing_directory
             from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_postProcessed import *
 else:
     if args.year == 2016:
-#        postprocessing_directory = "TTGammaEFT_PP_2016_TTG_private_v22/semilep/"
-#        from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed_test      import *
         from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed      import *
         if not args.noData:
-            del postprocessing_directory
             from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
 
     elif args.year == 2017:
         from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed        import *
         if not args.noData:
-            del postprocessing_directory
             from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
 
     elif args.year == 2018:
         from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed      import *
         if not args.noData:
-            del postprocessing_directory
             from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
 
 
@@ -122,7 +114,7 @@ def drawPlots( plots, mode ):
         if args.onlyTTSemiLep: sc += "1l_"
         sc += args.sideband + "_"
         sc += "log" if log else "lin"
-        plot_directory_ = os.path.join( plot_directory, 'ratioPlots', str(args.year), args.plot_directory, args.selection, mode, sc )
+        plot_directory_ = os.path.join( plot_directory, 'ratioPlots_classic', str(args.year), args.plot_directory, args.selection, mode, sc )
 
         for plot in plots:
             if not max(l[0].GetMaximum() for l in plot.histos): 
@@ -213,6 +205,7 @@ read_variables  = ["weight/F",
                   ]
 
 read_variables += [ "%s_photonCat/I"%item for item in photonCatChoices if item != "None" ]
+read_variables += [ "%s_photonCatMagic/I"%item for item in photonCatChoices if item != "None" ]
 
 #read_variables += [ VectorTreeVariable.fromString('Lepton[%s]'%leptonVarString, nMax=10) ]
 #read_variables += [ VectorTreeVariable.fromString('Photon[%s]'%photonVarString, nMax=10) ]
@@ -388,424 +381,6 @@ isoBinning    = Binning.fromThresholds([0, isoThresh, 20])
 chgIsoBinning = Binning.fromThresholds([0, chgIsoThresh, 20])
 sieieBinning  = Binning.fromThresholds([0, lowSieieThresh, highSieieThresh, 0.025])
 
-if True: #not use it for now
-  addPlots.append( Plot(
-    name      = 'photonLepdR_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'min #DeltaR(#gamma,l)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.photonLepdR if event.photonLepdR > 0 else -999,
-    binning   = [40,0,2],
-  ))
-
-  addPlots.append( Plot(
-    name      = 'photonLepdR_catFake_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'min #DeltaR(#gamma,l)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.photonLepdR if event.photonLepdR > 0 and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
-    binning   = [40,0,2],
-  ))
-
-  addPlots.append( Plot(
-    name      = 'photonLepdR_catHad_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'min #DeltaR(#gamma,l)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.photonLepdR if event.photonLepdR > 0 and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
-    binning   = [40,0,2],
-  ))
-
-  addPlots.append( Plot(
-    name      = 'photonLepdR_catMagic_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'min #DeltaR(#gamma,l)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.photonLepdR if event.photonLepdR > 0 and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
-    binning   = [40,0,2],
-  ))
-
-
-  addPlots.append( Plot(
-    name      = 'photonJetdR_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'min #DeltaR(#gamma,jet)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.photonJetdR if event.photonLepdR > 0 else -999,
-    binning   = [40,0,2],
-  ))
-
-  addPlots.append( Plot(
-    name      = 'photonJetdR_catFake_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'min #DeltaR(#gamma,jet)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.photonJetdR if event.photonJetdR > 0 and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
-    binning   = [40,0,2],
-  ))
-
-  addPlots.append( Plot(
-    name      = 'photonJetdR_catHad_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'min #DeltaR(#gamma,jet)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.photonJetdR if event.photonJetdR > 0 and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
-    binning   = [40,0,2],
-  ))
-
-  addPlots.append( Plot(
-    name      = 'photonJetdR_catMagic_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'min #DeltaR(#gamma,jet)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.photonJetdR if event.photonJetdR > 0 and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
-    binning   = [40,0,2],
-  ))
-
-if False: #not use it for now
-  addPlots.append( Plot(
-    name      = 'fixedGridRhoFastjetAll_wide_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#rho(PU)',
-    texY      = 'Number of Events',
-    attribute = TreeVariable.fromString( "fixedGridRhoFastjetAll/F" ),
-    binning   = [20,0,200],
-  ))
-
-  addPlots.append( Plot(
-    name      = 'fixedGridRhoFastjetAll_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#rho(PU)',
-    texY      = 'Number of Events',
-    attribute = TreeVariable.fromString( "fixedGridRhoFastjetAll/F" ),
-    binning   = [10,0,40],
-  ))
-
-  addPlots.append( Plot(
-    name      = 'fixedGridRhoFastjetAll_wide_catFake_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#rho(PU)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.fixedGridRhoFastjetAll if getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
-    binning   = [20,0,200],
-  ))
-
-  addPlots.append( Plot(
-    name      = 'fixedGridRhoFastjetAll_catFake_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#rho(PU)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.fixedGridRhoFastjetAll if getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
-    binning   = [10,0,40],
-  ))
-
-  addPlots.append( Plot(
-    name      = 'fixedGridRhoFastjetAll_wide_catHad_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#rho(PU)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.fixedGridRhoFastjetAll if getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
-    binning   = [20,0,200],
-  ))
-
-  addPlots.append( Plot(
-    name      = 'fixedGridRhoFastjetAll_wide_catMagic_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#rho(PU)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.fixedGridRhoFastjetAll if getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
-    binning   = [20,0,200],
-  ))
-
-  addPlots.append( Plot(
-    name      = 'fixedGridRhoFastjetAll_catHad_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#rho(PU)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.fixedGridRhoFastjetAll if getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
-    binning   = [10,0,40],
-  ))
-
-  addPlots.append( Plot(
-    name      = 'fixedGridRhoFastjetAll_catMagic_%s'%("ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#rho(PU)',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.fixedGridRhoFastjetAll if getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
-    binning   = [10,0,40],
-  ))
-
-
-addPlots.append( Plot(
-    name      = '%s_mother_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = TreeVariable.fromString( "%s_mother/F"%args.categoryPhoton ),
-    binning   = [61,-30,30],
-))
-
-addPlots.append( Plot(
-    name      = '%s_mother_wide_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = TreeVariable.fromString( "%s_mother/F"%args.categoryPhoton ),
-    binning   = [1201,-600,600],
-))
-
-if args.sideband == "chgIso" or args.sideband == "iso":
-  addPlots.append( Plot(
-    name      = '%s_mother_%s_lowSieie'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_sieie" ) < lowSieieThresh else -999,
-    binning   = [61,-30,30],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_%s_highSieie'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_sieie" ) > highSieieThresh else -999,
-    binning   = [61,-30,30],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_catHad_%s_lowSieie'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_sieie" ) < lowSieieThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
-    binning   = [61,-30,30],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_catHad_%s_highSieie'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_sieie" ) > highSieieThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
-    binning   = [61,-30,30],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_catMagic_%s_lowSieie'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_sieie" ) < lowSieieThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
-    binning   = [61,-30,30],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_catMagic_%s_highSieie'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_sieie" ) > highSieieThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
-    binning   = [61,-30,30],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_catFake_%s_lowSieie'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_sieie" ) < lowSieieThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
-    binning   = [61,-30,30],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_catFake_%s_highSieie'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_sieie" ) > highSieieThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
-    binning   = [61,-30,30],
-  ))
-
-
-
-
-  addPlots.append( Plot(
-    name      = '%s_mother_wide_%s_lowSieie'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_sieie" ) < lowSieieThresh else -999,
-    binning   = [1201,-600,600],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_wide_%s_highSieie'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_sieie" ) > highSieieThresh else -999,
-    binning   = [1201,-600,600],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_wide_catHad_%s_lowSieie'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_sieie" ) < lowSieieThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
-    binning   = [1201,-600,600],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_wide_catHad_%s_highSieie'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_sieie" ) > highSieieThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
-    binning   = [1201,-600,600],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_wide_catMagic_%s_lowSieie'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_sieie" ) < lowSieieThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
-    binning   = [1201,-600,600],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_wide_catMagic_%s_highSieie'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_sieie" ) > highSieieThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
-    binning   = [1201,-600,600],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_wide_catFake_%s_lowSieie'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_sieie" ) < lowSieieThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
-    binning   = [1201,-600,600],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_wide_catFake_%s_highSieie'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_sieie" ) > highSieieThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
-    binning   = [1201,-600,600],
-  ))
-
-
-
-
-if args.sideband == "sieie":
-  addPlots.append( Plot(
-    name      = '%s_mother_%s_lowChgIso'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) < chgIsoThresh else -999,
-    binning   = [61,-30,30],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_%s_highChgIso'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) > chgIsoThresh else -999,
-    binning   = [61,-30,30],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_catHad_%s_lowChgIso'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) < chgIsoThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
-    binning   = [61,-30,30],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_catHad_%s_highChgIso'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) > chgIsoThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
-    binning   = [61,-30,30],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_catMagic_%s_lowChgIso'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) < chgIsoThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
-    binning   = [61,-30,30],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_catMagic_%s_highChgIso'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) > chgIsoThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
-    binning   = [61,-30,30],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_catFake_%s_lowChgIso'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) < chgIsoThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
-    binning   = [61,-30,30],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_catFake_%s_highChgIso'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) > chgIsoThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
-    binning   = [61,-30,30],
-  ))
-
-
-
-
-
-  addPlots.append( Plot(
-    name      = '%s_mother_wide_%s_lowChgIso'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) < chgIsoThresh else -999,
-    binning   = [1201,-600,600],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_wide_%s_highChgIso'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) > chgIsoThresh else -999,
-    binning   = [1201,-600,600],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_wide_catHad_%s_lowChgIso'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) < chgIsoThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
-    binning   = [1201,-600,600],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_wide_catHad_%s_highChgIso'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) > chgIsoThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
-    binning   = [1201,-600,600],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_wide_catMagic_%s_lowChgIso'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) < chgIsoThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
-    binning   = [1201,-600,600],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_wide_catMagic_%s_highChgIso'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) > chgIsoThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
-    binning   = [1201,-600,600],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_wide_catFake_%s_lowChgIso'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) < chgIsoThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
-    binning   = [1201,-600,600],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_mother_wide_catFake_%s_highChgIso'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = 'mother(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_mother" ) if getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) > chgIsoThresh and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
-    binning   = [1201,-600,600],
-  ))
-
-
-
 
 if args.sideband == "chgIso" or args.sideband == "iso":
   addPlots.append( Plot(
@@ -884,7 +459,7 @@ if args.sideband == "chgIso":
     name      = '%s_sieie_catHad_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 1 else -999,
     binning   = sieieBinning,
   ))
 
@@ -892,7 +467,7 @@ if args.sideband == "chgIso":
     name      = '%s_sieie_catHad_20ptG120_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 1 else -999,
     binning   = sieieBinning,
   ))
 
@@ -900,7 +475,7 @@ if args.sideband == "chgIso":
     name      = '%s_sieie_catHad_120ptG220_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 1 else -999,
     binning   = sieieBinning,
   ))
 
@@ -908,7 +483,7 @@ if args.sideband == "chgIso":
     name      = '%s_sieie_catHad_220ptGinf_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 1 else -999,
     binning   = sieieBinning,
   ))
 
@@ -918,7 +493,7 @@ if args.sideband == "chgIso":
     name      = '%s_sieie_catMagic_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 4 else -999,
     binning   = sieieBinning,
   ))
 
@@ -926,7 +501,7 @@ if args.sideband == "chgIso":
     name      = '%s_sieie_catMagic_20ptG120_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 4 else -999,
     binning   = sieieBinning,
   ))
 
@@ -934,7 +509,7 @@ if args.sideband == "chgIso":
     name      = '%s_sieie_catMagic_120ptG220_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 4 else -999,
     binning   = sieieBinning,
   ))
 
@@ -942,7 +517,7 @@ if args.sideband == "chgIso":
     name      = '%s_sieie_catMagic_220ptGinf_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 4 else -999,
     binning   = sieieBinning,
   ))
 
@@ -952,7 +527,7 @@ if args.sideband == "chgIso":
     name      = '%s_sieie_catFake_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 3 else -999,
     binning   = sieieBinning,
   ))
 
@@ -960,7 +535,7 @@ if args.sideband == "chgIso":
     name      = '%s_sieie_catFake_20ptG120_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 3 else -999,
     binning   = sieieBinning,
   ))
 
@@ -968,7 +543,7 @@ if args.sideband == "chgIso":
     name      = '%s_sieie_catFake_120ptG220_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 3 else -999,
     binning   = sieieBinning,
   ))
 
@@ -976,7 +551,7 @@ if args.sideband == "chgIso":
     name      = '%s_sieie_catFake_220ptGinf_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 3 else -999,
     binning   = sieieBinning,
   ))
 
@@ -987,7 +562,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catHad_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 1 else -999,
     binning   = chgIsoBinning,
   ))
 
@@ -995,7 +570,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catHad_20ptG120_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 1 else -999,
     binning   = chgIsoBinning,
   ))
 
@@ -1003,7 +578,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catHad_120ptG220_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 1 else -999,
     binning   = chgIsoBinning,
   ))
 
@@ -1011,7 +586,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catHad_220ptGinf_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 1 else -999,
     binning   = chgIsoBinning,
   ))
 
@@ -1020,7 +595,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catMagic_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 4 else -999,
     binning   = chgIsoBinning,
   ))
 
@@ -1028,7 +603,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catMagic_20ptG120_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 4 else -999,
     binning   = chgIsoBinning,
   ))
 
@@ -1036,7 +611,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catMagic_120ptG220_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 4 else -999,
     binning   = chgIsoBinning,
   ))
 
@@ -1044,7 +619,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catMagic_220ptGinf_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 4 else -999,
     binning   = chgIsoBinning,
   ))
 
@@ -1053,7 +628,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catFake_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 3 else -999,
     binning   = chgIsoBinning,
   ))
 
@@ -1061,7 +636,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catFake_20ptG120_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 3 else -999,
     binning   = chgIsoBinning,
   ))
 
@@ -1069,7 +644,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catFake_120ptG220_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 3 else -999,
     binning   = chgIsoBinning,
   ))
 
@@ -1077,7 +652,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catFake_220ptGinf_%s_coarse'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 3 else -999,
     binning   = chgIsoBinning,
   ))
 
@@ -1160,7 +735,7 @@ if args.sideband == "chgIso" or args.sideband == "iso":
     name      = '%s_sieie_catHad_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 1 else -999,
     binning   = [ 20, 0.005, 0.025 ],
   ))
 
@@ -1168,7 +743,7 @@ if args.sideband == "chgIso" or args.sideband == "iso":
     name      = '%s_sieie_catHad_20ptG120_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 1 else -999,
     binning   = [ 20, 0.005, 0.025 ],
   ))
 
@@ -1176,7 +751,7 @@ if args.sideband == "chgIso" or args.sideband == "iso":
     name      = '%s_sieie_catHad_120ptG220_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 1 else -999,
     binning   = [ 20, 0.005, 0.025 ],
   ))
 
@@ -1184,7 +759,7 @@ if args.sideband == "chgIso" or args.sideband == "iso":
     name      = '%s_sieie_catHad_220ptGinf_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 1 else -999,
     binning   = [ 20, 0.005, 0.025 ],
   ))
 
@@ -1194,7 +769,7 @@ if args.sideband == "chgIso" or args.sideband == "iso":
     name      = '%s_sieie_catMagic_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 4 else -999,
     binning   = [ 20, 0.005, 0.025 ],
   ))
 
@@ -1202,7 +777,7 @@ if args.sideband == "chgIso" or args.sideband == "iso":
     name      = '%s_sieie_catMagic_20ptG120_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 4 else -999,
     binning   = [ 20, 0.005, 0.025 ],
   ))
 
@@ -1210,7 +785,7 @@ if args.sideband == "chgIso" or args.sideband == "iso":
     name      = '%s_sieie_catMagic_120ptG220_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 4 else -999,
     binning   = [ 20, 0.005, 0.025 ],
   ))
 
@@ -1218,7 +793,7 @@ if args.sideband == "chgIso" or args.sideband == "iso":
     name      = '%s_sieie_catMagic_220ptGinf_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 4 else -999,
     binning   = [ 20, 0.005, 0.025 ],
   ))
 
@@ -1229,7 +804,7 @@ if args.sideband == "chgIso" or args.sideband == "iso":
     name      = '%s_sieie_catFake_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 3 else -999,
     binning   = [ 20, 0.005, 0.025 ],
   ))
 
@@ -1237,7 +812,7 @@ if args.sideband == "chgIso" or args.sideband == "iso":
     name      = '%s_sieie_catFake_20ptG120_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 3 else -999,
     binning   = [ 20, 0.005, 0.025 ],
   ))
 
@@ -1245,7 +820,7 @@ if args.sideband == "chgIso" or args.sideband == "iso":
     name      = '%s_sieie_catFake_120ptG220_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 3 else -999,
     binning   = [ 20, 0.005, 0.025 ],
   ))
 
@@ -1253,88 +828,9 @@ if args.sideband == "chgIso" or args.sideband == "iso":
     name      = '%s_sieie_catFake_220ptGinf_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 3 else -999,
     binning   = [ 20, 0.005, 0.025 ],
   ))
-
-
-  addPlots.append( Plot(
-    name      = '%s_sieie_catFake_lowPU_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 3 and event.PV_npvsGood < 5 else -999,
-    binning   = [ 20, 0.005, 0.025 ],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_sieie_catFake_medPU_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 3 and event.PV_npvsGood >= 5 and event.PV_npvsGood < 25 else -999,
-    binning   = [ 20, 0.005, 0.025 ],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_sieie_catFake_highPU_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 3 and event.PV_npvsGood >= 25 else -999,
-    binning   = [ 20, 0.005, 0.025 ],
-  ))
-
-
-  addPlots.append( Plot(
-    name      = '%s_sieie_catHad_lowPU_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 1 and event.PV_npvsGood < 5 else -999,
-    binning   = [ 20, 0.005, 0.025 ],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_sieie_catHad_medPU_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 1 and event.PV_npvsGood >= 5 and event.PV_npvsGood < 25 else -999,
-    binning   = [ 20, 0.005, 0.025 ],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_sieie_catHad_highPU_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 1 and event.PV_npvsGood >= 25 else -999,
-    binning   = [ 20, 0.005, 0.025 ],
-  ))
-
-
-
-  addPlots.append( Plot(
-    name      = '%s_sieie_catMagic_lowPU_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 4 and event.PV_npvsGood < 5 else -999,
-    binning   = [ 20, 0.005, 0.025 ],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_sieie_catMagic_medPU_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 4 and event.PV_npvsGood >= 5 and event.PV_npvsGood < 25 else -999,
-    binning   = [ 20, 0.005, 0.025 ],
-  ))
-
-  addPlots.append( Plot(
-    name      = '%s_sieie_catMagic_highPU_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
-    texX      = '#sigma_{i#etai#eta}(#gamma_{0})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_sieie" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 4 and event.PV_npvsGood >= 25 else -999,
-    binning   = [ 20, 0.005, 0.025 ],
-  ))
-
-
-
 
 
 if args.sideband == "sieie":
@@ -1342,7 +838,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catHad_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 1 else -999,
     binning   = [ 20, 0, 20 ],
   ))
 
@@ -1350,7 +846,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catHad_20ptG120_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 1 else -999,
     binning   = [ 20, 0, 20 ],
   ))
 
@@ -1358,7 +854,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catHad_120ptG220_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 1 else -999,
     binning   = [ 20, 0, 20 ],
   ))
 
@@ -1366,7 +862,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catHad_220ptGinf_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 1 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 1 else -999,
     binning   = [ 20, 0, 20 ],
   ))
 
@@ -1375,7 +871,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catMagic_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 4 else -999,
     binning   = [ 20, 0, 20 ],
   ))
 
@@ -1383,7 +879,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catMagic_20ptG120_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 4 else -999,
     binning   = [ 20, 0, 20 ],
   ))
 
@@ -1391,7 +887,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catMagic_120ptG220_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 4 else -999,
     binning   = [ 20, 0, 20 ],
   ))
 
@@ -1399,7 +895,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catMagic_220ptGinf_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 4 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 4 else -999,
     binning   = [ 20, 0, 20 ],
   ))
 
@@ -1408,7 +904,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catFake_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 3 else -999,
     binning   = [ 20, 0, 20 ],
   ))
 
@@ -1416,7 +912,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catFake_20ptG120_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 20 and getattr( event, args.categoryPhoton + "_pt" ) < 120 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 3 else -999,
     binning   = [ 20, 0, 20 ],
   ))
 
@@ -1424,7 +920,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catFake_120ptG220_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 120 and getattr( event, args.categoryPhoton + "_pt" ) < 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 3 else -999,
     binning   = [ 20, 0, 20 ],
   ))
 
@@ -1432,7 +928,7 @@ if args.sideband == "sieie":
     name      = '%s_pfIso03_chg_catFake_220ptGinf_%s'%(args.categoryPhoton, "ttOnly" if args.onlyTT else "fullMC"),
     texX      = 'charged Iso_{0.3}(#gamma_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCat" ) == 3 else -999,
+    attribute = lambda event, sample: getattr( event, args.categoryPhoton + "_pfRelIso03_chg" ) * getattr( event, args.categoryPhoton + "_pt" ) if getattr( event, args.categoryPhoton + "_pt" ) > 220 and getattr( event, args.categoryPhoton + "_photonCatMagic" ) == 3 else -999,
     binning   = [ 20, 0, 20 ],
   ))
 
@@ -1478,12 +974,12 @@ for index, mode in enumerate( allModes ):
     # Define 2l selections
     leptonSelection = cutInterpreter.cutString( mode )
 #    mcSelection = [ filterCutMc, leptonSelection, triggerCutMc ] if args.onlyTT else mcSelection = [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ]
-    mcSelection = [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ]
+    mcSelection = [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ]
 #    if not args.noData:    data_sample.setSelectionString( [ filterCutData, leptonSelection ] )
 #    for sample in mc: sample.setSelectionString( mcSelection )
 
     # sideband/fit region cuts
-    if not args.noData: data_sample.setSelectionString( [filterCutData, leptonSelection ] + sb_sel )
+    if not args.noData: data_sample.setSelectionString( [filterCutData, "triggered==1", leptonSelection ] + sb_sel )
     all_sb.setSelectionString( mcSelection + sb_sel )
     all_fit.setSelectionString( mcSelection + fit_sel )
 
