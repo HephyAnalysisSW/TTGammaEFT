@@ -14,3 +14,4 @@ MG5_debug
 *.dat
 tmp*
 missing*.sh
+*.nfs*
