@@ -7,9 +7,9 @@ from math                                import sqrt
 from helpers                             import uniqueKey
 
 from TTGammaEFT.Analysis.EstimatorList   import EstimatorList
-from TTGammaEFT.Analysis.Setup           import Setup
 from TTGammaEFT.Analysis.DataObservation import DataObservation
 from TTGammaEFT.Analysis.MCBasedEstimate import MCBasedEstimate
+from TTGammaEFT.Analysis.Setup           import Setup
 from TTGammaEFT.Analysis.regions         import regionsTTG, noPhotonRegionTTG, inclRegionsTTG, regionsTTGfake, inclRegionsTTGfake, chgIso_thresh, chgIsoRegions, gammaPT_thresholds, mLgRegions
 from TTGammaEFT.Analysis.SetupHelpers    import *
 
@@ -48,7 +48,7 @@ argParser.add_argument( "--significanceScan",   action="store_true",            
 argParser.add_argument( "--year",               action="store",      default=2016,   type=int,                              help="Which year?" )
 argParser.add_argument( "--runOnLxPlus",        action="store_true",                                                        help="Change the global redirector of samples")
 argParser.add_argument( "--misIDPOI",           action="store_true",                                                        help="Change POI to misID SF")
-argParser.add_argument( "--vgPOI",              action="store_true",                                                        help="Change POI to misID SF")
+argParser.add_argument( "--dyPOI",              action="store_true",                                                        help="Change POI to misID SF")
 argParser.add_argument( "--ttPOI",              action="store_true",                                                        help="Change POI to misID SF")
 argParser.add_argument( "--wJetsPOI",           action="store_true",                                                        help="Change POI to misID SF")
 argParser.add_argument( "--checkOnly",          action="store_true",                                                        help="Check the SF only")
@@ -143,7 +143,7 @@ if args.addMisIDSF:  regionNames.append("addMisIDSF")
 if args.addFakeSF:   regionNames.append("addFakeSF")
 if args.inclRegion:  regionNames.append("incl")
 if args.misIDPOI:    regionNames.append("misIDPOI")
-if args.vgPOI:       regionNames.append("vgPOI")
+if args.dyPOI:       regionNames.append("dyPOI")
 if args.wJetsPOI:    regionNames.append("wJetsPOI")
 if args.ttPOI:       regionNames.append("ttPOI")
 if args.useChannels: regionNames.append("_".join([ch for ch in args.useChannels if not "tight" in ch]))
@@ -211,28 +211,42 @@ def wrapper():
         c.addUncertainty( "trigger",       shapeString)
         c.addUncertainty( "leptonSF",      shapeString)
         c.addUncertainty( "leptonTrackSF", shapeString)
-        c.addUncertainty( "photonSF",      shapeString)
-        c.addUncertainty( "eVetoSF",       shapeString)
         c.addUncertainty( "prefireSF",     shapeString)
+        if with1pCR:
+            c.addUncertainty( "photonSF",      shapeString)
+            c.addUncertainty( "eVetoSF",       shapeString)
+            if any( [name=="DY3" or name=="DY4p" for name in args.useRegions] ):
+                c.addUncertainty( "PU_DY",            shapeString)
+                c.addUncertainty( "JEC_DY",           shapeString)
+                c.addUncertainty( "JER_DY",           shapeString)
+                c.addUncertainty( "SFb_DY",           shapeString)
+                c.addUncertainty( "SFl_DY",           shapeString)
+                c.addUncertainty( "trigger_DY",       shapeString)
+                c.addUncertainty( "leptonSF_DY",      shapeString)
+                c.addUncertainty( "leptonTrackSF_DY", shapeString)
+                c.addUncertainty( "prefireSF_DY",     shapeString)
         # theory (PDF, scale, ISR)
-        c.addUncertainty( "Tune",          shapeString)
-        c.addUncertainty( "erdOn",         shapeString)
-        c.addUncertainty( "Scale",         shapeString)
-        c.addUncertainty( "PDF",           shapeString)
-        c.addUncertainty( "PS",            shapeString)
-#        c.addUncertainty( "ISR",           shapeString)
+        if with1pCR:
+            c.addUncertainty( "Tune",          shapeString)
+            c.addUncertainty( "erdOn",         shapeString)
+            c.addUncertainty( "Scale",         shapeString)
+            c.addUncertainty( "PDF",           shapeString)
+            c.addUncertainty( "PS",            shapeString)
+#            c.addUncertainty( "ISR",           shapeString)
 
         default_QCD_unc = 0.5
-        c.addUncertainty( "QCD_norm", shapeString )
+        if with1pCR:
+            c.addUncertainty( "QCD_1p", shapeString )
 #        c.addUncertainty( "QCD_TF", shapeString )
-#        c.addUncertainty( "QCD_lowMlg", shapeString )
+        if with0pCR:
+            c.addUncertainty( "QCD_0p", shapeString )
 
         # Only if TT CR is used
         default_TT_unc = 0.05
-        if any( [name=="TT3" or name=="TT4p" for name in args.useRegions] ) and not with1pCR:
-            c.addFreeParameter('TT', 1, '[0.8,1.2]')
-        else:
-            c.addUncertainty( "TT_norm", shapeString )
+        if any( [name=="TT3" or name=="TT4p" for name in args.useRegions] ) and not args.ttPOI:
+            c.addFreeParameter('TT', 1, '[0.5,1.5]')
+#        elif not args.ttPOI:
+#            c.addUncertainty( "TT_norm", shapeString )
                 
         default_HadFakes_unc = 0.05
 #        c.addUncertainty( "Fakes_norm",      shapeString )
@@ -246,24 +260,43 @@ def wrapper():
                 print i_iso, iso
                 c.addUncertainty( "fake_corr_%i"%i_iso,   shapeString )                
 
-        if not args.vgPOI and with1pCR:
-#            c.addFreeParameter('ZG', 1, '[0.5,1.5]')
-            c.addFreeParameter('WG', 1, '[0.5,1.5]')
+        if with1pCR:
+#            c.addFreeParameter('ZG', 1, '[0.,2.]')
+            c.addFreeParameter('WG', 1, '[0.,2.]')
 
-#        default_WG_unc    = 0.30
+        default_WG_unc    = 1.00
 #        c.addUncertainty( "WG_norm",      shapeString )
+        if args.year == 2018:
+            c.addUncertainty( "WG_highMlg",      shapeString )
 
-        default_ZG_unc    = 0.2
+        default_ZG_unc    = 0.3
         c.addUncertainty( "ZG_norm",      shapeString )
+
+        default_PU_unc    = 0.15
+        c.addUncertainty( "PU_norm",      shapeString )
 
         default_Other_unc    = 0.15
         c.addUncertainty( "Other_norm",      shapeString )
+        c.addUncertainty( "Other_0p",      shapeString )
 
-#        default_ZG3_unc    = 0.15
-#        c.addUncertainty( "ZG_nJet",      shapeString )
+        default_misID4p_unc    = 0.5
+        if any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] ):
+            c.addUncertainty( "MisID_nJet",      shapeString )
 
-#        default_misID4p_unc    = 0.1
-#        c.addUncertainty( "misID4p",      shapeString )
+        default_ZG4p_unc    = 0.8
+        if any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] ):
+            c.addUncertainty( "ZG_nJet",      shapeString )
+
+        default_DY4p_unc    = 0.8
+        if any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] ):
+            c.addUncertainty( "DY_nJet",      shapeString )
+    
+        default_WG4p_unc    = 0.5
+        if any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] ):
+            c.addUncertainty( "WG_nJet",      shapeString )
+    
+        default_WJets4p_unc    = 0.3
+#        c.addUncertainty( "WJets_nJet",      shapeString )
 
         default_TTGpT_unc    = 0.1
         if not args.inclRegion and with1pCR:
@@ -272,15 +305,15 @@ def wrapper():
 
         # Only if WJets CR is used
         default_WJets_unc    = 0.2
-        if any( ["WJets3" in name or "WJets4p" in name for name in args.useRegions] ) and not with1pCR:
+        if any( ["WJets3" in name or "WJets4p" in name for name in args.useRegions] ) and not args.wJetsPOI:
             c.addFreeParameter('WJets', 1, '[0.5,1.5]')
-        else:
+        elif not args.wJetsPOI:
             c.addUncertainty( "WJets_norm", shapeString )
 
         default_DY_unc    = 0.1
-        if any( [ name in ["DY2","DY3","DY4","DY4p","DY5"] for name in args.useRegions] ) and not with1pCR:
+        if any( [ name in ["DY2","DY3","DY4","DY4p","DY5"] for name in args.useRegions] ) and not args.dyPOI:
             c.addFreeParameter('DY', 1, '[0.5,1.5]')
-        else:
+        elif not args.dyPOI:
             c.addUncertainty( "DY_norm", shapeString )
 
         if not args.addMisIDSF and not args.misIDPOI and with1pCR:
@@ -305,8 +338,8 @@ def wrapper():
 
                     if args.misIDPOI:
                         c.addBin( binname, [ pName.replace("signal","TTG") for pName in setup.processes.keys() if not "misID" in pName and pName != "Data" ], niceName)
-                    elif args.vgPOI:
-                        c.addBin( binname, [ pName.replace("signal","TTG") for pName in setup.processes.keys() if not "WG" in pName and not "ZG" in pName and not "VG" in pName and pName != "Data" ], niceName)
+                    elif args.dyPOI:
+                        c.addBin( binname, [ pName.replace("signal","TTG") for pName in setup.processes.keys() if not "DY" in pName and pName != "Data" ], niceName)
                     elif args.ttPOI:
                         c.addBin( binname, [ pName.replace("signal","TTG") for pName in setup.processes.keys() if not "TT" in pName and pName != "Data" ], niceName)
                     elif args.wJetsPOI:
@@ -323,12 +356,12 @@ def wrapper():
 
                         if pName == "Data": continue
                         misIDPOI = "misID" in pName and args.misIDPOI
-                        vgPOI    = ("WG" in pName or "ZG" in pName or "VG" in pName) and args.vgPOI
+                        dyPOI    = "DY" in pName and args.dyPOI
                         wJetsPOI = "WJets" in pName and args.wJetsPOI
                         ttPOI    = "TT"    in pName and not "TTG" in pName and args.ttPOI
 
-                        newPOI_input = any( [args.misIDPOI, args.vgPOI, args.wJetsPOI, args.ttPOI] )
-                        newPOI       = any( [misIDPOI, vgPOI, wJetsPOI, ttPOI] )
+                        newPOI_input = any( [args.misIDPOI, args.dyPOI, args.wJetsPOI, args.ttPOI] )
+                        newPOI       = any( [misIDPOI, dyPOI, wJetsPOI, ttPOI] )
                         
                         if newPOI_input and pName == "signal":
                             pName = "TTG"
@@ -348,8 +381,39 @@ def wrapper():
                                 exp_yield *= WJetsSF_val[args.year].val
                                 logger.info( "Scaling WJets background %s by %f"%(e.name,WJetsSF_val[args.year].val) )
                             if e.name.count( "DY" ) and args.addDYSF:
-                                exp_yield *= DYSF_val[args.year].val
-                                logger.info( "Scaling DY background %s by %f"%(e.name,DYSF_val[args.year].val) )
+
+                                if "2" in setup.name and not "2p" in setup.name:
+                                    exp_yield *= DY2SF_val[args.year].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY2SF_val[args.year].val) )
+
+                                elif "3" in setup.name and not "3p" in setup.name:
+                                    exp_yield *= DY3SF_val[args.year].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY3SF_val[args.year].val) )
+
+                                elif "4" in setup.name and not "4p" in setup.name:
+                                    exp_yield *= DY4SF_val[args.year].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY4SF_val[args.year].val) )
+
+                                elif "5" in setup.name:
+                                    exp_yield *= DY5SF_val[args.year].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY5SF_val[args.year].val) )
+
+                                elif "2p" in setup.name:
+                                    exp_yield *= DY2pSF_val[args.year].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY2pSF_val[args.year].val) )
+
+                                elif "3p" in setup.name:
+                                    exp_yield *= DY3pSF_val[args.year].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY3pSF_val[args.year].val) )
+
+                                elif "4p" in setup.name:
+                                    exp_yield *= DY4pSF_val[args.year].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY4pSF_val[args.year].val) )
+
+                                else:
+                                    exp_yield *= DYSF_val[args.year].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DYSF_val[args.year].val) )
+
                             if e.name.count( "WG" ) and args.addWGSF:
                                 exp_yield *= WGSF_val[args.year].val
                                 logger.info( "Scaling WG background %s by %f"%(e.name,WGSF_val[args.year].val) )
@@ -371,16 +435,16 @@ def wrapper():
                             sigExp += expected
                             logger.info( "Adding expectation for process %s to signal. Total signal now: %s", pName, sigExp )
                         else:
-                            c.specifyExpectation( binname, pName, expected.val )
+                            c.specifyExpectation( binname, pName, expected.val if expected.val > 0 else 0.01 )
 
                         total_exp_bkg += expected.val
                         if signal and expected.val <= 0.01: mute = True
 
                         tune, erdOn, pu, jec, jer, sfb, sfl, trigger, lepSF, lepTrSF, phSF, eVetoSF, pfSF = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                         ps, scale, pdf, isr = 0, 0, 0, 0
-                        qcdTF3, qcdTF4 = 0, 0
-                        dyGenUnc, ttGenUnc, vgGenUnc, wjetsGenUnc, otherGenUnc, qcdhigh, misIDUnc, lowSieieUnc, highSieieUnc, misIDPtUnc = 0, 0, 0, 0, 0, 0.001, 0, 0.001, 0.001, 0.001
-                        wg, zg, misID4p, zg3, misIDUnc, qcdUnc, vgUnc, wgUnc, zgUnc, dyUnc, ttUnc, wjetsUnc, other0pUnc, otherUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                        qcdTF3, qcdTF4, wjets4p, wg4p = 0, 0, 0, 0
+                        dyGenUnc, ttGenUnc, vgGenUnc, wjetsGenUnc, otherGenUnc, wghigh, misIDUnc, lowSieieUnc, highSieieUnc, misIDPtUnc = 0, 0, 0, 0, 0, 0.001, 0, 0.001, 0.001, 0.001
+                        magic, wg, zg, misID4p, dy4p, zg4p, misIDUnc, qcdUnc, vgUnc, wgUnc, zgUnc, dyUnc, ttUnc, wjetsUnc, other0pUnc, otherUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                         for i in range(len(gammaPT_thresholds)-1):
                             locals()["ttg_bin%i_unc"%i] = 0
 
@@ -399,29 +463,25 @@ def wrapper():
                                 if e.name.count( "QCD" ):
                                     qcdUnc   += y_scale * default_QCD_unc
                                     qcdTF3   += y_scale * e.expYield.sigma / e.expYield.val
-                                    if mLgRegions[0].cutString() in r.cutString() and channel=="e":
-                                        qcdhigh   += y_scale * default_QCD_unc
                                     continue # no systematics for data-driven QCD
 
-#                                if e.name.count( "DY" ):
+                                if e.name.count( "DY" ):
 #                                    dyUnc    += y_scale * getSFUncertainty( proc_yield=e.expYield.val, sf=DYSF_val[args.year] )
-#                                    dyUnc    += y_scale * default_DY_unc
-#                                if e.name.count( "TT_pow" ) or (args.ttPOI and signal):
+                                    dyUnc    += y_scale * default_DY_unc
+                                if e.name.count( "TT_pow" ) or (args.ttPOI and signal):
 #                                    ttUnc    += y_scale * getSFUncertainty( proc_yield=e.expYield.val, sf=TTSF_val[args.year] )
-#                                    ttUnc    += y_scale * default_TT_unc
-#                                if e.name.count( "ZG" ) or (args.vgPOI and signal):
-#                                    zgUnc    += y_scale * getSFUncertainty( proc_yield=e.expYield.val, sf=ZGSF_val[args.year] )
-#                                if e.name.count( "WG" ) or (args.vgPOI and signal):
-#                                    wgUnc    += y_scale * getSFUncertainty( proc_yield=e.expYield.val, sf=WGSF_val[args.year] )
-#                                if e.name.count( "WJets" ) or (args.wJetsPOI and signal):
+                                    ttUnc    += y_scale * default_TT_unc
+                                if e.name.count( "WJets" ) or (args.wJetsPOI and signal):
 #                                    wjetsUnc    += y_scale * getSFUncertainty( proc_yield=e.expYield.val, sf=WJetsSF_val[args.year] )
-#                                    wjetsUnc += y_scale * default_WJets_unc
+                                    wjetsUnc += y_scale * default_WJets_unc
                                 if not args.inclRegion and not newPOI_input and ((e.name.count( "signal" ) and setup.signalregion) or counter==1):
                                         pT_index = max( [ i_pt if ptCut.cutString() in r.cutString() else -1 for i_pt, ptCut in enumerate(regionsTTG) ] )
                                         if pT_index >= 0:
                                             locals()["ttg_bin%i_unc"%pT_index] = y_scale * default_TTGpT_unc
                                 if e.name.count( "other" ):
                                     otherUnc += y_scale * default_Other_unc
+                                if e.name.count( "magic" ):
+                                    magic += y_scale * default_PU_unc
                                 if any( ["fake" in name for name in args.useRegions] ):
                                     if "low" in setup.name and e.name.count( "_had" ):
                                         lowSieieUnc += y_scale * default_HadFakes_unc #getSFUncertainty( proc_yield=e.expYield.val, sf=fakeSF_val[args.year] )
@@ -441,13 +501,30 @@ def wrapper():
 #                                if e.name.count( "WG" ):
 #                                    wg += y_scale * default_WG_unc
 
-#                                if e.name.count( "ZG" ) and "3" in setup.name:
-#                                    zg3 += y_scale * default_ZG3_unc
+                                if e.name.count( "ZG" ) and "4" in setup.name:
+                                    zg4p += y_scale * default_ZG4p_unc
 #                                elif e.name.count( "ZG" ):
-#                                    zg3 += y_scale * 0.001
+#                                    zg4p += y_scale * 0.001
 
-#                                if e.name.count( "misID" ) and "4p" in setup.name:
-#                                    misID4p += y_scale * default_misID4p_unc
+                                if e.name.count( "DY" ) and "4" in setup.name:
+                                    dy4p += y_scale * default_DY4p_unc
+#                                elif e.name.count( "DY" ):
+#                                    dy4p += y_scale * 0.001
+
+                                if e.name.count( "WG" ) and "4" in setup.name:
+                                    wg4p += y_scale * default_WG4p_unc
+                                if e.name.count( "WG" ):
+                                    if mLgRegions[1].cutString() in r.cutString() and channel=="mu":
+                                        wghigh   += y_scale * default_WG_unc
+#                                    wg4p += y_scale * 0.001
+
+                                if e.name.count( "WJets" ) and "4" in setup.name:
+                                    wjets4p += y_scale * default_WJets4p_unc
+#                                elif e.name.count( "WJets" ):
+#                                    wjets4p += y_scale * 0.001
+
+                                if e.name.count( "misID" ) and "4" in setup.name:
+                                    misID4p += y_scale * default_misID4p_unc
 #                                elif e.name.count( "misID" ):
 #                                    misID4p += y_scale * 0.001
 
@@ -478,37 +555,53 @@ def wrapper():
                             else:
                                 c.specifyUncertainty( name, binname, pName, 1 + unc )
 
-                        if scale: # and setup.signalregion:
-                            addUnc( c, "Scale",         binname, pName, scale,   expected.val, signal )
-                        if pdf: # and setup.signalregion:
-                            addUnc( c, "PDF",           binname, pName, pdf,     expected.val, signal )
-                        if erdOn: # and setup.signalregion:
-                            addUnc( c, "erdOn",         binname, pName, erdOn,   expected.val, signal )
-                        if tune: # and setup.signalregion:
-                            addUnc( c, "Tune",          binname, pName, tune,    expected.val, signal )
-                        if ps: # and setup.signalregion:
-                            addUnc( c, "PS",          binname, pName, tune,    expected.val, signal )
-                        addUnc( c, "PU",            binname, pName, pu,      expected.val, signal )
-                        addUnc( c, "JEC",           binname, pName, jec,     expected.val, signal )
-                        addUnc( c, "JER",           binname, pName, jer,     expected.val, signal )
-                        addUnc( c, "SFb",           binname, pName, sfb,     expected.val, signal )
-                        addUnc( c, "SFl",           binname, pName, sfl,     expected.val, signal )
-                        addUnc( c, "trigger",       binname, pName, trigger, expected.val, signal )
-                        addUnc( c, "leptonSF",      binname, pName, lepSF,   expected.val, signal )
-                        addUnc( c, "leptonTrackSF", binname, pName, lepTrSF, expected.val, signal )
-                        addUnc( c, "photonSF",      binname, pName, phSF,    expected.val, signal )
-                        addUnc( c, "eVetoSF",       binname, pName, eVetoSF, expected.val, signal )
-                        addUnc( c, "prefireSF",     binname, pName, pfSF,    expected.val, signal )
+                        if with1pCR:
+                            if scale: # and setup.signalregion:
+                                addUnc( c, "Scale",         binname, pName, scale,   expected.val, signal )
+                            if pdf: # and setup.signalregion:
+                                addUnc( c, "PDF",           binname, pName, pdf,     expected.val, signal )
+                            if erdOn: # and setup.signalregion:
+                                addUnc( c, "erdOn",         binname, pName, erdOn,   expected.val, signal )
+                            if tune: # and setup.signalregion:
+                                addUnc( c, "Tune",          binname, pName, tune,    expected.val, signal )
+                            if ps: # and setup.signalregion:
+                                addUnc( c, "PS",          binname, pName, tune,    expected.val, signal )
+                        if setup.noPhotonCR and with1pCR:
+                            addUnc( c, "JEC_DY",           binname, pName, jec,     expected.val, signal )
+                            addUnc( c, "JER_DY",           binname, pName, jer,     expected.val, signal )
+                            addUnc( c, "PU_DY",            binname, pName, pu,      expected.val, signal )
+                            addUnc( c, "SFb_DY",           binname, pName, sfb,     expected.val, signal )
+                            addUnc( c, "SFl_DY",           binname, pName, sfl,     expected.val, signal )
+                            addUnc( c, "trigger_DY",       binname, pName, trigger, expected.val, signal )
+                            addUnc( c, "leptonSF_DY",      binname, pName, lepSF,   expected.val, signal )
+                            addUnc( c, "leptonTrackSF_DY", binname, pName, lepTrSF, expected.val, signal )
+                            addUnc( c, "prefireSF_DY",     binname, pName, pfSF,    expected.val, signal )
+                        else:
+                            addUnc( c, "JEC",           binname, pName, jec,     expected.val, signal )
+                            addUnc( c, "JER",           binname, pName, jer,     expected.val, signal )
+                            addUnc( c, "PU",            binname, pName, pu,      expected.val, signal )
+                            addUnc( c, "SFb",           binname, pName, sfb,     expected.val, signal )
+                            addUnc( c, "SFl",           binname, pName, sfl,     expected.val, signal )
+                            addUnc( c, "trigger",       binname, pName, trigger, expected.val, signal )
+                            addUnc( c, "leptonSF",      binname, pName, lepSF,   expected.val, signal )
+                            addUnc( c, "leptonTrackSF", binname, pName, lepTrSF, expected.val, signal )
+                            addUnc( c, "prefireSF",     binname, pName, pfSF,    expected.val, signal )
+                        if with1pCR:
+                            addUnc( c, "photonSF",      binname, pName, phSF,    expected.val, signal )
+                            addUnc( c, "eVetoSF",       binname, pName, eVetoSF, expected.val, signal )
                         
 
-                        if qcdUnc:
-                            addUnc( c, "QCD_norm", binname, pName, qcdUnc, expected.val, signal )
+                        if qcdUnc and setup.noPhotonCR:
+                            addUnc( c, "QCD_0p", binname, pName, qcdUnc, expected.val, signal )
+
+                        if qcdUnc and not setup.noPhotonCR:
+                            addUnc( c, "QCD_1p", binname, pName, qcdUnc, expected.val, signal )
 
 #                        if qcdTF3:
 #                            addUnc( c, "QCD_TF", binname, pName, qcdTF3, expected.val, signal )
 
-#                        if qcdhigh:
-#                            addUnc( c, "QCD_lowMlg", binname, pName, qcdhigh, expected.val, signal )
+                        if wghigh:
+                            addUnc( c, "WG_highMlg", binname, pName, wghigh, expected.val, signal )
 
                         if not args.inclRegion and with1pCR:
                             for i in range(len(gammaPT_thresholds)-1):
@@ -518,20 +611,36 @@ def wrapper():
                                     addUnc( c, "TTG_pTBin%i"%i, binname, pName, 0.01, expected.val, signal )
                         if dyUnc: # and args.addDYSF:
                             addUnc( c, "DY_norm", binname, pName, dyUnc, expected.val, signal )
-                        if ttUnc and not args.ttPOI: # and args.addTTSF:
-                            addUnc( c, "TT_norm", binname, pName, ttUnc, expected.val, signal )
-#                        if vgUnc and not args.vgPOI and args.addVGSF:
-#                            addUnc( c, "VG_norm", binname, pName, vgUnc, expected.val, signal )
+#                        if ttUnc and not any( [name=="TT3" or name=="TT4p" for name in args.useRegions] ) and not args.ttPOI:
+#                            addUnc( c, "TT_norm", binname, pName, ttUnc, expected.val, signal )
                         if wjetsUnc and not args.wJetsPOI: # and args.addWJetsSF:
                             addUnc( c, "WJets_norm", binname, pName, wjetsUnc, expected.val, signal )
-                        if otherUnc:
+
+                        if magic:
+                            addUnc( c, "PU_norm", binname, pName, magic, expected.val, signal )
+
+                        if otherUnc and setup.noPhotonCR:
+                            addUnc( c, "Other_0p", binname, pName, otherUnc, expected.val, signal )
+                            addUnc( c, "Other_norm", binname, pName, 0.001, expected.val, signal )
+                        if otherUnc and not setup.noPhotonCR:
+                            addUnc( c, "Other_0p", binname, pName, 0.001, expected.val, signal )
                             addUnc( c, "Other_norm", binname, pName, otherUnc, expected.val, signal )
+#                        if otherUnc:
+#                            addUnc( c, "Other_norm", binname, pName, otherUnc, expected.val, signal )
                         if zg:
                             addUnc( c, "ZG_norm", binname, pName, zg, expected.val, signal )
 #                        if wg:
 #                            addUnc( c, "WG_norm", binname, pName, wg, expected.val, signal )
-#                        if zg3:
-#                            addUnc( c, "ZG_nJet", binname, pName, zg3, expected.val, signal )
+                        if misID4p:
+                            addUnc( c, "MisID_nJet", binname, pName, misID4p, expected.val, signal )
+                        if zg4p:
+                            addUnc( c, "ZG_nJet", binname, pName, zg4p, expected.val, signal )
+                        if dy4p:
+                            addUnc( c, "DY_nJet", binname, pName, dy4p, expected.val, signal )
+                        if wg4p:
+                            addUnc( c, "WG_nJet", binname, pName, wg4p, expected.val, signal )
+#                        if wjets4p:
+#                            addUnc( c, "WJets_nJet", binname, pName, zg4p, expected.val, signal )
 #                        if misID4p:
 #                            addUnc( c, "misID4p", binname, pName, misID4p, expected.val, signal )
 
@@ -611,10 +720,10 @@ def wrapper():
             cdir  = "limits/cardFiles/defaultSetup/observed"
         cfile = cardFileNameTxt.split("/")[-1].split(".")[0]
 
-        cmd = "python %s/fitResults.py --carddir %s --cardfile %s --year %i --plotCovMatrix --plotRegionPlot %s --cores %i %s"%(path, cdir, cfile, args.year, "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "")
+        cmd = "python %s/fitResults.py --carddir %s --cardfile %s --year %i --plotCovMatrix --plotRegionPlot %s --cores %i %s %s %s %s %s"%(path, cdir, cfile, args.year, "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "", "--misIDPOI" if args.misIDPOI else "", "--ttPOI" if args.ttPOI else "", "--dyPOI" if args.dyPOI else "", "--wJetsPOI" if args.wJetsPOI else "")
         logger.info("Executing plot command: %s"%cmd)
         os.system(cmd)
-        cmd = "python %s/fitResults.py --carddir %s --cardfile %s --year %i --plotCorrelations --plotCovMatrix --plotRegionPlot --plotImpacts --postFit %s --cores %i %s"%(path, cdir, cfile, args.year, "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "")
+        cmd = "python %s/fitResults.py --carddir %s --cardfile %s --year %i --plotCorrelations --plotCovMatrix --plotRegionPlot --plotImpacts --postFit %s --cores %i %s %s %s %s %s"%(path, cdir, cfile, args.year, "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "", "--misIDPOI" if args.misIDPOI else "", "--ttPOI" if args.ttPOI else "", "--dyPOI" if args.dyPOI else "", "--wJetsPOI" if args.wJetsPOI else "")
         logger.info("Executing plot command: %s"%cmd)
         os.system(cmd)
 
@@ -629,10 +738,12 @@ def wrapper():
 
         postFitResults = getFitResults( combineWorkspace )
         postFit        = postFitResults["tree_fit_b" if args.bkgOnly else "tree_fit_sb"]
+        print postFit
         preFit         = postFitResults["tree_prefit"]
-        printSF        = ["QCD", "TT_0p", "TT_gen", "VG_gen", "other", "other_0p",  "other_gen", "WJets_0p", "WJets_gen", "DY_0p",  "DY_gen", "hadFakes", "misID"]
-        for i_iso, iso in enumerate(chgIsoRegions):
-            printSF.append("fake_corr_%i"%i_iso)
+        printSF        = ["QCD_1p", "ZG_norm"]
+        unc            = {"QCD_1p":default_QCD_unc, "ZG_norm":default_ZG_unc}
+#        for i_iso, iso in enumerate(chgIsoRegions):
+#            printSF.append("fake_corr_%i"%i_iso)
 
         if not os.path.isdir("logs"): os.mkdir("logs")
         write_time  = time.strftime("%Y %m %d %H:%M:%S", time.localtime())
@@ -649,9 +760,9 @@ def wrapper():
 
             for sf_name in printSF:
                 if sf_name not in postFit.keys(): continue
-                sf = "{:20}{:4.2f}".format( sf_name, 1+postFit[sf_name] )
+                sf = "{:20}{:4.2f}".format( sf_name, 1+(postFit[sf_name]*unc[sf_name]) )
                 print sf
-                f.write( write_time + ": " + "_".join( regionNames ) + ": " + sf + "\n" )
+                f.write( str(args.year) + ": " + write_time + ": " + "_".join( regionNames ) + ": " + sf + "\n" )
 
     if res: 
         sString = "-".join(regionNames)
