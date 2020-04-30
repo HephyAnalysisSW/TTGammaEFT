@@ -1,47 +1,18 @@
-#runNotifier.sh "python systematicVariation.py --mode e   --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag1p-nPhoton1p  --plot_directory 102X_TTG_ppv19_v1"
-#runNotifier.sh "python systematicVariation.py --mode mu  --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag1p-nPhoton1p  --plot_directory 102X_TTG_ppv19_v1"
-runNotifier.sh "python systematicVariation.py --mode all --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag1p-nPhoton1p  --plot_directory 102X_TTG_ppv19_v1"
-#runNotifier.sh "python systematicVariation.py --mode e   --year 2016 --selection nLepTight1-nLepVeto1-nJet4p-nBTag1p-nPhoton1p --plot_directory 102X_TTG_ppv19_v1"
-#runNotifier.sh "python systematicVariation.py --mode mu  --year 2016 --selection nLepTight1-nLepVeto1-nJet4p-nBTag1p-nPhoton1p --plot_directory 102X_TTG_ppv19_v1"
-#runNotifier.sh "python systematicVariation.py --mode all --year 2016 --selection nLepTight1-nLepVeto1-nJet4p-nBTag1p-nPhoton1p --plot_directory 102X_TTG_ppv19_v1"
-
-#runNotifier.sh "python systematicVariation.py --mode e --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag0-nPhoton1p-pTG20To120-addDYSF-addMisIDSF --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode e --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag0-nPhoton1p-pTG120To220-addDYSF-addMisIDSF --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode e --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag0-nPhoton1p-pTG220-addDYSF-addMisIDSF --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode mu --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag0-nPhoton1p-pTG20To120-addDYSF-addMisIDSF --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode mu --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag0-nPhoton1p-pTG120To220-addDYSF-addMisIDSF --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode mu --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag0-nPhoton1p-pTG220-addDYSF-addMisIDSF --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode all --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag0-nPhoton1p-pTG20To120-addDYSF-addMisIDSF --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode all --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag0-nPhoton1p-pTG120To220-addDYSF-addMisIDSF --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode all --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag0-nPhoton1p-pTG220-addDYSF-addMisIDSF --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode e --year 2016 --selection nLepTight1-nLepVeto1-nJet4p-nBTag1p-nPhoton1p-pTG20To120 --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode e --year 2016 --selection nLepTight1-nLepVeto1-nJet4p-nBTag1p-nPhoton1p-pTG120To220 --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode e --year 2016 --selection nLepTight1-nLepVeto1-nJet4p-nBTag1p-nPhoton1p-pTG220 --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode mu --year 2016 --selection nLepTight1-nLepVeto1-nJet4p-nBTag1p-nPhoton1p-pTG20To120 --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode mu --year 2016 --selection nLepTight1-nLepVeto1-nJet4p-nBTag1p-nPhoton1p-pTG120To220 --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode mu --year 2016 --selection nLepTight1-nLepVeto1-nJet4p-nBTag1p-nPhoton1p-pTG220 --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode all --year 2016 --selection nLepTight1-nLepVeto1-nJet4p-nBTag1p-nPhoton1p-pTG20To120 --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode all --year 2016 --selection nLepTight1-nLepVeto1-nJet4p-nBTag1p-nPhoton1p-pTG120To220 --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode all --year 2016 --selection nLepTight1-nLepVeto1-nJet4p-nBTag1p-nPhoton1p-pTG220 --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode e --year 2016 --selection nLepTight1-nLepVeto1-nJet2p-nBTag0-nPhoton1p --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode mu --year 2016 --selection nLepTight1-nLepVeto1-nJet2p-nBTag0-nPhoton1p --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode all --year 2016 --selection nLepTight1-nLepVeto1-nJet2p-nBTag0-nPhoton1p --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode e --year 2016 --selection nLepTight1-nLepVeto1-nJet2p-nBTag0-nPhoton1p-addDYSF-addMisIDSF --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode mu --year 2016 --selection nLepTight1-nLepVeto1-nJet2p-nBTag0-nPhoton1p-addDYSF-addMisIDSF --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode all --year 2016 --selection nLepTight1-nLepVeto1-nJet2p-nBTag0-nPhoton1p-addDYSF-addMisIDSF --plot_directory 102X_TTG_ppv18_v9
-
-#runNotifier.sh "python systematicVariation.py --mode e --year 2016 --selection nLepTight1-nLepVeto1-nJet2p-nBTag0-nPhoton1p-onZeg --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode mu --year 2016 --selection nLepTight1-nLepVeto1-nJet2p-nBTag0-nPhoton1p-onZeg --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode all --year 2016 --selection nLepTight1-nLepVeto1-nJet2p-nBTag0-nPhoton1p-onZeg --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode e --year 2016 --selection nLepTight1-nLepVeto1-nJet2p-nBTag0-nPhoton1p-onZeg-addDYSF-addMisIDSF --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode mu --year 2016 --selection nLepTight1-nLepVeto1-nJet2p-nBTag0-nPhoton1p-onZeg-addDYSF-addMisIDSF --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode all --year 2016 --selection nLepTight1-nLepVeto1-nJet2p-nBTag0-nPhoton1p-onZeg-addDYSF-addMisIDSF --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode e --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag0-nPhoton1p-pTG20To120 --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode e --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag0-nPhoton1p-pTG120To220 --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode e --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag0-nPhoton1p-pTG220 --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode mu --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag0-nPhoton1p-pTG20To120 --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode mu --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag0-nPhoton1p-pTG120To220 --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode mu --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag0-nPhoton1p-pTG220 --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode all --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag0-nPhoton1p-pTG20To120 --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode all --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag0-nPhoton1p-pTG120To220 --plot_directory 102X_TTG_ppv18_v9
-#runNotifier.sh "python systematicVariation.py --mode all --year 2016 --selection nLepTight1-nLepVeto1-nJet3-nBTag0-nPhoton1p-pTG220 --plot_directory 102X_TTG_ppv18_v9
+python systematicVariation.py --year 2016 --plot_directory 102X_TTG_ppv35_v9 --selection VGmis2 --binning 12 0 240 --variable mLtight0Gamma --mode mu
+python systematicVariation.py --year 2016 --plot_directory 102X_TTG_ppv35_v9 --selection VGmis2 --binning 12 0 240 --variable mLtight0Gamma --mode e
+python systematicVariation.py --year 2016 --plot_directory 102X_TTG_ppv35_v9 --selection VGmis3 --binning 12 0 240 --variable mLtight0Gamma --mode mu
+python systematicVariation.py --year 2016 --plot_directory 102X_TTG_ppv35_v9 --selection VGmis3 --binning 12 0 240 --variable mLtight0Gamma --mode e
+python systematicVariation.py --year 2016 --plot_directory 102X_TTG_ppv35_v9 --selection VGmis4p --binning 12 0 240 --variable mLtight0Gamma --mode mu
+python systematicVariation.py --year 2016 --plot_directory 102X_TTG_ppv35_v9 --selection VGmis4p --binning 12 0 240 --variable mLtight0Gamma --mode e
+python systematicVariation.py --year 2017 --plot_directory 102X_TTG_ppv35_v9 --selection VGmis2 --binning 12 0 240 --variable mLtight0Gamma --mode mu
+python systematicVariation.py --year 2017 --plot_directory 102X_TTG_ppv35_v9 --selection VGmis2 --binning 12 0 240 --variable mLtight0Gamma --mode e
+python systematicVariation.py --year 2017 --plot_directory 102X_TTG_ppv35_v9 --selection VGmis3 --binning 12 0 240 --variable mLtight0Gamma --mode mu
+python systematicVariation.py --year 2017 --plot_directory 102X_TTG_ppv35_v9 --selection VGmis3 --binning 12 0 240 --variable mLtight0Gamma --mode e
+python systematicVariation.py --year 2017 --plot_directory 102X_TTG_ppv35_v9 --selection VGmis4p --binning 12 0 240 --variable mLtight0Gamma --mode mu
+python systematicVariation.py --year 2017 --plot_directory 102X_TTG_ppv35_v9 --selection VGmis4p --binning 12 0 240 --variable mLtight0Gamma --mode e
+python systematicVariation.py --year 2018 --plot_directory 102X_TTG_ppv35_v9 --selection VGmis2 --binning 12 0 240 --variable mLtight0Gamma --mode mu
+python systematicVariation.py --year 2018 --plot_directory 102X_TTG_ppv35_v9 --selection VGmis2 --binning 12 0 240 --variable mLtight0Gamma --mode e
+python systematicVariation.py --year 2018 --plot_directory 102X_TTG_ppv35_v9 --selection VGmis3 --binning 12 0 240 --variable mLtight0Gamma --mode mu
+python systematicVariation.py --year 2018 --plot_directory 102X_TTG_ppv35_v9 --selection VGmis3 --binning 12 0 240 --variable mLtight0Gamma --mode e
+python systematicVariation.py --year 2018 --plot_directory 102X_TTG_ppv35_v9 --selection VGmis4p --binning 12 0 240 --variable mLtight0Gamma --mode mu
+python systematicVariation.py --year 2018 --plot_directory 102X_TTG_ppv35_v9 --selection VGmis4p --binning 12 0 240 --variable mLtight0Gamma --mode e
