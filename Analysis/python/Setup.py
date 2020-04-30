@@ -51,6 +51,8 @@ class Setup:
 
         self.isPhotonSelection = default_nPhoton[0] != 0
         self.isSignalRegion    = self.parameters["nBTag"][0] == 1 and self.parameters["nPhoton"][0] == 1 and not self.parameters["photonIso"]
+        self.nJet = str(self.parameters["nJet"][0])
+        if self.parameters["nJet"][1] < 0: self.nJet += "p"
 
         self.sys = {"weight":"weight", "reweight":["reweightHEM", "reweightTrigger", "reweightL1Prefire", "reweightPU", "reweightLeptonTightSF", "reweightLeptonTrackingTightSF", "reweightPhotonSF", "reweightPhotonElectronVetoSF", "reweightBTag_SF"], "selectionModifier":None} 
 
@@ -190,6 +192,8 @@ class Setup:
 
         res.isPhotonSelection = res.parameters["nPhoton"][0] != 0
         res.isSignalRegion    = res.parameters["nBTag"][0] == 1 and res.parameters["nPhoton"][0] == 1 and not self.parameters["photonIso"]
+        res.nJet = str(res.parameters["nJet"][0])
+        if res.parameters["nJet"][1] < 0: res.nJet += "p"
         return res
 
     def defaultParameters(self, update={} ):
@@ -203,7 +207,16 @@ class Setup:
         _weightString["Data"] = "weight" 
         _weightString["MC"] = "*".join([self.sys["weight"]] + (self.sys["reweight"] if self.sys["reweight"] else []))
 
-        if addMisIDSF and photon: _weightString["MC"] += "+%s*(%s0_photonCatMagic==2)*(%f-1)" %(_weightString["MC"], photon, misIDSF_val[self.year].val)
+        if addMisIDSF and photon:
+            if self.nJet == "2p": misIDSF_val   = misID2pSF_val
+            elif self.nJet == "3p": misIDSF_val = misID3pSF_val
+            elif self.nJet == "4p": misIDSF_val = misID4pSF_val
+            elif self.nJet == "2": misIDSF_val  = misID2SF_val
+            elif self.nJet == "3": misIDSF_val  = misID3SF_val
+            elif self.nJet == "4": misIDSF_val  = misID4SF_val
+            elif self.nJet == "5": misIDSF_val  = misID5SF_val
+
+            _weightString["MC"] += "+%s*(%s0_photonCatMagic==2)*(%f-1)" %(_weightString["MC"], photon, misIDSF_val[self.year].val)
 
         if   dataMC == "DataMC": return _weightString
 
@@ -271,10 +284,10 @@ class Setup:
         photonPrefix = "nPhoton"
         photonCatVar = "PhotonGood0_photonCatMagic"
         photonCatPrefix = "photoncat"
-#        photonVetoCutVar = None
-#        photonVetoPrefix = None
         photonVetoCutVar = "nPhotonNoChgIsoNoSieie"
         photonVetoPrefix = "nHadPhoton"
+#        photonVetoCutVar = None
+#        photonVetoPrefix = None
         if channel in ["e","eetight"]:
             leptonEtaCutVar = "abs(LeptonTight0_eta+LeptonTight0_deltaEtaSC)"
             leptonEtaPrefix = "etascl"
@@ -351,7 +364,7 @@ class Setup:
             preselphotonIso = cutInterpreter.cutString( photonIso )
             res["cuts"].append( preselphotonIso )
 
-        if not photonSel:
+        if not photonSel and not dileptonic:
             # remove default zwindow cut in qcd estimation for non photon regions
             zWindow = "all"
 
@@ -381,8 +394,7 @@ class Setup:
             prefix   = jetPrefix+str(nJet[0])
             if nJet[1]>=0:
                 njetsstr+= "&&"+jetCutVar+sysStr+"<="+str(nJet[1])
-                if nJet[1]!=nJet[0]: prefix+=str(nJet[1])
-#                if nJet[1]!=nJet[0]: prefix+="To"+str(nJet[1])
+                if nJet[1]!=nJet[0]: prefix+="To"+str(nJet[1])
             else:
                 prefix+="p"
             res["cuts"].append(njetsstr)
@@ -396,8 +408,7 @@ class Setup:
             if nBTag[1]>=0:
                 if sysStr: nbtstr+= "&&"+btagCutVar+sysStr+"<="+str(nBTag[1])
                 else:      nbtstr+= "&&"+btagCutVar+sysStr+"<="+str(nBTag[1])
-                if nBTag[1]!=nBTag[0]: prefix+=str(nBTag[1])
-#                if nBTag[1]!=nBTag[0]: prefix+="To"+str(nBTag[1])
+                if nBTag[1]!=nBTag[0]: prefix+="To"+str(nBTag[1])
             else:
                 prefix+="p"
             res["cuts"].append(nbtstr)
@@ -427,13 +438,6 @@ class Setup:
                 res["cuts"].append(nphotonVetosstr)
                 res["prefixes"].append(prefix)
 
-            # for now add a dR(lep, gamma) > 0.4 cut in the script here
-#            if invertLepIso:
-#                res["cuts"].append("linvtight0GammadR>=0.4")
-#                res["prefixes"].append("linvgDR0.4")
-#            else:
-#                res["cuts"].append("ltight0GammadR>=0.4")
-#                res["prefixes"].append("lgDR0.4")
         else:
             addMisIDSF   = False
             res["cuts"].append(photonCutVar+"==0")
@@ -504,16 +508,10 @@ class Setup:
         else:
             res["cuts"].append( "triggered==1" )
 
-        if self.year == 2018:
-            res["cuts"].append( "reweightHEM>0" )
+        res["cuts"].append( "reweightHEM>0" )
 
         if dataMC == "MC":
             res["cuts"].append( "overlapRemoval==1" )
-
-#            tr            = TriggerSelector( self.year, singleLepton=True )
-#            triggerCutMc  = tr.getSelection( "MC" )
-
-#            res["cuts"].append( triggerCutMc )
 
         if dataMC != "DataMC":
             res["cuts"].append( getFilterCut(isData=(dataMC=="Data"), year=self.year, skipBadChargedCandidate=True) )
@@ -671,20 +669,20 @@ if __name__ == "__main__":
     setup = Setup( year=2016 )
     for name, dict in allRegions.items():
 #        if not "wjetsec3" in name.lower() and not "wjetsbarrel3" in name.lower(): continue
-        if not "met" in name.lower(): continue
+        if not "vg4p" in name.lower(): continue
         print
         print name
         print
         setup = setup.sysClone( parameters=dict["parameters"] )
-        setup = setup.sysClone({"selectionModifier":"unclustEnUp"})
+#        setup = setup.sysClone({"selectionModifier":"jerUp"})
         for channel in dict["channels"]:
             print
             print channel
             print
-            res = setup.genSelection("MC", channel=channel, **setup.defaultParameters( update=dict["parameters"] ))
+            res = setup.selection("MC", channel=channel, **setup.defaultParameters( update=dict["parameters"] ))
             print res["cut"]
             print res["prefix"]
-#            print res["weightStr"]
+            print res["weightStr"]
 
 
 
