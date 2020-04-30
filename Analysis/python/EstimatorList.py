@@ -1,3 +1,4 @@
+from TTGammaEFT.Analysis.DataDrivenFakeEstimate      import DataDrivenFakeEstimate
 from TTGammaEFT.Analysis.DataDrivenQCDEstimate       import DataDrivenQCDEstimate
 from TTGammaEFT.Analysis.MCBasedEstimate             import MCBasedEstimate
 from TTGammaEFT.Analysis.SetupHelpers                import allProcesses
@@ -18,6 +19,8 @@ class EstimatorList:
         for p in processes:
             if "DD" in p:
                 setattr( self, p, DataDrivenQCDEstimate( name=p ) )
+            elif "had" in p:
+                setattr( self, p, DataDrivenFakeEstimate( name=p, process=setup.processes[p] ) )
             else:
                 setattr( self, p, MCBasedEstimate( name=p, process=setup.processes[p] ) )
 

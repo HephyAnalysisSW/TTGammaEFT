@@ -3,9 +3,9 @@
 import sys
 
 from TTGammaEFT.Analysis.regions         import regionsTTG, noPhotonRegionTTG, inclRegionsTTG, inclRegionsTTGfake, regionsTTGfake
-from TTGammaEFT.Analysis.Setup           import Setup
 from TTGammaEFT.Analysis.DataDrivenFakeEstimate import DataDrivenFakeEstimate
 from TTGammaEFT.Analysis.SetupHelpers    import *
+from TTGammaEFT.Analysis.Setup           import Setup
 from helpers                             import splitList
 
 loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET']

@@ -86,7 +86,7 @@ class SystematicEstimator:
             return self.histoHelperCache.get(s).Clone(process+c+var)
         else:
             histo = setup.processes[process].get1DHistoFromDraw( var, binning=binning, selectionString=selectionString, weightString=weightString, addOverFlowBin="upper" )
-            if self.histoHelperCache: self.histoHelperCache.add(s, histo, overwrite=True)
+            if self.histoHelperCache: self.histoHelperCache.add(s, histo.Clone(process+c+var), overwrite=True)
             return histo.Clone(process+c+var)
 
     def uniqueKey(self, region, channel, setup, signalAddon=None, qcdUpdates={}):
@@ -118,7 +118,7 @@ class SystematicEstimator:
             res = self._estimate( region, channel, setup, signalAddon=signalAddon, overwrite=overwrite)
         else:
             res = u_float(-1,0)
-        return res if res > 0 or checkOnly else u_float(0,0)
+        return res if res >= 0 or checkOnly else u_float(0,0)
 
     def cachedTransferFactor(self, channel, setup, qcdUpdates=None, save=True, overwrite=False, checkOnly=False):
         key =  self.uniqueKey("region", channel, setup, qcdUpdates=qcdUpdates)
