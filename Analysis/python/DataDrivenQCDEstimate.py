@@ -191,6 +191,36 @@ class DataDrivenQCDEstimate(SystematicEstimator):
 #            return u_float(0, 0)
 
         # Calculate yields for MC (normalized to data lumi)
+        if addSF:
+            if setup.nJet == "2":
+                DYSF_val    = DY2SF_val
+                WGSF_val    = WG2SF_val
+                ZGSF_val    = ZG2SF_val
+            elif setup.nJet == "3":
+                DYSF_val    = DY3SF_val
+                WGSF_val    = WG3SF_val
+                ZGSF_val    = ZG3SF_val
+            elif setup.nJet == "4":
+                DYSF_val    = DY4SF_val
+                WGSF_val    = WG4SF_val
+                ZGSF_val    = ZG4SF_val
+            elif setup.nJet == "5":
+                DYSF_val    = DY5SF_val
+                WGSF_val    = WG5SF_val
+                ZGSF_val    = ZG5SF_val
+            elif setup.nJet == "2p":
+                DYSF_val    = DY2pSF_val
+                WGSF_val    = WG2pSF_val
+                ZGSF_val    = ZG2pSF_val
+            elif setup.nJet == "3p":
+                DYSF_val    = DY3pSF_val
+                WGSF_val    = WG3pSF_val
+                ZGSF_val    = ZG3pSF_val
+            elif setup.nJet == "4p":
+                DYSF_val    = DY4pSF_val
+                WGSF_val    = WG4pSF_val
+                ZGSF_val    = ZG4pSF_val
+
         yield_other_CR = 0
         yield_other_SR = 0
         for s in default_sampleList:
@@ -198,6 +228,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
             y_CR = self.yieldFromCache( setup, s, channel, cut_MC_CR, weight_MC_CR, overwrite=overwrite )
             y_SR = self.yieldFromCache( setup, s, channel, cut_MC_SR, weight_MC_SR, overwrite=overwrite )
             print "without SF", s, "CR", y_CR*setup.dataLumi/1000., "SR", y_SR*setup.dataLumi/1000.
+
             if addSF:
                 if "DY_LO" in s:
                     y_CR *= DYSF_val[setup.year] #add DY SF
@@ -288,11 +319,11 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         cut_MC_SR     = selection_MC_SR["cut"]
         cut_Data_SR   = selection_Data_SR["cut"]
 
-        if setup.year == 2017:
-            cut_MC_CR   += "&&(" + cutInterpreter.cutString("BadEEJetVeto") + ")"
-            cut_Data_CR += "&&(" + cutInterpreter.cutString("BadEEJetVeto") + ")"
-            cut_MC_SR   += "&&(" + cutInterpreter.cutString("BadEEJetVeto") + ")"
-            cut_Data_SR += "&&(" + cutInterpreter.cutString("BadEEJetVeto") + ")"
+#        if setup.year == 2017:
+#            cut_MC_CR   += "&&(" + cutInterpreter.cutString("BadEEJetVeto") + ")"
+#            cut_Data_CR += "&&(" + cutInterpreter.cutString("BadEEJetVeto") + ")"
+#            cut_MC_SR   += "&&(" + cutInterpreter.cutString("BadEEJetVeto") + ")"
+#            cut_Data_SR += "&&(" + cutInterpreter.cutString("BadEEJetVeto") + ")"
 
         print( "Using QCD TF CR MC total cut %s"%(cut_MC_CR) )
         print( "Using QCD TF CR Data total cut %s"%(cut_Data_CR) )
@@ -332,6 +363,36 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         qcdHist   = self.histoFromCache( invVar, binning, setup, "Data", channel, cut_Data_CR, weight_Data_CR, overwrite=overwriteHistos)
         fixedHist = dataHist.Clone("fixed") # sum of contributions that stay fixed
         fixedHist.Scale(0.)
+
+        if addSF:
+            if setup.nJet == "2":
+                DYSF_val    = DY2SF_val
+                WGSF_val    = WG2SF_val
+                ZGSF_val    = ZG2SF_val
+            elif setup.nJet == "3":
+                DYSF_val    = DY3SF_val
+                WGSF_val    = WG3SF_val
+                ZGSF_val    = ZG3SF_val
+            elif setup.nJet == "4":
+                DYSF_val    = DY4SF_val
+                WGSF_val    = WG4SF_val
+                ZGSF_val    = ZG4SF_val
+            elif setup.nJet == "5":
+                DYSF_val    = DY5SF_val
+                WGSF_val    = WG5SF_val
+                ZGSF_val    = ZG5SF_val
+            elif setup.nJet == "2p":
+                DYSF_val    = DY2pSF_val
+                WGSF_val    = WG2pSF_val
+                ZGSF_val    = ZG2pSF_val
+            elif setup.nJet == "3p":
+                DYSF_val    = DY3pSF_val
+                WGSF_val    = WG3pSF_val
+                ZGSF_val    = ZG3pSF_val
+            elif setup.nJet == "4p":
+                DYSF_val    = DY4pSF_val
+                WGSF_val    = WG4pSF_val
+                ZGSF_val    = ZG4pSF_val
 
         # Calculate mTs for MC (normalized to data lumi)
         for s in default_sampleList:
@@ -457,10 +518,10 @@ class DataDrivenQCDEstimate(SystematicEstimator):
 
         #Sum of all channels for "all"
         if channel=="all":
-            estimate     = sum([ self.cachedEstimate(region, c, setup, signalAddon=signalAddon) for c in lepChannels])
+            return sum([ self.cachedEstimate(region, c, setup, signalAddon=signalAddon) for c in lepChannels])
 
         elif channel=="SFtight":
-            estimate     = sum([ self.cachedEstimate(region, c, setup, signalAddon=signalAddon) for c in dilepChannels])
+            return sum([ self.cachedEstimate(region, c, setup, signalAddon=signalAddon) for c in dilepChannels])
 
         else:
 
@@ -510,6 +571,37 @@ class DataDrivenQCDEstimate(SystematicEstimator):
             QCDTF_updates_nJ = copy.deepcopy(QCDTF_updates)
             if "nJet" in QCDTF_updates_nJ["CR"].keys(): del QCDTF_updates_nJ["CR"]["nJet"]
             if "nJet" in QCDTF_updates_nJ["SR"].keys(): del QCDTF_updates_nJ["SR"]["nJet"]
+
+            if addSF:
+                if setup.nJet == "2":
+                    DYSF_val    = DY2SF_val
+                    WGSF_val    = WG2SF_val
+                    ZGSF_val    = ZG2SF_val
+                elif setup.nJet == "3":
+                    DYSF_val    = DY3SF_val
+                    WGSF_val    = WG3SF_val
+                    ZGSF_val    = ZG3SF_val
+                elif setup.nJet == "4":
+                    DYSF_val    = DY4SF_val
+                    WGSF_val    = WG4SF_val
+                    ZGSF_val    = ZG4SF_val
+                elif setup.nJet == "5":
+                    DYSF_val    = DY5SF_val
+                    WGSF_val    = WG5SF_val
+                    ZGSF_val    = ZG5SF_val
+                elif setup.nJet == "2p":
+                    DYSF_val    = DY2pSF_val
+                    WGSF_val    = WG2pSF_val
+                    ZGSF_val    = ZG2pSF_val
+                elif setup.nJet == "3p":
+                    DYSF_val    = DY3pSF_val
+                    WGSF_val    = WG3pSF_val
+                    ZGSF_val    = ZG3pSF_val
+                elif setup.nJet == "4p":
+                    DYSF_val    = DY4pSF_val
+                    WGSF_val    = WG4pSF_val
+                    ZGSF_val    = ZG4pSF_val
+
             qcd_yield = u_float(0)
             for i_pt, pt in enumerate(ptBins[:-1]):
                 for i_eta, eta in enumerate(etaBins[:-1]):
@@ -538,11 +630,11 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                     if transferFac.val <= 0: continue
 
                     qcdUpdates     = { "CR":QCDTF_updates_nJ["CR"], "SR":QCDTF_updates_nJ["SR"] }
-                    transferFac_nJ = self.cachedTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=overwrite, checkOnly=False )
+#                    transferFac_nJ = self.cachedTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=overwrite, checkOnly=False )
 
                     # set the transferfactor uncertainty to the nJet dependence uncertainty
-                    transferFac.sigma = abs( transferFac.val - transferFac_nJ.val )
-                    if transferFac.sigma > transferFac.val: transferFac.sigma = transferFac.val #upper bound of 100%
+#                    transferFac.sigma = abs( transferFac.val - transferFac_nJ.val )
+#                    if transferFac.sigma > transferFac.val: transferFac.sigma = transferFac.val #upper bound of 100%
 
                     # define the 2016 e-channel QCD sideband in barrel only (bad mT fit in EC)
                     # Remove that for now
@@ -570,6 +662,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                     for s in default_sampleList:
                         if s in ["QCD-DD", "QCD", "GJets", "Data"]: continue
                         y  = self.yieldFromCache( setup, s, channel, cut_MC_CR, weight_MC_CR, overwrite=overwrite )
+
                         if addSF:
                             if   s == "DY_LO":
                                 y *= DYSF_val[setup.year]    #add DY SF
@@ -600,7 +693,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                     logger.info("transfer factor:           " + str(transferFac))
 
 #        logger.info("Estimate for QCD in " + channel + " channel" + (" (lumi=" + str(setup.lumi) + "/pb)" if channel != "all" else "") + ": " + str(estimate) + (" (negative estimated being replaced by 0)" if estimate < 0 else ""))
-        return qcd_yield if qcd_yield > 0 else u_float(0, 0)
+            return qcd_yield if qcd_yield >= 0 else u_float(0, 0)
 
 if __name__ == "__main__":
     from TTGammaEFT.Analysis.regions      import regionsTTG, noPhotonRegionTTG, inclRegionsTTG
