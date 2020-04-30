@@ -43,21 +43,22 @@ argParser.add_argument('--genSelection1l',     action='store',      default='dil
 argParser.add_argument('--genSelection2l',     action='store',      default='dilepOS-pTG20-nPhoton1p-offZSFllg-offZSFll-mll40-nJet2p-nBTag1p')
 argParser.add_argument('--selection1l',        action='store',      default='nLepTight1-nLepVeto1-nJet4p-nBTag1p-pTG20-nPhoton1p')
 argParser.add_argument('--selection2l',        action='store',      default='dilepOS-nLepVeto2-pTG20-nPhoton1p-offZSFllg-offZSFll-mll40-nJet2p-nBTag1p')
-argParser.add_argument('--variables' ,         action='store',      default = ['ctZ', 'ctZI'], type=str, nargs=2,                                    help="argument plotting variables")
+argParser.add_argument('--variables' ,         action='store',      default = ['ctZI'], type=str, nargs=1,                                    help="argument plotting variables")
 argParser.add_argument('--small',              action='store_true',                                                                                  help='Run only on a small subset of the data?', )
-argParser.add_argument('--years',              action='store',      default=[ 2016, 2017 ], type=int, choices=[2016, 2017, 2018], nargs="*",         help="Which years to combine?")
-argParser.add_argument('--selections',         action='store',      default=[ "1l", "2l" ], type=str, choices=["1l", "2l"], nargs="*",               help="Which selections to combine?")
+argParser.add_argument( "--year",               action="store",      default=2016,   type=int,                              help="Which year?" )
+argParser.add_argument('--binning',            action='store',      default=[20, -1, 1], type=float, nargs=3,                            help="argument parameters")
+argParser.add_argument('--selections',         action='store',      default=[ "1l" ], type=str, choices=["1l", "2l"], nargs="*",               help="Which selections to combine?")
 argParser.add_argument('--contours',           action='store_true',                                                                                  help='draw 1sigma and 2sigma contour line?')
 argParser.add_argument('--smooth',             action='store_true',                                                                                  help='smooth histogram?')
 argParser.add_argument('--zRange',             action='store',      default=[None, None],      type=float, nargs=2,                                  help="argument parameters")
-argParser.add_argument('--xyRange',            action='store',      default=[None, None, None, None],  type=float, nargs=4,                          help="argument parameters")
+argParser.add_argument('--xyRange',            action='store',      default=[None, None],  type=float, nargs=2,                          help="argument parameters")
 argParser.add_argument('--binMultiplier',      action='store',      default=3,                 type=int,                                             help='bin multiplication factor')
 argParser.add_argument('--skipMissingPoints',  action='store_true',                                                                                  help='Set missing NLL points to 999?')
 argParser.add_argument('--plotData',           action='store_true',                                                                                  help='Plot data points?')
-argParser.add_argument('--inclusive',          action='store_true',                                                                                  help='run inclusive regions', )
 argParser.add_argument('--tag',                action='store',      default="combined",        type=str,                                             help='tag for unc studies')
 argParser.add_argument( "--expected",           action="store_true",                                                        help="Use sum of backgrounds instead of data." )
 argParser.add_argument( "--inclRegion",         action="store_true",                                                        help="use inclusive photon pt region" )
+argParser.add_argument( "--useRegions",         action="store",      nargs='*',       type=str, choices=allRegions.keys(),  help="Which regions to use?" )
 args = argParser.parse_args()
 
 # Logging
@@ -70,64 +71,66 @@ logger_rt = logger_rt.get_logger( args.logLevel, logFile = None )
 from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed  import *
 eftSample = TTG_4WC_ref
 
-useCache = True
-if args.keepCard:
-    args.overwrite = False
-
-def replaceDictKey( dict, fromKey, toKey ):
-    dict[toKey] = copy.copy(dict[fromKey])
-    del dict[fromKey]
-    return dict
-
 regionNames = []
-regionNames.append("misTT2")
-regionNames.append("misDY4p")
-regionNames.append("VG4p")
-regionNames.append("SR4pM3")
+if args.useRegions: regionNames = args.useRegions
+print regionNames
+regionNames.sort() 
+print regionNames
 
+baseDir       = os.path.join( cache_directory, "analysis",  str(args.year), "limits" )
 cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
 
-plot_directory_ = os.path.join( plot_directory, "NLLPlots%s"%("Incl" if args.inclusive else ""), y, sel, "_".join(args.variables) )
 
+directory = os.path.join( plot_directory, "NLLPlots", str(args.year), "_".join( regionNames ))
+if args.inclRegion and not args.expected: direc = os.path.join( directory, "inclusive")
+if not args.inclRegion and args.expected: direc = os.path.join( directory, "expected")
+if args.inclRegion and args.expected: direc = os.path.join( directory, "inclusive and expected")
+plot_directory_ = os.path.join( direc, "_".join(args.variables) )
+print plot_directory_
 if not os.path.isdir( plot_directory_ ):
     try: os.makedirs( plot_directory_ )
     except: pass
 
-#binning range
-xRange = eftParameterRange["ctZ"] 
+if args.year == 2016:   lumi_scale = 35.92
+elif args.year == 2017: lumi_scale = 41.53
+elif args.year == 2018: lumi_scale = 59.74
 
-def getNllData( var1, var2):
-    var2 = 0
-    for var1 in eftParameterRange["ctZ"]:
-            EFTparams = ["ctZ", str(var1), "ctZI", str(var2)]
-            configlist = regionNames + EFTparams
-            configlist.append("incl" if args.inclRegion else "diff")
-            configlist.append("expected" if args.expected else "observed")
-            sConfig = "_".join(configlist)
-            nll = nllCache.get(sConfig)
+#binning range
+xbins, xlow, xhigh = args.binning[:3]
+xRange = eftParameterRange["ctZI"] 
+
+def getNllData( var1):
+    EFTparams = ["ctZ", str(0), "ctZI", str(var1)]
+    configlist = regionNames + EFTparams
+    configlist.append("incl" if args.inclRegion else "diff")
+    configlist.append("expected" if args.expected else "observed")
+    sConfig = "_".join(configlist)
+    print sConfig
+    nll  = nllCache.get(sConfig)
+    print nll
+    print nllCache.contains(sConfig)
     return float(nll)
 
-var2 = 0 
+
 logger.info("Loading cache data" )
-points2D = [ (0, 0) ] #SM point
-points2D += [ (varX, 0) for varX in xRange] #1D plots
+points2D = [ (0) ] #SM point
+points2D += [ (varX) for varX in xRange] #1D plots
 
-nllData  = [ (var1, var2, getNllData( var1, var2 )) for var1, var2 in points2D ]
-sm_nll   = filter( lambda (x, nll): x==0, nllData )[0][2]
-nllData  = [ (x, 2*(nll - sm_nll)) for x, nll in nllData ]
+nllData  = [ (var1, getNllData( var1 )) for var1 in points2D ]
+print nllData
+sm_nll   = getNllData(0)
 
-# Remove white spots in plots
-#nllData  = [ (x, y, nll) if nll > 1e-5 else (x, y, 0) for x, y, nll in nllData ]
+nllData  = [ (x, -2*(nll - sm_nll)) for x, nll in nllData ]
+#length = len(nllData)
+#for i in range(length):
+ #   nllData[i][2] = 2*(nllData[i][2]-sm_nll)
+  #  nllData[i] = tuple(nllData[i])
 
-xNLL     = [ (x, nll) for x, y, nll in nllData if y==0 ]
+xNLL     = [ (x, nll) for x, nll in nllData ]
 
 tmp = nllData
-tmp.sort( key = lambda res: (res[0], res[2]) )
-xNLL_profiled = []
-for key, group in itertools.groupby( tmp, operator.itemgetter(0) ):
-    x, y, res = list(group)[0]
-    xNLL_profiled.append((x, res))
+tmp.sort( key = lambda res: (res[0], res[1]) )
 
 def toGraph( name, title, data ):
     result  = ROOT.TGraph( len(data) )
@@ -145,7 +148,7 @@ def toGraph( name, title, data ):
 polString = "[0]*x**2+[1]*x**3+[2]*x**4+[3]*x**5+[4]*x**6+[5]*x**7+[6]*x**8+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
 xPlotLow, xPlotHigh = args.xyRange
 
-def plot1D( dat, var, xmin, xmax, profiled=False ):
+def plot1D( dat, var, xmin, xmax ):
     # get TGraph from results data list
     xhist = toGraph( var, var, dat )
     func  = ROOT.TF1("func", polString, xmin, xmax )
@@ -163,8 +166,8 @@ def plot1D( dat, var, xmin, xmax, profiled=False ):
     func.SetLineColor(ROOT.kBlack)
     func.SetNpx(1000)
 
-    print args.selections, " ".join(args.selections+map(str,args.years)), var, '68', x68min, x68max
-    print args.selections, " ".join(args.selections+map(str,args.years)), var, '95', x95min, x95max
+    #print args.selections, " ".join(args.selections+year), var, '68', x68min, x68max
+    #print args.selections, " ".join(args.selections+year), var, '95', x95min, x95max
 
     ROOT.gStyle.SetPadLeftMargin(0.14)
     ROOT.gStyle.SetPadRightMargin(0.1)
@@ -173,8 +176,8 @@ def plot1D( dat, var, xmin, xmax, profiled=False ):
     # Plot
     cans = ROOT.TCanvas("cans","cans",500,500)
 
-    if not None in args.zRange:
-        xhist.GetYaxis().SetRangeUser( args.zRange[0], args.zRange[1] )
+    #if not None in args.zRange:
+    xhist.GetYaxis().SetRangeUser( 0, 10 )
     xhist.GetXaxis().SetRangeUser( xmin, xmax )
 
 
@@ -192,10 +195,10 @@ def plot1D( dat, var, xmin, xmax, profiled=False ):
     func68.SetLineWidth(0)
     func68.SetNpx(1000)
 
-    if not None in args.zRange:
-        func.GetYaxis().SetRangeUser( args.zRange[0], args.zRange[1] )
-        func68.GetYaxis().SetRangeUser( args.zRange[0], args.zRange[1] )
-        func95.GetYaxis().SetRangeUser( args.zRange[0], args.zRange[1] )
+    #if not None in args.zRange:
+     #   func.GetYaxis().SetRangeUser( args.zRange[0], args.zRange[1] )
+      #  func68.GetYaxis().SetRangeUser( args.zRange[0], args.zRange[1] )
+       # func95.GetYaxis().SetRangeUser( args.zRange[0], args.zRange[1] )
     func.GetXaxis().SetRangeUser( xmin, xmax )
     func68.GetXaxis().SetRangeUser( xmin, xmax )
     func95.GetXaxis().SetRangeUser( xmin, xmax )
@@ -227,8 +230,8 @@ def plot1D( dat, var, xmin, xmax, profiled=False ):
 
     xhist.GetYaxis().SetTitle("-2 #Delta ln L")
 
-    funcName = "profiled log-likelihood ratio" if profiled else "log-likelihood ratio"
-    leg = ROOT.TLegend(0.25,0.7,0.6,0.87) if profiled else ROOT.TLegend(0.3,0.7,0.7,0.87)
+    funcName = "log-likelihood ratio"
+    leg = ROOT.TLegend(0.3,0.7,0.7,0.87)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.035)
     leg.AddEntry( func, funcName ,"l")
@@ -262,12 +265,16 @@ def plot1D( dat, var, xmin, xmax, profiled=False ):
     latex1.DrawLatex(0.15, 0.92, '#bf{CMS} #it{Simulation Preliminary} ' + addon),
     latex1.DrawLatex(0.64, 0.92, '#bf{%3.1f fb{}^{-1} (13 TeV)}' % lumi_scale)
 
-    plotname = "%s%s%s"%(var, "_profiled" if profiled else "", "_%s"%args.tag if args.tag != "combined" else "")
+    plotname = "%s%s%s"%(var, "", "_%s"%args.tag if args.tag != "combined" else "")
     for e in [".png",".pdf",".root"]:
         cans.Print( plot_directory_ + "/%s%s"%(plotname, e) )
 #    for e in [".png",".pdf",".root"]:
 #        cans.Print( plot_directory_ + "/%s%s%s"%(var, "_profiled" if profiled else "", e) )
 
-
+for i, dat in enumerate( [ xNLL ] ):
+    xmin = [ xlow ][i]   if not [ xPlotLow ][i]   else [ xPlotLow ][i]
+    xmax = [ xhigh ][i] if not [ xPlotHigh ][i] else [ xPlotHigh ][i]
+    var = args.variables[i]
+    plot1D( dat, var, xmin, xmax )
 
 

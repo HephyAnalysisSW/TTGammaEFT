@@ -160,7 +160,6 @@ if args.addZGSF:     regionNames.append("addZGSF")
 if args.addSSM:      regionNames.append("addSSM")
 if args.addMisIDSF:  regionNames.append("addMisIDSF")
 if args.addFakeSF:   regionNames.append("addFakeSF")
-if args.inclRegion:  regionNames.append("incl")
 if args.misIDPOI:    regionNames.append("misIDPOI")
 if args.vgPOI:       regionNames.append("vgPOI")
 if args.wJetsPOI:    regionNames.append("wJetsPOI")
@@ -219,6 +218,7 @@ sConfig = "_".join(configlist)
 print nllCache.get(sConfig)
 print nllCache.contains(sConfig)
 if not args.overwrite and nllCache.contains( sConfig ): sys.exit(0)
+print sConfig
 
 def wrapper():
     c = cardFileWriter.cardFileWriter()
@@ -365,8 +365,10 @@ def wrapper():
                             ratio       =  yieldCache.get(yieldkey)["val"]
                         else:
                             raise Exception("yieldCache does not contain key")
+                        
+                        if smyield > 0: ratio /= smyield
+                        else: ratio = 1 
 
-                        ratio /= smyield
                             
                         print ratio
                         if pName == "Data": continue
@@ -639,13 +641,14 @@ def wrapper():
     nll          = c.calcNLL( cardFileName )
     nll_prefit   = nll['nll0']
     nll_postfit  = nll['nll_abs']
+    NLL = nll['nll']    
     
     if nll_prefit  is None or abs(nll_prefit) > 10000 or abs(nll_prefit) < 1e-5:   nll_prefit  = 999
     if nll_postfit is None or abs(nll_postfit) > 10000 or abs(nll_postfit) < 1e-5: nll_postfit = 999
 
-    nllCache.add( sConfig, nll_prefit, overwrite=True )
+    nllCache.add( sConfig, NLL, overwrite=True )
     
-    print nll
+    print NLL
 
 ######################################
 # Load the signals and run the code! #
