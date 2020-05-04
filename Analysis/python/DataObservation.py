@@ -44,19 +44,22 @@ class DataObservation():
 
     # alias for cachedObservation to make it easier to call the same function as for the mc"s
     def cachedEstimate(self, region, channel, setup, signalAddon=None, save=True, overwrite=False, checkOnly=False):
-        return self.cachedObservation(region, channel, setup, overwrite=overwrite)
+        return self.cachedObservation(region, channel, setup, overwrite=overwrite, checkOnly=checkOnly)
 
-    def cachedObservation(self, region, channel, setup, save=True, overwrite=False):
+    def cachedObservation(self, region, channel, setup, save=True, overwrite=False, checkOnly=False):
         key =  self.uniqueKey(region, channel, setup)
-        if self.cache and self.cache.contains(key) and not overwrite and channel != "all":
+        if (self.cache and self.cache.contains(key)) and not overwrite and channel != "all":
             res = self.cache.get(key)
             logger.debug( "Loading cached %s result for %r : %r"%(self.name, key, res) )
-            return res
-        elif self.cache:
+        elif self.cache and not checkOnly:
+            res  = self.observation( region, channel, setup, overwrite)
+            _res = self.cache.add( key, res, overwrite=True )
             logger.debug( "Adding cached %s result for %r"%(self.name, key) )
-            return self.cache.add( key, self.observation( region, channel, setup, overwrite), overwrite=True )
+        elif not checkOnly:
+            res = self.observation( region, channel, setup, overwrite )
         else:
-            return self.observation( region, channel, setup, overwrite )
+            res = u_float(-1,0)
+        return res if res >= 0 or checkOnly else u_float(0,0)
 
     def observation(self, region, channel, setup, overwrite):
 
