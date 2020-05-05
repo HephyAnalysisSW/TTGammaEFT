@@ -2,7 +2,11 @@
 selections=(
             "SR3","Signal Region 3 Jets"
             "SR4p","Signal Region geq 4 Jets"
+            "misTT2","MisID TT CR"
+            "misTT2-addMisIDSF","MisID TT CR + SF"
+)
 
+misDYSelections=(
             "misDY2","MisID DY CR 2 Jets"
             "misDY3","MisID DY CR 3 Jets"
             "misDY4","MisID DY CR 4 Jets"
@@ -13,8 +17,6 @@ selections=(
             "misDY4-addDYSF-addMisIDSF","MisID DY CR 4 Jets + SF"
             "misDY5-addDYSF-addMisIDSF","MisID DY CR 5 Jets + SF"
             "misDY4p-addDYSF-addMisIDSF","MisID DY CR geq 4 Jets + SF"
-            "misTT2","MisID TT CR"
-            "misTT2-addMisIDSF","MisID TT CR + SF"
 )
 
 noPhotonSelections=(
@@ -31,23 +33,35 @@ noPhotonSelections=(
             "DY4p","DY CR geq 4 Jets"
 )
 
+
 leps=("all" "e" "mu")
 
-cat header > tables_est_2018.dat
-echo " " >> tables_est_2018.dat
+cat header > tables/tables_est_2016.tex
+echo " " >> tables/tables_est_2016.tex
 
-echo "\section{Yields - Semileptonic Channel 2018}" >> tables_est_2018.dat
-echo " " >> tables_est_2018.dat
+echo "\section{Yields - Semileptonic Channel 2016}" >> tables/tables_est_2016.tex
+echo " " >> tables/tables_est_2016.tex
 
 for seltuple in "${selections[@]}"; do 
     IFS=","; set -- ${seltuple};
     sel=$1;
     label=$2;
     echo ${sel}
-#    python yieldTable.py --year 2018 --controlRegion ${sel} --label $label   --removeNegative
+#    python yieldTable.py --year 2016 --controlRegion ${sel} --label $label   --removeNegative
     for lep in "${leps[@]}"; do
-#        python yieldTable.py --year 2018 --controlRegion ${sel} --mode ${lep} --label $label  --removeNegative
-        cat logs/2018_${sel}-${lep}.log >> tables_est_2018.dat
+#        python yieldTable.py --year 2016 --controlRegion ${sel} --mode ${lep} --label $label  --removeNegative
+        cat logs/2016_${sel}-${lep}.log >> tables/tables_est_2016.tex
+    done
+done
+
+
+for seltuple in "${misDYSelections[@]}"; do 
+    IFS=","; set -- ${seltuple};
+    sel=$1;
+    label=$2;
+    echo ${sel}
+#    python yieldTable.py --year 2016 --controlRegion ${sel} --label $label   --removeNegative
+    cat logs/2016_${sel}-e.log >> tables/tables_est_2016.tex
     done
 done
 
@@ -57,12 +71,12 @@ for seltuple in "${noPhotonSelections[@]}"; do
     sel=$1;
     label=$2;
     echo ${sel}
-#    python yieldTable.py --year 2018 --controlRegion ${sel} --label $label  --removeNegative
-    cat logs/2018_${sel}.log >> tables_est_2018.dat
+#    python yieldTable.py --year 2016 --controlRegion ${sel} --label $label  --removeNegative
+    cat logs/2016_${sel}.log >> tables/tables_est_2016.tex
 done
 
 
-echo " " >> tables_est_2018.dat
+echo " " >> tables/tables_est_2016.tex
 
-echo " " >> tables_est_2018.dat
-echo "\end{document}" >> tables_est_2018.dat
+echo " " >> tables/tables_est_2016.tex
+echo "\end{document}" >> tables/tables_est_2016.tex

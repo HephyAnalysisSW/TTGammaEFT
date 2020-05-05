@@ -93,11 +93,12 @@ allPhotonRegions = allRegions[args.controlRegion]["inclRegion"] + allRegions[arg
 noCat_sel = "all"
 allCat    = ["all","gen","had","misID"]
 
-
+blind = False
 if photonSelection:
     if "SR" in args.controlRegion:
         inclRegionsTTG = inclRegionsTTGloose
         regionsTTG = regionsTTGloose
+        blind = args.year != 2016
     ptDict = {str(inclRegionsTTG[0]):"all", str(regionsTTG[0]):"lowPT", str(regionsTTG[1]):"medPT", str(regionsTTG[2]):"highPT"}
     catSel = ["all","gen","had","misID"]
 else:
@@ -118,8 +119,10 @@ if args.controlRegion:
 def wrapper(arg):
         r,channel,setup,estimate = arg
         estimate.initCache(setup.defaultCacheDir())
-        res = estimate.cachedEstimate(r, channel, setup, overwrite=False, checkOnly=True)
-        print str(r), channel, estimate.name, res
+        if estimator.name == "Data" and blind:
+            res = u_float(0,0)
+        else:
+            res = estimate.cachedEstimate(r, channel, setup, overwrite=False, checkOnly=True)
         if args.removeNegative and res < 0: res = u_float(0,0)
         return (estimate.uniqueKey(r, channel, setup), res )
 
@@ -198,6 +201,8 @@ for estName in [e.name for e in allEstimators] + ["MC","MC_gen","MC_had","MC_mis
 
 def printYieldTable( m ):
 
+    if (m != "e" and "misDY" in args.controlRegion): return
+
     with open("logs/%i_%s-%s.log"%(args.year,cr,m), "w") as f:
     
         if m in ["e", "all"]:
@@ -247,7 +252,7 @@ def printYieldTable( m ):
         f.write("}\n\n") #resizebox
 
         f.write("\\end{table}\n\n")
-        if m in ["mu", "all"]:
+        if m in ["mu", "all"] or (m == "e" and "misDY" in args.controlRegion):
             f.write("\\end{frame}\n")
         f.write("\n\n\n")
 

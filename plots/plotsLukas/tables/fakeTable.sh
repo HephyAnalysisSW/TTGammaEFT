@@ -6,24 +6,24 @@ selections=(
 
 leps=("all" "e" "mu")
 
-cat header > faketables_est_2018.dat
-echo " " >> faketables_est_2018.dat
+cat header > tables/faketables_est_2016.tex
+echo " " >> tables/faketables_est_2016.tex
 
-echo "\section{Yields - Semileptonic Channel 2018}" >> faketables_est_2018.dat
-echo " " >> faketables_est_2018.dat
+echo "\section{Yields - Semileptonic Channel 2016}" >> tables/faketables_est_2016.tex
+echo " " >> tables/faketables_est_2016.tex
 
 for seltuple in "${selections[@]}"; do 
     IFS=","; set -- ${seltuple};
     sel=$1;
     label=$2;
     echo ${sel}
-#    python fakeTable.py --year 2018 --controlRegion ${sel} --label $label
+#    python fakeTable.py --year 2016 --controlRegion ${sel} --label $label
     for lep in "${leps[@]}"; do
-        cat logs/2018_fake_${sel}-${lep}.log >> faketables_est_2018.dat
+        cat logs/2016_fake_${sel}-${lep}.log >> tables/faketables_est_2016.tex
     done
 done
 
-echo " " >> faketables_est_2018.dat
+echo " " >> tables/faketables_est_2016.tex
 
-echo " " >> faketables_est_2018.dat
-echo "\end{document}" >> faketables_est_2018.dat
+echo " " >> tables/faketables_est_2016.tex
+echo "\end{document}" >> tables/faketables_est_2016.tex

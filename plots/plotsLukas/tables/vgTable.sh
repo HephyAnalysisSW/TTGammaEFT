@@ -6,26 +6,26 @@ selections=(
 
 leps=("all" "e" "mu")
 
-cat header > vgtables_est_2018.dat
-echo " " >> vgtables_est_2018.dat
+cat header > tables/vgtables_est_2016.tex
+echo " " >> tables/vgtables_est_2016.tex
 
-echo "\section{Yields - Semileptonic Channel 2018}" >> vgtables_est_2018.dat
-echo " " >> vgtables_est_2018.dat
+echo "\section{Yields - Semileptonic Channel 2016}" >> tables/vgtables_est_2016.tex
+echo " " >> tables/vgtables_est_2016.tex
 
 for seltuple in "${selections[@]}"; do 
     IFS=","; set -- ${seltuple};
     sel=$1;
     label=$2;
     echo ${sel}
-#    python vgTable.py --year 2018 --controlRegion ${sel} --label $label low Mlg
-#    python vgTable.py --year 2018 --controlRegion ${sel} --label $label high Mlg --highMlg
+#    python vgTable.py --year 2016 --controlRegion ${sel} --label $label low Mlg
+#    python vgTable.py --year 2016 --controlRegion ${sel} --label $label high Mlg --highMlg
     for lep in "${leps[@]}"; do
-        cat logs/2018_${sel}-${lep}_lowMlg.log >> vgtables_est_2018.dat
-        cat logs/2018_${sel}-${lep}_highMlg.log >> vgtables_est_2018.dat
+        cat logs/2016_${sel}-${lep}_lowMlg.log >> tables/vgtables_est_2016.tex
+        cat logs/2016_${sel}-${lep}_highMlg.log >> tables/vgtables_est_2016.tex
     done
 done
 
-echo " " >> vgtables_est_2018.dat
+echo " " >> tables/vgtables_est_2016.tex
 
-echo " " >> tables_est_2018.dat
-echo "\end{document}" >> tables_est_2018.dat
+echo " " >> tables_est_2016.tex
+echo "\end{document}" >> tables_est_2016.tex

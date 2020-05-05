@@ -67,6 +67,8 @@ ptDict = {str(inclRegionsTTGloose[0]):"all", str(regionsTTGloose[0]):"lowhadPT",
 channels = lepChannels
 regions = [(m, pt, sieie, chgIso, cat) for m in [allMode] + channels for pt in ptDict.values() for chgIso in chgSel for sieie in sieieSel for cat in catSel]
 
+blind = args.year != 2016
+
 setup          = Setup(year=args.year, photonSelection=photonSelection )#, checkOnly=True)
 estimators     = EstimatorList(setup)
 allEstimators  = estimators.constructEstimatorList( allProcesses )
@@ -131,7 +133,10 @@ def wrapper(arg):
         if estimate.name.lower() == "data":
             estimate = DataObservation(name="Data", process=setup.processes["Data"], cacheDir=setup.defaultCacheDir())
             estimate.initCache(setup_fake.defaultCacheDir())
-            y = estimate.cachedEstimate( region, channel, setup_fake, checkOnly=True )
+            if   "low"  in sieie and "low"  in chgIso and blind
+                y = u_float(0,0)
+            else:
+                y = estimate.cachedEstimate( region, channel, setup_fake, checkOnly=True )
         elif "QCD" in estimate.name:
             estimate = DataDrivenQCDEstimate( name="QCD-DD" )
             estimate.initCache(setup.defaultCacheDir())
