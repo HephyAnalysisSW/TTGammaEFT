@@ -4,6 +4,8 @@ import os, copy, sys
 import ctypes
 import ROOT
 from math                                import sqrt
+import operator
+from itertools import groupby 
 
 # TTGammaEFT
 from TTGammaEFT.Tools.user              import plot_directory, cache_directory
@@ -81,40 +83,37 @@ elif args.year == 2017: lumi_scale = 41.53
 elif args.year == 2018: lumi_scale = 59.74
 
 #binning range
-xRange = eftParameterRange[args.variables] 
+xRange = eftParameterRange["ctZ"]
+yRange = eftParameterRange["ctZI"]
 print xRange
-def getNllData( var1):
-    dict = {"ctZI":0, "ctZ":0}
-    dict[args.variables] = var1
-    EFTparams = ["ctZ", str(dict["ctZ"]), "ctZI", str(dict["ctZI"])]
+print yRange
+def getNllData( varx, vary ):
+    EFTparams = ["ctZ", str(varx), "ctZI", str(vary)]
     configlist = regionNames + EFTparams
     configlist.append("incl" if args.inclRegion else "diff")
     configlist.append("expected" if args.expected else "observed")
     sConfig = "_".join(configlist)
     if nllCache.contains(sConfig): nll = nllCache.get(sConfig)
     else:                          nll = -999
-    print nll
-    print sConfig
     return float(nll)
 
 
 logger.info("Loading cache data" )
-points = [ (0) ] #SM point
-points += [ (varX) for varX in xRange] #1D plots
+points = [ (0,0) ] #SM point
+points += [ (0, varY) for varY in yRange] #1D plots
+points += [ (varX, 0) for varX in xRange] #1D plots
+points += [ (varX, varY) for varY in yRange for varX in xRange] #2D plots
 
-nllData  = [ (var1, getNllData( var1 )) for var1 in points ]
-sm_nll   = getNllData(0)
+nllData  = [ (varx, vary, getNllData( varx, vary )) for (varx, vary) in points ]
+sm_nll   = getNllData(0,0)
 
-nllData  = [ (x, -2*(nll - sm_nll)) for x, nll in nllData  if nll > -998 ]
-#length = len(nllData)
-#for i in range(length):
- #   nllData[i][2] = 2*(nllData[i][2]-sm_nll)
-  #  nllData[i] = tuple(nllData[i])
+nllData  = [ (x, y, -2*(nll - sm_nll)) for x, y, nll in nllData if -2*(nll - sm_nll) >= 0]
+nllData.sort( key = lambda res: (res[0 if args.variables=="ctZ" else 1], res[2]) )
 
-xNLL     = [ (x, nll) for x, nll in nllData if nll >= 0 ]
-
-tmp = nllData
-tmp.sort( key = lambda res: (res[0], res[1]) )
+xNLL = []
+for key, group in groupby( nllData, operator.itemgetter(0 if args.variables=="ctZ" else 1) ):
+    x, y, res = list(group)[0]
+    xNLL.append((x if args.variables=="ctZ" else y, res))
 
 def toGraph( name, title, data ):
     result  = ROOT.TGraph( len(data) )
@@ -129,7 +128,7 @@ def toGraph( name, title, data ):
     #res = ROOT.TGraphDelaunay(result)
     return result
 
-polString = "[0]*x**2+[1]*x**3+[2]*x**4"#+[3]*x**5+[4]*x**6"#+[5]*x**7+[6]*x**8"#+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
+polString = "[0]*x**2+[1]*x**3+[2]*x**4"#+[3]*x**5"#+[4]*x**6"#+[5]*x**7+[6]*x**8+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
 xPlotLow, xPlotHigh = args.xRange
 
 def plot1D( dat, var, xmin, xmax ):
@@ -159,7 +158,7 @@ def plot1D( dat, var, xmin, xmax ):
     cans = ROOT.TCanvas("cans","cans",500,500)
 
     #if not None in args.zRange:
-    xhist.GetYaxis().SetRangeUser( 0, 5.5 )
+    xhist.GetYaxis().SetRangeUser( -0.01, 5.5 )
     xhist.GetXaxis().SetRangeUser( xmin, xmax )
 
 
@@ -208,7 +207,7 @@ def plot1D( dat, var, xmin, xmax ):
     print x68min, x68max
     print x95min, x95max
 
-    funcName = "log-likelihood ratio"
+    funcName = "profiled log-likelihood ratio"
     leg = ROOT.TLegend(0.3,0.7,0.7,0.87)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.035)
@@ -246,7 +245,7 @@ def plot1D( dat, var, xmin, xmax ):
     # Redraw axis, otherwise the filled graphes overlay
     cans.RedrawAxis()
 
-    plotname = "%s%s%s"%(var, "", "_%s"%args.tag if args.tag != "combined" else "")
+    plotname = "%s%s%s_profiled"%(var, "", "_%s"%args.tag if args.tag != "combined" else "")
     for e in [".png",".pdf",".root"]:
         cans.Print( plot_directory_ + "/%s%s"%(plotname, e) )
 
