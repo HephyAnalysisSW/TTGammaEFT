@@ -84,7 +84,7 @@ for (i, r) in enumerate(allPhotonRegions):
 if args.cores > 1:
     from multiprocessing import Pool
     pool = Pool( processes=args.cores )
-    pool.map( wrapper, jobs )
+    results = pool.map( wrapper, jobs )
     pool.close()
 else:
     results    = map(wrapper, jobs)

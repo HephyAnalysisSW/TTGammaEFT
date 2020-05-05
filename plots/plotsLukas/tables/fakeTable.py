@@ -32,6 +32,7 @@ argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",           action="store",      default="INFO", nargs="?", choices=loggerChoices,                  help="Log level for logging")
 argParser.add_argument("--controlRegion",      action="store",      default=None,   type=str,                                          help="For CR region?")
 argParser.add_argument("--removeNegative",     action="store_true",                                                                    help="Set negative values to 0?", )
+argParser.add_argument("--cores",            action="store",  default=1,      type=int,                        help="run multicore?")
 argParser.add_argument("--noData",             action="store_true", default=False,                                                     help="also plot data?")
 argParser.add_argument("--year",               action="store",      default=None,   type=int,  choices=[2016,2017,2018],               help="which year?")
 argParser.add_argument("--label",              action="store",      default="Region",  type=str, nargs="*",                            help="which region label?")
@@ -119,7 +120,7 @@ if addSF:
 
 def wrapper(arg):
 
-        region,channel,setup,estimate, sieie, chgIso = arg
+        region,channel,setup,estimate, sieie, chgIso, cat, est = arg
 
         if   "low"  in sieie and "low"  in chgIso: param = {}
         elif "low"  in sieie and "high" in chgIso: param = { "photonIso":"highChgIso",          "addMisIDSF":addSF }
@@ -133,7 +134,7 @@ def wrapper(arg):
         if estimate.name.lower() == "data":
             estimate = DataObservation(name="Data", process=setup.processes["Data"], cacheDir=setup.defaultCacheDir())
             estimate.initCache(setup_fake.defaultCacheDir())
-            if   "low"  in sieie and "low"  in chgIso and blind
+            if "low" in sieie and "low" in chgIso and blind:
                 y = u_float(0,0)
             else:
                 y = estimate.cachedEstimate( region, channel, setup_fake, checkOnly=True )
@@ -156,7 +157,8 @@ def wrapper(arg):
                 elif "WG" in estimate.name:     y *= WGSF_val[setup.year] #add WGamma SF
 
         if args.removeNegative and y < 0: y = u_float(0,0)
-        return (estimate.uniqueKey(region, channel, setup), y )
+
+        return est, sieie, chgIso, str(region), cat, channel, y.val
 
 
 yields = {}
@@ -174,6 +176,7 @@ for estName in [e.name for e in allEstimators] + ["MC","MC_gen","MC_had","MC_mis
                     for i_mode, mode in enumerate(channels + [allMode]):
                         yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode] = 0
 
+jobs = []
 for estimator in allEstimators:
     cat = estimator.name.split("_")[-1] if estimator.name.split("_")[-1] in ["gen","had","misID"] else "all"
     est = estimator.name.split("_")[0]
@@ -181,17 +184,24 @@ for estimator in allEstimators:
         for i_chgIso, chgIso in enumerate(chgSel):
             for i_region, region in enumerate(allPhotonRegions):
                 for i_mode, mode in enumerate(channels):
+                    jobs.append( (region, mode, setup, estimator, sieie, chgIso, cat, est) )
 
-                    y = wrapper( (region, mode, setup, estimator, sieie, chgIso) )[1].val
-                    if y < 0: continue
+if args.cores > 1:
+    from multiprocessing import Pool
+    pool = Pool( processes=args.cores )
+    results = pool.map( wrapper, jobs )
+    pool.close()
+else:
+    results    = map(wrapper, jobs)
 
-                    yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode] = y
-
-                    if yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode] > 0:
-                        yields[est][sieie][chgIso][ptDict[str(region)]][cat][allMode] += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
-                        if est != "Data":
-                            yields["MC"][sieie][chgIso][ptDict[str(region)]][cat][allMode] += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
-                            yields["MC"][sieie][chgIso][ptDict[str(region)]][cat][mode]    += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
+for est, sieie, chgIso, region, cat, mode, y in results:
+    if y < 0: continue
+    yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode] = y
+    if yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode] > 0:
+        yields[est][sieie][chgIso][ptDict[str(region)]][cat][allMode] += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
+        if est != "Data":
+            yields["MC"][sieie][chgIso][ptDict[str(region)]][cat][allMode] += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
+            yields["MC"][sieie][chgIso][ptDict[str(region)]][cat][mode]    += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
 
 
 for estimator in allEstimators:

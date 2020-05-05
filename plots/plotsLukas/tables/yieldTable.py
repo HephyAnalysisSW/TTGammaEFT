@@ -32,6 +32,7 @@ argParser.add_argument("--removeNegative",     action="store_true",             
 argParser.add_argument("--noData",             action="store_true", default=False,                                                     help="also plot data?")
 argParser.add_argument("--year",               action="store",      default=None,   type=int,  choices=[2016,2017,2018],               help="which year?")
 argParser.add_argument("--label",              action="store",      default="Region",  type=str, nargs="*",                            help="which region label?")
+argParser.add_argument("--cores",            action="store",  default=1,      type=int,                        help="run multicore?")
 args = argParser.parse_args()
 
 args.label = " ".join(args.label)
@@ -117,14 +118,14 @@ if args.controlRegion:
     setup = setup.sysClone(parameters=CR_para)
 
 def wrapper(arg):
-        r,channel,setup,estimate = arg
+        r,channel,setup,estimate,cat,est = arg
         estimate.initCache(setup.defaultCacheDir())
-        if estimator.name == "Data" and blind:
+        if estimate.name == "Data" and blind:
             res = u_float(0,0)
         else:
             res = estimate.cachedEstimate(r, channel, setup, overwrite=False, checkOnly=True)
         if args.removeNegative and res < 0: res = u_float(0,0)
-        return (estimate.uniqueKey(r, channel, setup), res )
+        return est, str(r), cat, channel, res.val
 
 if args.controlRegion and args.controlRegion.startswith('DY'):
     channels = dilepChannels
@@ -146,28 +147,38 @@ for estName in [e.name for e in allEstimators] + ["MC","MC_gen","MC_had","MC_mis
             for i_mode, mode in enumerate(channels + [allMode]):
                  yields[est][ptDict[str(region)]][cat][mode] = 0
 
-# fill dictionary
+jobs = []
 for estimator in allEstimators:
     cat = estimator.name.split("_")[-1] if estimator.name.split("_")[-1] in ["gen","had","misID"] else "all"
     est = estimator.name.split("_")[0]
     for i_region, region in enumerate(allPhotonRegions):
         for i_mode, mode in enumerate(channels):
+            jobs.append( (region, mode, setup, estimator, cat, est) )
 
-            y = wrapper( (region, mode, setup, estimator) )[1].val
-            if y < 0: continue
-            yields[est][ptDict[str(region)]][cat][mode] = y
+if args.cores > 1:
+    from multiprocessing import Pool
+    pool = Pool( processes=args.cores )
+    results = pool.map( wrapper, jobs )
+    pool.close()
+else:
+    results    = map(wrapper, jobs)
 
-            if addDYSF and "DY" in est:
-                yields[est][ptDict[str(region)]][cat][mode] *= DYSF_val[args.year].val
-            if addMisIDSF and cat == "misID":
-                yields[est][ptDict[str(region)]][cat][mode] *= misIDSF_val[args.year].val
+for est, region, cat, mode, y in results:
+    print est, region, cat, mode, y
+    if y < 0: continue
+    yields[est][ptDict[str(region)]][cat][mode] = y
 
-            # fill all and MC entries for each cat
-            if yields[est][ptDict[str(region)]][cat][mode] > 0:
-                yields[est][ptDict[str(region)]][cat][allMode] += yields[est][ptDict[str(region)]][cat][mode]
-                if est != "Data":
-                    yields["MC"][ptDict[str(region)]][cat][allMode] += yields[est][ptDict[str(region)]][cat][mode]
-                    yields["MC"][ptDict[str(region)]][cat][mode]    += yields[est][ptDict[str(region)]][cat][mode]
+    if addDYSF and "DY" in est:
+        yields[est][ptDict[str(region)]][cat][mode] *= DYSF_val[args.year].val
+    if addMisIDSF and cat == "misID":
+        yields[est][ptDict[str(region)]][cat][mode] *= misIDSF_val[args.year].val
+
+    # fill all and MC entries for each cat
+    if yields[est][ptDict[str(region)]][cat][mode] > 0:
+        yields[est][ptDict[str(region)]][cat][allMode] += yields[est][ptDict[str(region)]][cat][mode]
+        if est != "Data":
+            yields["MC"][ptDict[str(region)]][cat][allMode] += yields[est][ptDict[str(region)]][cat][mode]
+            yields["MC"][ptDict[str(region)]][cat][mode]    += yields[est][ptDict[str(region)]][cat][mode]
 
 
 # fill all as sum of cats
