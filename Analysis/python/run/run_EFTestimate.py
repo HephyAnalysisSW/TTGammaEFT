@@ -24,7 +24,6 @@ CRChoices     = allRegions.keys()
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",         action="store",  default="INFO",           choices=loggerChoices, help="Log level for logging")
-#argParser.add_argument("--selectRegion",     action="store",  default=0,     type=int,                        help="select region?")
 argParser.add_argument("--cores",            action="store",  default=1,      type=int,                        help="How many threads?")
 argParser.add_argument("--controlRegion",    action="store",  default="SR4pM3",   type=str, choices=CRChoices,     help="For CR region?")
 argParser.add_argument("--overwrite",        action="store_true",                                              help="overwrite existing results?")
@@ -32,7 +31,6 @@ argParser.add_argument("--checkOnly",        action="store_true",               
 argParser.add_argument('--order',              action='store',      default=2, type=int,                                                             help='Polynomial order of weight string(e.g. 2)') 
 argParser.add_argument('--nJobs',              action='store',      nargs='?', type=int, default=1,                                                  help="Maximum number of simultaneous jobs.")
 argParser.add_argument('--job',                action='store',      nargs='?', type=int, default=0,                                                  help="Run only job i")
-#argParser.add_argument('--parameters',         action='store',      default=['ctZI', '2', 'ctWI', '2', 'ctZ', '2', 'ctW', '2'], type=str, nargs='+', help = "argument parameters")
 args = argParser.parse_args()
 
 # Logger
@@ -72,13 +70,6 @@ allPhotonRegions = allRegions[args.controlRegion]["inclRegion"] + allRegions[arg
 setup            = Setup( year=2016, checkOnly=args.checkOnly )
 setup            = setup.sysClone( parameters=parameters )
 
-#sh file 
-#file = open("run_limit_EFT.sh","w")
-#for i in eftParameterRange["ctZ"]:
- #   for j in eftParameterRange["ctZ"]: 
- #      file.write("python run_limit_EFT.py --overwrite --year 2016 --inclRegion --useRegions misTT2 misDY4p VG4p SR4pM3 --parameters ctZ " +  str(i)  + " ctZI " + str(j) + "\n")
-#file.close
-
 def wrapper(arg):
     r,channel,setup,(ctZ,ctZI) = arg
     EFTparams = [ "ctZ", str(ctZ), "ctZI", str(ctZI) ]
@@ -101,7 +92,7 @@ jobs=[]
 for channel in channels:
     for (i, r) in enumerate(allPhotonRegions):
         for ctZ in eftParameterRange["ctZ"]:
-            for ctZI in eftParameterRange["ctZ"]:
+            for ctZI in eftParameterRange["ctZI"]:
                 jobs.append((r, channel, setup, (ctZ, ctZI)))
 
 if args.nJobs > len(jobs):
