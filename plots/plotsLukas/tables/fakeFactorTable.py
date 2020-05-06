@@ -20,6 +20,7 @@ argParser.add_argument("--label",             action="store",      default="Regi
 args = argParser.parse_args()
 
 args.selectEstimator = "TT_pow_had"
+args.label = " ".join(args.label)
 
 # Logging
 import Analysis.Tools.logger as logger
@@ -41,7 +42,7 @@ parameters       = allRegions[args.controlRegion]["parameters"]
 channels         = allRegions[args.controlRegion]["channels"] 
 photonSelection  = not allRegions[args.controlRegion]["noPhotonCR"]
 allPhotonRegions = allRegions[args.controlRegion]["inclRegion"] + allRegions[args.controlRegion]["regions"] if photonSelection else allRegions[args.controlRegion]["regions"]
-setup            = Setup( year=args.year, photonSelection=False, checkOnly=True ) #photonselection always false for qcd estimate
+setup            = Setup( year=args.year, photonSelection=False, checkOnly=False )
 
 estimate = DataDrivenFakeEstimate( args.selectEstimator, process=setup.processes[args.selectEstimator] )
 estimate.initCache(setup.defaultCacheDir())

@@ -58,7 +58,7 @@ CR_para = allRegions[args.controlRegion]["parameters"]
 photonSelection = True
 allPhotonRegions = inclRegionsTTGloose + regionsTTGloose
 
-catSel = ["all","gen","had","misID"]
+catSel = ["all","gen","misID","had"]
 sieieSel  = ["lowSieie", "highSieie"]
 chgSel    = ["lowChgIso", "highChgIso"]
 noCat_sel = "all"
@@ -158,11 +158,11 @@ def wrapper(arg):
 
         if args.removeNegative and y < 0: y = u_float(0,0)
 
-        return est, sieie, chgIso, str(region), cat, channel, y.val
+        return est, sieie, chgIso, str(region), cat, channel, int(round(y.val))
 
 
 yields = {}
-for estName in [e.name for e in allEstimators] + ["MC","MC_gen","MC_had","MC_misID"]:
+for estName in [e.name for e in allEstimators] + ["MC","MC_gen","MC_misID","MC_had"]:
     est = estName.split("_")[0]
     yields[est] = {}
     for i_sieie, sieie in enumerate(sieieSel):
@@ -178,7 +178,7 @@ for estName in [e.name for e in allEstimators] + ["MC","MC_gen","MC_had","MC_mis
 
 jobs = []
 for estimator in allEstimators:
-    cat = estimator.name.split("_")[-1] if estimator.name.split("_")[-1] in ["gen","had","misID"] else "all"
+    cat = estimator.name.split("_")[-1] if estimator.name.split("_")[-1] in ["gen","misID","had"] else "all"
     est = estimator.name.split("_")[0]
     for i_sieie, sieie in enumerate(sieieSel):
         for i_chgIso, chgIso in enumerate(chgSel):
@@ -213,7 +213,7 @@ for estimator in allEstimators:
 
                     if yields[est][sieie][chgIso][ptDict[str(region)]]["all"][mode] <= 0:
                         yields[est][sieie][chgIso][ptDict[str(region)]]["all"][mode] = 0
-                        for i_cat, cat in enumerate(["gen","had","misID"]):
+                        for i_cat, cat in enumerate(["gen","misID","had"]):
                             yields[est][sieie][chgIso][ptDict[str(region)]]["all"][mode]    += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
                             yields[est][sieie][chgIso][ptDict[str(region)]]["all"][allMode] += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
                             if est != "Data":
@@ -222,18 +222,18 @@ for estimator in allEstimators:
 
 mc.sort(key=lambda est: -yields[est]["lowSieie"]["lowChgIso"][ptDict[str(allPhotonRegions[0])]]["all"][allMode])
 
-for estimator in allEstimators:
-    est = estimator.name.split("_")[0]
+# remove negative entries
+for estName in [e.name for e in allEstimators] + ["MC","MC_gen","MC_misID","MC_had"]:
+    estimator = estName.split("_")[0]
     for i_sieie, sieie in enumerate(sieieSel):
         for i_chgIso, chgIso in enumerate(chgSel):
-            for i_region, region in enumerate(allPhotonRegions):
-                for i_mode, mode in enumerate(channels):
-                    for i_cat, cat in enumerate(["gen","had","misID","all"]):
-                        if yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode] < 0:
-                            yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode] = ""
+            for region in yields[estimator][sieie][chgIso].keys():
+                for cat in yields[estimator][sieie][chgIso][region].keys():
+                    for mode in yields[estimator][sieie][chgIso][region][cat].keys():
+                        if yields[estimator][sieie][chgIso][region][cat][mode] < 0:
+                            yields[estimator][sieie][chgIso][region][cat][mode] = ""
                         else:
-                            yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode] = str(int(round(float(yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]))))
-
+                            yields[estimator][sieie][chgIso][region][cat][mode] = str(int(round(float(yields[estimator][sieie][chgIso][region][cat][mode]))))
 
 def printHadFakeYieldTable( m ):
 
@@ -276,7 +276,7 @@ def printHadFakeYieldTable( m ):
                 f.write("%s & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s \\\\ \n" %tuple( [s] + [ yields[s][sieie][chgIso][pt][cat][m] for lep, pt, sieie, chgIso, cat in regions if lep == m and pt == ptNames]) )
                 f.write("\\hline\n")
             f.write("\\hline\n")
-            f.write("MC total & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s %s & \\textbf{%s} & %s & %s & %s \\\\ \n" %tuple( [yields["MC"][sieie][chgIso][pt][cat][m] for lep, pt, sieie, chgIso, cat in regions if lep == m and pt == ptNames] ))
+            f.write("MC total & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s \\\\ \n" %tuple( [yields["MC"][sieie][chgIso][pt][cat][m] for lep, pt, sieie, chgIso, cat in regions if lep == m and pt == ptNames] ))
             f.write("\\hline\n")
             if not args.noData:
                 f.write("data total & \\textbf{%s} & \\multicolumn{3}{c||}{} & \\textbf{%s} & \\multicolumn{3}{c||}{} & \\textbf{%s} & \\multicolumn{3}{c||}{} & \\textbf{%s} & \\multicolumn{3}{c}{} \\\\ \n" %tuple( [yields["Data"][sieie][chgIso][pt][cat][m] for lep, pt, sieie, chgIso, cat in regions if cat == "all" and lep == m and pt == ptNames] ))

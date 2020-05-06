@@ -92,7 +92,7 @@ photonSelection = not allRegions[args.controlRegion]["noPhotonCR"]
 allPhotonRegions = allRegions[args.controlRegion]["inclRegion"] + allRegions[args.controlRegion]["regions"] if photonSelection else allRegions[args.controlRegion]["inclRegion"]
 
 noCat_sel = "all"
-allCat    = ["all","gen","had","misID"]
+allCat    = ["all","gen","misID","had"]
 
 blind = False
 if photonSelection:
@@ -101,7 +101,7 @@ if photonSelection:
         regionsTTG = regionsTTGloose
         blind = args.year != 2016
     ptDict = {str(inclRegionsTTG[0]):"all", str(regionsTTG[0]):"lowPT", str(regionsTTG[1]):"medPT", str(regionsTTG[2]):"highPT"}
-    catSel = ["all","gen","had","misID"]
+    catSel = ["all","gen","misID","had"]
 else:
     ptDict = {str(noPhotonRegionTTG[0]):"all"}
     catSel = ["all"]
@@ -125,7 +125,7 @@ def wrapper(arg):
         else:
             res = estimate.cachedEstimate(r, channel, setup, overwrite=False, checkOnly=True)
         if args.removeNegative and res < 0: res = u_float(0,0)
-        return est, str(r), cat, channel, res.val
+        return est, str(r), cat, channel, int(round(res.val))
 
 if args.controlRegion and args.controlRegion.startswith('DY'):
     channels = dilepChannels
@@ -137,7 +137,7 @@ regions = [(m, pt, cat) for m in [allMode] + channels for pt in ptDict.values() 
 
 # create dictionary structure
 yields = {}
-for estName in [e.name for e in allEstimators] + ["MC","MC_gen","MC_had","MC_misID"]:
+for estName in [e.name for e in allEstimators] + ["MC","MC_gen","MC_misID","MC_had"]:
     est = estName.split("_")[0]
     yields[est] = {}
     for i_region, region in enumerate(allPhotonRegions):
@@ -149,7 +149,7 @@ for estName in [e.name for e in allEstimators] + ["MC","MC_gen","MC_had","MC_mis
 
 jobs = []
 for estimator in allEstimators:
-    cat = estimator.name.split("_")[-1] if estimator.name.split("_")[-1] in ["gen","had","misID"] else "all"
+    cat = estimator.name.split("_")[-1] if estimator.name.split("_")[-1] in ["gen","misID","had"] else "all"
     est = estimator.name.split("_")[0]
     for i_region, region in enumerate(allPhotonRegions):
         for i_mode, mode in enumerate(channels):
@@ -189,7 +189,7 @@ for estimator in allEstimators:
 
             if yields[est][ptDict[str(region)]]["all"][mode] <= 0:
                 yields[est][ptDict[str(region)]]["all"][mode] = 0
-                for i_cat, cat in enumerate(["gen","had","misID"]):
+                for i_cat, cat in enumerate(["gen","misID","had"]):
                     yields[est][ptDict[str(region)]]["all"][mode]    += yields[est][ptDict[str(region)]][cat][mode]
                     yields[est][ptDict[str(region)]]["all"][allMode] += yields[est][ptDict[str(region)]][cat][mode]
                     if est != "Data":
@@ -199,7 +199,7 @@ for estimator in allEstimators:
 mc.sort(key=lambda est: -float(yields[est][ptDict[str(allPhotonRegions[0])]]["all"][allMode]))
 
 # remove negative entries
-for estName in [e.name for e in allEstimators] + ["MC","MC_gen","MC_had","MC_misID"]:
+for estName in [e.name for e in allEstimators] + ["MC","MC_gen","MC_misID","MC_had"]:
     estimator = estName.split("_")[0]
     for region in yields[estimator].keys():
         for cat in yields[estimator][region].keys():
