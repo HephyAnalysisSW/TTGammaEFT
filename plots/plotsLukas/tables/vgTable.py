@@ -171,6 +171,17 @@ for est, region, cat, mode, y in results:
             yields["MC"][ptDict[str(region)]][cat][allMode] += yields[est][ptDict[str(region)]][cat][mode]
             yields["MC"][ptDict[str(region)]][cat][mode]    += yields[est][ptDict[str(region)]][cat][mode]
 
+# categorize QCD as hadronic to make the yield table consistant
+for est, region, cat, mode, y in results:
+    if y <= 0 or not "QCD" in est or cat != "all": continue
+    yields[est][ptDict[str(region)]]["had"][mode] = yields[est][ptDict[str(region)]][cat][mode]
+
+    # fill all and MC entries for each cat
+    if yields[est][ptDict[str(region)]]["had"][mode] > 0:
+        yields[est][ptDict[str(region)]]["had"][allMode] += yields[est][ptDict[str(region)]]["had"][mode]
+        yields["MC"][ptDict[str(region)]]["had"][allMode] += yields[est][ptDict[str(region)]]["had"][mode]
+        yields["MC"][ptDict[str(region)]]["had"][mode]    += yields[est][ptDict[str(region)]]["had"][mode]
+
 # fill all as sum of cats
 for estimator in allEstimators:
     est = estimator.name.split("_")[0]
@@ -227,7 +238,7 @@ def printYieldTable( m ):
         f.write("\\hline\n")
         f.write("Sample  & \\multicolumn{4}{c||}{inclusive} & \\multicolumn{4}{c||}{%i $\\leq$ \\pT($\\gamma$) $<$ %i GeV} & \\multicolumn{4}{c||}{%i $\\leq$ \\pT($\\gamma$) $<$ %i GeV} & \\multicolumn{4}{c}{\\pT($\\gamma$) $>$ %i GeV}\\\\ \n"%(20,120,120,220,220))
         f.write("\\hline\n")
-        f.write("        & \\textbf{events} & $\gamma$ & misID e & had $\gamma$ / fake & \\textbf{events} & $\gamma$ & misID e & had $\gamma$ / fake & \\textbf{events} & $\gamma$ & misID e & had $\gamma$ / fake & \\textbf{events} & $\gamma$ & misID e & had $\gamma$ / fake \\\\ \n")
+        f.write("        & \\textbf{events} & $\\gamma$ & misID e & had $\\gamma$ / fake / PU $\\gamma$ & \\textbf{events} & $\\gamma$ & misID e & had $\\gamma$ / fake / PU $\\gamma$ & \\textbf{events} & $\\gamma$ & misID e & had $\\gamma$ / fake / PU $\\gamma$ & \\textbf{events} & $\\gamma$ & misID e & had $\\gamma$ / fake / PU $\\gamma$ \\\\ \n")
         f.write("\\hline\n")
         f.write("\\hline\n")
         for s in mc:
@@ -244,7 +255,8 @@ def printYieldTable( m ):
         f.write("\\hline\n")
     
         f.write("\\multicolumn{17}{c}{}\\\\ \n")
-        f.write("\\multicolumn{1}{c}{} & \\multicolumn{4}{c}{$\gamma$ = genuine photons} & \\multicolumn{4}{c}{had $\gamma$ = hadronic photons} & \\multicolumn{4}{c}{misID e = misID electrons} & \\multicolumn{4}{c}{fake = hadronic fakes} \\\\ \n")
+#        f.write("\\multicolumn{1}{c}{} & \\multicolumn{4}{c}{$\\gamma$ = genuine photons} & \\multicolumn{4}{c}{had $\\gamma$ = hadronic photons} & \\multicolumn{4}{c}{misID e = misID electrons} & \\multicolumn{4}{c}{fake = hadronic fakes} \\\\ \n")
+        f.write("\\multicolumn{1}{c}{} & \\multicolumn{3}{c}{$\\gamma$ = genuine photons} & \\multicolumn{3}{c}{had $\\gamma$ = hadronic photons} & \\multicolumn{3}{c}{misID e = misID electrons}  & \\multicolumn{3}{c}{fake = hadronic fakes} & \\multicolumn{3}{c}{PU $\\gamma$ = PU photons} & \\multicolumn{1}{c}{}\\\\ \n")
 
 
         f.write("\\end{tabular}\n")

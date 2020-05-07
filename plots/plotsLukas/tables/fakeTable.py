@@ -122,7 +122,9 @@ def wrapper(arg):
 
         region,channel,setup,estimate, sieie, chgIso, cat, est = arg
 
-        if   "low"  in sieie and "low"  in chgIso: param = {}
+        isSR = "low" in sieie and "low" in chgIso
+
+        if   isSR: param = {}
         elif "low"  in sieie and "high" in chgIso: param = { "photonIso":"highChgIso",          "addMisIDSF":addSF }
         elif "high" in sieie and "low"  in chgIso: param = { "photonIso":"highSieie",           "addMisIDSF":addSF }
         elif "high" in sieie and "high" in chgIso: param = { "photonIso":"highChgIsohighSieie", "addMisIDSF":addSF }
@@ -134,21 +136,24 @@ def wrapper(arg):
         if estimate.name.lower() == "data":
             estimate = DataObservation(name="Data", process=setup.processes["Data"], cacheDir=setup.defaultCacheDir())
             estimate.initCache(setup_fake.defaultCacheDir())
-            if "low" in sieie and "low" in chgIso and blind:
+            if isSR and blind:
                 y = u_float(0,0)
             else:
                 y = estimate.cachedEstimate( region, channel, setup_fake, checkOnly=True )
         elif "QCD" in estimate.name:
-            estimate = DataDrivenQCDEstimate( name="QCD-DD" )
-            estimate.initCache(setup.defaultCacheDir())
-            y  = estimate.cachedEstimate( region, channel, setup_fake, checkOnly=True )
-            y *= QCDSF_val[setup.year]
+            if not "_" in estimate.name or "had" in estimate.name:
+                estimate = DataDrivenQCDEstimate( name="QCD-DD" )
+                estimate.initCache(setup.defaultCacheDir())
+                y  = estimate.cachedEstimate( region, channel, setup_fake, checkOnly=True )
+                y *= QCDSF_val[setup.year]
+            else:
+                y = u_float(0,0)
         else:
             estimate = MCBasedEstimate( name=estimate.name, process=setup.processes[estimate.name] )
             estimate.initCache(setup.defaultCacheDir())
             y = estimate.cachedEstimate( region, channel, setup_fake, checkOnly=True )
 
-            if addSF:
+            if addSF and not isSR:
                 if "DY_LO" in estimate.name:    y *= DYSF_val[setup.year] #add DY SF
                 elif "WJets" in estimate.name:  y *= WJetsSF_val[setup.year] #add WJets SF
                 elif "TT_pow" in estimate.name: y *= TTSF_val[setup.year] #add TT SF
@@ -269,7 +274,7 @@ def printHadFakeYieldTable( m ):
             f.write("\\hline\n")
             f.write("Sample  & \\multicolumn{4}{c||}{low $\\sigma_{i\\eta i\\eta}$, low chg Iso (SR - LsLc)} & \\multicolumn{4}{c||}{high $\\sigma_{i\\eta i\\eta}$, low chg Iso  (HsLc)}   & \\multicolumn{4}{c||}{low $\\sigma_{i\\eta i\\eta}$, high chg Iso (LsHc)}   & \\multicolumn{4}{c}{high $\\sigma_{i\\eta i\\eta}$, high chg Iso  (HsHc)} \\\\ \n")
             f.write("\\hline\n")
-            f.write("        & \\textbf{events} & $\gamma$ & misID e & had $\gamma$ / fake & \\textbf{events} & $\gamma$ & misID e & had $\gamma$ / fake & \\textbf{events} & $\gamma$ & misID e & had $\gamma$ / fake & \\textbf{events} & $\gamma$ & misID e & had $\gamma$ / fake \\\\ \n")
+            f.write("        & \\textbf{events} & $\\gamma$ & misID e & had $\\gamma$ / fake / PU $\\gamma$ & \\textbf{events} & $\\gamma$ & misID e & had $\\gamma$ / fake / PU $\\gamma$ & \\textbf{events} & $\\gamma$ & misID e & had $\\gamma$ / fake / PU $\\gamma$ & \\textbf{events} & $\\gamma$ & misID e & had $\\gamma$ / fake / PU $\\gamma$ \\\\ \n")
             f.write("\\hline\n")
             f.write("\\hline\n")
             for s in mc:
@@ -287,7 +292,8 @@ def printHadFakeYieldTable( m ):
     
             if highPT == -1:
                 f.write("\\multicolumn{17}{c}{}\\\\ \n")
-                f.write("\\multicolumn{1}{c}{} & \\multicolumn{4}{c}{$\gamma$ = genuine photons} & \\multicolumn{4}{c}{had $\gamma$ = hadronic photons} & \\multicolumn{4}{c}{misID e = misID electrons} & \\multicolumn{4}{c}{fake = hadronic fakes} \\\\ \n")
+#                f.write("\\multicolumn{1}{c}{} & \\multicolumn{4}{c}{$\\gamma$ = genuine photons} & \\multicolumn{4}{c}{had $\\gamma$ = hadronic photons} & \\multicolumn{4}{c}{misID e = misID electrons} & \\multicolumn{4}{c}{fake = hadronic fakes} \\\\ \n")
+                f.write("\\multicolumn{1}{c}{} & \\multicolumn{3}{c}{$\\gamma$ = genuine photons} & \\multicolumn{3}{c}{had $\\gamma$ = hadronic photons} & \\multicolumn{3}{c}{misID e = misID electrons} & \\multicolumn{3}{c}{fake = hadronic fakes} & \\multicolumn{3}{c}{PU $\\gamma$ = PU photons} & \\multicolumn{1}{c}{}\\\\ \n")
 
 
             f.write("\\end{tabular}\n")
