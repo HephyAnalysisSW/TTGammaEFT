@@ -328,20 +328,22 @@ for s in mc:
         dirDB.add(key, s.hist.Clone("%s_AR"%s.name))
 
     if addSF:
-        if "DY" in s.name:
-            s.hist.Scale(DYSF_val[args.year].val)
-#        elif "WJets" in s.name:
-#            s.hist.Scale(WJetsSF_val[args.year].val)
-#        elif "TT_pow" in s.name:
-#            s.hist.Scale(TTSF_val[args.year].val)
-        elif "ZG" in s.name:# and njets < 4:
-            s.hist.Scale(ZGSF_val[args.year].val)
-#        elif "other" in s.name:# and njets < 4:
-#            s.hist.Scale(otherSF_val[args.year].val)
-        elif "WG" in s.name:# and njets > 3:
-            s.hist.Scale(WGSF_val[args.year].val)
-        elif "TTG" in s.name:
-            s.hist.Scale(SSMSF_val[args.year].val)
+        if setup.isPhotonSelection:
+            if "DY" in s.name:
+                s.hist.Scale(DYSF_val[args.year].val)
+            elif "ZG" in s.name:# and njets < 4:
+                s.hist.Scale(ZGSF_val[args.year].val)
+            elif "WG" in s.name:# and njets > 3:
+                s.hist.Scale(WGSF_val[args.year].val)
+            elif "TTG" in s.name:
+                s.hist.Scale(SSMSF_val[args.year].val)
+        else:
+            if "DY" in s.name:
+                s.hist.Scale(DYSF_val[args.year].val)
+            elif "WJets" in s.name:
+                s.hist.Scale(WJetsSF_val[args.year].val)
+            elif "TT_pow" in s.name:
+                s.hist.Scale(TTSF_val[args.year].val)
 
     s.hist_SB = copy.deepcopy(dataHist.Clone(s.name+"_SB"))
     s.hist_SB.Scale(0)
@@ -407,20 +409,22 @@ for i_pt, pt in enumerate(ptBins[:-1]):
 
             # apply SF after histo caching
             if addSF:
-                if "DY" in s.name:
-                    s.hist_SB_tmp.Scale(DYSF_val[args.year].val)
-#                elif "WJets" in s.name:
-#                    s.hist_SB_tmp.Scale(WJetsSF_val[args.year].val)
-#                elif "TT_pow" in s.name:
-#                    s.hist_SB_tmp.Scale(TTSF_val[args.year].val)
-                elif "ZG" in s.name:# and njets < 4:
-                    s.hist_SB_tmp.Scale(ZGSF_val[args.year].val)
-#                elif "other" in s.name:# and njets < 4:
-#                    s.hist_SB_tmp.Scale(otherSF_val[args.year].val)
-                elif "WG" in s.name:# and njets > 3:
-                    s.hist_SB_tmp.Scale(WGSF_val[args.year].val)
-                elif "TTG" in s.name:
-                    s.hist_SB_tmp.Scale(SSMSF_val[args.year].val)
+                if setup.isPhotonSelection:
+                    if "DY" in s.name:
+                        s.hist_SB_tmp.Scale(DYSF_val[args.year].val)
+                    elif "ZG" in s.name:# and njets < 4:
+                        s.hist_SB_tmp.Scale(ZGSF_val[args.year].val)
+                    elif "WG" in s.name:# and njets > 3:
+                        s.hist_SB_tmp.Scale(WGSF_val[args.year].val)
+                    elif "TTG" in s.name:
+                        s.hist_SB_tmp.Scale(SSMSF_val[args.year].val)
+                else:
+                    if "DY" in s.name:
+                        s.hist_SB_tmp.Scale(DYSF_val[args.year].val)
+                    elif "WJets" in s.name:
+                        s.hist_SB_tmp.Scale(WJetsSF_val[args.year].val)
+                    elif "TT_pow" in s.name:
+                        s.hist_SB_tmp.Scale(TTSF_val[args.year].val)
 
             s.hist_SB.Add(s.hist_SB_tmp)
             qcdHist_tmp.Add(s.hist_SB_tmp, -1)
@@ -453,7 +457,8 @@ for i_pt, pt in enumerate(ptBins[:-1]):
 sbInt = qcdHist.Integral()
 
 # QCD SF?
-qcdHist.Scale(QCDSF_val[args.year].val)
+if setup.isPhotonSelection:
+    qcdHist.Scale(QCDSF_val[args.year].val)
 
 qcdHist.style          = styles.fillStyle( color.QCD )
 qcdHist.legendText     = "QCD (%i)"%int(qcdHist.Integral())
