@@ -53,7 +53,7 @@ if args.small:           args.plot_directory += "_small"
 
 photonVariable = "PhotonNoChgIsoNoSieie0"
 # Samples
-os.environ["gammaSkim"]="True"# if ("hoton" in args.selection or "pTG" in args.selection) and not args.invLeptonIso else "False"
+os.environ["gammaSkim"]="True"
 if args.year == 2016:
     from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed  import *
     from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
@@ -226,10 +226,8 @@ mc_fit.color   = ROOT.kCyan+2
 
 filterCutData = getFilterCut( args.year, isData=True, skipBadChargedCandidate=True )
 filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )
-tr            = TriggerSelector( args.year, singleLepton="nLepTight1" in args.selection )
-triggerCutMc  = tr.getSelection( "MC" )
 
-mcSelection = [ filterCutMc, triggerCutMc ]
+mcSelection = [ filterCutMc, "triggered==1" ]
 if not (args.onlyTT or args.onlyTTLep or args.onlyTTSemiLep): mcSelection += [ "overlapRemoval==1" ]
 
 if args.sideband == "chgIso":
@@ -417,10 +415,10 @@ allPlots = {}
 if args.mode != "None":
     allModes = [ args.mode ]
 elif args.nJobs != 1:
-    allModes = [ 'mumu', 'mue', 'ee', 'SF', 'all'] if "nLepTight2" in args.selection else [ "mu", "e", "all" ]
+    allModes = [ "mu", "e", "all" ]
     allModes = splitList( allModes, args.nJobs)[args.job]
 else:
-    allModes = [ 'mumu', 'mue', 'ee' ] if "nLepTight2" in args.selection else [ "mu", "e" ]
+    allModes = [ "mu", "e" ]
 
 for index, mode in enumerate( allModes ):
     logger.info( "Computing plots for mode %s", mode )
@@ -436,12 +434,12 @@ for index, mode in enumerate( allModes ):
 
     if args.sideband == "chgIso":
         data_sample.texName = "data (%s) chg Iso fit region"%mode.replace("mu","#mu").replace("all","e+#mu")
-        data_sample.setSelectionString( [cutInterpreter.cutString("lowChgIsoNoSieie"), filterCutData, leptonSelection] )
+        data_sample.setSelectionString( [cutInterpreter.cutString("lowChgIsoNoSieie"), filterCutData, leptonSelection, "triggered==1"] )
         mc_fit.setSelectionString( [cutInterpreter.cutString("lowChgIsoNoSieie"), leptonSelection] + mcSelection )
         mc_sb.setSelectionString( [cutInterpreter.cutString("highChgIsoNoSieie"), leptonSelection] + mcSelection )
     elif args.sideband == "sieie":
         data_sample.texName = "data (%s) #sigma_{i#eta i#eta} fit region"%mode.replace("mu","#mu").replace("all","e+#mu")
-        data_sample.setSelectionString( [cutInterpreter.cutString("lowSieieNoChgIso"), filterCutData, leptonSelection] )
+        data_sample.setSelectionString( [cutInterpreter.cutString("lowSieieNoChgIso"), filterCutData, leptonSelection, "triggered==1"] )
         mc_fit.setSelectionString( [cutInterpreter.cutString("lowSieieNoChgIso"), leptonSelection] + mcSelection )
         mc_sb.setSelectionString( [cutInterpreter.cutString("highSieieNoChgIso"), leptonSelection] + mcSelection )
 
