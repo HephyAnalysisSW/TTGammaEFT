@@ -48,7 +48,7 @@ class DataObservation():
 
     def cachedObservation(self, region, channel, setup, save=True, overwrite=False, checkOnly=False):
         key =  self.uniqueKey(region, channel, setup)
-        if (self.cache and self.cache.contains(key)) and not overwrite and channel != "all":
+        if (self.cache and self.cache.contains(key)) and not overwrite:
             res = self.cache.get(key)
             logger.debug( "Loading cached %s result for %r : %r"%(self.name, key, res) )
         elif self.cache and not checkOnly:

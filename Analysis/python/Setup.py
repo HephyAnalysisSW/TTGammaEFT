@@ -121,7 +121,6 @@ class Setup:
             self.processes.update( { sample+"_gen":   None for sample in default_sampleList + default_systematicList } )
             self.processes.update( { sample+"_misID": None for sample in default_sampleList + default_systematicList } )
             self.processes.update( { sample+"_had":   None for sample in default_sampleList + default_systematicList } )
-            self.processes.update( { sample+"_magic": None for sample in default_sampleList + default_systematicList } )
             self.processes["Data"] = "Run%i"%self.year
 
             if year == 2016:
@@ -142,7 +141,6 @@ class Setup:
             self.processes.update( { sample.name+"_gen":   sample for sample in mc } )
             self.processes.update( { sample.name+"_misID": sample for sample in mc } )
             self.processes.update( { sample.name+"_had":   sample for sample in mc } )
-            self.processes.update( { sample.name+"_magic": sample for sample in mc } )
             self.processes["Data"] = data
 
             self.lumi     = data.lumi
@@ -191,7 +189,7 @@ class Setup:
                 res.parameters[k] = parameters[k]
 
         res.isPhotonSelection = res.parameters["nPhoton"][0] != 0
-        res.isSignalRegion    = res.parameters["nBTag"][0] == 1 and res.parameters["nPhoton"][0] == 1 and not self.parameters["photonIso"]
+        res.isSignalRegion    = res.parameters["nBTag"][0] == 1 and res.parameters["nPhoton"][0] == 1 and not res.parameters["photonIso"]
         res.nJet = str(res.parameters["nJet"][0])
         if res.parameters["nJet"][1] < 0: res.nJet += "p"
         return res
@@ -267,7 +265,7 @@ class Setup:
         assert zWindow in ["offZeg", "onZeg", "onZSFllTight", "onZSFllgTight", "all"], "zWindow must be one of onZeg, offZeg, onZSFllTight, onZSFllgTight, all. Got %r"%zWindow
         assert m3Window in ["offM3", "onM3", "all"], "m3Window must be one of onM3, offM3, all. Got %r"%m3Window
         assert photonIso in [None, "highSieieNoChgIso", "lowSieieNoChgIso", "noSieie", "highSieie", "lowChgIsoNoSieie", "highChgIsoNoSieie", "noChgIso", "highChgIso", "noChgIsoNoSieie", "highChgIsohighSieie"], "PhotonIso must be one of highSieie, highChgIso, highChgIsohighSieie. Got %r"%photonIso
-        assert processCut in [None, "cat0","cat2","cat13","cat4"], "Process specific cut must be one of cat0, cat2, cat13, cat4. Got %r"%processCut
+        assert processCut in [None, "cat0","cat2","cat13","cat134", "cat4"], "Process specific cut must be one of cat0, cat2, cat13, cat4. Got %r"%processCut
         if self.sys['selectionModifier']:
             assert self.sys['selectionModifier'] in jmeVariations+metVariations, "Don't know about systematic variation %r, take one of %s"%(self.sys['selectionModifier'], ",".join(jmeVariations+metVariations))
 
