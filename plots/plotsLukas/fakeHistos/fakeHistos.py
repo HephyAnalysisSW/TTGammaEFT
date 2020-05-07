@@ -125,12 +125,12 @@ lumi_scale   = data_sample.lumi * 0.001
 filterCutData = getFilterCut( args.year, isData=True,  skipBadChargedCandidate=True )
 filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )
 
-data_sample.setSelectionString( [filterCutData] )
-data_sample.setWeightString( "weight*reweightHEM" )
+data_sample.setSelectionString( [filterCutData, "reweightHEM>0"] )
+data_sample.setWeightString( "weight" )
 if args.small:           
     data_sample.normalization = 1.
     data_sample.reduceFiles( factor=5 )
-    data_sample.setWeightString( "weight*reweightHEM*%f"%(1./data_sample.normalization) )
+    data_sample.setWeightString( "weight*%f"%(1./data_sample.normalization) )
 
 print data_sample.selectionString
 
@@ -200,14 +200,27 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
 else:
     raise Exception("Region not implemented")
 
+if "2" in args.selection and not "2p" in args.selection:
+    misIDSF_val = misID2SF_val
+elif "3" in args.selection and not "3p" in args.selection:
+    misIDSF_val = misID3SF_val
+elif "4" in args.selection and not "4p" in args.selection:
+    misIDSF_val = misID4SF_val
+elif "5" in args.selection:
+    misIDSF_val = misID5SF_val
+elif "2p" in args.selection:
+    misIDSF_val = misID2pSF_val
+elif "3p" in args.selection:
+    misIDSF_val = misID3pSF_val
+elif "4p" in args.selection:
+    misIDSF_val = misID4pSF_val
+
 weightString    = "%f*weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
 weightStringIL  = "%f*weight*reweightHEM*reweightInvIsoTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSFInvIso*reweightLeptonTrackingTightSFInvIso*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
-weightStringInv = weightStringIL
-weightStringAR  = weightString
-#if "nPhotonGood==0" in selection:
-#else:
-#    weightStringInv = "((%s)+(%s*%f*((nPhotonGoodInvLepIso>0)*(PhotonGoodInvLepIso0_photonCatMagic==2))))"%(weightStringIL,weightStringIL,(misIDSF_val[args.year].val-1))
-#    weightStringAR  = "((%s)+(%s*%f*((nPhotonGood>0)*(PhotonGood0_photonCatMagic==2))))"%(weightString,weightString,(misIDSF_val[args.year].val-1))
+#weightStringInv = weightStringIL
+#weightStringAR  = weightString
+weightStringInv = "((%s)+(%s*%f*((nPhotonNoChgIsoNoSieieInvLepIso>0)*(PhotonNoChgIsoNoSieieInvLepIso0_photonCatMagic==2))))"%(weightStringIL,weightStringIL,(misIDSF_val[args.year].val-1))
+weightStringAR  = "((%s)+(%s*%f*((nPhotonNoChgIsoNoSieie>0)*(PhotonNoChgIsoNoSieie0_photonCatMagic==2))))"%(weightString,weightString,(misIDSF_val[args.year].val-1))
 
 
 replaceVariable = {
