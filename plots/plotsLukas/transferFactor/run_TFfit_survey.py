@@ -135,21 +135,21 @@ read_variables = [ "weight/F",
                  ]
 
 lumi_scale   = data_sample.lumi * 0.001
-weightString    = "%f*weight*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
-weightStringIL  = "%f*weight*reweightInvIsoTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSFInvIso*reweightLeptonTrackingTightSFInvIso*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
+weightString    = "%f*weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
+weightStringIL  = "%f*weight*reweightHEM*reweightInvIsoTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSFInvIso*reweightLeptonTrackingTightSFInvIso*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
 weightStringInv  = "((%s)+(%s*%f*((nPhotonGoodInvLepIso>0)*(PhotonGoodInvLepIso0_photonCatMagic==2))))"%(weightStringIL,weightStringIL,(misIDSF_val[args.year].val-1))
 weightStringAR = "((%s)+(%s*%f*((nPhotonGood>0)*(PhotonGood0_photonCatMagic==2))))"%(weightString,weightString,(misIDSF_val[args.year].val-1))
 
 filterCutData = getFilterCut( args.year, isData=True,  skipBadChargedCandidate=True )
 filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )
-tr            = TriggerSelector( args.year, singleLepton=True )
-triggerCutMc  = tr.getSelection( "MC" )
+#tr            = TriggerSelector( args.year, singleLepton=True )
+#triggerCutMc  = tr.getSelection( "MC" )
 
-data_sample.setSelectionString( filterCutData )
+data_sample.setSelectionString( [filterCutData, "reweightHEM>0"] )
 data_sample.setWeightString( "weight" )
 
 for s in mc:
-    s.setSelectionString( [ filterCutMc, triggerCutMc ] )#, "overlapRemoval==1" ] )
+    s.setSelectionString( [ filterCutMc, "overlapRemoval==1" ] )
     s.read_variables = read_variables_MC
     sampleWeight     = "1"
 
@@ -169,9 +169,10 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
     njets        = setup.parameters["nJet"][0]
 
     selection  = setup.selection( "DataMC", channel=args.mode )["prefix"]
-    print selection
 #    selection     = allSelection + "-" + args.mode
     selection     = cutInterpreter.cutString( selection )
+    selection += "&&triggered==1"
+    print selection
     if args.addCut:
         print cutInterpreter.cutString( args.addCut )
         selection += "&&" + cutInterpreter.cutString( args.addCut )
@@ -181,20 +182,27 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
     preSelection  = setup.selection("DataMC",   channel=args.mode, **setup.defaultParameters( update=QCD_updates ))["prefix"]
     print preSelection
     preSelection  = cutInterpreter.cutString( preSelection )
+    preSelection += "&&triggeredInvIso==1"
     print preSelection
     print args.addCut
 
-    if args.mode == "e":
-        preSelection += "&&LeptonTightInvIso0_cutBased>1"
+    if args.year == 2016 and args.mode == "e" and not "etal0" in args.addCut:
+        preSelection += "&&abs(LeptonTightInvIso0_eta)<1.479"
 
     if args.addCut:
-        addSel = cutInterpreter.cutString( args.addCut )
-        print addSel
-        for iso, invIso in replaceSelection.iteritems():
-            addSel = addSel.replace(iso,invIso)
-        print preSelection
-        print addSel
-        preSelection += "&&" + addSel
+#        addSel = args.addCut #"-".join([ item for item in args.addCut.split("-") if not item.startswith("etal")])
+        if args.year == 2016 and args.mode == "e":
+            addSel = "-".join([ item for item in args.addCut.split("-") if not item.startswith("etal") or "etal0" in item ])
+        else:
+            addSel = args.addCut
+        if addSel:
+            addSel = cutInterpreter.cutString( addSel )
+            print addSel
+            for iso, invIso in replaceSelection.iteritems():
+                addSel = addSel.replace(iso,invIso)
+            print preSelection
+            print addSel
+            preSelection += "&&" + addSel
 else:
     raise Exception("Region not implemented")
 
@@ -255,27 +263,27 @@ for s in mc:
 
     # apply SF after histo caching
     if addSF:
-        if "DY" in s.name:
-            s.hist.Scale(DYSF_val[args.year].val)
-            s.hist_SB.Scale(DYSF_val[args.year].val)
-        elif "WJets" in s.name:
+#        if "DY" in s.name:
+#            s.hist.Scale(DYSF_val[args.year].val)
+#            s.hist_SB.Scale(DYSF_val[args.year].val)
+        if "WJets" in s.name:
             s.hist.Scale(WJetsSF_val[args.year].val)
             s.hist_SB.Scale(WJetsSF_val[args.year].val)
-        elif "TT_pow" in s.name:
-            s.hist.Scale(TTSF_val[args.year].val)
-            s.hist_SB.Scale(TTSF_val[args.year].val)
-        elif "ZG" in s.name:
-            s.hist.Scale(ZGSF_val[args.year].val)
-            s.hist_SB.Scale(ZGSF_val[args.year].val)
-        elif "other" in s.name:
-            s.hist.Scale(otherSF_val[args.year].val)
-            s.hist_SB.Scale(otherSF_val[args.year].val)
-        elif "WG" in s.name:
-            s.hist.Scale(WGSF_val[args.year].val)
-            s.hist_SB.Scale(WGSF_val[args.year].val)
-        elif "TTG" in s.name:
-            s.hist.Scale(SSMSF_val[args.year].val)
-            s.hist_SB.Scale(SSMSF_val[args.year].val)
+#        elif "TT_pow" in s.name:
+#            s.hist.Scale(TTSF_val[args.year].val)
+#            s.hist_SB.Scale(TTSF_val[args.year].val)
+#        elif "ZG" in s.name:
+#            s.hist.Scale(ZGSF_val[args.year].val)
+#            s.hist_SB.Scale(ZGSF_val[args.year].val)
+#        elif "other" in s.name:
+#            s.hist.Scale(otherSF_val[args.year].val)
+#            s.hist_SB.Scale(otherSF_val[args.year].val)
+#        elif "WG" in s.name:
+#            s.hist.Scale(WGSF_val[args.year].val)
+#            s.hist_SB.Scale(WGSF_val[args.year].val)
+#        elif "TTG" in s.name:
+#            s.hist.Scale(SSMSF_val[args.year].val)
+#            s.hist_SB.Scale(SSMSF_val[args.year].val)
 
     qcdHist.Add( s.hist_SB, -1 )
 
@@ -336,7 +344,7 @@ tarray.Add( hist_float )
 tarray.Add( hist_other )
 
 fitter = ROOT.TFractionFitter( dataHist, tarray )
-#fitter.SetRangeX(1,12)
+fitter.SetRangeX(1,12)
 
 tfitter = fitter.GetFitter()
 tfitter.Config().ParSettings(0).Set("qcd",   nQCD*0.2/nTotal if bjetRegion else nQCD*1./nTotal, 0.01, 0.,               1.)
@@ -345,8 +353,8 @@ tfitter.Config().ParSettings(0).Set("qcd",   nQCD*0.2/nTotal if bjetRegion else 
 #if photonRegion and args.mode == "e": # fix WGamma in photonRegions e-channel since mT is not a good handle
 #tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.001, 0.,               1.)
 #tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.01, nFloat*0.999/nTotal, nFloat*1.001/nTotal)
-#tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.01, nFloat*0.9/nTotal, nFloat*1.1/nTotal)
-tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.01, nFloat*0.7/nTotal, nFloat*1.3/nTotal)
+#tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.01, nFloat*0.5/nTotal, nFloat*1.5/nTotal)
+tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.01, nFloat*0.8/nTotal, nFloat*1.2/nTotal)
 #elif "EC" in args.selection: # fix WGamma in photonRegions e-channel since mT is not a good handle
 #tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.01, 0.,               1.)
 #    tfitter.Config().ParSettings(1).Set("float", nFloat/nTotal,   0.01, nFloat*0.999/nTotal, nFloat*1.001/nTotal)
