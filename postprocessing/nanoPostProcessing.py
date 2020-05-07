@@ -1169,7 +1169,7 @@ def filler( event ):
     convertUnits( allMuons )
 
     # HEM electrons (susy recommendations)
-    nHEMElectrons = len( filter( lambda j:j['pt']>30 and j['eta']>-3.0 and j['eta']<-1.4 and j['phi']>-1.57 and j['phi']<-0.87, allElectrons ))
+    nHEMElectrons = len( filter( lambda j:j['pt']>15 and j['eta']>-3.0 and j['eta']<-1.4 and j['phi']>-1.57 and j['phi']<-0.87, allElectrons ))
     nHEMPhotons   = len( filter( lambda j:j['pt']>15 and j['eta']>-3.0 and j['eta']<-1.4 and j['phi']>-1.57 and j['phi']<-0.87, allPhotons ))
 
     vetoMuons     = list( filter( lambda l: recoMuonSel_veto(l),     allMuons ) )
@@ -1420,7 +1420,7 @@ def filler( event ):
 
     # Jets
     allJets  = getParticles( r, collVars=readJetVarList, coll="Jet" )
-    nHEMJets = len( filter( lambda j:j['pt']>30 and j['eta']>-3.2 and j['eta']<-1.2 and j['phi']>-1.77 and j['phi']<-0.67, allJets ))
+    nHEMJets = 0 #len( filter( lambda j:j['pt']>30 and j['eta']>-3.2 and j['eta']<-1.2 and j['phi']>-1.77 and j['phi']<-0.67, allJets ))
     # hem (susy recommendations)
 
     if isMC and not options.skipSF:
