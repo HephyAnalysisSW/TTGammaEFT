@@ -31,8 +31,7 @@ class SystematicEstimator:
 
         if   "_gen"   in name: self.processCut = "cat0"  #"photoncat0"
         elif "_misID" in name: self.processCut = "cat2"  #"photoncat2"
-        elif "_had"   in name: self.processCut = "cat13" #"photoncat13"
-        elif "_magic" in name: self.processCut = "cat4"
+        elif "_had"   in name: self.processCut = "cat134" #"photoncat134"
 
     def initCache(self, cacheDir="systematics"):
         logger.info("Initializing cache for %s in directory %s"%(self.name, cacheDir))
