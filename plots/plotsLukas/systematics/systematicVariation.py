@@ -607,6 +607,9 @@ key = ("QCD-DD", "AR", args.variable, "_".join(map(str,args.binning)), selection
 print dirDB.contains(key)
 qcdHist = dirDB.get(key)
 
+if addSF:
+    qcdHist.Scale(QCDSF_val[args.year].val)
+
 qcdHist.style          = styles.fillStyle( color.QCD )
 qcdHist.legendText     = "QCD (data)"
 
