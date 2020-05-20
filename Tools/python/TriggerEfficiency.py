@@ -6,8 +6,8 @@ from Analysis.Tools.helpers import getObjFromFile
 basedir = "$CMSSW_BASE/src/TTGammaEFT/Tools/data/triggerEff/"
 
 # 2016 Lumi Ratios
-lumiRatio2016_BCDEF = 19.717640795 / 35.863818448
-lumiRatio2016_GH    = 16.146177653 / 35.863818448
+lumiRatio2016_BCDEF = 19.695422959 / 35.921875595
+lumiRatio2016_GH    = 16.226452636 / 35.921875595
 
 #2016
 e_trigger2016_SF      = basedir + "sf_ele_2016_trig_v5.root"
@@ -100,9 +100,13 @@ class TriggerEfficiency:
 
 if __name__ == "__main__":
 
-    sigma = -1
+    sigma = 0
     print "2016"
     LSF = TriggerEfficiency(year=2016)
+    print LSF.getSF(13, 56.047538, -0.020153, sigma=sigma)
+    exit()
+
+
     print LSF.getSF(11, 10, 1, sigma=sigma)
     print LSF.getSF(11, 10, -1, sigma=sigma)
     print LSF.getSF(13, 10, 1, sigma=sigma)

@@ -28,7 +28,7 @@ from TTGammaEFT.Tools.objectSelection            import *
 from TTGammaEFT.Tools.Variables                  import NanoVariables
 from TTGammaEFT.Tools.cutInterpreter             import highSieieThresh, lowSieieThresh, chgIsoThresh
 
-from Analysis.Tools.overlapRemovalTTG            import *
+from TTGammaEFT.Tools.overlapRemovalTTG            import *
 from Analysis.Tools.puProfileCache               import puProfile
 from Analysis.Tools.L1PrefireWeight              import L1PrefireWeight
 from Analysis.Tools.mt2Calculator                import mt2Calculator
@@ -65,6 +65,8 @@ def get_parser():
     argParser.add_argument('--addPreFiringFlag',            action='store_true',                                                                                        help="Add flag for events w/o prefiring?" )
     argParser.add_argument('--topReco',                     action='store_true',                                                                                        help="Run Top Reco?")
     argParser.add_argument('--checkOnly',                   action='store_true',                                                                                        help="Check files at target and remove corrupt ones without reprocessing? Not possible with overwrite!")
+    argParser.add_argument('--isTopSample',                 action='store_true',                                                                                        help="use top efficiencies in btagging?")
+    argParser.add_argument('--addWPtWeight',                action='store_true',                                                                                        help="add weight for Wpt reweighting")
     argParser.add_argument('--flagTTGamma',                 action='store_true',                                                                                        help="Check overlap removal for ttgamma")
     argParser.add_argument('--flagTTBar',                   action='store_true',                                                                                        help="Check overlap removal for ttbar")
     argParser.add_argument('--flagZWGamma',                 action='store_true',                                                                                        help="Check overlap removal for Zgamma/Wgamma")
@@ -126,7 +128,7 @@ dilepCond_sublead      = "(Sum$(Electron_pt>=14&&Electron_cutBased>=4&&abs(Elect
 dilepCond_lead         = "(Sum$(Electron_pt>=24&&Electron_cutBased>=4&&abs(Electron_eta)<=2.41&&Electron_pfRelIso03_all<=0.13)+Sum$(Muon_pt>=24&&abs(Muon_eta)<=2.41&&Muon_mediumId&&Muon_pfRelIso03_all<=0.13))>=1"
 dilepCond              = "&&".join( [dilepCond_lead, dilepCond_sublead] )
 
-gammaCond              = "(Sum$(Photon_pt>=19&&abs(Photon_eta)<=1.5&&Photon_electronVeto&&Photon_pixelSeed==0)>=1)"
+gammaCond              = "(Sum$(Photon_pt>=19&&abs(Photon_eta)<=1.5&&Photon_pixelSeed==0)>=1)"
 
 # additional conditions for testing
 addCond                = "(1)"
@@ -343,6 +345,21 @@ if options.checkOnly: sys.exit(0)
 xSection = samples[0].xSection if isMC else None
 
 if not options.skipSF:
+    if options.addWPtWeight and False:
+        wpt_e_cache_dir  = os.path.join(cache_directory, "WPtHistos", str(options.year), "weight", "e")
+        dirDB_e_weight = MergingDirDB(wpt_e_cache_dir)
+        if not dirDB_e_weight: raise
+        wpt_mu_cache_dir = os.path.join(cache_directory, "WPtHistos", str(options.year), "weight", "mu")
+        dirDB_mu_weight = MergingDirDB(wpt_mu_cache_dir)
+        if not dirDB_mu_weight: raise
+
+        key = "WJets2"
+        if not dirDB_e_weight.contains(key):  raise
+        if not dirDB_mu_weight.contains(key): raise
+
+        wPt_e_weightHisto  = dirDB_e_weight.get(key)
+        wPt_mu_weightHisto = dirDB_mu_weight.get(key)
+
     # Reweighting, Scalefactors, Efficiencies
     from Analysis.Tools.LeptonSF import LeptonSF
     LeptonSFMedium = LeptonSF( year=options.year, ID="medium" )
@@ -359,15 +376,15 @@ if not options.skipSF:
     #PhotonRecEff = PhotonReconstructionEfficiency( year=options.year )
 
     # Update to other years when available
-    from Analysis.Tools.PhotonElectronVetoEfficiency import PhotonElectronVetoEfficiency
+    from TTGammaEFT.Tools.PhotonElectronVetoEfficiency import PhotonElectronVetoEfficiency
     PhotonElectronVetoSF = PhotonElectronVetoEfficiency( year=options.year )
 
     from TTGammaEFT.Tools.TriggerEfficiency import TriggerEfficiency
     TriggerEff = TriggerEfficiency( year=options.year )
 
     # Update to other years when available
-    from Analysis.Tools.BTagEfficiency import BTagEfficiency
-    BTagEff = BTagEfficiency( year=options.year, tagger=tagger ) # default medium WP
+    from TTGammaEFT.Tools.BTagEfficiency import BTagEfficiency
+    BTagEff = BTagEfficiency( year=options.year, isTopSample=options.isTopSample ) # default medium WP
 
     # PrefiringWeight
     L1PW = L1PrefireWeight( options.year )
@@ -511,6 +528,7 @@ if isMC:
 new_variables  = []
 new_variables += [ 'weight/F', 'year/I' ]
 new_variables += [ 'triggered/I', 'triggeredInvIso/I', 'triggeredNoIso/I', 'isData/I']
+new_variables += [ 'WPt/F', 'WinvPt/F' ]
 
 # Jets
 #new_variables += [ 'nJet/I' ]
@@ -683,6 +701,7 @@ new_variables += [ 'PhotonInvChgIsoInvSieieInvLepIso0_' + var for var in writePh
 # Others
 new_variables += [ 'ht/F', 'htinv/F' ]
 new_variables += [ 'photonJetdR/F', 'photonLepdR/F', 'leptonJetdR/F', 'tightLeptonJetdR/F' ] 
+new_variables += [ 'photonJetInvLepIsodR/F', 'photonNoSieieNoChgIsoJetdR/F', 'photonNoSieieNoChgIsoJetInvLepIsodR/F' ] 
 new_variables += [ 'invtightLeptonJetdR/F' ] 
 new_variables += [ 'MET_pt_photonEstimated/F', 'MET_phi_photonEstimated/F', 'METSig_photonEstimated/F' ]
 new_variables += [ 'MET_pt/F', 'MET_phi/F', 'MET_pt_min/F', 'METSig/F', 'METSiginv/F' ]
@@ -701,13 +720,15 @@ new_variables += [ 'm3/F',   'm3wBJet/F', 'm3gamma/F' ]
 new_variables += [ 'm3inv/F',   'm3wBJetinv/F', 'm3gammainv/F' ] 
 new_variables += [ 'lldR/F', 'lldPhi/F' ] 
 new_variables += [ 'bbdR/F', 'bbdPhi/F' ] 
-new_variables += [ 'mLtight0Gamma/F',  'mL0Gamma/F',  'mL1Gamma/F' ] 
-new_variables += [ 'mLinvtight0Gamma/F' ] 
+new_variables += [ 'mLtight0GammaNoSieieNoChgIso/F', 'mLtight0Gamma/F',  'mL0Gamma/F',  'mL1Gamma/F' ] 
+new_variables += [ 'mLinvtight0GammaNoSieieNoChgIso/F', 'mLinvtight0Gamma/F' ] 
 new_variables += [ 'lpTight/F' ] 
 new_variables += [ 'lpInvTight/F' ] 
 new_variables += [ 'l0GammadR/F',  'l0GammadPhi/F' ] 
 new_variables += [ 'ltight0GammadR/F', 'ltight0GammadPhi/F' ] 
 new_variables += [ 'linvtight0GammadR/F', 'linvtight0GammadPhi/F' ] 
+new_variables += [ 'ltight0GammaNoSieieNoChgIsodR/F', 'ltight0GammaNoSieieNoChgIsodPhi/F' ] 
+new_variables += [ 'linvtight0GammaNoSieieNoChgIsodR/F', 'linvtight0GammaNoSieieNoChgIsodPhi/F' ] 
 new_variables += [ 'l1GammadR/F',  'l1GammadPhi/F' ] 
 new_variables += [ 'j0GammadR/F',  'j0GammadPhi/F' ] 
 new_variables += [ 'j1GammadR/F',  'j1GammadPhi/F' ] 
@@ -734,9 +755,12 @@ if isMC:
     new_variables += [ 'GenTop[%s]'      %writeGenVarString ]
     new_variables += [ 'isTTGamma/I', 'isZWGamma/I', 'isTGamma/I', 'isGJets/I', 'overlapRemoval/I', 'pTStitching/I' ]
 
-    new_variables += [ 'nGenW/I', 'nGenWJets/I', 'nGenWElectron/I', 'nGenWMuon/I','nGenWTau/I', 'nGenWTauJets/I', 'nGenWTauElectron/I', 'nGenWTauMuon/I' ]
+    new_variables += [ 'nGenZ/I', 'nGenW/I', 'nGenWFromTop/I', 'nGenWJets/I', 'nGenWElectron/I', 'nGenWMuon/I','nGenWTau/I', 'nGenWTauJets/I', 'nGenWTauElectron/I', 'nGenWTauMuon/I' ]
+    new_variables += [ 'GenW0_' + var for var in writeGenVariables ]
+    new_variables += [ 'GenZ0_' + var for var in writeGenVariables ]
 
     new_variables += [ 'reweightPU/F', 'reweightPUDown/F', 'reweightPUUp/F', 'reweightPUVDown/F', 'reweightPUVUp/F' ]
+    new_variables += [ 'reweightWPt/F', 'reweightWinvPt/F' ]
 
     if not options.skipSF:
         new_variables += [ 'reweightLepton2lSF/F', 'reweightLepton2lSFUp/F', 'reweightLepton2lSFDown/F' ]
@@ -846,6 +870,10 @@ if not options.skipNanoTools:
 #sel = "&&".join(skimConds) if options.skipNanoTools else "(1)"
 reader = sample.treeReader( variables=read_variables, selectionString="&&".join(skimConds) )
 
+def getWPtWeight( wpt, weightHisto ):
+    binx = weightHisto.FindBin( wpt )
+    return weightHisto.GetBinContent( binx )
+
 def getMetPhotonEstimated( met_pt, met_phi, photon ):
   met = ROOT.TLorentzVector()
   met.SetPtEtaPhiM(met_pt, 0, met_phi, 0 )
@@ -916,6 +944,10 @@ def get4DVec( part ):
   vec.SetPtEtaPhiM( part['pt'], part['eta'], part['phi'], 0 )
   return vec
 
+def get2DVec( part ):
+  vec = ROOT.TVector2( part["pt"]*cos(part["phi"]), part["pt"]*sin(part["phi"]) )
+  return vec
+
 def interpret_weight(weight_id):
     str_s = weight_id.split('_')
     res={}
@@ -953,10 +985,14 @@ def filler( event ):
         gPart = getParticles( r, collVars=readGenVarList,    coll="GenPart" )
         gJets = getParticles( r, collVars=readGenJetVarList, coll="GenJet" )
 
+        # get Zs
+        GenZ    = filter( lambda l: abs(l['pdgId']) == 23 and l["genPartIdxMother"] >= 0 and l["genPartIdxMother"] < len(gPart), gPart )
+        GenZ    = filter( lambda l: abs(gPart[l["genPartIdxMother"]]["pdgId"]) != 23, GenZ )
         # Gen Leptons in ttbar/gamma decays
         # get Ws from top or MG matrix element (from gluon)
-        GenW = filter( lambda l: abs(l['pdgId']) == 24 and l["genPartIdxMother"] >= 0 and l["genPartIdxMother"] < len(gPart), gPart )
-        GenW = filter( lambda l: abs(gPart[l["genPartIdxMother"]]["pdgId"]) in [6,21], GenW )
+        GenW    = filter( lambda l: abs(l['pdgId']) == 24 and l["genPartIdxMother"] >= 0 and l["genPartIdxMother"] < len(gPart), gPart )
+        GenW    = filter( lambda l: abs(gPart[l["genPartIdxMother"]]["pdgId"]) != 24, GenW )
+        GenWtop = filter( lambda l: abs(gPart[l["genPartIdxMother"]]["pdgId"]) in [6,21], GenW )
         # e/mu/tau with W mother
         GenLepWMother    = filter( lambda l: abs(l['pdgId']) in [11,13,15] and l["genPartIdxMother"] >= 0 and l["genPartIdxMother"] < len(gPart), gPart )
         GenLepWMother    = filter( lambda l: abs(gPart[l["genPartIdxMother"]]["pdgId"])==24, GenLepWMother )
@@ -1122,14 +1158,21 @@ def filler( event ):
         event.nGenTop      = len(GenTop)
 
         # can't find jets from W in gParts, so assume non-Leptonic W decays are hadronic W decays
-        event.nGenW            = len(GenW) # all W from tops
-        event.nGenWJets        = len(GenW)-len(GenLepWMother) # W -> q q
+        event.nGenZ            = len(GenZ) # all Z
+        event.nGenW            = len(GenW) # all W
+        event.nGenWFromTop     = len(GenWtop) # all W from tops
+        event.nGenWJets        = len(GenWtop)-len(GenLepWMother) # W -> q q
         event.nGenWElectron    = len(GenWElectron) # W -> e nu
         event.nGenWMuon        = len(GenWMuon) # W -> mu nu
         event.nGenWTau         = len(GenWTau) # W -> tau nu
         event.nGenWTauJets     = len(GenWTau)-len(GenLepTauMother) # W -> tau nu, tau -> q q nu
         event.nGenWTauElectron = len(GenTauElectron) # W -> tau nu, tau -> e nu nu
         event.nGenWTauMuon     = len(GenTauMuon) # W -> tau nu, tau -> mu nu nu
+
+        gW0 = ( GenW + [None] )[0]
+        gZ0 = ( GenZ + [None] )[0]
+        fill_vector( event, "GenW0",  writeGenVarList, gW0 )
+        fill_vector( event, "GenZ0",  writeGenVarList, gZ0 )
 
 
     elif isData:
@@ -1508,7 +1551,7 @@ def filler( event ):
 #    fill_vector_collection( event, "Jet", writeJetVarList, allGoodJets)
 
     # Store analysis jets + 2 default jets for a faster plotscript
-    j0, j1       = ( jets + [None,None] )[:2]
+    j0, j1       = ( goodJets + [None,None] )[:2]
     jinv0, jinv1 = ( goodJetsInvLepIso + [None,None] )[:2]
     # Dileptonic analysis
     fill_vector( event, "JetGood0",  writeJetVarList, j0 )
@@ -1518,8 +1561,8 @@ def filler( event ):
 
     # bJets
     allBJets = list( filter( lambda x: x["isBJet"], allGoodJets ) )
-    bJets    = list( filter( lambda x: x["isBJet"], jets ) )
-    nonBJets = list( filter( lambda x: not x["isBJet"], jets ) )
+    bJets    = list( filter( lambda x: x["isBJet"], goodJets ) )
+    nonBJets = list( filter( lambda x: not x["isBJet"], goodJets ) )
 
     # Store bJets + 2 default bjets for a faster plot script
     bj0, bj1 = ( list(bJets) + [None,None] )[:2]
@@ -1574,16 +1617,16 @@ def filler( event ):
         event.MET_pt_min = 0
 
     # Additional observables
-    event.m3          = m3( jets )[0]
+    event.m3          = m3( goodJets )[0]
     event.m3inv       = m3( goodJetsInvLepIso )[0]
-    event.m3wBJet     = m3( jets, nBJets=1, tagger=tagger, year=options.year )[0]
+    event.m3wBJet     = m3( goodJets, nBJets=1, tagger=tagger, year=options.year )[0]
     event.m3wBJetinv     = m3( goodJetsInvLepIso, nBJets=1, tagger=tagger, year=options.year )[0]
     if len(mediumPhotons) > 0:
-        event.m3gamma = m3( jets, photon=mediumPhotons[0] )[0]
+        event.m3gamma = m3( goodJets, photon=mediumPhotons[0] )[0]
     if len(mediumPhotonsInvLepIso) > 0:
         event.m3gammainv = m3( goodJetsInvLepIso, photon=mediumPhotonsInvLepIso[0] )[0]
 
-    event.ht = sum( [ j[ptVar] for j in jets ] )
+    event.ht = sum( [ j[ptVar] for j in goodJets ] )
     event.htinv = sum( [ j[ptVar] for j in goodJetsInvLepIso ] )
     if event.ht > 0:
         event.METSig = event.MET_pt / sqrt( event.ht )
@@ -1605,11 +1648,11 @@ def filler( event ):
         if event.ht > 0:
             event.METSig_photonEstimated = event.MET_pt_photonEstimated / sqrt( event.ht )
 
-        if jets:
-            event.photonJetdR = min( deltaR( p, j ) for j in jets for p in mediumPhotons )
+        if goodJets:
+            event.photonJetdR = min( deltaR( mediumPhotons[0], j ) for j in goodJets )
 
         if selectedLeptons:
-            event.photonLepdR = min( deltaR( p, l ) for l in selectedLeptons for p in mediumPhotons )
+            event.photonLepdR = min( deltaR( mediumPhotons[0], l ) for l in selectedLeptons )
 
         if len(tightLeptons) > 0:
             event.ltight0GammadPhi = deltaPhi( tightLeptons[0]['phi'], mediumPhotons[0]['phi'] )
@@ -1626,13 +1669,13 @@ def filler( event ):
             event.l1GammadR   = deltaR(   selectedLeptons[1],        mediumPhotons[0] )
             event.mL1Gamma    = ( get4DVec(selectedLeptons[1]) + get4DVec(mediumPhotons[0]) ).M()
 
-        if len(jets) > 0:
-            event.j0GammadPhi = deltaPhi( jets[0]['phi'], mediumPhotons[0]['phi'] )
-            event.j0GammadR   = deltaR(   jets[0],        mediumPhotons[0] )
+        if len(goodJets) > 0:
+            event.j0GammadPhi = deltaPhi( goodJets[0]['phi'], mediumPhotons[0]['phi'] )
+            event.j0GammadR   = deltaR(   goodJets[0],        mediumPhotons[0] )
 
-        if len(jets) > 1:
-            event.j1GammadPhi = deltaPhi( jets[1]['phi'], mediumPhotons[0]['phi'] )
-            event.j1GammadR   = deltaR(   jets[1],        mediumPhotons[0] )
+        if len(goodJets) > 1:
+            event.j1GammadPhi = deltaPhi( goodJets[1]['phi'], mediumPhotons[0]['phi'] )
+            event.j1GammadR   = deltaR(   goodJets[1],        mediumPhotons[0] )
 
     if len(mediumPhotonsInvLepIso) > 0:
 
@@ -1640,6 +1683,29 @@ def filler( event ):
             event.linvtight0GammadPhi = deltaPhi( tightInvIsoLeptons[0]['phi'], mediumPhotonsInvLepIso[0]['phi'] )
             event.linvtight0GammadR   = deltaR(   tightInvIsoLeptons[0],        mediumPhotonsInvLepIso[0] )
             event.mLinvtight0Gamma    = ( get4DVec(tightInvIsoLeptons[0]) + get4DVec(mediumPhotonsInvLepIso[0]) ).M()
+
+        if goodJetsInvLepIso:
+            event.photonJetInvLepIsodR = min( deltaR( mediumPhotonsInvLepIso[0], j ) for j in goodJetsInvLepIso )
+
+    if len(mediumPhotonsNoChgIsoNoSieie) > 0:
+
+        if len(tightLeptons) > 0:
+            event.ltight0GammaNoSieieNoChgIsodPhi = deltaPhi( tightLeptons[0]['phi'], mediumPhotonsNoChgIsoNoSieie[0]['phi'] )
+            event.ltight0GammaNoSieieNoChgIsodR   = deltaR(   tightLeptons[0],        mediumPhotonsNoChgIsoNoSieie[0] )
+            event.mLtight0GammaNoSieieNoChgIso    = ( get4DVec(tightLeptons[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieie[0]) ).M()
+
+        if goodNoChgIsoNoSieieJets:
+            event.photonNoSieieNoChgIsoJetdR = min( deltaR( mediumPhotonsNoChgIsoNoSieie[0], j ) for j in goodNoChgIsoNoSieieJets )
+
+    if len(mediumPhotonsNoChgIsoNoSieieInvLepIso) > 0:
+
+        if len(tightInvIsoLeptons) > 0:
+            event.linvtight0GammaNoSieieNoChgIsodPhi = deltaPhi( tightInvIsoLeptons[0]['phi'], mediumPhotonsNoChgIsoNoSieieInvLepIso[0]['phi'] )
+            event.linvtight0GammaNoSieieNoChgIsodR   = deltaR(   tightInvIsoLeptons[0],        mediumPhotonsNoChgIsoNoSieieInvLepIso[0] )
+            event.mLinvtight0GammaNoSieieNoChgIso    = ( get4DVec(tightInvIsoLeptons[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieieInvLepIso[0]) ).M()
+
+        if goodNoChgIsoNoSieieJetsInvLepIso:
+            event.photonNoSieieNoChgIsoJetInvLepIsodR = min( deltaR( mediumPhotonsNoChgIsoNoSieieInvLepIso[0], j ) for j in goodNoChgIsoNoSieieJetsInvLepIso )
 
     event.nPhoton                = len( allPhotons )
     event.nPhotonGood            = len( mediumPhotons )
@@ -1753,13 +1819,15 @@ def filler( event ):
 
     met = {'pt':event.MET_pt, 'phi':event.MET_phi}
 
-    if len(tightLeptons) > 0:
+    if tightLeptons:
         event.lpTight = lp( tightLeptons[0]["pt"], tightLeptons[0]["phi"], met["pt"], met["phi"] )
         event.mT      = mT( tightLeptons[0], met )
+        event.WPt     = ( get2DVec(tightLeptons[0]) + get2DVec(met) ).Mod()
 
-    if len(tightInvIsoLeptons) > 0:
+    if tightInvIsoLeptons:
         event.lpInvTight = lp(  tightInvIsoLeptons[0]["pt"], tightInvIsoLeptons[0]["phi"], met["pt"], met["phi"] )
         event.mTinv      = mT(  tightInvIsoLeptons[0], met )
+        event.WinvPt     = ( get2DVec(tightInvIsoLeptons[0]) + get2DVec(met) ).Mod()
 
     mt2Calculator.reset()
     mt2Calculator.setMet( met["pt"], met["phi"] )
@@ -1866,6 +1934,16 @@ def filler( event ):
 
     # Reweighting
     if isMC and not options.skipSF:
+
+        # W pt reweighting for W+Jets samples in 2017/18
+        event.reweightWPt    = 1.
+        event.reweightWinvPt = 1.
+        if options.addWPtWeight and False:
+            if tightLeptons:
+                event.reweightWPt    = getWPtWeight( event.WPt, wPt_e_weightHisto if abs(tightLeptons[0]["pdgId"]) == 11 else wPt_mu_weightHisto )
+            if tightInvIsoLeptons:
+                event.reweightWinvPt = getWPtWeight( event.WinvPt, wPt_e_weightHisto if abs(tightInvIsoLeptons[0]["pdgId"]) == 11 else wPt_mu_weightHisto )
+
         # PU reweighting
         event.reweightPU      = nTrueInt_puRW      ( r.Pileup_nTrueInt )
         event.reweightPUDown  = nTrueInt_puRWDown  ( r.Pileup_nTrueInt )
@@ -1924,7 +2002,9 @@ def filler( event ):
 
         # B-Tagging efficiency method 1a
         for var in BTagEff.btagWeightNames:
-            if var!='MC': setattr( event, 'reweightBTag_'+var, BTagEff.getBTagSF_1a( var, bJets, nonBJets ) )
+            if var!='MC':
+#                print BTagEff.getBTagSF_1a( var, bJets, nonBJets )
+                setattr( event, 'reweightBTag_'+var, BTagEff.getBTagSF_1a( var, bJets, nonBJets ) )
 
         if len(selectedLeptons) > 0:
             # Trigger reweighting

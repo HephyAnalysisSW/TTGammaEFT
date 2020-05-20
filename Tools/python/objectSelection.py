@@ -435,8 +435,8 @@ def photonSelector( selection, year=None ):
                 if abs(g["eta"]) >= 1.4442:    return False # Barrel only
             if not "pixelSeed" in removedCuts:
                 if g["pixelSeed"]:             return False
-            if not "electronVeto" in removedCuts:
-                if not g["electronVeto"]:      return False
+#            if not "electronVeto" in removedCuts:
+#                if not g["electronVeto"]:      return False
             if not "ID" in removedCuts:
                 if not g["mvaID_WP90"]:        return False
             return True
@@ -451,8 +451,8 @@ def photonSelector( selection, year=None ):
                 if abs(g["eta"]) >= 1.4442:                                              return False # Barrel only
             if not "pixelSeed" in removedCuts:
                 if g["pixelSeed"]:                                                       return False
-            if not "electronVeto" in removedCuts:
-                if not g["electronVeto"]:                                                return False
+#            if not "electronVeto" in removedCuts:
+#                if not g["electronVeto"]:                                                return False
 #            if g[idVar]          <  photonId[selection]:                                 return False
             if not "ID" in removedCuts:
                 if not photonVIDSelector( g, photonId[selection], removedCuts=removedCuts ): return False
@@ -468,8 +468,8 @@ def photonSelector( selection, year=None ):
                 if abs(g["eta"]) >= 1.479:                                          return False # Barrel only
             if not "pixelSeed" in removedCuts:
                 if g["pixelSeed"]:                                                  return False
-            if not "electronVeto" in removedCuts:
-                if not g["electronVeto"]:                                           return False
+#            if not "electronVeto" in removedCuts:
+#                if not g["electronVeto"]:                                           return False
 #            if g[idVar]          <  photonId[selection]:                            return False
             if not "ID" in removedCuts:
                 if not photonVIDSelector( g, photonId[selection], removedCuts=removedCuts ): return False
