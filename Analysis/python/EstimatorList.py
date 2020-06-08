@@ -17,10 +17,10 @@ else:
 class EstimatorList:
     def __init__( self, setup, processes=allProcesses ):
         for p in processes:
-            if "DD" in p:
+            if p == "QCD-DD":
                 setattr( self, p, DataDrivenQCDEstimate( name=p ) )
-            elif "had" in p:
-                setattr( self, p, DataDrivenFakeEstimate( name=p, process=setup.processes[p] ) )
+            elif p == "fakes-DD":
+                setattr( self, p, DataDrivenFakeEstimate( name=p ) )
             else:
                 setattr( self, p, MCBasedEstimate( name=p, process=setup.processes[p] ) )
 

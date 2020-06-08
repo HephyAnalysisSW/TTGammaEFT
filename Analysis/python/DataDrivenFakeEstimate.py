@@ -29,9 +29,8 @@ else:
 addSF = True
 
 class DataDrivenFakeEstimate(SystematicEstimator):
-    def __init__(self, name, process, cacheDir=None):
+    def __init__(self, name, cacheDir=None):
         super(DataDrivenFakeEstimate, self).__init__(name, cacheDir=cacheDir)
-        self.process = process
     #Concrete implementation of abstract method "estimate" as defined in Systematic
     def _estimate(self, region, channel, setup, signalAddon=None, overwrite=False):
 
@@ -43,7 +42,6 @@ class DataDrivenFakeEstimate(SystematicEstimator):
             return sum([ self.cachedEstimate(region, c, setup, signalAddon=signalAddon) for c in dilepChannels])
 
         else:
-
             # Estimate yield in highSieie (Hs), highChgIso (Hc), lowSieie (Ls) and lowChgIso (Lc)
             # ABCD like: LsLc = HsLc * LsHc / HsHc
             # data-driven estimation: LsLc (data-driven) = LsLc(MC) * LsLc(data) / LsLc(MC)
@@ -58,28 +56,33 @@ class DataDrivenFakeEstimate(SystematicEstimator):
             # mc = mc to estimate the fakes for
             # the datadriven fake correction factor is everything except the last term. Term 1-4 are independent on the process
 
-            # get the MC based Estimate for fakes in the region including systematic uncertainties
-            estimate = MCBasedEstimate( name=self.name, process=self.process )
-            estimate.initCache(setup.defaultCacheDir())
-            mc_LsLc  = estimate.cachedEstimate( region, channel, setup, overwrite=overwrite )
-
-            if mc_LsLc <= 0: return u_float(0)
-
-            # MC based fake estimate in CR
-            if not setup.isSignalRegion: return mc_LsLc
-
             # get the ddFakeCorrection for the nominal setup, not the reweighted
-            setup_noSys = Setup( year=setup.year, photonSelection=False )
-            setup_noSys = setup_noSys.sysClone( parameters=setup.parameters )
-            ddFakeCorrection = self.cachedFakeFactor(region, channel, setup_noSys, overwrite=overwrite).val
+#            setup_noSys = Setup( year=setup.year, photonSelection=False )
+#            setup_noSys = setup_noSys.sysClone( parameters=setup.parameters )
+            return self._dataDrivenFakes( region, channel, setup, overwrite=overwrite)
+#                setup_noSys = Setup( year=setup.year, photonSelection=False )
+#                setup_noSys = setup_noSys.sysClone( parameters=setup.parameters )
+#                ddFakeCorrection = self.cachedFakeFactor(region, channel, setup_noSys, overwrite=overwrite).val
 
-            # take MC based fakes if the dd-SF is 0
-            if not ddFakeCorrection: return mc_LsLc
+#                # take MC based fakes if the dd-SF is 0
+#                if not ddFakeCorrection: return mc_LsLc
 
-            # DD fake estimate in SR
-            return mc_LsLc * ddFakeCorrection
+#                # DD fake estimate in SR
+#                return mc_LsLc * ddFakeCorrection
+#
+#            else:
+#                # get the MC based Estimate for fakes in the region including systematic uncertainties
+#                estimate = MCBasedEstimate( name=self.name, process=self.process )
+#                estimate.initCache(setup.defaultCacheDir())
+#                mc_LsLc  = estimate.cachedEstimate( region, channel, setup, overwrite=overwrite )
+#
+#                if mc_LsLc <= 0: return u_float(0)
+
+#                # MC based fake estimate in CR
+#                return mc_LsLc
 
     def _dataDrivenFakeCorrectionFactor(self, region, channel, setup, overwrite=False):
+            # not used anymore, gives some kind of fake SF which could be compared to Nabin
             # factor to multiply with non-prompt mc yield for data-driven estimation
             mcFakes = self._fakesMC(region, channel, setup, overwrite=overwrite)
             if mcFakes <= 0: return u_float(0)
@@ -164,7 +167,7 @@ class DataDrivenFakeEstimate(SystematicEstimator):
                     QCDSF_val   = QCD4pSF_val
 
             for s in default_photonSampleList:
-                if s in ["QCD-DD", "QCD", "GJets", "Data"]: continue
+                if s in ["QCD-DD", "QCD", "GJets", "Data", "fakes-DD"]: continue
                 if "had" in s: continue
 
                 # get the MC based Estimate for fakes in the region
@@ -176,23 +179,23 @@ class DataDrivenFakeEstimate(SystematicEstimator):
 
                 if addSF:
                     if "DY_LO" in s:
-                        y_HsLc *= DYSF_val[setup.year] #add DY SF
-                        y_HsHc *= DYSF_val[setup.year] #add DY SF
-                    elif "WJets" in s:
-                        y_HsLc *= WJetsSF_val[setup.year] #add WJets SF
-                        y_HsHc *= WJetsSF_val[setup.year] #add WJets SF
-                    elif "TT_pow" in s:
-                        y_HsLc *= TTSF_val[setup.year] #add TT SF
-                        y_HsHc *= TTSF_val[setup.year] #add TT SF
+                        y_HsLc *= DYSF_val[setup.year].val #add DY SF
+                        y_HsHc *= DYSF_val[setup.year].val #add DY SF
+#                    elif "WJets" in s:
+#                        y_HsLc *= WJetsSF_val[setup.year].val #add WJets SF
+#                        y_HsHc *= WJetsSF_val[setup.year].val #add WJets SF
+#                    elif "Top" in s:
+#                        y_HsLc *= TTSF_val[setup.year].val #add TT SF
+#                        y_HsHc *= TTSF_val[setup.year].val #add TT SF
                     elif "TTG" in s:
-                        y_HsLc *= SSMSF_val[setup.year] #add TTG SF
-                        y_HsHc *= SSMSF_val[setup.year] #add TTG SF
+                        y_HsLc *= SSMSF_val[setup.year].val #add TTG SF
+                        y_HsHc *= SSMSF_val[setup.year].val #add TTG SF
                     elif "ZG" in s:
-                        y_HsLc *= ZGSF_val[setup.year] #add ZGamma SF
-                        y_HsHc *= ZGSF_val[setup.year] #add ZGamma SF
+                        y_HsLc *= ZGSF_val[setup.year].val #add ZGamma SF
+                        y_HsHc *= ZGSF_val[setup.year].val #add ZGamma SF
                     elif "WG" in s:
-                        y_HsLc *= WGSF_val[setup.year] #add WGamma SF
-                        y_HsHc *= WGSF_val[setup.year] #add WGamma SF
+                        y_HsLc *= WGSF_val[setup.year].val #add WGamma SF
+                        y_HsHc *= WGSF_val[setup.year].val #add WGamma SF
 
                 mcPrompt_HsLc += y_HsLc
                 mcPrompt_HsHc += y_HsHc
@@ -205,16 +208,24 @@ class DataDrivenFakeEstimate(SystematicEstimator):
             estimate = DataDrivenQCDEstimate( name="QCD-DD" )
             estimate.initCache(setup.defaultCacheDir())
 
-            y_QCD_HsHc     = estimate.cachedEstimate( region, channel, setup_HsHc, overwrite=overwrite )
-            y_QCD_HsHc    *= QCDSF_val[setup.year]
-            mcPrompt_HsHc += y_QCD_HsHc
+            setup_noSys_HsHc = Setup( year=setup.year, photonSelection=False )
+            setup_noSys_HsHc = setup_noSys_HsHc.sysClone( parameters=setup.parameters )
+            setup_noSys_HsHc = setup_noSys_HsHc.sysClone( parameters=params_HsHc )
+
+            y_QCD_HsHc     = estimate.cachedEstimate( region, channel, setup_noSys_HsHc, overwrite=overwrite )
+            y_QCD_HsHc    *= QCDSF_val[setup.year].val
+            mcPrompt_HsHc += y_QCD_HsHc.val
             dataHad_HsHc   = data_HsHc-mcPrompt_HsHc
 
             if dataHad_HsHc <= 0: return u_float(0)
 
-            y_QCD_HsLc     = estimate.cachedEstimate( region, channel, setup_HsLc, overwrite=overwrite )
-            y_QCD_HsLc    *= QCDSF_val[setup.year]
-            mcPrompt_HsLc += y_QCD_HsLc
+            setup_noSys_HsLc = Setup( year=setup.year, photonSelection=False )
+            setup_noSys_HsLc = setup_noSys_HsLc.sysClone( parameters=setup.parameters )
+            setup_noSys_HsLc = setup_noSys_HsLc.sysClone( parameters=params_HsLc )
+
+            y_QCD_HsLc     = estimate.cachedEstimate( region, channel, setup_noSys_HsLc, overwrite=overwrite )
+            y_QCD_HsLc    *= QCDSF_val[setup.year].val
+            mcPrompt_HsLc += y_QCD_HsLc.val
             dataHad_HsLc   = data_HsLc-mcPrompt_HsLc
 
             if dataHad_HsLc <= 0: return u_float(0)
@@ -274,7 +285,7 @@ class DataDrivenFakeEstimate(SystematicEstimator):
                     QCDSF_val   = QCD4pSF_val
 
             for s in default_photonSampleList:
-                if s in ["QCD-DD", "QCD", "GJets", "Data"]: continue
+                if s in ["QCD-DD", "QCD", "GJets", "Data", "fakes-DD"]: continue
                 if "had" in s: continue
 
                 # get the MC based Estimate for fakes in the region
@@ -284,12 +295,12 @@ class DataDrivenFakeEstimate(SystematicEstimator):
                 y_LsHc = estimate.cachedEstimate( region, channel, setup_LsHc, overwrite=overwrite )
 
                 if addSF:
-                    if "DY_LO" in s:    y_LsHc *= DYSF_val[setup.year] #add DY SF
-                    elif "WJets" in s:  y_LsHc *= WJetsSF_val[setup.year] #add WJets SF
-                    elif "TT_pow" in s: y_LsHc *= TTSF_val[setup.year] #add TT SF
-                    elif "TTG" in s:    y_LsHc *= SSMSF_val[setup.year] #add TTG SF
-                    elif "ZG" in s:     y_LsHc *= ZGSF_val[setup.year] #add ZGamma SF
-                    elif "WG" in s:     y_LsHc *= WGSF_val[setup.year] #add WGamma SF
+                    if "DY_LO" in s:    y_LsHc *= DYSF_val[setup.year].val #add DY SF
+#                    elif "WJets" in s:  y_LsHc *= WJetsSF_val[setup.year].val #add WJets SF
+#                    elif "Top" in s: y_LsHc *= TTSF_val[setup.year].val #add TT SF
+                    elif "TTG" in s:    y_LsHc *= SSMSF_val[setup.year].val #add TTG SF
+                    elif "ZG" in s:     y_LsHc *= ZGSF_val[setup.year].val #add ZGamma SF
+                    elif "WG" in s:     y_LsHc *= WGSF_val[setup.year].val #add WGamma SF
 
                 mcPrompt_LsHc += y_LsHc
 
@@ -300,9 +311,13 @@ class DataDrivenFakeEstimate(SystematicEstimator):
             estimate = DataDrivenQCDEstimate( name="QCD-DD" )
             estimate.initCache(setup.defaultCacheDir())
 
-            y_QCD_LsHc     = estimate.cachedEstimate( region, channel, setup_LsHc, overwrite=overwrite )
-            y_QCD_LsHc    *= QCDSF_val[setup.year]
-            mcPrompt_LsHc += y_QCD_LsHc
+            setup_noSys_LsHc = Setup( year=setup.year, photonSelection=False )
+            setup_noSys_LsHc = setup_noSys_LsHc.sysClone( parameters=setup.parameters )
+            setup_noSys_LsHc = setup_noSys_LsHc.sysClone( parameters=params_LsHc )
+
+            y_QCD_LsHc     = estimate.cachedEstimate( region, channel, setup_noSys_LsHc, overwrite=False )
+            y_QCD_LsHc    *= QCDSF_val[setup.year].val
+            mcPrompt_LsHc += y_QCD_LsHc.val
 
             # create the data-driven factor
             dataHad_LsHc = data_LsHc-mcPrompt_LsHc
@@ -312,7 +327,7 @@ class DataDrivenFakeEstimate(SystematicEstimator):
 
     def _kappaMC(self, region, channel, setup, overwrite=False):
 
-            param_LsLc = {}
+            param_LsLc = { "addMisIDSF":addSF }
             param_LsHc = { "photonIso":"highChgIso",          "addMisIDSF":addSF }
             param_HsLc = { "photonIso":"highSieie",           "addMisIDSF":addSF }
             param_HsHc = { "photonIso":"highChgIsohighSieie", "addMisIDSF":addSF }
@@ -375,7 +390,7 @@ class DataDrivenFakeEstimate(SystematicEstimator):
                     QCDSF_val   = QCD4pSF_val
 
             for s in default_photonSampleList:
-                if s in ["QCD-DD", "QCD", "GJets", "Data"]: continue
+                if s in ["QCD-DD", "QCD", "GJets", "Data", "fakes-DD"]: continue
                 if not "had" in s: continue
 
                 # get the MC based Estimate for fakes in the region
@@ -389,35 +404,35 @@ class DataDrivenFakeEstimate(SystematicEstimator):
 
                 if addSF:
                     if "DY_LO" in s:
-                        y_LsLc *= DYSF_val[setup.year] #add DY SF
-                        y_LsHc *= DYSF_val[setup.year] #add DY SF
-                        y_HsLc *= DYSF_val[setup.year] #add DY SF
-                        y_HsHc *= DYSF_val[setup.year] #add DY SF
-                    elif "WJets" in s:
-                        y_LsLc *= WJetsSF_val[setup.year] #add WJets SF
-                        y_LsHc *= WJetsSF_val[setup.year] #add WJets SF
-                        y_HsLc *= WJetsSF_val[setup.year] #add WJets SF
-                        y_HsHc *= WJetsSF_val[setup.year] #add WJets SF
-                    elif "TT_pow" in s:
-                        y_LsLc *= TTSF_val[setup.year] #add TT SF
-                        y_LsHc *= TTSF_val[setup.year] #add TT SF
-                        y_HsLc *= TTSF_val[setup.year] #add TT SF
-                        y_HsHc *= TTSF_val[setup.year] #add TT SF
+                        y_LsLc *= DYSF_val[setup.year].val #add DY SF
+                        y_LsHc *= DYSF_val[setup.year].val #add DY SF
+                        y_HsLc *= DYSF_val[setup.year].val #add DY SF
+                        y_HsHc *= DYSF_val[setup.year].val #add DY SF
+#                    elif "WJets" in s:
+#                        y_LsLc *= WJetsSF_val[setup.year].val #add WJets SF
+#                        y_LsHc *= WJetsSF_val[setup.year].val #add WJets SF
+#                        y_HsLc *= WJetsSF_val[setup.year].val #add WJets SF
+#                        y_HsHc *= WJetsSF_val[setup.year].val #add WJets SF
+#                    elif "Top" in s:
+#                        y_LsLc *= TTSF_val[setup.year].val #add TT SF
+#                        y_LsHc *= TTSF_val[setup.year].val #add TT SF
+#                        y_HsLc *= TTSF_val[setup.year].val #add TT SF
+#                        y_HsHc *= TTSF_val[setup.year].val #add TT SF
                     elif "TTG" in s:
-                        y_LsLc *= SSMSF_val[setup.year] #add TTG SF
-                        y_LsHc *= SSMSF_val[setup.year] #add TTG SF
-                        y_HsLc *= SSMSF_val[setup.year] #add TTG SF
-                        y_HsHc *= SSMSF_val[setup.year] #add TTG SF
+                        y_LsLc *= SSMSF_val[setup.year].val #add TTG SF
+                        y_LsHc *= SSMSF_val[setup.year].val #add TTG SF
+                        y_HsLc *= SSMSF_val[setup.year].val #add TTG SF
+                        y_HsHc *= SSMSF_val[setup.year].val #add TTG SF
                     elif "ZG" in s:
-                        y_LsLc *= ZGSF_val[setup.year] #add ZGamma SF
-                        y_LsHc *= ZGSF_val[setup.year] #add ZGamma SF
-                        y_HsLc *= ZGSF_val[setup.year] #add ZGamma SF
-                        y_HsHc *= ZGSF_val[setup.year] #add ZGamma SF
+                        y_LsLc *= ZGSF_val[setup.year].val #add ZGamma SF
+                        y_LsHc *= ZGSF_val[setup.year].val #add ZGamma SF
+                        y_HsLc *= ZGSF_val[setup.year].val #add ZGamma SF
+                        y_HsHc *= ZGSF_val[setup.year].val #add ZGamma SF
                     elif "WG" in s:
-                        y_LsLc *= WGSF_val[setup.year] #add WGamma SF
-                        y_LsHc *= WGSF_val[setup.year] #add WGamma SF
-                        y_HsLc *= WGSF_val[setup.year] #add WGamma SF
-                        y_HsHc *= WGSF_val[setup.year] #add WGamma SF
+                        y_LsLc *= WGSF_val[setup.year].val #add WGamma SF
+                        y_LsHc *= WGSF_val[setup.year].val #add WGamma SF
+                        y_HsLc *= WGSF_val[setup.year].val #add WGamma SF
+                        y_HsHc *= WGSF_val[setup.year].val #add WGamma SF
 
                 mcHad_LsLc += y_LsLc
                 mcHad_LsHc += y_LsHc
@@ -439,7 +454,7 @@ class DataDrivenFakeEstimate(SystematicEstimator):
 
     def _fakesMC(self, region, channel, setup, overwrite=False):
 
-            param_LsLc  = {}
+            param_LsLc  = { "addMisIDSF":addSF }
             params_LsLc = copy.deepcopy(setup.parameters)
             params_LsLc.update( param_LsLc )
             setup_LsLc  = setup.sysClone(parameters=params_LsLc)
@@ -484,7 +499,7 @@ class DataDrivenFakeEstimate(SystematicEstimator):
                     QCDSF_val   = QCD4pSF_val
 
             for s in default_photonSampleList:
-                if s in ["QCD-DD", "QCD", "GJets", "Data"]: continue
+                if s in ["QCD-DD", "QCD", "GJets", "Data", "fakes-DD"]: continue
                 if not "had" in s: continue
 
                 # get the MC based Estimate for fakes in the region
@@ -494,12 +509,12 @@ class DataDrivenFakeEstimate(SystematicEstimator):
                 y_LsLc = estimate.cachedEstimate( region, channel, setup_LsLc, overwrite=overwrite )
 
                 if addSF:
-                    if "DY_LO" in s:    y_LsLc *= DYSF_val[setup.year] #add DY SF
-                    elif "WJets" in s:  y_LsLc *= WJetsSF_val[setup.year] #add WJets SF
-                    elif "TT_pow" in s: y_LsLc *= TTSF_val[setup.year] #add TT SF
-                    elif "TTG" in s:    y_LsLc *= SSMSF_val[setup.year] #add TTG SF
-                    elif "ZG" in s:     y_LsLc *= ZGSF_val[setup.year] #add ZGamma SF
-                    elif "WG" in s:     y_LsLc *= WGSF_val[setup.year] #add WGamma SF
+                    if "DY_LO" in s:    y_LsLc *= DYSF_val[setup.year].val #add DY SF
+#                    elif "WJets" in s:  y_LsLc *= WJetsSF_val[setup.year].val #add WJets SF
+#                    elif "Top" in s: y_LsLc *= TTSF_val[setup.year].val #add TT SF
+                    elif "TTG" in s:    y_LsLc *= SSMSF_val[setup.year].val #add TTG SF
+                    elif "ZG" in s:     y_LsLc *= ZGSF_val[setup.year].val #add ZGamma SF
+                    elif "WG" in s:     y_LsLc *= WGSF_val[setup.year].val #add WGamma SF
 
                 mcHad_LsLc += y_LsLc
 
@@ -519,7 +534,7 @@ if __name__ == "__main__":
 #    setup = setup.sysClone(parameters=allRegions["SR2"]["parameters"])
     setup = setup.sysClone(parameters=allRegions["SR4p"]["parameters"])
 
-    estimate = DataDrivenFakeEstimate( "TT_pow_had", process=setup.processes["TT_pow_had"] )    
+    estimate = DataDrivenFakeEstimate( "Top_had", process=setup.processes["Top_had"] )    
     estimate.initCache(setup.defaultCacheDir())
 
     print "e", "fake", estimate._estimate( allRegions["SR4p"]["regions"][0], "e", setup, overwrite=overwrite )

@@ -236,7 +236,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                 elif "WJets" in s:
                     y_CR *= WJetsSF_val[setup.year] #add WJets SF
                     y_SR *= WJetsSF_val[setup.year] #add WJets SF
-                elif "TT_pow" in s:
+                elif "Top" in s:
                     y_CR *= TTSF_val[setup.year] #add TT SF
                     y_SR *= TTSF_val[setup.year] #add TT SF
                 elif "TTG" in s:
@@ -339,18 +339,18 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         if var == "mT":
             if       photonRegion and not bjetRegion:                floatSample = "WG"
             elif     photonRegion and     bjetRegion and njets == 2: floatSample = "other"
-            elif     photonRegion and     bjetRegion:                floatSample = "TTG" #"TT_pow"?
+            elif     photonRegion and     bjetRegion:                floatSample = "TTG" #"Top"?
             elif not photonRegion and not bjetRegion:                floatSample = "WJets"
             elif not photonRegion and     bjetRegion and njets == 2: floatSample = "WJets"
-            elif not photonRegion and     bjetRegion:                floatSample = "TT_pow"
+            elif not photonRegion and     bjetRegion:                floatSample = "Top"
 
         else:
             if       photonRegion and not bjetRegion:                floatSample = "WG"
             elif     photonRegion and     bjetRegion and njets == 2: floatSample = "other"
-            elif     photonRegion and     bjetRegion:                floatSample = "TTG" #"TT_pow"?
+            elif     photonRegion and     bjetRegion:                floatSample = "TTG" #"Top"?
             elif not photonRegion and not bjetRegion:                floatSample = "WJets"
             elif not photonRegion and     bjetRegion and njets == 2: floatSample = "WJets"
-            elif not photonRegion and     bjetRegion:                floatSample = "TT_pow"
+            elif not photonRegion and     bjetRegion:                floatSample = "Top"
 
         print( "Leaving sample %s floating in the fit"%(floatSample) )
 
@@ -408,7 +408,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                 elif "WJets" in s:
                     tmp_SR.Scale(WJetsSF_val[setup.year].val)
                     tmp_CR.Scale(WJetsSF_val[setup.year].val)
-                elif "TT_pow" in s:
+                elif "Top" in s:
                     tmp_SR.Scale(TTSF_val[setup.year].val)
                     tmp_CR.Scale(TTSF_val[setup.year].val)
                 elif "other" in s:
@@ -668,7 +668,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                                 y *= DYSF_val[setup.year]    #add DY SF
                             elif s == "WJets":
                                 y *= WJetsSF_val[setup.year] #add WJets SF
-                            elif s == "TT_pow":
+                            elif s == "Top":
                                 y *= TTSF_val[setup.year]    #add TT SF
                             elif s == "ZG":
                                 y *= ZGSF_val[setup.year]    #add ZGamma SF

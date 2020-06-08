@@ -49,7 +49,7 @@ class MCBasedEstimate(SystematicEstimator):
         else:
             # change the sample processed if there is a signal addon like TuneUp
             if signalAddon:
-                if self.name.split("_")[-1] in ["gen", "misID", "had"]:
+                if self.name.split("_")[-1] in ["gen", "misID", "had", "hp", "fake", "PU"]:
                     name = "_".join( self.name.split("_")[:-1] + [signalAddon, self.name.split("_")[-1]] )
                 else:
                     name = "_".join( [self.name, signalAddon] )
