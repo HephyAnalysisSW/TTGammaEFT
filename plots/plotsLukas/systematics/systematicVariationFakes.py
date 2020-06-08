@@ -57,7 +57,7 @@ logger_rt = logger_rt.get_logger( args.logLevel, logFile=None )
 
 def jetSelectionModifier( sys, returntype = "func"):
     # Need to make sure all jet variations of the following observables are in the ntuple
-    variiedJetObservables = ["nJetGood", "nBTagGood", "&m3", "&ht"]
+    variiedJetObservables = ["nJetGoodInvSieie", "nBTagGoodInvSieie", "&m3", "&ht"]
     if returntype == "func":
         def changeCut_( string ):
             for s in variiedJetObservables:
@@ -69,11 +69,12 @@ def jetSelectionModifier( sys, returntype = "func"):
 
 def muonSelectionModifier( sys, returntype = "func"):
     # Need to make sure all muon variations of the following observables are in the ntuple
-    variiedMuonObservables = ['nMuonVeto','nMuonTight','nLeptonVeto','nLeptonVetoIsoCorr','nLeptonTight','mllgammatight','mLtight0GammaNoSieieNoChgIso','mLtight0Gamma','mlltight']
+    variiedMuonObservables = ['nMuonVeto','nMuonTight','nLeptonVetoIsoCorr','nLeptonTight','mllgammatight','mLtight0GammaNoSieieNoChgIso','mLtight0Gamma','mlltight']
     if returntype == "func":
         def changeCut_( string ):
             for s in variiedMuonObservables:
                 string = string.replace(s, s+"_"+sys)
+            string = string.replace("triggered", "triggered"+"_"+sys)
             return string
         return changeCut_
     elif returntype == "list":
@@ -81,12 +82,16 @@ def muonSelectionModifier( sys, returntype = "func"):
 
 def eleSelectionModifier( sys, returntype = "func"):
     # Need to make sure all Ele variations of the following observables are in the ntuple
-#    variiedEleObservables = ['nPhotonGood', 'nPhotonNoChgIsoNoSieie','nElectronVeto', 'nElectronVetoIsoCorr', 'nElectronTight', 'nLeptonVeto','nLeptonVetoIsoCorr','nLeptonTight','mllgammatight','mLtight0GammaNoSieieNoChgIso','mLtight0Gamma','mlltight']
-    variiedEleObservables = ['nPhotonGood', 'nPhotonNoChgIsoNoSieie']
+    variiedEleObservables = ['nPhotonGood', 'nPhotonNoChgIsoNoSieie','nElectronVeto', 'nElectronVetoIsoCorr', 'nElectronTight', 'nLeptonVetoIsoCorr','nLeptonTight','mllgammatight','mLtight0GammaNoSieieNoChgIso','mLtight0Gamma','mlltight']
+#    variiedEleObservables = ['nElectronVeto', 'nElectronVetoIsoCorr', 'nElectronTight', 'nLeptonVetoIsoCorr','nLeptonTight','mllgammatight','mLtight0GammaNoSieieNoChgIso','mLtight0Gamma','mlltight']
     if returntype == "func":
         def changeCut_( string ):
             for s in variiedEleObservables:
                 string = string.replace(s, s+"_"+sys)
+            string = string.replace("PhotonNoChgIsoNoSieie0", "PhotonNoChgIsoNoSieie0"+"_"+sys)
+            pt = "PhotonNoChgIsoNoSieie0"+"_"+sys+"_pt"
+            string = string.replace(pt, "0.5*(%s+%s)"%(pt+"_totalUp",pt+"_totalDown"))
+            string = string.replace("triggered", "triggered"+"_"+sys)
             return string
         return changeCut_
     elif returntype == "list":
@@ -94,7 +99,7 @@ def eleSelectionModifier( sys, returntype = "func"):
 
 def metSelectionModifier( sys, returntype = 'func'):
     #Need to make sure all MET variations of the following observables are in the ntuple
-    variiedMetObservables = ["nJetGood", "nBTagGood", "mT", "MET_pt"]
+    variiedMetObservables = ["nJetGoodInvSieie", "nBTagGoodInvSieie", "mT", "MET_pt"]
     if returntype == "func":
         def changeCut_( string ):
             for s in variiedMetObservables:
@@ -174,10 +179,10 @@ def MC_WEIGHT( variation, lumi_scale, returntype = "string"):
     weightString = "*".join(variiedMCWeights)
     weightString += "*%f"%lumi_scale
     if returntype == "string":
-        return "((%s)+(%s*%f*((nPhotonGood>0)*(PhotonGood0_photonCatMagic==2))))"%(weightString,weightString,(misIDSF_val[args.year].val-1))
+        return "((%s)+(%s*%f*((nPhotonGood>0)*(PhotonNoChgIsoNoSieie0_photonCatMagic==2))))"%(weightString,weightString,(misIDSF_val[args.year].val-1))
     if returntype == "invIso":
         weightStringInv = weightString.replace("reweightTrigger", "reweightInvIsoTrigger")
-        return "((%s)+(%s*%f*((nPhotonGoodInvLepIso>0)*(PhotonGoodInvLepIso0_photonCatMagic==2))))"%(weightStringInv,weightStringInv,(misIDSF_val[args.year].val-1))
+        return "((%s)+(%s*%f*((nPhotonNoChgIsoNoSieieInvLepIso0>0)*(PhotonNoChgIsoNoSieieInvLepIso0_photonCatMagic==2))))"%(weightStringInv,weightStringInv,(misIDSF_val[args.year].val-1))
     # create a function that multiplies the attributes of the event
     elif returntype == "func":
         getters = map( operator.attrgetter, variiedMCWeights)
@@ -225,15 +230,15 @@ variations = {
     "PhotonElectronVetoSFUp"    : {"replaceWeight":("reweightPhotonElectronVetoSF","reweightPhotonElectronVetoSFUp"),     "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightPhotonElectronVetoSFUp"]]},
     "PhotonElectronVetoSFDown"  : {"replaceWeight":("reweightPhotonElectronVetoSF","reweightPhotonElectronVetoSFDown"),   "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightPhotonElectronVetoSFDown"]]},
     "eTotalUp"                  : {"selectionModifier":eleSelectionModifier("eTotalUp"),                                  "read_variables" : [ "%s/F"%v for v in nominalMCWeights + eleSelectionModifier("eTotalUp","list")]},
-    "eTotalDown"                : {"selectionModifier":eleSelectionModifier("eTotalDown"),                                "read_variables" : [ "%s/F"%v for v in nominalMCWeights + eleSelectionModifier("eTotalDown","list")]},
+    "eTotalDown"                : {"selectionModifier":eleSelectionModifier("eTotalDown"),                               "read_variables" : [ "%s/F"%v for v in nominalMCWeights + eleSelectionModifier("eTotalDown","list")]},
     "muTotalUp"                 : {"selectionModifier":muonSelectionModifier("muTotalUp"),                                "read_variables" : [ "%s/F"%v for v in nominalMCWeights + muonSelectionModifier("muTotalUp","list")]},
     "muTotalDown"               : {"selectionModifier":muonSelectionModifier("muTotalDown"),                              "read_variables" : [ "%s/F"%v for v in nominalMCWeights + muonSelectionModifier("muTotalDown","list")]},
     "jerUp"                     : {"selectionModifier":jetSelectionModifier("jerUp"),                                     "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jerUp","list")]},
     "jerDown"                   : {"selectionModifier":jetSelectionModifier("jerDown"),                                   "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jerDown","list")]},
     "jesTotalUp"                : {"selectionModifier":jetSelectionModifier("jesTotalUp"),                                "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jesTotalUp","list")]},
     "jesTotalDown"              : {"selectionModifier":jetSelectionModifier("jesTotalDown"),                              "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jesTotalDown","list")]},
-    "unclustEnUp"               : {"selectionModifier":metSelectionModifier("unclustEnUp"),                               "read_variables" : [ "%s/F"%v for v in nominalMCWeights]},
-    "unclustEnDown"             : {"selectionModifier":metSelectionModifier("unclustEnDown"),                             "read_variables" : [ "%s/F"%v for v in nominalMCWeights]},
+#    "unclustEnUp"               : {"selectionModifier":metSelectionModifier("unclustEnUp"),                               "read_variables" : [ "%s/F"%v for v in nominalMCWeights]},
+#    "unclustEnDown"             : {"selectionModifier":metSelectionModifier("unclustEnDown"),                             "read_variables" : [ "%s/F"%v for v in nominalMCWeights]},
     "BTag_SF_b_Down"            : {"replaceWeight":("reweightBTag_SF","reweightBTag_SF_b_Down"),                          "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightBTag_SF_b_Down"]]},  
     "BTag_SF_b_Up"              : {"replaceWeight":("reweightBTag_SF","reweightBTag_SF_b_Up"),                            "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightBTag_SF_b_Up"] ]},
     "BTag_SF_l_Down"            : {"replaceWeight":("reweightBTag_SF","reweightBTag_SF_l_Down"),                          "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightBTag_SF_l_Down"]]},
@@ -241,9 +246,13 @@ variations = {
 }
 
 selection_systematics = [ "jerUp", "jerDown", "jesTotalUp", "jesTotalDown" ]
-variables_with_selection_systematics = [ "nJetGood", "nBTagGood", "ht", "m3" ]
+variables_with_selection_systematics = [ "nJetGoodInvSieie", "nBTagGoodInvSieie", "ht", "m3" ]
 metselection_systematics = [ "unclustEnUp", "unclustEnDown" ]
 metvariables_with_selection_systematics = [ "MET_pt", "mT" ]
+eleselection_systematics = [ "eTotalUp", "eTotalDown", "muTotalUp", "muTotalDown" ]
+elevariables_with_selection_systematics = [ "nPhotonNoChgIsoNoSieie" ]
+phoselection_systematics = [ "eTotalUp", "eTotalDown" ]
+phovariables_with_selection_systematics = [ "nPhotonNoChgIsoNoSieie" ]
 # Add a default selection modifier that does nothing
 for key, variation in variations.iteritems():
     if not variation.has_key("selectionModifier"):
@@ -296,7 +305,15 @@ lumi_scale   = data_sample.lumi * 0.001
 filterCutData = getFilterCut( args.year, isData=True,  skipBadChargedCandidate=True )
 filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )
 
-data_sample.setSelectionString( filterCutData )
+blinding = []
+if args.year != 2016 and not "VGfake" in args.selection:
+    if "lowSieieNoChgIso" in args.addCut:
+        blinding += [ cutInterpreter.cutString( "lowSieieHighChgIso" ) ]
+    if "lowChgIsoNoSieie" in args.addCut:
+        blinding += [ cutInterpreter.cutString( "lowChgIsoHighSieie" ) ]
+
+
+data_sample.setSelectionString( [filterCutData]+blinding )
 data_sample.setWeightString( "weight" )
 
 for s in mc:
@@ -320,6 +337,7 @@ replaceSelection = {
     "PhotonGood0_pt":    "PhotonGoodInvLepIso0_pt",
     "PhotonGood0_phi":   "PhotonGoodInvLepIso0_phi",
     "PhotonGood0_eta":   "PhotonGoodInvLepIso0_eta",
+    "PhotonNoChgIsoNoSieie0": "PhotonNoChgIsoNoSieieInvLepIso0",
 }
 
 
@@ -335,7 +353,7 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
     if args.addCut:
         selection += "&&" + cutInterpreter.cutString( args.addCut )
     selection += "&&triggered==1"
-    print( "Using selection string: %s"%args.selection )
+    print( "Using selection string: %s"%selection )
 
     preSelection  = setup.selection("MC",   channel="all", **setup.defaultParameters(update=QCD_updates))["prefix"]
     preSelection += "-" + args.mode + "Inv"
@@ -346,11 +364,14 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
             addSel = addSel.replace(iso,invIso)
         preSelection += "&&" + addSel
     preSelection += "&&triggeredInvIso==1"
-
+    print
+    print preSelection
+    print
 else:
     raise Exception("Region not implemented")
 
 replaceLabel = {
+    "PhotonNoChgIsoNoSieie0_sieie": "#sigma_{i#eta i#eta}(#gamma)",
     "LeptonTight0_eta": "#eta(l_{0})",
     "MET_pt": "E^{miss}_{T} (GeV)",
     "mT": "M_{T} (GeV)",
@@ -371,6 +392,7 @@ replaceVariable = {
     "PhotonGood0_pt":    "PhotonGoodInvLepIso0_pt",
     "PhotonGood0_phi":   "PhotonGoodInvLepIso0_phi",
     "PhotonGood0_eta":   "PhotonGoodInvLepIso0_eta",
+    "PhotonNoChgIsoNoSieie0_sieie": "PhotonNoChgIsoNoSieieInvLepIso0_sieie",
     "cos(LeptonTight0_phi-MET_phi)":         "cos(LeptonTightInvIso0_phi-MET_phi)",
     "cos(LeptonTight0_phi-JetGood0_phi)":    "cos(LeptonTightInvIso0_phi-JetGoodInvLepIso0_phi)",
     "cos(LeptonTight0_phi-JetGood1_phi)":    "cos(LeptonTightInvIso0_phi-JetGoodInvLepIso1_phi)",
@@ -461,8 +483,8 @@ if args.variation == "central":
                     if addSF:
                         if "DY" in s.name:
                             s.hist_SB_tmp.Scale(DYSF_val[args.year].val)
-#                        elif "WJets" in s.name:
-#                            s.hist_SB_tmp.Scale(WJetsSF_val[args.year].val)
+                        elif "WJets" in s.name:
+                            s.hist_SB_tmp.Scale(WJetsSF_val[args.year].val)
 #                        elif "Top" in s.name:
 #                            s.hist_SB_tmp.Scale(TTSF_val[args.year].val)
                         elif "ZG" in s.name:# and njets < 4:
@@ -507,6 +529,8 @@ if args.variation == "central":
 
 if args.variation:
     var = args.variable
+    if args.variation.startswith("eTotal"):
+        var = args.variable.replace("PhotonNoChgIsoNoSieie0_","PhotonNoChgIsoNoSieie0_"+args.variation+"_")
     if args.variable in variables_with_selection_systematics and args.variation in selection_systematics:
         var = args.variable + "_" + args.variation
     if args.variable in metvariables_with_selection_systematics and args.variation in metselection_systematics:
@@ -517,6 +541,10 @@ if args.variation:
     normalization_selection_string = selectionModifier(selection)
     mc_normalization_weight_string = MC_WEIGHT(variations[args.variation], lumi_scale, returntype="string")
     for s in mc:
+        print
+        print s.selectionString
+        print normalization_selection_string
+        print
         # Calculate the normalisation yield for mt2ll<100
         s.setWeightString( mc_normalization_weight_string )
         key = (s.name, "AR", var, "_".join(map(str,args.binning)), s.weightString, s.selectionString, normalization_selection_string, args.variation)
@@ -535,7 +563,7 @@ systematics = [\
     {"name":"EER",              "pair":("eTotalDown", "eTotalUp"),},
     {"name":"JER",              "pair":("jerDown", "jerUp"),},
     {"name":"JEC",              "pair":("jesTotalDown", "jesTotalUp")},
-    {"name":"Unclustered",      "pair":("unclustEnDown", "unclustEnUp") },
+#    {"name":"Unclustered",      "pair":("unclustEnDown", "unclustEnUp") },
     {"name":"PU",               "pair":("PUDown", "PUUp")},
     {"name":"BTag_b",           "pair":("BTag_SF_b_Down", "BTag_SF_b_Up" )},
     {"name":"BTag_l",           "pair":("BTag_SF_l_Down", "BTag_SF_l_Up")},
@@ -558,6 +586,8 @@ for s in mc:
         mc_normalization_weight_string = MC_WEIGHT(variations[variation], lumi_scale, returntype="string")
         s.setWeightString( mc_normalization_weight_string )
         var = args.variable if args.variable not in variables_with_selection_systematics or variation not in selection_systematics else args.variable + "_" + variation
+        if variation.startswith("eTotal"):
+            var = args.variable.replace("PhotonNoChgIsoNoSieie0_","PhotonNoChgIsoNoSieie0_"+variation+"_")
         key = (s.name, "AR", var, "_".join(map(str,args.binning)), s.weightString, s.selectionString, normalization_selection_string, variation)
 
 #        print key
@@ -585,7 +615,7 @@ for s in mc:
 
         else:
             # prepare sub variation command
-            cmd = ["python", "systematicVariation.py"]
+            cmd = ["python", "systematicVariationFakes.py"]
             cmd.append("--logLevel %s"%args.logLevel)
             cmd.append("--plot_directory %s"%args.plot_directory)
             cmd.append("--selection %s"%args.selection)
@@ -607,7 +637,7 @@ if dirDB.contains(keyQCD) and dirDB.contains(key) and not args.overwrite:
     data_sample.hist = dirDB.get(key)
 else:
     # prepare sub variation command
-    cmd = ["python", "systematicVariation.py"]
+    cmd = ["python", "systematicVariationFakes.py"]
     cmd.append("--logLevel %s"%args.logLevel)
     cmd.append("--plot_directory %s"%args.plot_directory)
     cmd.append("--selection %s"%args.selection)
@@ -703,9 +733,9 @@ for i_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
     ratio_boxes.append(r_box)
 
 legend = [ (0.2,0.9-0.025*sum(map(len, plot.histos)),0.9,0.9), 3 ]
-#ratio = {'yRange':(0.1,1.9), "drawObjects":ratio_boxes}
+ratio = {'yRange':(0.1,1.9), "drawObjects":ratio_boxes}
 #ratio = {'yRange':(0.65,1.35), "drawObjects":ratio_boxes}
-ratio = {'yRange':(0.45,1.55), "drawObjects":ratio_boxes}
+#ratio = {'yRange':(0.45,1.55), "drawObjects":ratio_boxes}
 for log in [True, False]:
 
         selDir = args.selection
