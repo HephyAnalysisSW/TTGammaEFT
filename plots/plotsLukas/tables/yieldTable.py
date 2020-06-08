@@ -92,7 +92,7 @@ photonSelection = not allRegions[args.controlRegion]["noPhotonCR"]
 allPhotonRegions = allRegions[args.controlRegion]["inclRegion"] + allRegions[args.controlRegion]["regions"] if photonSelection else allRegions[args.controlRegion]["inclRegion"]
 
 noCat_sel = "all"
-allCat    = ["all","gen","misID","had"]
+allCat    = ["all","gen","misID","np"]
 
 blind = False
 if photonSelection:
@@ -101,13 +101,14 @@ if photonSelection:
         regionsTTG = regionsTTGloose
         blind = args.year != 2016
     ptDict = {str(inclRegionsTTG[0]):"all", str(regionsTTG[0]):"lowPT", str(regionsTTG[1]):"medPT", str(regionsTTG[2]):"highPT"}
-    catSel = ["all","gen","misID","had"]
+    catSel = ["all","gen","misID","np"]
 else:
     ptDict = {str(noPhotonRegionTTG[0]):"all"}
     catSel = ["all"]
 
 setup          = Setup(year=args.year, photonSelection=False, checkOnly=True)
 estimators     = EstimatorList(setup)
+allProcesses   = [item for item in allProcesses if not "fakes-DD" in item and not "_had" in item]
 allEstimators  = estimators.constructEstimatorList( allProcesses )
 mc  = list(set([e.name.split("_")[0] for e in allEstimators]))
 
@@ -125,7 +126,7 @@ def wrapper(arg):
         else:
             res = estimate.cachedEstimate(r, channel, setup, overwrite=False, checkOnly=True)
         if args.removeNegative and res < 0: res = u_float(0,0)
-        return est, str(r), cat, channel, int(round(res.val))
+        return est, str(r), cat, channel, res.tuple()
 
 if args.controlRegion and args.controlRegion.startswith('DY'):
     channels = dilepChannels
@@ -137,19 +138,22 @@ regions = [(m, pt, cat) for m in [allMode] + channels for pt in ptDict.values() 
 
 # create dictionary structure
 yields = {}
-for estName in [e.name for e in allEstimators] + ["MC","MC_gen","MC_misID","MC_had"]:
+signal = {}
+for estName in [e.name for e in allEstimators] + ["MC","MC_gen","MC_misID","MC_np","MC_PU","MC_fake","MC_hp"]:
     est = estName.split("_")[0]
     yields[est] = {}
     for i_region, region in enumerate(allPhotonRegions):
         yields[est][ptDict[str(region)]] = {}
-        for i_cat, cat in enumerate(allCat):
+        signal[ptDict[str(region)]] = {}
+        for i_cat, cat in enumerate(["gen","misID","np","PU","fake","hp","all"]):
             yields[est][ptDict[str(region)]][cat] = {}
             for i_mode, mode in enumerate(channels + [allMode]):
-                 yields[est][ptDict[str(region)]][cat][mode] = 0
+                 yields[est][ptDict[str(region)]][cat][mode] = u_float(0)
+                 signal[ptDict[str(region)]][mode] = u_float(0)
 
 jobs = []
 for estimator in allEstimators:
-    cat = estimator.name.split("_")[-1] if estimator.name.split("_")[-1] in ["gen","misID","had"] else "all"
+    cat = estimator.name.split("_")[-1] if estimator.name.split("_")[-1] in ["gen","misID","np","hp","fake","PU"] else "all"
     est = estimator.name.split("_")[0]
     for i_region, region in enumerate(allPhotonRegions):
         for i_mode, mode in enumerate(channels):
@@ -164,9 +168,11 @@ else:
     results    = map(wrapper, jobs)
 
 for est, region, cat, mode, y in results:
-    print est, region, cat, mode, y
+    if est == "TTG" and cat == "gen":
+        signal[ptDict[str(region)]][mode] = u_float(y)
+
     if y < 0: continue
-    yields[est][ptDict[str(region)]][cat][mode] = y
+    yields[est][ptDict[str(region)]][cat][mode] = u_float(y)
 
     if addDYSF and "DY" in est:
         yields[est][ptDict[str(region)]][cat][mode] *= DYSF_val[args.year].val
@@ -184,48 +190,57 @@ for est, region, cat, mode, y in results:
 # categorize QCD as hadronic to make the yield table consistant
 for est, region, cat, mode, y in results:
     if y <= 0 or not "QCD" in est or cat != "all": continue
-    yields[est][ptDict[str(region)]]["had"][mode] = yields[est][ptDict[str(region)]][cat][mode]
+    yields[est][ptDict[str(region)]]["np"][mode] = yields[est][ptDict[str(region)]][cat][mode]
 
     # fill all and MC entries for each cat
-    if yields[est][ptDict[str(region)]]["had"][mode] > 0:
-        yields[est][ptDict[str(region)]]["had"][allMode] += yields[est][ptDict[str(region)]]["had"][mode]
-        yields["MC"][ptDict[str(region)]]["had"][allMode] += yields[est][ptDict[str(region)]]["had"][mode]
-        yields["MC"][ptDict[str(region)]]["had"][mode]    += yields[est][ptDict[str(region)]]["had"][mode]
+    if yields[est][ptDict[str(region)]]["np"][mode] > 0:
+        yields[est][ptDict[str(region)]]["np"][allMode] += yields[est][ptDict[str(region)]]["np"][mode]
+        yields["MC"][ptDict[str(region)]]["np"][allMode] += yields[est][ptDict[str(region)]]["np"][mode]
+        yields["MC"][ptDict[str(region)]]["np"][mode]    += yields[est][ptDict[str(region)]]["np"][mode]
 
 # fill all as sum of cats
-for estimator in allEstimators:
-    est = estimator.name.split("_")[0]
+for est in list(set([e.name.split("_")[0] for e in allEstimators])):
+#    est = estimator.name.split("_")[0]
     for i_region, region in enumerate(allPhotonRegions):
         for i_mode, mode in enumerate(channels):
 
             if yields[est][ptDict[str(region)]]["all"][mode] <= 0:
                 yields[est][ptDict[str(region)]]["all"][mode] = 0
-                for i_cat, cat in enumerate(["gen","misID","had"]):
+                for i_cat, cat in enumerate(["gen","misID","np"]):
                     yields[est][ptDict[str(region)]]["all"][mode]    += yields[est][ptDict[str(region)]][cat][mode]
                     yields[est][ptDict[str(region)]]["all"][allMode] += yields[est][ptDict[str(region)]][cat][mode]
                     if est != "Data":
                         yields["MC"][ptDict[str(region)]]["all"][allMode] += yields[est][ptDict[str(region)]][cat][mode]
                         yields["MC"][ptDict[str(region)]]["all"][mode]    += yields[est][ptDict[str(region)]][cat][mode]
 
-mc.sort(key=lambda est: -float(yields[est][ptDict[str(allPhotonRegions[0])]]["all"][allMode]))
+mc.sort(key=lambda est: -float(yields[est][ptDict[str(allPhotonRegions[0])]]["all"][allMode].val))
 
 # remove negative entries
-for estName in [e.name for e in allEstimators] + ["MC","MC_gen","MC_misID","MC_had"]:
-    estimator = estName.split("_")[0]
+for estimator in list(set([e.name.split("_")[0] for e in allEstimators])) + ["MC"]:
     for region in yields[estimator].keys():
         for cat in yields[estimator][region].keys():
+            if cat in ["hp", "fake", "PU"]: continue
             for mode in yields[estimator][region][cat].keys():
                 if yields[estimator][region][cat][mode] < 0:
-                    yields[estimator][region][cat][mode] = ""
+                    yields[estimator][region][cat][mode] = str(u_float(0))
+                elif estimator == "Data":
+                    yields[estimator][region][cat][mode] = str(int(yields[estimator][region][cat][mode].val))
                 else:
-                    yields[estimator][region][cat][mode] = str(int(round(float(yields[estimator][region][cat][mode]))))
+                    if cat == "np" and estimator != "MC" and not "QCD" in estimator:
+                        had  = yields[estimator][region]["np"][mode].val
+                        pu   = yields[estimator][region]["PU"][mode].val*100/had if had else 0
+                        hp   = yields[estimator][region]["hp"][mode].val*100/had if had else 0
+                        fake = yields[estimator][region]["fake"][mode].val*100/had if had else 0
+                        yields[estimator][region][cat][mode] = "%.2f (%.1f%s/%.1f%s/%.1f%s)"%(yields[estimator][region][cat][mode].val, hp, "\\%", fake, "\\%", pu, "\\%" ) + " "
+                    else:
+                        yields[estimator][region][cat][mode] = "%.2f"%yields[estimator][region][cat][mode].val + " "
 
 
 def printYieldTable( m ):
 
     if (m != "e" and "misDY" in args.controlRegion): return
 
-    with open("logs/%i_%s-%s.log"%(args.year,cr,m), "w") as f:
+    with open("logs/%i_%sMC-%s.log"%(args.year,cr,m), "w") as f:
     
         if m in ["e", "all"]:
             f.write("\\begin{frame}\n")
@@ -254,15 +269,16 @@ def printYieldTable( m ):
         f.write("\\hline\n")
         f.write("\\hline\n")
         for s in mc:
-            f.write("%s & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s \\\\ \n" %tuple( [s] + [ yields[s][pt][cat][m] for lep, pt, cat in regions if lep == m]) )
+            f.write("%s & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s \\\\ \n" %tuple( [s] + [ yields[s][pt][cat][m] for lep, pt, cat in regions if lep == m and cat in allCat]) )
             f.write("\\hline\n")
         f.write("\\hline\n")
-        f.write("MC total & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s \\\\ \n" %tuple( [yields["MC"][pt][cat][m] for lep, pt, cat in regions if lep == m] ))
+        f.write("MC total & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s \\\\ \n" %tuple( [yields["MC"][pt][cat][m] for lep, pt, cat in regions if lep == m and cat in allCat] ))
         f.write("\\hline\n")
         if not args.noData:
-            f.write("data total & \\textbf{%s} & \\multicolumn{3}{c||}{} & \\textbf{%s} & \\multicolumn{3}{c||}{} & \\textbf{%s} & \\multicolumn{3}{c||}{} & \\textbf{%s} & \\multicolumn{3}{c}{} \\\\ \n" %tuple( [ yields["Data"][pt][cat][m] for lep, pt, cat in regions if cat=="all" and lep == m] ))
+            f.write("data total & \\textbf{%s} & \\multicolumn{3}{c||}{} & \\textbf{%s} & \\multicolumn{3}{c||}{} & \\textbf{%s} & \\multicolumn{3}{c||}{} & \\textbf{%s} & \\multicolumn{3}{c}{} \\\\ \n" %tuple( [ yields["Data"][pt][cat][m] for lep, pt, cat in regions if cat=="all" and lep == m and cat in allCat] ))
             f.write("\\hline\n")
-            f.write("data/MC    & \\textbf{%.2f} & \\multicolumn{3}{c||}{} & \\textbf{%.2f} & \\multicolumn{3}{c||}{} & \\textbf{%.2f} & \\multicolumn{3}{c||}{} & \\textbf{%.2f} & \\multicolumn{3}{c}{} \\\\ \n" %tuple( [float(yields["Data"][pt][cat][m])/float(yields["MC"][pt][cat][m]) if yields["MC"][pt][cat][m] != "" and yields["Data"][pt][cat][m] != "" and float(yields["MC"][pt][cat][m]) > 0 else 1. for lep, pt, cat in regions if cat == "all" and lep == m] ))
+            f.write("data/MC    & \\textbf{%.2f} & \\multicolumn{3}{c||}{} & \\textbf{%.2f} & \\multicolumn{3}{c||}{} & \\textbf{%.2f} & \\multicolumn{3}{c||}{} & \\textbf{%.2f} & \\multicolumn{3}{c}{} \\\\ \n" %tuple( [float(yields["Data"][pt][cat][m])/float(yields["MC"][pt][cat][m].split(" ")[0]) if float(yields["MC"][pt][cat][m].split(" ")[0]) > 0 and float(yields["Data"][pt][cat][m]) > 0 else 1. for lep, pt, cat in regions if cat == "all" if lep == m and cat in allCat] ))
+#            f.write("data/MC    & \\textbf{%.2f} & \\multicolumn{3}{c||}{} & \\textbf{%.2f} & \\multicolumn{3}{c||}{} & \\textbf{%.2f} & \\multicolumn{3}{c||}{} & \\textbf{%.2f} & \\multicolumn{3}{c}{} \\\\ \n" %tuple( [float(yields["Data"][pt][cat][m])/float(yields["MC"][pt][cat][m]) if yields["MC"][pt][cat][m] != "" and yields["Data"][pt][cat][m] != "" and float(yields["MC"][pt][cat][m]) > 0 else 1. for lep, pt, cat in regions if cat == "all" and lep == m] ))
             f.write("\\hline\n")
         f.write("\\hline\n")
     
@@ -322,7 +338,7 @@ def printNoPhotonYieldTable( ):
         if not args.noData:
             f.write("data total & \\textbf{%s} & \\multicolumn{3}{c||}{} & \\textbf{%s} & \\multicolumn{3}{c||}{} & \\textbf{%s} & \\multicolumn{3}{c}{} \\\\ \n" %tuple( [ yields["Data"][pt][cat][lep] for lep, pt, cat in regions if cat=="all"] ))
             f.write("\\hline\n")
-            f.write("data/MC    & \\textbf{%.2f} & \\multicolumn{3}{c||}{} & \\textbf{%.2f} & \\multicolumn{3}{c||}{} & \\textbf{%.2f} & \\multicolumn{3}{c}{} \\\\ \n" %tuple( [float(yields["Data"][pt][cat][lep])/float(yields["MC"][pt][cat][lep]) if yields["MC"][pt][cat][lep] and yields["Data"][pt][cat][lep] else 1. for lep, pt, cat in regions if cat == "all"] ))
+            f.write("data/MC    & \\textbf{%.2f} & \\multicolumn{3}{c||}{} & \\textbf{%.2f} & \\multicolumn{3}{c||}{} & \\textbf{%.2f} & \\multicolumn{3}{c}{} \\\\ \n" %tuple( [float(yields["Data"][pt][cat][lep])/float(yields["MC"][pt][cat][lep]) if float(yields["MC"][pt][cat][lep]) and float(yields["Data"][pt][cat][lep]) else 1. for lep, pt, cat in regions if cat == "all"] ))
             f.write("\\hline\n")
         f.write("\\hline\n")
     

@@ -7,6 +7,8 @@ from TTGammaEFT.Analysis.DataDrivenFakeEstimate import DataDrivenFakeEstimate
 from TTGammaEFT.Analysis.SetupHelpers    import *
 from TTGammaEFT.Analysis.Setup           import Setup
 
+from Analysis.Tools.u_float              import u_float
+
 loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET']
 CRChoices     = allRegions.keys()
 # Arguments
@@ -19,7 +21,6 @@ argParser.add_argument("--controlRegion",    action="store",  default="SR4pM3", 
 argParser.add_argument("--label",             action="store",      default="Region",  type=str, nargs="*",                            help="which region label?")
 args = argParser.parse_args()
 
-args.selectEstimator = "TT_pow_had"
 args.label = " ".join(args.label)
 
 # Logging
@@ -44,31 +45,36 @@ photonSelection  = not allRegions[args.controlRegion]["noPhotonCR"]
 allPhotonRegions = allRegions[args.controlRegion]["inclRegion"] + allRegions[args.controlRegion]["regions"] if photonSelection else allRegions[args.controlRegion]["regions"]
 setup            = Setup( year=args.year, photonSelection=False, checkOnly=False )
 
-estimate = DataDrivenFakeEstimate( args.selectEstimator, process=setup.processes[args.selectEstimator] )
+estimate = DataDrivenFakeEstimate( "fakes-DD" )
 estimate.initCache(setup.defaultCacheDir())
 estimate.isData = False
-
-if not estimate:
-    logger.warning(args.selectEstimator + " not known")
-    sys.exit(0)
 
 setup            = setup.sysClone( parameters=parameters )
 
 def wrapper(arg):
         # INFO: fakeFactor = fakesData / fakesMC * kappaData * kappaMC
         key,subkey,r,channel,setup = arg
-        logger.info("Running estimate for region %s, channel %s in setup %s for estimator %s"%(r,channel, args.controlRegion if args.controlRegion else "None", args.selectEstimator if args.selectEstimator else "None"))
-        fakeFactor = estimate.cachedFakeFactor(r, channel, setup, checkOnly=True).val
-        kappaData  = estimate._kappaData(r, channel, setup).val
-        kappaMC    = estimate._kappaMC(r, channel, setup).val
-        fakesData  = estimate._fakesData(r, channel, setup).val
-        fakesMC    = estimate._fakesMC(r, channel, setup).val
-        return (key, subkey, channel, fakesData, fakesMC, kappaData, kappaMC, fakeFactor )
+        logger.info("Running estimate for region %s, channel %s in setup %s"%(r,channel, args.controlRegion if args.controlRegion else "None"))
+#        fakeFactor = estimate.cachedFakeFactor(r, channel, setup, checkOnly=True).val
+        kappaData  = estimate._kappaData(r, channel, setup)
+        kappaMC    = estimate._kappaMC(r, channel, setup)
+        fakesData  = estimate._fakesData(r, channel, setup)
+        fakesMC    = estimate._fakesMC(r, channel, setup)
+        ddfakes    = fakesData * kappaMC * kappaData
+        sf         = ddfakes / fakesMC if fakesMC.val > 0 else u_float(0)
+        return (key, subkey, channel, fakesData.tuple(), kappaData.tuple(), kappaMC.tuple(), ddfakes.tuple(), fakesMC.tuple(), sf.tuple() )
 
 def strToKey( r ):
+    print r
     r   = r.replace("\\","\\\\").replace("#","\\")
-    out = tuple(r.split(",")) if "p_{T}" in r else ("inclusive", r)
+    print r
+    if len(r.split(","))>1:
+        out = tuple(r.split(",")) if "p_{T}" in r else ("inclusive", r)
+    else:
+        out = (r,"inclusive") if "p_{T}" in r else ("inclusive", "inclusive")
+    print out
     out = ( "$%s$"%o if o !="inclusive" else o for o in out)
+    print out
     return out
 
 jobs=[]
@@ -90,8 +96,8 @@ if args.cores > 1:
 else:
     results    = map(wrapper, jobs)
 
-for key, subkey, ch, a, b, c, d, e in results:
-    resDict[key][subkey][ch] = (a,b,c,d,e)
+for key, subkey, ch, a, b, c, d, e, f in results:
+    resDict[key][subkey][ch] = (a,b,c,d,e,f)
     print key, subkey, ch, resDict[key][subkey][ch]
 
 def printFakesTable():
@@ -105,38 +111,33 @@ def printFakesTable():
         f.write("\\centering\n")
 
         f.write("\\resizebox{0.9\\textwidth}{!}{\n")
-        f.write("\\begin{tabular}{c||c|c|c|c||c||c|c|c|c||c}\n")
+        f.write("\\begin{tabular}{c||c|c|c||c||c||c||c|c|c||c||c||c}\n")
 
         f.write("\\hline\n")
         f.write("\\hline\n")
-        f.write("\\multicolumn{11}{c}{%s}\\\\ \n"%( ", ".join( [args.controlRegion] ) ) )
+        f.write("\\multicolumn{13}{c}{%s}\\\\ \n"%( ", ".join( [args.controlRegion] ) ) )
         f.write("\\hline\n")
-        f.write("\\multicolumn{11}{c}{%i: $\\mathcal{L}=%s$ fb$^{-1}$}\\\\ \n"%(args.year, "{:.2f}".format(lumi_scale)))
+        f.write("\\multicolumn{13}{c}{%i: $\\mathcal{L}=%s$ fb$^{-1}$}\\\\ \n"%(args.year, "{:.2f}".format(lumi_scale)))
         f.write("\\hline\n")
         f.write("\\hline\n")
         for pt in sorted(resDict.keys(), key = lambda n: [i for i, l in enumerate(["inclusive", "20 \\leq", "120 \\leq", "220 \\leq"]) if l in n][0] ):
             resD = resDict[pt]
-            f.write("\\multicolumn{11}{c}{}\\\\ \n")
+            f.write("\\multicolumn{13}{c}{}\\\\ \n")
             f.write("\\hline\n")
             f.write("\\hline\n")
-            f.write("\\multicolumn{11}{c}{%s}\\\\ \n"%(pt))
+            f.write("\\multicolumn{13}{c}{%s}\\\\ \n"%(pt))
             f.write("\\hline\n")
-            f.write("       & \\multicolumn{5}{c||}{ \\textbf{e channel} } & \\multicolumn{5}{c}{\\textbf{$\\mu$ channel}}\\\\ \n")
+            f.write("       & \\multicolumn{6}{c||}{ \\textbf{e channel} } & \\multicolumn{6}{c}{\\textbf{$\\mu$ channel}}\\\\ \n")
             f.write("\\hline\n")
-            f.write("\\textbf{Region} & Data non-prompt (LsHc) & MC non-prompt (LsLc) & $\\kappa_\\text{data}$ & $\\kappa_\\text{MC}$ & \\textbf{DD-Fake Factor} & Data non-prompt (LsHc) & MC non-prompt (LsLc) & $\\kappa_\\text{data}$ & $\\kappa_\\text{MC}$ & \\textbf{DD-Fake Factor} \\\\ \n")
+            f.write("\\textbf{Region} & fakes high chgIso & $r_\\text{iso}^\\text{HS}$ & $\\kappa_\\text{MC}$ & \\textbf{DD-fakes} & \\textbf{MC-fakes} & \\textbf{DD-Fakes/MC-Fakes} & fakes high chgIso & $r_\\text{iso}^\\text{HS}$ & $\\kappa_\\text{MC}$ & DD-fakes & MC-fakes & \\textbf{DD-Fakes/MC-Fakes} \\\\ \n")
             f.write("\\hline\n")
             for reg in sorted(resD.keys()):
                 res = resD[reg]
-                f.write("%s & %.2f & %.2f & %.2f & %.2f & \\textbf{%.2f} & %.2f & %.2f & %.2f & %.2f & \\textbf{%.2f} \\\\ \n"%(reg,res["e"][0],res["e"][1],res["e"][2],res["e"][3],res["e"][4],res["mu"][0],res["mu"][1],res["mu"][2],res["mu"][3],res["mu"][4]) )
+                f.write("%s & %.2f $\\pm$ %.2f & %.2f $\\pm$ %.2f & %.2f $\\pm$ %.2f & \\textbf{%.2f $\\pm$ %.2f} & \\textbf{%.2f $\\pm$ %.2f} & \\textbf{%.2f $\\pm$ %.2f} & %.2f $\\pm$ %.2f & %.2f $\\pm$ %.2f & %.2f $\\pm$ %.2f & \\textbf{%.2f $\\pm$ %.2f} & \\textbf{%.2f $\\pm$ %.2f} & \\textbf{%.2f $\\pm$ %.2f} \\\\ \n"%(reg,res["e"][0][0],res["e"][0][1],res["e"][1][0],res["e"][1][1],res["e"][2][0],res["e"][2][1],res["e"][3][0],res["e"][3][1],res["e"][4][0],res["e"][4][1],res["e"][5][0],res["e"][5][1],res["mu"][0][0],res["mu"][0][1],res["mu"][1][0],res["mu"][1][1],res["mu"][2][0],res["mu"][2][1],res["mu"][3][0],res["mu"][3][1],res["mu"][4][0],res["mu"][4][1],res["mu"][5][0],res["mu"][5][1]) )
                 f.write("\\hline\n")
             f.write("\\hline\n")
 
-        f.write("\\multicolumn{11}{c}{}\\\\ \n")
-        f.write("\\hline\n")
-        f.write("\\hline\n")
-        f.write("\\multicolumn{11}{c}{Calculation of data-driven fake factor: \\textbf{DD-Fake Factor} = Data non-prompt (LsHc) $\\times$ $\\kappa_\\text{data}$ $\\times$ $\\kappa_\\text{MC}$ / MC non-prompt (LsLc)}\\\\ \n")
-        f.write("\\hline\n")
-        f.write("\\multicolumn{11}{c}{Data-driven estimate for MC process in signal region: \\textbf{DD-Fakes (process) (LsLc)} = MC non-prompt (process) (LsLc) $\\times$ DD-Fake Factor }\\\\ \n")
+        f.write("\\multicolumn{13}{c}{}\\\\ \n")
         f.write("\\hline\n")
         f.write("\\hline\n")
 

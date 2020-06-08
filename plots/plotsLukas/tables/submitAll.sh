@@ -1,9 +1,17 @@
 python fakeFactorTable.py --cores 20 --year 2016 --controlRegion SR3M3 --label Fake Faktor 3 Jets
 python fakeFactorTable.py --cores 20 --year 2016 --controlRegion SR4pM3 --label Fake Faktor geq 4 Jets
+python fakeFactorTable.py --cores 20 --year 2016 --controlRegion SR3 --label Fake Faktor 3 Jets
+python fakeFactorTable.py --cores 20 --year 2016 --controlRegion SR4p --label Fake Faktor geq 4 Jets
 python fakeTable.py --cores 20 --year 2016 --controlRegion SR3 --label Fake Control Region 3 Jets
 python fakeTable.py --cores 20 --year 2016 --controlRegion SR4p --label Fake Control Region geq 4 Jets
+python srTable.py --cores 20 --year 2016 --controlRegion SR3 --label Signal Region 3 Jets
+python srTable.py --cores 20 --year 2016 --controlRegion SR4p --label Signal Region geq 4 Jets
 python yieldTable.py --cores 20 --year 2016 --controlRegion SR3 --label Signal Region 3 Jets
 python yieldTable.py --cores 20 --year 2016 --controlRegion SR4p --label Signal Region geq 4 Jets
+python yieldTable.py --cores 20 --year 2016 --controlRegion SR3p --label Signal Region geq 3 Jets
+python yieldTable.py --cores 20 --year 2016 --controlRegion VG3 --label Signal Region 3 Jets
+python yieldTable.py --cores 20 --year 2016 --controlRegion VG4p --label Signal Region geq 4 Jets
+python yieldTable.py --cores 20 --year 2016 --controlRegion VG3p --label Signal Region geq 3 Jets
 python yieldTable.py --cores 20 --year 2016 --controlRegion misDY2 --label MisID DY CR 2 Jets
 python yieldTable.py --cores 20 --year 2016 --controlRegion misDY3 --label MisID DY CR 3 Jets
 python yieldTable.py --cores 20 --year 2016 --controlRegion misDY4 --label MisID DY CR 4 Jets
@@ -32,10 +40,18 @@ python vgTable.py --cores 20 --year 2016 --controlRegion VG4p --label WGamma CR 
 
 python fakeFactorTable.py --cores 20 --year 2017 --controlRegion SR3M3 --label Fake Faktor 3 Jets
 python fakeFactorTable.py --cores 20 --year 2017 --controlRegion SR4pM3 --label Fake Faktor geq 4 Jets
+python fakeFactorTable.py --cores 20 --year 2017 --controlRegion SR3 --label Fake Faktor 3 Jets
+python fakeFactorTable.py --cores 20 --year 2017 --controlRegion SR4p --label Fake Faktor geq 4 Jets
 python fakeTable.py --cores 20 --year 2017 --controlRegion SR3 --label Fake Control Region 3 Jets
 python fakeTable.py --cores 20 --year 2017 --controlRegion SR4p --label Fake Control Region geq 4 Jets
+python srTable.py --cores 20 --year 2017 --controlRegion SR3 --label Signal Region 3 Jets
+python srTable.py --cores 20 --year 2017 --controlRegion SR4p --label Signal Region geq 4 Jets
 python yieldTable.py --cores 20 --year 2017 --controlRegion SR3 --label Signal Region 3 Jets
 python yieldTable.py --cores 20 --year 2017 --controlRegion SR4p --label Signal Region geq 4 Jets
+python yieldTable.py --cores 20 --year 2017 --controlRegion SR3p --label Signal Region geq 3 Jets
+python yieldTable.py --cores 20 --year 2017 --controlRegion VG3 --label Signal Region 3 Jets
+python yieldTable.py --cores 20 --year 2017 --controlRegion VG4p --label Signal Region geq 4 Jets
+python yieldTable.py --cores 20 --year 2017 --controlRegion VG3p --label Signal Region geq 3 Jets
 python yieldTable.py --cores 20 --year 2017 --controlRegion misDY2 --label MisID DY CR 2 Jets
 python yieldTable.py --cores 20 --year 2017 --controlRegion misDY3 --label MisID DY CR 3 Jets
 python yieldTable.py --cores 20 --year 2017 --controlRegion misDY4 --label MisID DY CR 4 Jets
@@ -64,10 +80,18 @@ python vgTable.py --cores 20 --year 2017 --controlRegion VG4p --label WGamma CR 
 
 python fakeFactorTable.py --cores 20 --year 2018 --controlRegion SR3M3 --label Fake Faktor 3 Jets
 python fakeFactorTable.py --cores 20 --year 2018 --controlRegion SR4pM3 --label Fake Faktor geq 4 Jets
+python fakeFactorTable.py --cores 20 --year 2018 --controlRegion SR3 --label Fake Faktor 3 Jets
+python fakeFactorTable.py --cores 20 --year 2018 --controlRegion SR4p --label Fake Faktor geq 4 Jets
 python fakeTable.py --cores 20 --year 2018 --controlRegion SR3 --label Fake Control Region 3 Jets
 python fakeTable.py --cores 20 --year 2018 --controlRegion SR4p --label Fake Control Region geq 4 Jets
+python srTable.py --cores 20 --year 2018 --controlRegion SR3 --label Signal Region 3 Jets
+python srTable.py --cores 20 --year 2018 --controlRegion SR4p --label Signal Region geq 4 Jets
 python yieldTable.py --cores 20 --year 2018 --controlRegion SR3 --label Signal Region 3 Jets
 python yieldTable.py --cores 20 --year 2018 --controlRegion SR4p --label Signal Region geq 4 Jets
+python yieldTable.py --cores 20 --year 2018 --controlRegion SR3p --label Signal Region geq 3 Jets
+python yieldTable.py --cores 20 --year 2018 --controlRegion VG3 --label Signal Region 3 Jets
+python yieldTable.py --cores 20 --year 2018 --controlRegion VG4p --label Signal Region geq 4 Jets
+python yieldTable.py --cores 20 --year 2018 --controlRegion VG3p --label Signal Region geq 3 Jets
 python yieldTable.py --cores 20 --year 2018 --controlRegion misDY2 --label MisID DY CR 2 Jets
 python yieldTable.py --cores 20 --year 2018 --controlRegion misDY3 --label MisID DY CR 3 Jets
 python yieldTable.py --cores 20 --year 2018 --controlRegion misDY4 --label MisID DY CR 4 Jets

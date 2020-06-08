@@ -11,7 +11,7 @@ from math                                import isnan, ceil, pi
 # RootTools
 from RootTools.core.standard             import *
 
-from TTGammaEFT.Analysis.regions         import mLgRegions, noPhotonRegionTTG, mLgPtRegions
+from TTGammaEFT.Analysis.regions         import regionsTTG, noPhotonRegionTTG, inclRegionsTTG
 from TTGammaEFT.Analysis.Setup           import Setup
 from TTGammaEFT.Analysis.EstimatorList   import EstimatorList
 from TTGammaEFT.Analysis.MCBasedEstimate import MCBasedEstimate
@@ -30,7 +30,6 @@ argParser.add_argument("--logLevel",           action="store",      default="INF
 argParser.add_argument("--controlRegion",      action="store",      default=None,   type=str,                                          help="For CR region?")
 argParser.add_argument("--removeNegative",     action="store_true",                                                                    help="Set negative values to 0?", )
 argParser.add_argument("--noData",             action="store_true", default=False,                                                     help="also plot data?")
-argParser.add_argument("--highMlg",            action="store_true", default=False,                                                     help="also plot data?")
 argParser.add_argument("--year",               action="store",      default=None,   type=int,  choices=[2016,2017,2018],               help="which year?")
 argParser.add_argument("--label",              action="store",      default="Region",  type=str, nargs="*",                            help="which region label?")
 argParser.add_argument("--cores",            action="store",  default=1,      type=int,                        help="run multicore?")
@@ -90,16 +89,22 @@ if args.controlRegion.count("addDYSF"):
 
 CR_para = allRegions[args.controlRegion]["parameters"]
 photonSelection = not allRegions[args.controlRegion]["noPhotonCR"]
-if args.highMlg:
-    allPhotonRegions = [mLgRegions[1], mLgPtRegions[1], mLgPtRegions[3], mLgPtRegions[5]]
-else:
-    allPhotonRegions = [mLgRegions[0], mLgPtRegions[0], mLgPtRegions[2], mLgPtRegions[4]]
+allPhotonRegions = allRegions[args.controlRegion]["inclRegion"] + allRegions[args.controlRegion]["regions"] if photonSelection else allRegions[args.controlRegion]["inclRegion"]
 
 noCat_sel = "all"
 allCat    = ["all","gen","misID","had"]
 
-ptDict = {str(mLgRegions[1 if args.highMlg else 0]):"all", str(mLgPtRegions[1 if args.highMlg else 0]):"lowPT", str(mLgPtRegions[3 if args.highMlg else 2]):"medPT", str(mLgPtRegions[5 if args.highMlg else 4]):"highPT"}
-catSel = ["all","gen","misID","had"]
+blind = False
+if photonSelection:
+    if "SR" in args.controlRegion:
+        inclRegionsTTG = inclRegionsTTGloose
+        regionsTTG = regionsTTGloose
+        blind = args.year != 2016
+    ptDict = {str(inclRegionsTTG[0]):"all", str(regionsTTG[0]):"lowPT", str(regionsTTG[1]):"medPT", str(regionsTTG[2]):"highPT"}
+    catSel = ["all","gen","misID","had"]
+else:
+    ptDict = {str(noPhotonRegionTTG[0]):"all"}
+    catSel = ["all"]
 
 setup          = Setup(year=args.year, photonSelection=False, checkOnly=True)
 estimators     = EstimatorList(setup)
@@ -115,7 +120,10 @@ if args.controlRegion:
 def wrapper(arg):
         r,channel,setup,estimate,cat,est = arg
         estimate.initCache(setup.defaultCacheDir())
-        res = estimate.cachedEstimate(r, channel, setup, save=True, overwrite=False, checkOnly=True)
+        if estimate.name == "Data" and blind:
+            res = u_float(0,0)
+        else:
+            res = estimate.cachedEstimate(r, channel, setup, overwrite=False, checkOnly=True)
         if args.removeNegative and res < 0: res = u_float(0,0)
         return est, str(r), cat, channel, res.tuple()
 
@@ -125,7 +133,7 @@ else:
     channels = lepChannels
 
 
-regions = [(m, pt, cat) for m in [allMode] + channels for pt in ["all","lowPT","medPT","highPT"] for cat in catSel]
+regions = [(m, pt, cat) for m in [allMode] + channels for pt in ptDict.values() for cat in catSel]
 
 # create dictionary structure
 yields = {}
@@ -145,6 +153,7 @@ for estName in [e.name for e in allEstimators] + ["MC","MC_gen","MC_misID","MC_h
 jobs = []
 for estimator in allEstimators:
     cat = estimator.name.split("_")[-1] if estimator.name.split("_")[-1] in ["gen","misID","had"] else "all"
+    if cat == "had": continue
     est = estimator.name.split("_")[0]
     for i_region, region in enumerate(allPhotonRegions):
         for i_mode, mode in enumerate(channels):
@@ -161,6 +170,7 @@ else:
 for est, region, cat, mode, y in results:
     if est == "TTG" and cat == "gen":
         signal[ptDict[str(region)]][mode] = u_float(y)
+        signal[ptDict[str(region)]][allMode] += u_float(y)
 
     if y < 0: continue
     yields[est][ptDict[str(region)]][cat][mode] = u_float(y)
@@ -177,9 +187,10 @@ for est, region, cat, mode, y in results:
             yields["MC"][ptDict[str(region)]][cat][allMode] += yields[est][ptDict[str(region)]][cat][mode]
             yields["MC"][ptDict[str(region)]][cat][mode]    += yields[est][ptDict[str(region)]][cat][mode]
 
+
 # categorize QCD as hadronic to make the yield table consistant
 for est, region, cat, mode, y in results:
-    if y <= 0 or not "QCD" in est or cat != "all": continue
+    if y <= 0 or not ("QCD" in est or "fake" in est) or cat != "all": continue
     yields[est][ptDict[str(region)]]["had"][mode] = yields[est][ptDict[str(region)]][cat][mode]
 
     # fill all and MC entries for each cat
@@ -215,13 +226,14 @@ for estimator in list(set([e.name.split("_")[0] for e in allEstimators])) + ["MC
                 elif estimator == "Data":
                     yields[estimator][region][cat][mode] = str(int(yields[estimator][region][cat][mode].val))
                 else:
-#                    yields[estimator][region][cat][mode] = "%.2f"%yields[estimator][region][cat][mode].val + " (%.1f%s)"%(yields[estimator][region][cat][mode].val*100/signal[region][mode].val if signal[region][mode].val else 0, "\\\\%")
-                    yields[estimator][region][cat][mode] = "%.2f"%yields[estimator][region][cat][mode].val + " "
+                    yields[estimator][region][cat][mode] = "%.2f"%yields[estimator][region][cat][mode].val + " (%.1f%s)"%(yields[estimator][region][cat][mode].val*100/signal[region][mode].val if signal[region][mode].val else 0, "\\%")
 
 
 def printYieldTable( m ):
 
-    with open("logs/%i_%s-%s_%s.log"%(args.year,cr,m, "highMlg" if args.highMlg else "lowMlg"), "w") as f:
+    if (m != "e" and "misDY" in args.controlRegion): return
+
+    with open("logs/%i_%s-%s.log"%(args.year,cr,m), "w") as f:
     
         if m in ["e", "all"]:
             f.write("\\begin{frame}\n")
@@ -256,9 +268,10 @@ def printYieldTable( m ):
         f.write("MC total & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s & \\textbf{%s} & %s & %s & %s \\\\ \n" %tuple( [yields["MC"][pt][cat][m] for lep, pt, cat in regions if lep == m] ))
         f.write("\\hline\n")
         if not args.noData:
-            f.write("data total & \\textbf{%s} & \\multicolumn{3}{c||}{} & \\textbf{%s} & \\multicolumn{3}{c||}{} & \\textbf{%s} & \\multicolumn{3}{c||}{} & \\textbf{%s} & \\multicolumn{3}{c}{} \\\\ \n" %tuple( [ yields["Data"][pt][cat][m] for lep, pt, cat in regions if cat=="all" if lep == m] ))
+            f.write("data total & \\textbf{%s} & \\multicolumn{3}{c||}{} & \\textbf{%s} & \\multicolumn{3}{c||}{} & \\textbf{%s} & \\multicolumn{3}{c||}{} & \\textbf{%s} & \\multicolumn{3}{c}{} \\\\ \n" %tuple( [ yields["Data"][pt][cat][m] for lep, pt, cat in regions if cat=="all" and lep == m] ))
             f.write("\\hline\n")
             f.write("data/MC    & \\textbf{%.2f} & \\multicolumn{3}{c||}{} & \\textbf{%.2f} & \\multicolumn{3}{c||}{} & \\textbf{%.2f} & \\multicolumn{3}{c||}{} & \\textbf{%.2f} & \\multicolumn{3}{c}{} \\\\ \n" %tuple( [float(yields["Data"][pt][cat][m])/float(yields["MC"][pt][cat][m].split(" ")[0]) if float(yields["MC"][pt][cat][m].split(" ")[0]) > 0 and float(yields["Data"][pt][cat][m]) > 0 else 1. for lep, pt, cat in regions if cat == "all" if lep == m] ))
+#            f.write("data/MC    & \\textbf{%.2f} & \\multicolumn{3}{c||}{} & \\textbf{%.2f} & \\multicolumn{3}{c||}{} & \\textbf{%.2f} & \\multicolumn{3}{c||}{} & \\textbf{%.2f} & \\multicolumn{3}{c}{} \\\\ \n" %tuple( [float(yields["Data"][pt][cat][m])/float(yields["MC"][pt][cat][m]) if yields["MC"][pt][cat][m] != "" and yields["Data"][pt][cat][m] != "" and float(yields["MC"][pt][cat][m]) > 0 else 1. for lep, pt, cat in regions if cat == "all" and lep == m] ))
             f.write("\\hline\n")
         f.write("\\hline\n")
     
@@ -271,10 +284,9 @@ def printYieldTable( m ):
         f.write("}\n\n") #resizebox
 
         f.write("\\end{table}\n\n")
-        if m in ["mu", "all"]:
+        if m in ["mu", "all"] or (m == "e" and "misDY" in args.controlRegion):
             f.write("\\end{frame}\n")
         f.write("\n\n\n")
-
 
 
 for m in [allMode] + channels:

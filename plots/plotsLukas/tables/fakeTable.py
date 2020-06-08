@@ -124,7 +124,7 @@ def wrapper(arg):
 
         isSR = "low" in sieie and "low" in chgIso
 
-        if   isSR: param = {}
+        if   isSR: param = {"addMisIDSF":addSF}
         elif "low"  in sieie and "high" in chgIso: param = { "photonIso":"highChgIso",          "addMisIDSF":addSF }
         elif "high" in sieie and "low"  in chgIso: param = { "photonIso":"highSieie",           "addMisIDSF":addSF }
         elif "high" in sieie and "high" in chgIso: param = { "photonIso":"highChgIsohighSieie", "addMisIDSF":addSF }
@@ -145,7 +145,8 @@ def wrapper(arg):
                 estimate = DataDrivenQCDEstimate( name="QCD-DD" )
                 estimate.initCache(setup.defaultCacheDir())
                 y  = estimate.cachedEstimate( region, channel, setup_fake, checkOnly=True )
-                y *= QCDSF_val[setup.year]
+                y *= QCDSF_val[setup.year].val
+                y  = u_float(y.val,0)
             else:
                 y = u_float(0,0)
         else:
@@ -153,18 +154,17 @@ def wrapper(arg):
             estimate.initCache(setup.defaultCacheDir())
             y = estimate.cachedEstimate( region, channel, setup_fake, checkOnly=True )
 
-            if addSF and not isSR:
-                if "DY_LO" in estimate.name:    y *= DYSF_val[setup.year] #add DY SF
-                elif "WJets" in estimate.name:  y *= WJetsSF_val[setup.year] #add WJets SF
-                elif "TT_pow" in estimate.name: y *= TTSF_val[setup.year] #add TT SF
-                elif "TTG" in estimate.name:    y *= SSMSF_val[setup.year] #add TTG SF
-                elif "ZG" in estimate.name:     y *= ZGSF_val[setup.year] #add ZGamma SF
-                elif "WG" in estimate.name:     y *= WGSF_val[setup.year] #add WGamma SF
+            if addSF:
+                if "DY_LO" in estimate.name:    y *= DYSF_val[setup.year].val #add DY SF
+                elif "WJets" in estimate.name:  y *= WJetsSF_val[setup.year].val #add WJets SF
+                elif "Top" in estimate.name: y *= TTSF_val[setup.year].val #add TT SF
+                elif "TTG" in estimate.name:    y *= SSMSF_val[setup.year].val #add TTG SF
+                elif "ZG" in estimate.name:     y *= ZGSF_val[setup.year].val #add ZGamma SF
+                elif "WG" in estimate.name:     y *= WGSF_val[setup.year].val #add WGamma SF
 
         if args.removeNegative and y < 0: y = u_float(0,0)
 
-        return est, sieie, chgIso, str(region), cat, channel, int(round(y.val))
-
+        return est, sieie, chgIso, str(region), cat, channel, y.tuple()
 
 yields = {}
 for estName in [e.name for e in allEstimators] + ["MC","MC_gen","MC_misID","MC_had"]:
@@ -179,7 +179,7 @@ for estName in [e.name for e in allEstimators] + ["MC","MC_gen","MC_misID","MC_h
                 for i_cat, cat in enumerate(catSel):
                     yields[est][sieie][chgIso][ptDict[str(region)]][cat] = {}
                     for i_mode, mode in enumerate(channels + [allMode]):
-                        yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode] = 0
+                        yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode] = u_float(0)
 
 jobs = []
 for estimator in allEstimators:
@@ -201,8 +201,8 @@ else:
 
 for est, sieie, chgIso, region, cat, mode, y in results:
     if y < 0: continue
-    yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode] = y
-    if yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode] > 0:
+    yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode] = u_float(y)
+    if float(yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]) > 0:
         yields[est][sieie][chgIso][ptDict[str(region)]][cat][allMode] += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
         if est != "Data":
             yields["MC"][sieie][chgIso][ptDict[str(region)]][cat][allMode] += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
@@ -217,7 +217,7 @@ for estimator in allEstimators:
                 for i_mode, mode in enumerate(channels):
 
                     if yields[est][sieie][chgIso][ptDict[str(region)]]["all"][mode] <= 0:
-                        yields[est][sieie][chgIso][ptDict[str(region)]]["all"][mode] = 0
+                        yields[est][sieie][chgIso][ptDict[str(region)]]["all"][mode] = u_float(0)
                         for i_cat, cat in enumerate(["gen","misID","had"]):
                             yields[est][sieie][chgIso][ptDict[str(region)]]["all"][mode]    += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
                             yields[est][sieie][chgIso][ptDict[str(region)]]["all"][allMode] += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
@@ -225,7 +225,7 @@ for estimator in allEstimators:
                                 yields["MC"][sieie][chgIso][ptDict[str(region)]]["all"][allMode] += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
                                 yields["MC"][sieie][chgIso][ptDict[str(region)]]["all"][mode]    += yields[est][sieie][chgIso][ptDict[str(region)]][cat][mode]
 
-mc.sort(key=lambda est: -yields[est]["lowSieie"]["lowChgIso"][ptDict[str(allPhotonRegions[0])]]["all"][allMode])
+mc.sort(key=lambda est: -yields[est]["lowSieie"]["lowChgIso"][ptDict[str(allPhotonRegions[0])]]["all"][allMode].val)
 
 # remove negative entries
 for estName in [e.name for e in allEstimators] + ["MC","MC_gen","MC_misID","MC_had"]:
@@ -236,9 +236,9 @@ for estName in [e.name for e in allEstimators] + ["MC","MC_gen","MC_misID","MC_h
                 for cat in yields[estimator][sieie][chgIso][region].keys():
                     for mode in yields[estimator][sieie][chgIso][region][cat].keys():
                         if yields[estimator][sieie][chgIso][region][cat][mode] < 0:
-                            yields[estimator][sieie][chgIso][region][cat][mode] = ""
+                            yields[estimator][sieie][chgIso][region][cat][mode] = str(u_float(0))
                         else:
-                            yields[estimator][sieie][chgIso][region][cat][mode] = str(int(round(float(yields[estimator][sieie][chgIso][region][cat][mode]))))
+                            yields[estimator][sieie][chgIso][region][cat][mode] = str(yields[estimator][sieie][chgIso][region][cat][mode]) #"%.2f"%float(yields[estimator][sieie][chgIso][region][cat][mode])
 
 def printHadFakeYieldTable( m ):
 
