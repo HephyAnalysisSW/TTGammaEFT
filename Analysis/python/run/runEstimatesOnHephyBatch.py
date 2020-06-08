@@ -29,26 +29,30 @@ for name, cr in crs.items():
     if not est and not "processes" in cr: est = default_sampleList
     elif not est:                         est = [ e for eList in cr["processes"].values() for e in eList["process"] ] + ["Data"]
 
+    est = allProcesses
+
     if "unfold" in name.lower(): continue
     if "fake" in name.lower(): continue
     if "fine" in name.lower(): continue
     if "vgmis" in name.lower(): continue
     if "eta" in name.lower(): continue
-    if name=="SR2": continue
-    if name=="SR3": continue
-    if name=="SR4p": continue
+#    if name=="SR2": continue
+#    if name=="SR3": continue
+#    if name=="SR4p": continue
+    if not "SR" in name or "M3" in name: continue
 
 #    if not "3p" in name: continue
-    if not "SR3M3" in name: continue
+#    if not "SR" in name: continue
 
     for estimator in est:
-        opt = option if not "DD" in estimator else option + " --noSystematics"
+        opt = option if not "QCD-DD" in estimator else option + " --noSystematics"
         title = " --title est%s_%s"%(year[2:], estimator) if submitCMD.count("submit") else ""
 
+        if not "np" in estimator and not "fake" in estimator and not "hp" in estimator and not "PU" in estimator: continue
 #        if not "had" in estimator or "SR" in name: continue # safe time for qcd estimate
-#        if not "had" in estimator or not "SR" in name: continue # safe time for qcd estimate
-#        if not "DD" in estimator: continue # safe time for qcd estimate
-#        if not "DD" in estimator and estimator != "DY_LO": continue # safe time for qcd estimate
+#        if not ("had" in estimator and "SR" in name): continue # safe time for qcd estimate
+#        if not "QCD-DD" in estimator: continue # safe time for qcd estimate
+#        if not "QCD-DD" in estimator and estimator != "DY_LO": continue # safe time for qcd estimate
 #        if not "other" in estimator: continue # safe time for qcd estimate
 #        if not "DD" in estimator: continue # safe time for qcd estimate
 #        if not "DY" in estimator or not cr["noPhotonCR"]: continue # safe time for qcd estimate
@@ -57,10 +61,8 @@ for name, cr in crs.items():
 
         photonRegions = cr["inclRegion"] + cr["regions"] if not cr["noPhotonCR"] else cr["regions"]
 
-        nJobs = len(photonRegions)#*2
-#        if "TTG" in estimator: nJobs *= 26
-#        elif not "DD" in estimator and not "Data" in estimator: nJobs *= 23
-#        nJobs = int(nJobs/20.)
+        nJobs = len(photonRegions)*2
+        if "fakes-DD" in estimator: nJobs *= 23
 
         if submitCMD.count("submit") or submitCMD.count("echo"):
             os.system( submitCMD + title + ' "python run_estimate.py --cores 1 --controlRegion %s --selectEstimator '%(name) + estimator + opt + ' #SPLIT%i"'%nJobs )

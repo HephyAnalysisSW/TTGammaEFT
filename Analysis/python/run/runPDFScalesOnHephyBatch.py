@@ -22,22 +22,14 @@ for name, cr in crs.items():
     if not est and not "processes" in cr: est = default_sampleList
     elif not est:                         est = [ e for eList in cr["processes"].values() for e in eList["process"] ] + ["Data"]
 
-#    if not "mistt2" in name.lower(): continue
-    if "4" in name.lower() and not "4p" in name.lower(): continue
-    if "2" in name.lower() and not name=="misTT2": continue
-    if"met" in name.lower(): continue
-#    if "3p" in name.lower(): continue
-    if "5" in name.lower(): continue
     if "unfold" in name.lower(): continue
     if "fake" in name.lower(): continue
     if "fine" in name.lower(): continue
-    if "eta" in name.lower(): continue
     if "vgmis" in name.lower(): continue
+    if "eta" in name.lower(): continue
+    if name=="SR2": continue
     if name=="SR3": continue
     if name=="SR4p": continue
-#    if not cr["noPhotonCR"]: continue # safe time for qcd estimate
-    if "EC" in name: continue
-    if "Barrel" in name: continue
 
     for estimator in est:
         if not "TTG" in estimator: continue
@@ -46,5 +38,5 @@ for name, cr in crs.items():
         title = " --title est%s_%s"%(year[2:], estimator) if submitCMD.count("submit") else ""
 
         photonRegions = cr["inclRegion"] + cr["regions"] if not cr["noPhotonCR"] else cr["regions"]
-        nJobs = int(((len(photonRegions))*2*40+40)/10.)
+        nJobs = int(((len(photonRegions))*2*40+40)/40.)
         os.system( submitCMD + title + ' "python runPDFandScale.py %s --controlRegion %s --selectEstimator %s #SPLIT%i"'%(option, name, estimator, nJobs) )

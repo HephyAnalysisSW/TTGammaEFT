@@ -37,7 +37,6 @@ argParser.add_argument( "--addWGSF",            action="store_true",            
 argParser.add_argument( "--addDYSF",            action="store_true",                                                        help="add default DY scale factor" )
 argParser.add_argument( "--addTTSF",            action="store_true",                                                        help="add default DY scale factor" )
 argParser.add_argument( "--addWJetsSF",         action="store_true",                                                        help="add default DY scale factor" )
-argParser.add_argument( "--addFakeSF",          action="store_true",                                                        help="add default fake scale factor" )
 argParser.add_argument( "--addMisIDSF",         action="store_true",                                                        help="add default misID scale factor" )
 argParser.add_argument( "--addSSM",             action="store_true",                                                        help="add default signal strength modifer" )
 argParser.add_argument( "--keepCard",           action="store_true",                                                        help="Overwrite existing output files" )
@@ -140,7 +139,6 @@ if args.addWGSF:     regionNames.append("addWGSF")
 if args.addZGSF:     regionNames.append("addZGSF")
 if args.addSSM:      regionNames.append("addSSM")
 if args.addMisIDSF:  regionNames.append("addMisIDSF")
-if args.addFakeSF:   regionNames.append("addFakeSF")
 if args.inclRegion:  regionNames.append("incl")
 if args.misIDPOI:    regionNames.append("misIDPOI")
 if args.dyPOI:       regionNames.append("dyPOI")
@@ -248,17 +246,8 @@ def wrapper():
 #        elif not args.ttPOI:
 #            c.addUncertainty( "TT_norm", shapeString )
                 
-        default_HadFakes_unc = 0.05
-#        c.addUncertainty( "Fakes_norm",      shapeString )
-        default_HadCorr_unc = 0.05
-        addFakeUnc = False
-        if any( ["fake" in name for name in args.useRegions] ):
-            addFakeUnc = True
-            c.addUncertainty( "fake_highSieie",  shapeString )
-            c.addUncertainty( "fake_lowSieie",   shapeString )
-            for i_iso, iso in enumerate(chgIsoRegions):
-                print i_iso, iso
-                c.addUncertainty( "fake_corr_%i"%i_iso,   shapeString )                
+        default_HadFakes_unc = 0.10
+        c.addUncertainty( "Fakes_norm",      shapeString )
 
         if with1pCR:
 #            c.addFreeParameter('ZG', 1, '[0.,2.]')
@@ -266,16 +255,11 @@ def wrapper():
 
         default_WG_unc    = 1.00
 #        c.addUncertainty( "WG_norm",      shapeString )
-        if args.year == 2018:
-            c.addUncertainty( "WG_highMlg",      shapeString )
 
         default_ZG_unc    = 0.3
         c.addUncertainty( "ZG_norm",      shapeString )
 
-        default_PU_unc    = 0.15
-        c.addUncertainty( "PU_norm",      shapeString )
-
-        default_Other_unc    = 0.15
+        default_Other_unc    = 0.30
         c.addUncertainty( "Other_norm",      shapeString )
         c.addUncertainty( "Other_0p",      shapeString )
 
@@ -423,9 +407,6 @@ def wrapper():
                             if e.name.count( "misID" ) and args.addMisIDSF:
                                 exp_yield *= misIDSF_val[args.year].val
                                 logger.info( "Scaling misID background %s by %f"%(e.name,misIDSF_val[args.year].val) )
-                            if e.name.count( "had" ) and args.addFakeSF:
-                                exp_yield *= fakeSF_val[args.year].val
-                                logger.info( "Scaling fake background %s by %f"%(e.name,fakeSF_val[args.year].val) )
                             e.expYield = exp_yield
                             expected  += exp_yield
 
@@ -443,8 +424,8 @@ def wrapper():
                         tune, erdOn, pu, jec, jer, sfb, sfl, trigger, lepSF, lepTrSF, phSF, eVetoSF, pfSF = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                         ps, scale, pdf, isr = 0, 0, 0, 0
                         qcdTF3, qcdTF4, wjets4p, wg4p = 0, 0, 0, 0
-                        dyGenUnc, ttGenUnc, vgGenUnc, wjetsGenUnc, otherGenUnc, wghigh, misIDUnc, lowSieieUnc, highSieieUnc, misIDPtUnc = 0, 0, 0, 0, 0, 0.001, 0, 0.001, 0.001, 0.001
-                        magic, wg, zg, misID4p, dy4p, zg4p, misIDUnc, qcdUnc, vgUnc, wgUnc, zgUnc, dyUnc, ttUnc, wjetsUnc, other0pUnc, otherUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                        dyGenUnc, ttGenUnc, vgGenUnc, wjetsGenUnc, otherGenUnc, misIDUnc, lowSieieUnc, highSieieUnc, misIDPtUnc = 0, 0, 0, 0, 0.001, 0, 0.001, 0.001, 0.001
+                        hadFakesUnc, wg, zg, misID4p, dy4p, zg4p, misIDUnc, qcdUnc, vgUnc, wgUnc, zgUnc, dyUnc, ttUnc, wjetsUnc, other0pUnc, otherUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                         for i in range(len(gammaPT_thresholds)-1):
                             locals()["ttg_bin%i_unc"%i] = 0
 
@@ -453,9 +434,6 @@ def wrapper():
                             down = proc_yield * (1 - sf.sigma/sf.val)
                             return abs(0.5*(up-down)/proc_yield) if proc_yield > 0 else max(up,down)
 
-                        fakeCorrUnc = []
-                        for i_iso, iso in enumerate(chgIsoRegions):
-                            fakeCorrUnc.append(0)
                         if expected.val:
                             for e in pList:
                                 y_scale   = e.expYield.val / expected.val
@@ -480,20 +458,9 @@ def wrapper():
                                             locals()["ttg_bin%i_unc"%pT_index] = y_scale * default_TTGpT_unc
                                 if e.name.count( "other" ):
                                     otherUnc += y_scale * default_Other_unc
-                                if e.name.count( "magic" ):
-                                    magic += y_scale * default_PU_unc
-                                if any( ["fake" in name for name in args.useRegions] ):
-                                    if "low" in setup.name and e.name.count( "_had" ):
-                                        lowSieieUnc += y_scale * default_HadFakes_unc #getSFUncertainty( proc_yield=e.expYield.val, sf=fakeSF_val[args.year] )
-                                    if "high" in setup.name and e.name.count( "_had" ):
-                                        highSieieUnc += y_scale * default_HadFakes_unc #getSFUncertainty( proc_yield=e.expYield.val, sf=fakeSF_val[args.year] )
-#                                    if e.name.count( "_had" ):
-#                                        hadFakesUnc += y_scale * default_HadFakes_unc #getSFUncertainty( proc_yield=e.expYield.val, sf=fakeSF_val[args.year] )
-                                    for i_iso, iso in enumerate(chgIsoRegions):
-                                        if iso.cutString() in r.cutString():
-                                            fakeCorrUnc[i_iso] += y_scale * default_HadCorr_unc
-                                        if not "fake" in setup.name and i_iso == 0 and e.name.count( "_had" ):
-                                            fakeCorrUnc[i_iso] += y_scale * default_HadCorr_unc
+
+                                if e.name.count( "_had" ) or e.name.count( "fakes-DD" ):
+                                    hadFakesUnc += y_scale * default_HadFakes_unc
 
                                 if e.name.count( "ZG" ):
                                     zg += y_scale * default_ZG_unc
@@ -513,10 +480,6 @@ def wrapper():
 
                                 if e.name.count( "WG" ) and "4" in setup.name:
                                     wg4p += y_scale * default_WG4p_unc
-                                if e.name.count( "WG" ):
-                                    if mLgRegions[1].cutString() in r.cutString() and channel=="mu":
-                                        wghigh   += y_scale * default_WG_unc
-#                                    wg4p += y_scale * 0.001
 
                                 if e.name.count( "WJets" ) and "4" in setup.name:
                                     wjets4p += y_scale * default_WJets4p_unc
@@ -600,9 +563,6 @@ def wrapper():
 #                        if qcdTF3:
 #                            addUnc( c, "QCD_TF", binname, pName, qcdTF3, expected.val, signal )
 
-                        if wghigh:
-                            addUnc( c, "WG_highMlg", binname, pName, wghigh, expected.val, signal )
-
                         if not args.inclRegion and with1pCR:
                             for i in range(len(gammaPT_thresholds)-1):
                                 if locals()["ttg_bin%i_unc"%i]:
@@ -615,9 +575,6 @@ def wrapper():
 #                            addUnc( c, "TT_norm", binname, pName, ttUnc, expected.val, signal )
                         if wjetsUnc and not args.wJetsPOI: # and args.addWJetsSF:
                             addUnc( c, "WJets_norm", binname, pName, wjetsUnc, expected.val, signal )
-
-                        if magic:
-                            addUnc( c, "PU_norm", binname, pName, magic, expected.val, signal )
 
                         if otherUnc and setup.noPhotonCR:
                             addUnc( c, "Other_0p", binname, pName, otherUnc, expected.val, signal )
@@ -644,16 +601,8 @@ def wrapper():
 #                        if misID4p:
 #                            addUnc( c, "misID4p", binname, pName, misID4p, expected.val, signal )
 
-#                        if hadFakesUnc: # and args.addFakeSF:
-#                            addUnc( c, "Fakes_norm", binname, pName, hadFakesUnc, expected.val, signal )
-                        if any( ["fake" in name for name in args.useRegions] ):
-                            if lowSieieUnc:
-                                addUnc( c, "fake_lowSieie", binname, pName, lowSieieUnc, expected.val, signal )
-                            if highSieieUnc:
-                                addUnc( c, "fake_highSieie", binname, pName, highSieieUnc, expected.val, signal )
-                            if any(fakeCorrUnc) and addFakeUnc:
-                                for i_iso, iso in enumerate(chgIsoRegions):
-                                    addUnc( c, "fake_corr_%i"%i_iso, binname, pName, fakeCorrUnc[i_iso], expected.val, signal )                
+                        if hadFakesUnc: # and args.addFakeSF:
+                            addUnc( c, "Fakes_norm", binname, pName, hadFakesUnc, expected.val, signal )
 
                         # MC bkg stat (some condition to neglect the smaller ones?)
                         uname = "Stat_%s_%s"%(binname, pName if not (newPOI_input and signal) else "signal")
@@ -742,8 +691,6 @@ def wrapper():
         preFit         = postFitResults["tree_prefit"]
         printSF        = ["QCD_1p", "ZG_norm"]
         unc            = {"QCD_1p":default_QCD_unc, "ZG_norm":default_ZG_unc}
-#        for i_iso, iso in enumerate(chgIsoRegions):
-#            printSF.append("fake_corr_%i"%i_iso)
 
         if not os.path.isdir("logs"): os.mkdir("logs")
         write_time  = time.strftime("%Y %m %d %H:%M:%S", time.localtime())

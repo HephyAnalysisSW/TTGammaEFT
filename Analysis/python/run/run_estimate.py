@@ -77,7 +77,7 @@ for channel in channels:
     for (i, r) in enumerate(allPhotonRegions):
 #        if args.selectRegion != i: continue
         jobs.append((r, channel, setup, None))
-        if not estimate.isData and not args.noSystematics and not "DD" in args.selectEstimator:
+        if not estimate.isData and not args.noSystematics:
             if "TTG" in args.selectEstimator:
                 jobs.extend(estimate.getSigSysJobs(r, channel, setup))
             else:
