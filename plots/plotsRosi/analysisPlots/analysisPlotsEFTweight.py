@@ -59,19 +59,19 @@ eftSample = TTG_4WC_ref
 # can only be used if you have a selection with at least one photon
 os.environ["gammaSkim"]="True" if "hoton" in args.selection or "pTG" in args.selection else "False"
 if args.year == 2016:
-    from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed      import *
+    import TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed as mc_samples
     if not args.noData:
-        from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
+        from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import Run2016 as data_sample
 
 elif args.year == 2017:
-    from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed        import *
+    import TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed   as mc_samples
     if not args.noData:
-        from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
+        from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import Run2017 as data_sample
 
 elif args.year == 2018:
-    from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed      import *
+    import TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed as mc_samples
     if not args.noData:
-        from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
+        from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import Run2018 as data_sample
 
 # define some colors
 colors = [ ROOT.kRed+1, ROOT.kGreen-2, ROOT.kOrange+1, ROOT.kAzure+4 ]
@@ -292,21 +292,8 @@ tr            = TriggerSelector( args.year, singleLepton=True ) #single lepton t
 triggerCutMc  = tr.getSelection( "MC" )
 
 # Sample definition
-if args.year == 2016:
-    # mc samples are defined in TTGammaEFT/Samples/python/nanoTuples_Summer16_private_semilep_postProcessed.py
-    mc = [ TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
-#    mc_nottg = [ copy.deepcopy( TT_pow_16), copy.deepcopy( DY_LO_16), copy.deepcopy( WJets_16), copy.deepcopy( WG_16), copy.deepcopy( ZG_16),copy.deepcopy( rest_16) ]
-    ttg = TTG_16
-elif args.year == 2017:
-    # mc samples are defined in TTGammaEFT/Samples/python/nanoTuples_Fall17_private_semilep_postProcessed.py
-    mc = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
- #   mc_nottg = [ copy.deepcopy( TT_pow_17), copy.deepcopy( DY_LO_17), copy.deepcopy( WJets_17), copy.deepcopy( WG_17), copy.deepcopy( ZG_17), copy.deepcopy( rest_17)]
-    ttg = TTG_17
-elif args.year == 2018:
-    # mc samples are defined in TTGammaEFT/Samples/python/nanoTuples_Autumn18_private_semilep_postProcessed.py
-    mc = [ TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
-  #  mc_nottg = [ copy.deepcopy( TT_pow_18), copy.deepcopy( DY_LO_18), copy.deepcopy( WJets_18), copy.deepcopy( WG_18), copy.deepcopy( ZG_18), copy.deepcopy( rest_18)]
-    ttg = TTG_18
+mc  = [ mc_samples.TTG, mc_samples.TT_pow, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
+ttg = mc_samples.TTG
 
 if args.noData:
     # Scale the histograms by the luminosity taken by CMS in each year

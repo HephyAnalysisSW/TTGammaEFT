@@ -94,38 +94,16 @@ binning = [ 20, 0, 200 ]
 # Sample definition
 os.environ["gammaSkim"]="False" #always false for QCD estimate
 if args.year == 2016:
-    from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed  import *
-    from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
-    mc          = [ TTG_16, Top_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
-    ttg         = TTG_16
-    tt          = Top_16
-    wjets       = WJets_16
-    ttg         = TTG_16
-    wg          = WG_16
-    other       = rest_16
-    data_sample = Run2016
+    import TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed as mc_samples
+    from   TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import Run2016 as data_sample
 elif args.year == 2017:
-    from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed    import *
-    from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
-    mc          = [ TTG_17, Top_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
-    ttg         = TTG_17
-    tt          = Top_17
-    wjets       = WJets_17
-    ttg         = TTG_17
-    wg          = WG_17
-    other       = rest_17
-    data_sample = Run2017
+    import TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed as mc_samples
+    from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import Run2017 as data_sample
 elif args.year == 2018:
-    from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed  import *
-    from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
-    mc          = [ TTG_18, Top_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
-    ttg         = TTG_18
-    tt          = Top_18
-    wjets       = WJets_18
-    ttg         = TTG_18
-    wg          = WG_18
-    other       = rest_18
-    data_sample = Run2018
+    import TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed as mc_samples
+    from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import Run2018 as data_sample
+
+mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
 
 read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval/I",
                      "reweightPU/F", "reweightPUDown/F", "reweightPUUp/F", "reweightPUVDown/F", "reweightPUVUp/F",

@@ -60,60 +60,30 @@ class Setup:
             # Set the redirector in the samples repository to the global redirector
             from Samples.Tools.config import redirector_global as redirector
         os.environ["gammaSkim"] = str(photonSelection)
+        #define samples
         if year == 2016 and not checkOnly:
-            #define samples
-            from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed  import TTG_16, Top_16, DY_LO_16, WJets_16, WG_16, ZG_16, QCD_16, GJets_16, rest_16, TTG_TuneUp_16, TTG_TuneDown_16, TTG_erdOn_16
-            from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import Run2016
-            ttg         = TTG_16
-            ttg_TuneUp   = TTG_TuneUp_16
-            ttg_TuneDown = TTG_TuneDown_16
-            ttg_erdOn    = TTG_erdOn_16
-            tt          = Top_16
-            DY          = DY_LO_16
-            zg          = ZG_16
-            wg          = WG_16
-            wjets       = WJets_16
-            other       = rest_16 #other_16
-            qcd         = QCD_16
-            gjets       = GJets_16
-            data        = Run2016
-
+            import TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed as mc_samples 
+            from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import Run2016 as data
         elif year == 2017 and not checkOnly:
-            #define samples
-            from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed    import TTG_17, Top_17, DY_LO_17, WJets_17, WG_17, ZG_17, QCD_17, GJets_17, rest_17, TTG_TuneUp_17, TTG_TuneDown_17, TTG_erdOn_17
-            from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import Run2017
-            ttg          = TTG_17
-            ttg_TuneUp   = TTG_TuneUp_17
-            ttg_TuneDown = TTG_TuneDown_17
-            ttg_erdOn    = TTG_erdOn_17
-            tt           = Top_17
-            DY           = DY_LO_17
-            zg           = ZG_17
-            wg           = WG_17
-            wjets        = WJets_17
-            other        = rest_17 #other_17
-            qcd          = QCD_17
-            gjets        = GJets_17
-            data         = Run2017
-
+            import TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed  as mc_samples 
+            from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import Run2017 as data
         elif year == 2018 and not checkOnly:
-            #define samples
-            from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed  import TTG_18, Top_18, DY_LO_18, WJets_18, WG_18, ZG_18, QCD_18, GJets_18, rest_18, TTG_TuneUp_18, TTG_TuneDown_18, TTG_erdOn_18
-            from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import Run2018
-            ttg         = TTG_18
-            ttg_TuneUp   = TTG_TuneUp_18
-            ttg_TuneDown = TTG_TuneDown_18
-            ttg_erdOn    = TTG_erdOn_18
-            tt          = Top_18
-            DY          = DY_LO_18
-            zg          = ZG_18
-            wg          = WG_18
-            wjets       = WJets_18
-            other       = rest_18 #other_18
-            qcd         = QCD_18
-            gjets       = GJets_18
-            data        = Run2018
+            import TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed as mc_samples
+            from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import Run2018 as data
 
+        # not really needed I think:
+        ttg          = mc_samples.TTG
+        ttg_TuneUp   = mc_samples.TTG_TuneUp
+        ttg_TuneDown = mc_samples.TTG_TuneDown
+        ttg_erdOn    = mc_samples.TTG_erdOn
+        tt           = mc_samples.Top
+        DY           = mc_samples.DY_LO
+        zg           = mc_samples.ZG
+        wg           = mc_samples.WG
+        wjets        = mc_samples.WJets
+        other        = mc_samples.rest #other
+        qcd          = mc_samples.QCD
+        gjets        = mc_samples.GJets
 
         if checkOnly:
             self.processes = {}

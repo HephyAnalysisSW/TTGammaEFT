@@ -64,22 +64,22 @@ if args.normalize:       args.plot_directory += "_normalize"
 #os.environ["gammaSkim"]="True" if "hoton" in args.selection or "pTG" in args.selection else "False"
 os.environ["gammaSkim"]="False"
 if args.year == 2016:
-    from TTGammaEFT.Samples.nanoTuples_Summer16_private_postProcessed      import *
+    import TTGammaEFT.Samples.nanoTuples_Summer16_private_postProcessed as mc_samples
     if not args.noData:
         del postprocessing_directory
-        from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_postProcessed import *
+        from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_postProcessed import Run2016 as data_sample
 
 elif args.year == 2017:
-    from TTGammaEFT.Samples.nanoTuples_Fall17_private_postProcessed        import *
+    import TTGammaEFT.Samples.nanoTuples_Fall17_private_postProcessed as mc_samples
     if not args.noData:
         del postprocessing_directory
-        from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_postProcessed import *
+        from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_postProcessed import Run2017 as data_sample
 
 elif args.year == 2018:
-    from TTGammaEFT.Samples.nanoTuples_Autumn18_private_postProcessed      import *
+    import TTGammaEFT.Samples.nanoTuples_Autumn18_private_postProcessed as mc_samples
     if not args.noData:
         del postprocessing_directory
-        from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_postProcessed import *
+        from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_postProcessed import Run2018 as data_sample
 
 # Text on the plots
 def drawObjects( plotData, dataMCScale, lumi_scale ):
@@ -293,45 +293,30 @@ sequence = [ ]#\
 #           ]
 
 # Sample definition
-if args.year == 2016:
-    if args.onlyTTG and not categoryPlot: mc = [ TTG_16 ]
-    elif not categoryPlot:
-        mc = [ TTG_16, DY_LO_16, Top_16, singleTop_16, ZG_16 ]
-        if args.addOtherBg: mc += [ other_16 ]
-    elif categoryPlot:
-        all = all_16 if args.addOtherBg else all_noOther_16
-elif args.year == 2017:
-    if args.onlyTTG and not categoryPlot: mc = [ TTG_17 ]
-    elif not categoryPlot:
-        mc = [ TTG_17, DY_LO_17, Top_17, singleTop_17, ZG_17 ]
-        if args.addOtherBg: mc += [ other_17 ]
-    elif categoryPlot:
-        all = all_17 if args.addOtherBg else all_noOther_17
-elif args.year == 2018:
-    if args.onlyTTG and not categoryPlot: mc = [ TTG_18 ]
-    elif not categoryPlot:
-        mc = [ TTG_18, DY_LO_18, Top_18, singleTop_18, ZG_18 ]
-        if args.addOtherBg: mc += [ other_18 ]
-    elif categoryPlot:
-        all = all_18 if args.addOtherBg else all_noOther_18
+if args.onlyTTG and not categoryPlot: mc = [ TTG ]
+elif not categoryPlot:
+    mc = [ TTG, DY_LO, Top, singleTop, ZG ]
+    if args.addOtherBg: mc += [ other ]
+elif categoryPlot:
+    all_mc = all_mc if args.addOtherBg else all_noOther
 
 if categoryPlot:
-    all_cat0 = all
+    all_cat0 = all_mc
     all_cat0.name = "cat0"
     all_cat0.texName = "Genuine Photons"
     all_cat0.color   = ROOT.kOrange
 
-    all_cat1 = copy.deepcopy(all)
+    all_cat1 = copy.deepcopy(all_mc)
     all_cat1.name    = "cat1"
     all_cat1.texName = "Hadronic Photons"
     all_cat1.color   = ROOT.kBlue+2
 
-    all_cat2 = copy.deepcopy(all)
+    all_cat2 = copy.deepcopy(all_mc)
     all_cat2.name    = "cat2"
     all_cat2.texName = "MisId Electrons"
     all_cat2.color   = ROOT.kCyan+2
 
-    all_cat3 = copy.deepcopy(all)
+    all_cat3 = copy.deepcopy(all_mc)
     all_cat3.name    = "cat3"
     all_cat3.texName = "Hadronic Fakes"
     all_cat3.color   = ROOT.kRed+1
@@ -343,9 +328,6 @@ if args.noData:
     elif args.year == 2018: lumi_scale = 59.74
     stack = Stack( mc )
 else:
-    if args.year == 2016:   data_sample = Run2016
-    elif args.year == 2017: data_sample = Run2017
-    elif args.year == 2018: data_sample = Run2018
     data_sample.texName        = "data (legacy)"
     data_sample.name           = "data"
     data_sample.read_variables = [ "event/I", "run/I" ]

@@ -122,24 +122,24 @@ if args.useEOS:
 os.environ["gammaSkim"]="True" if photonSel and not args.invLeptonIso and not "NoIso" in args.mode else "False"
 if args.year == 2016:
     if args.useEOS: postprocessing_directory = "2016/MC_v20/semilep/"
-    from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed      import *
+    import TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed as mc_samples
     if not args.noData:
         if args.useEOS: postprocessing_directory = "2016/Data_v20/semilep/"
-        from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
+        from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import Run2016 as data_sample
 
 elif args.year == 2017:
     if args.useEOS: postprocessing_directory = "2017/MC_v20/semilep/"
-    from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed        import *
+    import TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed as mc_samples
     if not args.noData:
         if args.useEOS: postprocessing_directory = "2017/Data_v20/semilep/"
-        from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
+        from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import Run2017 as data_sample
 
 elif args.year == 2018:
     if args.useEOS: postprocessing_directory = "2018/MC_v20/semilep/"
-    from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed      import *
+    import TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed as mc_samples
     if not args.noData:
         if args.useEOS: postprocessing_directory = "2018/Data_v20/semilep/"
-        from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
+        from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import Run2018 as data_sample
 
 cache_dir = os.path.join(cache_directory, "qcdHistos", str(args.year))
 dirDB     = MergingDirDB(cache_dir)
@@ -675,67 +675,23 @@ def printWeight( event, sample ):
 sequence = []
 
 # Sample definition
-if args.year == 2016:
-    if args.onlyTTG and not categoryPlot and not args.leptonCategory:
-        mc = [ TTG_16, QCD_16 ]
-    elif categoryPlot:
-        all = all_noQCD_16 #all_16 if args.addOtherBg else all_noOther_16
-    elif args.leptonCategory:
-        all_noTT = all_noTT_16# if args.addOtherBg else all_noOther_noTT_16
-        TTbar    = Top_16
-        TTG      = TTG_16
+if args.onlyTTG and not categoryPlot and not args.leptonCategory:
+    mc = [ mc_samples.TTG, mc_samples.QCD ]
+elif categoryPlot:
+    all = mc_samples.all_noQCD #all_mc if args.addOtherBg else all_noOther
+elif args.leptonCategory:
+    all_noTT = mc_samples.all_noTT# if args.addOtherBg else all_noOther_noTT
+    TTbar    = mc_samples.Top
+    TTG      = mc_samples.TTG
+else:
+    if args.replaceZG:
+        mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.rest ]
     else:
-        if args.replaceZG:
-            mc = [ TTG_16, Top_16, DY_LO_16, WJets_16, WG_16, rest_16 ]
-        else:
-            mc = [ TTG_16, Top_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
-#        if not (args.invLeptonIso or "NoIso" in args.mode):
-#            mc += [ QCD_16 ]
-#            if args.noQCDDD: mc += [ GJets_16 ]
-        if not (args.invLeptonIso):
-            mc += [ QCD_16 ]
-            if args.noQCDDD or "NoIso" in args.mode: mc += [ GJets_16 ]
-        mc += [ QCD_16, GJets_16 ]
-elif args.year == 2017:
-    if args.onlyTTG and not categoryPlot and not args.leptonCategory:
-        mc = [ TTG_17, QCD_17 ]
-    elif categoryPlot:
-        all = all_noQCD_17 #all_17 if args.addOtherBg else all_noOther_17
-    elif args.leptonCategory:
-        all_noTT = all_noTT_17 #if args.addOtherBg else all_noOther_noTT_17
-        TTbar    = Top_17
-        TTG      = TTG_17
-    else:
-        if args.replaceZG:
-            mc = [ TTG_17, Top_17, DY_LO_17, WJets_17, WG_17, rest_17 ]
-        else:
-            mc = [ TTG_17, Top_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
-#        if not (args.invLeptonIso or "NoIso" in args.mode):
-#            mc += [ QCD_17 ]
-#            if args.noQCDDD: mc += [ GJets_17 ]
-        if not (args.invLeptonIso):
-            mc += [ QCD_17 ]
-            if args.noQCDDD or "NoIso" in args.mode: mc += [ GJets_17 ]
-elif args.year == 2018:
-    if args.onlyTTG and not categoryPlot and not args.leptonCategory:
-        mc = [ TTG_18, QCD_18 ]
-    elif categoryPlot:
-        all = all_noQCD_18 #all_18 if args.addOtherBg else all_noOther_18
-    elif args.leptonCategory:
-        all_noTT = all_noTT_18 #if args.addOtherBg else all_noOther_noTT_18
-        TTbar    = Top_18
-        TTG      = TTG_18
-    else:
-        if args.replaceZG:
-            mc = [ TTG_18, Top_18, DY_LO_18, WJets_18, WG_18, rest_18 ]
-        else:
-            mc = [ TTG_18, Top_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
-#        if not (args.invLeptonIso or "NoIso" in args.mode):
-#            mc += [ QCD_18 ]
-#            if args.noQCDDD: mc += [ GJets_18 ]
-        if not (args.invLeptonIso):
-            mc += [ QCD_18 ]
-            if args.noQCDDD or "NoIso" in args.mode: mc += [ GJets_18 ]
+        mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
+    if not (args.invLeptonIso):
+        mc += [ mc_samples.QCD ]
+        if args.noQCDDD or "NoIso" in args.mode: mc += [ mc_samples.GJets ]
+    mc += [ mc_samples.QCD, mc_samples.GJets ]
 
 if categoryPlot:
     all_cat0 = all
@@ -823,9 +779,6 @@ if args.noData:
     elif args.year == 2018: lumi_scale = 59.74
     stack = Stack( mc )
 else:
-    if args.year == 2016:   data_sample = Run2016
-    elif args.year == 2017: data_sample = Run2017
-    elif args.year == 2018: data_sample = Run2018
     data_sample.texName        = "data" # (legacy)"
     data_sample.name           = "data"
     data_sample.read_variables = [ "event/I", "run/I", "luminosityBlock/I" ]

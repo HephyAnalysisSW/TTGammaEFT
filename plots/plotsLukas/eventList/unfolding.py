@@ -15,7 +15,7 @@ logger_rt = logger_rt.get_logger("INFO", logFile = None)
 
 os.environ["gammaSkim"]="True"
 from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed      import *
-sample = TTG_16
+sample = TTG
 selectionString="all"#nLepTight1-nLepVeto1-nJet1-nBTag0-nPhoton1p-noGenMatch"
 variables = [
              TreeVariable.fromString("event/l"), TreeVariable.fromString('run/i'), TreeVariable.fromString("luminosityBlock/i"),

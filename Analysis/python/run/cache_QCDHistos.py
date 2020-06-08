@@ -92,14 +92,14 @@ if args.runOnLxPlus:
     from Samples.Tools.config import redirector_global as redirector
 os.environ["gammaSkim"]="False" #always false for QCD estimate
 if args.year == 2016 and not args.checkOnly:
-    from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed  import *
-    from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
+    import TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed as mc_samples
+    from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import Run2016 as data_sample
 elif args.year == 2017 and not args.checkOnly:
-    from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed    import *
-    from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
+    import TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed as mc_samples
+    from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import Run2017 as data_sample
 elif args.year == 2018 and not args.checkOnly:
-    from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed  import *
-    from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
+    import TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed as mc_samples
+    from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import Run2018 as data_sample
 
 def getYieldPlots():
     yieldPlots = []
@@ -327,28 +327,12 @@ read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval
                      "reweightBTag_SF/F", "reweightBTag_SF_b_Down/F", "reweightBTag_SF_b_Up/F", "reweightBTag_SF_l_Down/F", "reweightBTag_SF_l_Up/F",
                      "reweightL1Prefire/F", "reweightL1PrefireUp/F", "reweightL1PrefireDown/F",
                     ]
-
 sequence = []
 
 # Sample definition
-if args.year == 2016 and not args.checkOnly:
-    mc          = [ TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
-    data_sample = Run2016
-    qcd         = QCD_16
-    gjets       = GJets_16
-
-elif args.year == 2017 and not args.checkOnly:
-    mc          = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
-    data_sample = Run2017
-    qcd         = QCD_17
-    gjets       = GJets_17
-
-elif args.year == 2018 and not args.checkOnly:
-    mc          = [ TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
-    data_sample = Run2018
-    qcd         = QCD_18
-    gjets       = GJets_18
-
+mc          = [ mc_samples.TTG, mc_samples.TT_pow, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
+qcd         =   mc_samples.QCD
+gjets       =   mc_samples.GJets
 
 if not args.checkOnly:
     data_sample.read_variables = [ "event/I", "run/I", "luminosityBlock/I" ]
