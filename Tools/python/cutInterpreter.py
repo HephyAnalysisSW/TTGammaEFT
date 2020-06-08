@@ -100,6 +100,11 @@ special_cuts = {
     "lowZlg":               "mLtight0Gamma<=%f"%(mLgThresh),
     "highZlg":              "mLtight0Gamma>%f"%(mLgThresh),
 
+    "offZegSB":               "((abs(mLtight0GammaNoSieieNoChgIso-%s)>%s&&nElectronTight==1)||(nElectronTight==0))"%(mZ, zMassRange),             # Cut Z-Window only for egamma
+    "onZegSB":                "((abs(mLtight0GammaNoSieieNoChgIso-%s)<=%s&&nElectronTight==1)||(nElectronTight==0))"%(mZ, zMassRange),             # Cut Z-Window only for egamma
+    "offZegSBInv":               "((abs(mLinvtight0GammaNoSieieNoChgIso-%s)>%s&&nElectronTightInvIso==1)||(nElectronTightInvIso==0))"%(mZ, zMassRange),             # Cut Z-Window only for egamma
+    "onZegSBInv":                "((abs(mLinvtight0GammaNoSieieNoChgIso-%s)<=%s&&nElectronTightInvIso==1)||(nElectronTightInvIso==0))"%(mZ, zMassRange),             # Cut Z-Window only for egamma
+
     "offZeg":               "((abs(mLtight0Gamma-%s)>%s&&nElectronTight==1)||(nElectronTight==0))"%(mZ, zMassRange),             # Cut Z-Window only for egamma
     "onZeg":                "((abs(mLtight0Gamma-%s)<=%s&&nElectronTight==1)||(nElectronTight==0))"%(mZ, zMassRange),             # Cut Z-Window only for egamma
     "mu":                   "nMuonTight==1",
@@ -118,6 +123,8 @@ special_cuts = {
     "highChgIso":        "(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)>=%f&&PhotonNoChgIsoNoSieie0_sieie<%f"%(chgIsoThresh,lowSieieThresh),
     "noSieie":           "(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)<%f"%chgIsoThresh,
     "highSieie":         "PhotonNoChgIsoNoSieie0_sieie>=%f&&(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)<%f"%(highSieieThresh,chgIsoThresh),
+
+    "highSieieLep":         "((abs(LeptonTightNoSieie0_eta)<1.479&&LeptonTightNoSieie0_sieie>0.0104)||(abs(LeptonTightNoSieie0_eta)>1.479&&LeptonTightNoSieie0_sieie>0.0353))",
 
     "noChgIsoNoSieie":          "nPhotonNoChgIsoNoSieie==1",
     "noChgIsoNoSieieInvL":      "nPhotonNoChgIsoNoSieieInvLepIso==1",
@@ -171,7 +178,6 @@ special_cuts = {
     "photonAdvcat1":        "PhotonGood0_photonCatMagic==1",
     "photonAdvcat2":        "PhotonGood0_photonCatMagic==2",
     "photonAdvcat3":        "PhotonGood0_photonCatMagic==3",
-    "photonAdvcat4":        "PhotonGood0_photonCatMagic==4",
     "photonAdvcat4":        "PhotonGood0_photonCatMagic==4",
 
     "invLphotoncat0":        "PhotonGoodInvLepIso0_photonCatMagic==0",
@@ -272,11 +278,11 @@ special_cuts = {
 
   }
 
-continous_variables  = [ ("glDR","photonLepdR"), ("mT", "mT"), ("metSig", "METSig"), ("mll", "mll"), ("mllgamma", "mllgamma"), ("mlgamma", "mLtight0Gamma"), ("met", "MET_pt"), ("pTG","PhotonGood0_pt"), ("phiG","PhotonGood0_phi"), ("pTj","Jet_pt[0]"), ("etaj","abs(JetGood0_eta)"), ("etak", "abs(JetGood1_eta)"), ("sip","LeptonTight0_sip3d"), ("dxyl","abs(LeptonTight0_dxy)"), ("dzl","abs(LeptonTight0_dz)"), ("etal","LeptonTight0_eta"), ("etainvl","LeptonTightInvIso0_eta"), ("ptl","LeptonTight0_pt"), ("ptinvl","LeptonTightInvIso0_pt") ]
+continous_variables  = [ ("lNSeta","abs(LeptonTightNoSieie0_eta)"), ("pSieie","PhotonNoChgIsoNoSieie0_sieie"), ("pChgIso","(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)"), ("peta","abs(PhotonNoChgIsoNoSieie0_eta)"), ("pphi","abs(PhotonNoChgIsoNoSieie0_phi)"), ("ppt","PhotonNoChgIsoNoSieie0_pt"), ("glDR","ltight0GammadR"), ("gnplDR","ltight0GammaNoSieieNoChgIsodR"), ("gnpjDR","photonNoSieieNoChgIsoJetdR"), ("mT", "mT"), ("metSig", "METSig"), ("mll", "mll"), ("mllgamma", "mllgamma"), ("mlgamma", "mLtight0Gamma"), ("met", "MET_pt"), ("pTG","PhotonGood0_pt"), ("phiG","PhotonGood0_phi"), ("pTj","Jet_pt[0]"), ("etaj","abs(JetGood0_eta)"), ("etak", "abs(JetGood1_eta)"), ("sip","LeptonTight0_sip3d"), ("dxyl","abs(LeptonTight0_dxy)"), ("dzl","abs(LeptonTight0_dz)"), ("etal","abs(LeptonTight0_eta)"), ("etainvl","abs(LeptonTightInvIso0_eta)"), ("ptl","LeptonTight0_pt"), ("ptinvl","LeptonTightInvIso0_pt") ]
 continous_variables += [ ("lnoIsorelIso","LeptonTightNoIso0_pfRelIso03_all") ]
 continous_variables += [ ("mt","mT"), ("lgDR","ltight0GammadR"), ("linvgDR","linvtight0GammadR") ]
 
-discrete_variables  = [ ("nAllJet", "nJet"), ("nJet", "nJetGood"), ("nBTag", "nBTagGood"), ("nLepNoCorrVeto","nLeptonVeto"), ("nLepVeto","nLeptonVetoIsoCorr"), ("nNoIsoLepTight","nLeptonTightNoIso"), ("nInvLepTight","nLeptonTightInvIso"), ("nLepTight","nLeptonTight"), ("nLep","nLeptonGood"), ("nNoIsoLepVeto","nLeptonVetoNoIso"), ("nInvLeptVetoTight","nLeptonVetoNoIso") ]
+discrete_variables  = [ ("nAllJet", "nJet"), ("nJet", "nJetGood"), ("nBTag", "nBTagGood"), ("nLepNoCorrVeto","nLeptonVeto"), ("nLepVeto","nLeptonVetoIsoCorr"), ("nNoIsoLepTight","nLeptonTightNoIso"), ("nNoSieieLepTight","nLeptonTightNoSieie"), ("nInvLepTight","nLeptonTightInvIso"), ("nLepTight","nLeptonTight"), ("nLep","nLeptonGood"), ("nNoIsoLepVeto","nLeptonVetoNoIso"), ("nInvLeptVetoTight","nLeptonVetoNoIso") ]
 
 discrete_variables += [ ("nPhoton",    "nPhotonGood"),          ("nHadPhoton",    "nPhotonNoChgIsoNoSieie"),          ("nSieiePhoton",    "nPhotonNoSieie"),          ("nChgIsoPhoton",    "nPhotonNoChgIso")  ]
 discrete_variables += [ ("nInvLPhoton","nPhotonGoodInvLepIso"), ("nInvLHadPhoton","nPhotonNoChgIsoNoSieieInvLepIso"), ("nInvLSieiePhoton","nPhotonNoSieieInvLepIso"), ("nInvLChgIsoPhoton","nPhotonNoChgIsoInvLepIso")  ]
@@ -289,6 +295,9 @@ discrete_variables += [ ("nNoLIHadPhoton", "nPhotonInvChgIsoInvSieieNoLepIso"), 
 
 discrete_variables += [ ("nNoLJet",  "nJetGoodNoLepIso"),  ("nInvLJet",  "nJetGoodInvLepIso") ]
 discrete_variables += [ ("nNoLBTag", "nBTagGoodNoLepIso"), ("nInvLBTag", "nBTagGoodInvLepIso") ]
+
+discrete_variables += [ ("nNoLSJet",  "nJetGoodNoLepSieie"),  ("nInvLSJet",  "nJetGoodInvLepIsoNoSieie") ]
+discrete_variables += [ ("nNoLSBTag", "nBTagGoodNoLepSieie"), ("nInvLSBTag", "nBTagGoodInvLepIsoNoSieie") ]
 
 discrete_variables += [ ("nNoChgIsoJet", "nJetGoodNoChgIso"), ("nNoSieieJet", "nJetGoodNoSieie"), ("nNoChgIsoNoSieieJet", "nJetGoodNoChgIsoNoSieie") ]
 discrete_variables += [ ("nNoChgIsoBTag", "nBTagGoodNoChgIso"), ("nNoSieieBTag", "nBTagGoodNoSieie"), ("nNoChgIsoNoSieieBTag", "nBTagGoodNoChgIsoNoSieie") ]
@@ -309,6 +318,5 @@ discrete_variables += [ ("nGenLepATLAS", "nGenLeptonATLASUnfold"), ("nGenJetATLA
 cutInterpreter = CutInterpreter( continous_variables, discrete_variables, special_cuts)
 
 if __name__ == "__main__":
-#    print cutInterpreter.cutString("nGenLepCMS1-nGenJetCMS4p-nGenBTagCMS1p-nGenPhotonCMS1")
     print cutInterpreter.cutString("llowEta-mt100")
 
