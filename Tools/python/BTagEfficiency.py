@@ -26,26 +26,26 @@ def toFlavourKey(pdgId):
     if abs(pdgId)==4: return ROOT.BTagEntry.FLAV_C
     return ROOT.BTagEntry.FLAV_UDSG
 
-keys_2016   = { "Top":{"other":  ( "btag_efficiencies_2016.root",  "Top_l_efficiency" ),
-                       "c":      ( "btag_efficiencies_2016.root",  "Top_c_efficiency" ),
-                       "b":      ( "btag_efficiencies_2016.root",  "Top_b_efficiency" )},
-                "Other":{"other":( "btag_efficiencies_2016.root",  "Other_l_efficiency" ),
-                         "c":    ( "btag_efficiencies_2016.root",  "Other_c_efficiency" ),
-                         "b":    ( "btag_efficiencies_2016.root",  "Other_b_efficiency" )}
+keys_2016   = { "Top":{"other":  ( "btag_efficiencies_2016-v2.root",  "Top_l_efficiency" ),
+                       "c":      ( "btag_efficiencies_2016-v2.root",  "Top_c_efficiency" ),
+                       "b":      ( "btag_efficiencies_2016-v2.root",  "Top_b_efficiency" )},
+                "Other":{"other":( "btag_efficiencies_2016-v2.root",  "Other_l_efficiency" ),
+                         "c":    ( "btag_efficiencies_2016-v2.root",  "Other_c_efficiency" ),
+                         "b":    ( "btag_efficiencies_2016-v2.root",  "Other_b_efficiency" )}
               }
-keys_2017   = { "Top":{"other":  ( "btag_efficiencies_2017.root",  "Top_l_efficiency" ),
-                       "c":      ( "btag_efficiencies_2017.root",  "Top_c_efficiency" ),
-                       "b":      ( "btag_efficiencies_2017.root",  "Top_b_efficiency" )},
-                "Other":{"other":( "btag_efficiencies_2017.root",  "Other_l_efficiency" ),
-                         "c":    ( "btag_efficiencies_2017.root",  "Other_c_efficiency" ),
-                         "b":    ( "btag_efficiencies_2017.root",  "Other_b_efficiency" )}
+keys_2017   = { "Top":{"other":  ( "btag_efficiencies_2017-v2.root",  "Top_l_efficiency" ),
+                       "c":      ( "btag_efficiencies_2017-v2.root",  "Top_c_efficiency" ),
+                       "b":      ( "btag_efficiencies_2017-v2.root",  "Top_b_efficiency" )},
+                "Other":{"other":( "btag_efficiencies_2017-v2.root",  "Other_l_efficiency" ),
+                         "c":    ( "btag_efficiencies_2017-v2.root",  "Other_c_efficiency" ),
+                         "b":    ( "btag_efficiencies_2017-v2.root",  "Other_b_efficiency" )}
               }
-keys_2018   = { "Top":{"other":  ( "btag_efficiencies_2018.root",  "Top_l_efficiency" ),
-                       "c" :     ( "btag_efficiencies_2018.root",  "Top_c_efficiency" ),
-                       "b":      ( "btag_efficiencies_2018.root",  "Top_b_efficiency" )},
-                "Other":{"other":( "btag_efficiencies_2018.root",  "Other_l_efficiency" ),
-                         "c":    ( "btag_efficiencies_2018.root",  "Other_c_efficiency" ),
-                         "b":    ( "btag_efficiencies_2018.root",  "Other_b_efficiency" )}
+keys_2018   = { "Top":{"other":  ( "btag_efficiencies_2018-v2.root",  "Top_l_efficiency" ),
+                       "c" :     ( "btag_efficiencies_2018-v2.root",  "Top_c_efficiency" ),
+                       "b":      ( "btag_efficiencies_2018-v2.root",  "Top_b_efficiency" )},
+                "Other":{"other":( "btag_efficiencies_2018-v2.root",  "Other_l_efficiency" ),
+                         "c":    ( "btag_efficiencies_2018-v2.root",  "Other_c_efficiency" ),
+                         "b":    ( "btag_efficiencies_2018-v2.root",  "Other_b_efficiency" )}
               }
 #Method 1ab
 
