@@ -296,21 +296,21 @@ sequence = [ ]#\
 if args.year == 2016:
     if args.onlyTTG and not categoryPlot: mc = [ TTG_16 ]
     elif not categoryPlot:
-        mc = [ TTG_16, DY_LO_16, TT_pow_16, singleTop_16, ZG_16 ]
+        mc = [ TTG_16, DY_LO_16, Top_16, singleTop_16, ZG_16 ]
         if args.addOtherBg: mc += [ other_16 ]
     elif categoryPlot:
         all = all_16 if args.addOtherBg else all_noOther_16
 elif args.year == 2017:
     if args.onlyTTG and not categoryPlot: mc = [ TTG_17 ]
     elif not categoryPlot:
-        mc = [ TTG_17, DY_LO_17, TT_pow_17, singleTop_17, ZG_17 ]
+        mc = [ TTG_17, DY_LO_17, Top_17, singleTop_17, ZG_17 ]
         if args.addOtherBg: mc += [ other_17 ]
     elif categoryPlot:
         all = all_17 if args.addOtherBg else all_noOther_17
 elif args.year == 2018:
     if args.onlyTTG and not categoryPlot: mc = [ TTG_18 ]
     elif not categoryPlot:
-        mc = [ TTG_18, DY_LO_18, TT_pow_18, singleTop_18, ZG_18 ]
+        mc = [ TTG_18, DY_LO_18, Top_18, singleTop_18, ZG_18 ]
         if args.addOtherBg: mc += [ other_18 ]
     elif categoryPlot:
         all = all_18 if args.addOtherBg else all_noOther_18
@@ -488,9 +488,9 @@ for index, mode in enumerate( allModes ):
         for sample in mc + signals: sample.setSelectionString( [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] )
 
     # Overlap removal
-#    if any( x.name == "TTG" for x in mc ) and any( x.name == "TT_pow" for x in mc ):
+#    if any( x.name == "TTG" for x in mc ) and any( x.name == "Top" for x in mc ):
 #        eval('TTG_'    + str(args.year)[-2:]).addSelectionString( "isTTGamma==1" )
-#        eval('TT_pow_' + str(args.year)[-2:]).addSelectionString( "isTTGamma==0" )
+#        eval('Top_' + str(args.year)[-2:]).addSelectionString( "isTTGamma==0" )
 
 #    if any( x.name == "ZG" for x in mc ) and any( x.name == "DY_LO" for x in mc ):
 #        eval('ZG_'    + str(args.year)[-2:]).addSelectionString( "isZWGamma==1" )

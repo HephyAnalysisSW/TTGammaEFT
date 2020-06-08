@@ -26,14 +26,16 @@ try:
 except:
     fromDPM = not "clip" in os.getenv("HOSTNAME").lower()
 
-if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
-    postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
+#if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
+#    postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
 
 # Redirector
 try:
     redirector = sys.modules["__main__"].redirector
 except:
     from TTGammaEFT.Tools.user import redirector as redirector
+
+from Summer16_nanoAODv5 import *
 
 # Logging
 if __name__=="__main__":
@@ -50,14 +52,19 @@ logger.info( "Loading MC samples from directory %s", os.path.join( data_director
 # Directories
 dirs = {}
 
-dirs["TT_pow"]           = ["TTSingleLep_pow_CP5" ]
-dirs["TTG"]              = ["TTGSingleLep_LO"]
+dirs["TT_pow"]           = ["TTSingleLep_pow_CP5_sync" ]
+dirs["TTG"]              = ["TTGSingleLep_LO_sync"]
+dirs["DY_LO"]            = ["DYJetsToLL_M50_LO_ext1_sync"]
 
 directories = { key : [ os.path.join( data_directory_, postprocessing_directory_, dir) for dir in dirs[key] ] for key in dirs.keys() }
 
 # Samples
 TT_sync_16          = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_pow"], noCheckProxy=True, fromDPM=fromDPM)
+TT_sync_16.normalization = TTSingleLep_pow_CP5_sync.normalization
 TTG_sync_16         = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG"], noCheckProxy=True, fromDPM=fromDPM)
+TTG_sync_16.normalization = TTGSingleLep_LO_sync.normalization
+DY_LO_sync_16       = getMCSample(name="DY_LO",            redirector=redirector, color=color.DY,              texName="DY",                directory=directories["DY_LO"], noCheckProxy=False, fromDPM=fromDPM)
+DY_LO_sync_16.normalization = DYJetsToLL_M50_LO_ext1_sync.normalization
 
 signals = []
 

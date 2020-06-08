@@ -26,8 +26,8 @@ try:
 except:
     fromDPM = not "clip" in os.getenv("HOSTNAME").lower()
 
-if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
-    postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
+#if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
+#    postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
 
 # Redirector
 try:
@@ -74,6 +74,8 @@ dirs["TTG_TuneDown"]     = ["TTGLep_TuneDown_LO", "TTGSingleLep_TuneDown_LO"]
 dirs["TTG_erdOn"]        = ["TTGLep_erdOn_LO", "TTGSingleLep_erdOn_LO"]
 
 dirs["singleTop"]        = ["TBar_tWch_incl", "T_tWch_incl", "T_tch_pow", "TBar_tch_pow", "TToLeptons_sch_amcatnlo" ] #"TBar_tWch_ext", "T_tWch_ext"
+
+dirs["top"]              = dirs["TT_pow"] + dirs["singleTop"]
 
 dirs["ZG_lowMLL"]        = ["ZGToLLG_lowMLL"]
 dirs["ZG_loose"]         = ["ZGToLLG_LoosePtlPtg"]
@@ -127,19 +129,20 @@ dirs["other"]           += dirs["VV"]
 dirs["other"]           += dirs["WW"]   + dirs["WZ"]  + dirs["ZZ"]
 #dirs["other"]           += dirs["GluGlu"]
 
-dirs["all_noOther_noTT"] = dirs["DY_LO"] + dirs["singleTop"] + dirs["ZG_lowMLL"] + dirs["TG"] + dirs["WJets"] + dirs["WG"]# + dirs["QCD"] + dirs["GJets"]
+dirs["all_noOther_noTT"] = dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["TG"] + dirs["WJets"] + dirs["WG"]# + dirs["QCD"] + dirs["GJets"]
 dirs["all_noTT"]         = dirs["all_noOther_noTT"] + dirs["other"]
 
-dirs["all_noOther"]      = dirs["TTG"] + dirs["TT_pow"] + dirs["DY_LO"] + dirs["singleTop"] + dirs["ZG_lowMLL"] + dirs["TG"] + dirs["WJets"] + dirs["WG"] + dirs["QCD"] + dirs["GJets"]
+dirs["all_noOther"]      = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["TG"] + dirs["WJets"] + dirs["WG"] + dirs["QCD"] + dirs["GJets"]
 dirs["all"]              = dirs["all_noOther"] + dirs["other"]
 
-dirs["all_noQCD_noOther"] = dirs["TTG"] + dirs["TT_pow"] + dirs["DY_LO"] + dirs["singleTop"] + dirs["ZG_lowMLL"] + dirs["TG"] + dirs["WJets"] + dirs["WG"]
+dirs["all_noQCD_noOther"] = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["TG"] + dirs["WJets"] + dirs["WG"]
 dirs["all_noQCD"]         = dirs["all_noQCD_noOther"] + dirs["other"]
 
 #dirs["W"]                = dirs["WJets_HT"] + dirs["WG"]
 
 dirs["VG"]               = dirs["ZG_lowMLL"] + dirs["WG"]
-dirs["rest"]             = dirs["singleTop"] + dirs["TG"] + dirs["other"]
+#dirs["rest"]             = dirs["singleTop"] + dirs["TG"] + dirs["other"]
+dirs["rest"]             = dirs["TG"] + dirs["other"]
 
 
 directories = { key : [ os.path.join( data_directory_, postprocessing_directory_, dir) for dir in dirs[key] ] for key in dirs.keys() }
@@ -148,6 +151,7 @@ directories = { key : [ os.path.join( data_directory_, postprocessing_directory_
 DY_LO_16           = getMCSample(name="DY_LO",            redirector=redirector, color=color.DY,              texName="DY",                directory=directories["DY_LO"], noCheckProxy=False, fromDPM=fromDPM)
 #Zinv_16            = getMCSample(name="Zinv",             redirector=redirector, color=color.Zinv,            texName="Z(#nu#nu)+jets",    directory=directories["Z_NuNu"], noCheckProxy=False, fromDPM=fromDPM)
 #DY_HT_16           = getMCSample(name="DY_LO",            redirector=redirector, color=color.DY,              texName="DY (LO)",           directory=directories["DY_HT"], noCheckProxy=True, fromDPM=fromDPM)
+Top_16             = getMCSample(name="Top",              redirector=redirector, color=color.TT,              texName="t / t#bar{t}",        directory=directories["top"], noCheckProxy=True, fromDPM=fromDPM)
 TT_pow_16          = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_pow"], noCheckProxy=True, fromDPM=fromDPM)
 TT_Lep_16          = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_Lep"], noCheckProxy=True, fromDPM=fromDPM)
 TT_SemiLep_16      = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_SemiLep"], noCheckProxy=True, fromDPM=fromDPM)

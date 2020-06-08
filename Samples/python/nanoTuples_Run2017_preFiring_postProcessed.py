@@ -36,7 +36,7 @@ lumi       = 41.53
 
 dirs = {}
 for ( run, version ) in [ ( 'B', '' ), ( 'C', '' ), ( 'D', '' ), ( 'E', '' ), ( 'F', '' ) ]:
-    runTag = 'Run2017' + run + '_14Dec2018' + version
+    runTag = 'Run2017' + run + '_25Oct2019' + version
     for pd in allSamples:
         dirs[ pd + "_Run2017" + run + version ] = [ pd + "_" + runTag ]
 

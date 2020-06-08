@@ -25,8 +25,8 @@ try:
 except:
     fromDPM = not "clip" in os.getenv("HOSTNAME").lower()
 
-if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
-    postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
+#if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
+#    postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
 
 # Redirector
 try:
@@ -51,8 +51,7 @@ lumi       = 35.92
 
 dirs = {}
 for ( run, version ) in [ ( 'B', '_ver2' ), ( 'C', '' ), ( 'D', '' ), ( 'E', '' ), ( 'F', '' ), ( 'G', '' ), ( 'H', '' ) ]:
-#    runTag = 'Run2016' + run + '_14Dec2018' + version
-    runTag = 'Run2016' + run + '_17Jul2018' + version
+    runTag = 'Run2016' + run + '_25Oct2019' + version
     for pd in allSamples:
         dirs[ pd + "_Run2016" + run + version ] = [ pd + "_" + runTag ]
 

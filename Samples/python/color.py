@@ -21,6 +21,11 @@ color.W              = ROOT.kCyan+1
 color.WJets          = ROOT.kCyan+1
 color.QCD            = ROOT.kGreen-2 #+3
 color.GJets          = ROOT.kGreen+4
+
+color.gen            = ROOT.kOrange
+color.had            = ROOT.kAzure-3
+color.misID          = ROOT.kAzure+4
+color.fakes          = ROOT.kRed-3
 color.PU             = ROOT.kGreen+4
 
 color.WG_misID       = ROOT.kAzure-2

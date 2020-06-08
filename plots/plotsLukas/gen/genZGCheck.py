@@ -18,7 +18,7 @@ from TTGammaEFT.Tools.user               import plot_directory
 from TTGammaEFT.Tools.genCutInterpreter  import cutInterpreter
 
 from Analysis.Tools.helpers              import getCollection, deltaR, deltaR2
-from Analysis.Tools.overlapRemovalTTG import getParentIds
+from TTGammaEFT.Tools.overlapRemovalTTG import getParentIds
 
 # Default Parameter
 loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET']

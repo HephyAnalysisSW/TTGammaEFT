@@ -27,7 +27,7 @@ from Analysis.Tools.metFilters        import getFilterCut
 from Analysis.Tools.helpers           import getCollection, deltaR, mTg
 from Analysis.Tools.u_float           import u_float
 from Analysis.Tools.mt2Calculator     import mt2Calculator
-from Analysis.Tools.overlapRemovalTTG import getParentIds
+from TTGammaEFT.Tools.overlapRemovalTTG import getParentIds
 from Analysis.Tools.runUtils          import prepareTokens, useToken
 
 from TTGammaEFT.Analysis.Setup        import Setup
@@ -682,13 +682,13 @@ if args.year == 2016:
         all = all_noQCD_16 #all_16 if args.addOtherBg else all_noOther_16
     elif args.leptonCategory:
         all_noTT = all_noTT_16# if args.addOtherBg else all_noOther_noTT_16
-        TTbar    = TT_pow_16
+        TTbar    = Top_16
         TTG      = TTG_16
     else:
         if args.replaceZG:
-            mc = [ TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, rest_16 ]
+            mc = [ TTG_16, Top_16, DY_LO_16, WJets_16, WG_16, rest_16 ]
         else:
-            mc = [ TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
+            mc = [ TTG_16, Top_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
 #        if not (args.invLeptonIso or "NoIso" in args.mode):
 #            mc += [ QCD_16 ]
 #            if args.noQCDDD: mc += [ GJets_16 ]
@@ -703,13 +703,13 @@ elif args.year == 2017:
         all = all_noQCD_17 #all_17 if args.addOtherBg else all_noOther_17
     elif args.leptonCategory:
         all_noTT = all_noTT_17 #if args.addOtherBg else all_noOther_noTT_17
-        TTbar    = TT_pow_17
+        TTbar    = Top_17
         TTG      = TTG_17
     else:
         if args.replaceZG:
-            mc = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, rest_17 ]
+            mc = [ TTG_17, Top_17, DY_LO_17, WJets_17, WG_17, rest_17 ]
         else:
-            mc = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
+            mc = [ TTG_17, Top_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
 #        if not (args.invLeptonIso or "NoIso" in args.mode):
 #            mc += [ QCD_17 ]
 #            if args.noQCDDD: mc += [ GJets_17 ]
@@ -723,13 +723,13 @@ elif args.year == 2018:
         all = all_noQCD_18 #all_18 if args.addOtherBg else all_noOther_18
     elif args.leptonCategory:
         all_noTT = all_noTT_18 #if args.addOtherBg else all_noOther_noTT_18
-        TTbar    = TT_pow_18
+        TTbar    = Top_18
         TTG      = TTG_18
     else:
         if args.replaceZG:
-            mc = [ TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, rest_18 ]
+            mc = [ TTG_18, Top_18, DY_LO_18, WJets_18, WG_18, rest_18 ]
         else:
-            mc = [ TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
+            mc = [ TTG_18, Top_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
 #        if not (args.invLeptonIso or "NoIso" in args.mode):
 #            mc += [ QCD_18 ]
 #            if args.noQCDDD: mc += [ GJets_18 ]

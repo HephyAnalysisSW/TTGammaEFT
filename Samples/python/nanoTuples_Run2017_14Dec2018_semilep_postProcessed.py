@@ -25,8 +25,8 @@ try:
 except:
     fromDPM = not "clip" in os.getenv("HOSTNAME").lower()
 
-if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
-    postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
+#if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
+#    postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
 
 # Redirector
 try:
@@ -51,8 +51,7 @@ lumi       = 41.53
 
 dirs = {}
 for ( run, version ) in [ ( 'B', '' ), ( 'C', '' ), ( 'D', '' ), ( 'E', '' ), ( 'F', '' ) ]:
-#    runTag = 'Run2017' + run + '_14Dec2018' + version
-    runTag = 'Run2017' + run + '_31Mar2018' + version
+    runTag = 'Run2017' + run + '_25Oct2019' + version
     for pd in allSamples:
         dirs[ pd + "_Run2017" + run + version ] = [ pd + "_" + runTag ]
 
@@ -63,13 +62,43 @@ for pd in allSamples:
 for key in dirs:
     dirs[key] = [ os.path.join( data_directory_, postprocessing_directory_, dir ) for dir in dirs[key] ]
 
-allSamples_Data25ns  = []
+allSamples_Data25ns   = []
+allSamplesB_Data25ns  = []
+allSamplesC_Data25ns  = []
+allSamplesD_Data25ns  = []
+allSamplesE_Data25ns  = []
+allSamplesF_Data25ns  = []
 for pd in allSamples:
-    vars()[ pd + '_Run2017' ] = getDataSample( pd, 'Run2017', lumi*1000, dirs, redirector=redirector, fromDPM=fromDPM )
-    allSamples_Data25ns += [ vars()[ pd + '_Run2017' ] ]
+    vars()[ pd + '_Run2017' ]  = getDataSample( pd, 'Run2017', lumi*1000, dirs, redirector=redirector, fromDPM=fromDPM )
+    vars()[ pd + '_Run2017B' ] = getDataSample( pd, 'Run2017B', lumi*1000, dirs, redirector=redirector, fromDPM=fromDPM )
+    vars()[ pd + '_Run2017C' ] = getDataSample( pd, 'Run2017C', lumi*1000, dirs, redirector=redirector, fromDPM=fromDPM )
+    vars()[ pd + '_Run2017D' ] = getDataSample( pd, 'Run2017D', lumi*1000, dirs, redirector=redirector, fromDPM=fromDPM )
+    vars()[ pd + '_Run2017E' ] = getDataSample( pd, 'Run2017E', lumi*1000, dirs, redirector=redirector, fromDPM=fromDPM )
+    vars()[ pd + '_Run2017F' ] = getDataSample( pd, 'Run2017F', lumi*1000, dirs, redirector=redirector, fromDPM=fromDPM )
+    allSamples_Data25ns  += [ vars()[ pd + '_Run2017' ] ]
+    allSamplesB_Data25ns += [ vars()[ pd + '_Run2017B' ] ]
+    allSamplesC_Data25ns += [ vars()[ pd + '_Run2017C' ] ]
+    allSamplesD_Data25ns += [ vars()[ pd + '_Run2017D' ] ]
+    allSamplesE_Data25ns += [ vars()[ pd + '_Run2017E' ] ]
+    allSamplesF_Data25ns += [ vars()[ pd + '_Run2017F' ] ]
 
 Run2017      = Sample.combine( "Run2017", allSamples_Data25ns, texName = "Data" )
 Run2017.lumi = lumi*1000
+
+Run2017B      = Sample.combine( "Run2017B", allSamplesB_Data25ns, texName = "Data" )
+Run2017B.lumi = lumi*1000
+
+Run2017C      = Sample.combine( "Run2017C", allSamplesC_Data25ns, texName = "Data" )
+Run2017C.lumi = lumi*1000
+
+Run2017D      = Sample.combine( "Run2017D", allSamplesD_Data25ns, texName = "Data" )
+Run2017D.lumi = lumi*1000
+
+Run2017E      = Sample.combine( "Run2017E", allSamplesE_Data25ns, texName = "Data" )
+Run2017E.lumi = lumi*1000
+
+Run2017F      = Sample.combine( "Run2017F", allSamplesF_Data25ns, texName = "Data" )
+Run2017F.lumi = lumi*1000
 
 for s in allSamples_Data25ns:
     s.color   = ROOT.kBlack

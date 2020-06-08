@@ -25,11 +25,12 @@ loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTS
 # Arguments
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
-argParser.add_argument('--logLevel',           action='store',      default='INFO', nargs='?', choices=loggerChoices,                  help="Log level for logging")
-argParser.add_argument('--selection',          action='store',      default='dilepOS-nLepVeto2-offZSFll-mll40-nJet2p-nBTag1p-nPhoton1p')
-argParser.add_argument('--small',              action='store_true',                                                                    help='Run only on a small subset of the data?', )
-argParser.add_argument('--useCorrectedIsoVeto', action='store_true',                                                                    help='Use the leptonVeto with corrected Iso values?', )
-#argParser.add_argument('--year',               action='store',      default=None,   type=int,  choices=[2016,2017,2018],               help="which year?")
+argParser.add_argument('--logLevel',            action='store',      default='INFO', nargs='?', choices=loggerChoices,                  help="Log level for logging")
+argParser.add_argument('--selection',           action='store',      default='nLepTight1-mu-nLepVeto1-nJet4p-nBTag1p-nPhoton1')
+argParser.add_argument('--sample',              action='store',      default='ttg')
+argParser.add_argument('--small',               action='store_true',                                                                    help='Run only on a small subset of the data?', )
+argParser.add_argument('--noOverlap',           action='store_true',                                                                    help='Run only on a small subset of the data?', )
+argParser.add_argument('--year',                action='store',      default=2016,   type=int,  choices=[2016,2017,2018],               help="which year?")
 args = argParser.parse_args()
 
 # Logger
@@ -38,16 +39,12 @@ import RootTools.core.logger as logger_rt
 logger    = logger.get_logger(   args.logLevel, logFile = None)
 logger_rt = logger_rt.get_logger(args.logLevel, logFile = None)
 
-#os.environ["gammaSkim"]="True" if "hoton" in args.selection or "pTG" in args.selection else "False"
-#from TTGammaEFT.Samples.nanoTuples_Sync_semilep_postProcessed      import TTG_sync_16 as TTG_16
-from TTGammaEFT.Samples.nanoTuples_Sync_semilep_postProcessed      import TT_sync_16  as TTG_16
-#from TTGammaEFT.Samples.nanoTuples_Summer16_private_incl_postProcessed      import TTG_NoFullyHad_fnal_16 as TTG_16
-#from TTGammaEFT.Samples.nanoTuples_Fall17_private_incl_postProcessed        import TTG_NoFullyHad_fnal_17 as TTG_17
-#from TTGammaEFT.Samples.nanoTuples_Autumn18_private_incl_postProcessed      import TTG_NoFullyHad_fnal_18 as TTG_18
-#from TTGammaEFT.Samples.nanoTuples_Summer16_private_incl_postProcessed      import TTG_NoFullyHad_priv_16 as TTG_16
-#from TTGammaEFT.Samples.nanoTuples_Fall17_private_incl_postProcessed        import TTG_NoFullyHad_priv_17 as TTG_17
-#from TTGammaEFT.Samples.nanoTuples_Autumn18_private_incl_postProcessed      import TTG_NoFullyHad_priv_18 as TTG_18
-
+if args.sample == "ttg":
+    from TTGammaEFT.Samples.nanoTuples_Sync_semilep_postProcessed      import TTG_sync_16 as sample
+elif args.sample == "ttbar":
+    from TTGammaEFT.Samples.nanoTuples_Sync_semilep_postProcessed      import TT_sync_16  as sample
+elif args.sample == "dy":
+    from TTGammaEFT.Samples.nanoTuples_Sync_semilep_postProcessed      import DY_LO_sync_16  as sample
 
 category = {
     "photonCatMagic0":"genuine",
@@ -57,49 +54,38 @@ category = {
     "photonCatMagic4":"PU",
 }
 
-for year in [2016]:
-    ttg = TTG_16
-#    if year == 2016:   ttg = TTG_16
-#    elif year == 2017: ttg = TTG_17
-#    elif year == 2018: ttg = TTG_18
+filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True, skipVertexFilter=False )
 
-    filterCutMc   = getFilterCut( year, isData=False, skipBadChargedCandidate=True, skipVertexFilter=False )
+if "invl" in args.selection.lower(): trigger = "triggeredInvIso==1"
+else:                                trigger = "triggered==1"
 
-#    selection = "&&".join( [ cutInterpreter.cutString( args.selection ), filterCutMc, triggerCutMc ] )
-#    selection = "&&".join( [ cutInterpreter.cutString( args.selection ), filterCutMc, "triggeredInvIso==1", "overlapRemoval==1" ] )
-    selection = "&&".join( [ cutInterpreter.cutString( args.selection ), filterCutMc, "triggered==1", "overlapRemoval==1" ] )
-#    if not args.useCorrectedIsoVeto: selection = selection.replace("nLeptonVetoIsoCorr","nLeptonVeto")
-
-    print selection
+if args.noOverlap:
+    selection = "&&".join( [ cutInterpreter.cutString( args.selection ), filterCutMc, trigger ] )
+else:
+    selection = "&&".join( [ cutInterpreter.cutString( args.selection ), filterCutMc, trigger, "overlapRemoval==1" ] )
+print selection
     
-    # Define a reader
-    r = ttg.treeReader( \
-        variables = [ TreeVariable.fromString("event/l"), TreeVariable.fromString('run/i'), TreeVariable.fromString('luminosityBlock/i') ],
-        selectionString = selection,
-        )
+# Define a reader
+r = sample.treeReader( \
+    variables = [ TreeVariable.fromString("event/l"), TreeVariable.fromString('run/i'), TreeVariable.fromString('luminosityBlock/i') ],
+    selectionString = selection,
+    )
 
-#    r.activateAllBranches()
-#    event_list = ttg.getEventList( ttg.selectionString )
-#    r.SetEventList( event_list )
-
-#    logger.info( "Found %i events in sample %s", event_list.GetN(), ttg.name )
-
-    r.start()
+r.start()
     
-    selection = args.selection
-    for key, value in category.items():
-        selection = selection.replace(key, value)
+selection = args.selection
+for key, value in category.items():
+    selection = selection.replace(key, value)
 
-    filepath = "logs/%i_%s_EventList_%s%s.dat"%(year,ttg.name,selection, "")
-    filepath = filepath.replace("photonAdvcat0","genuine")
-    filepath = filepath.replace("photonAdvcat1","hadronics")
-    filepath = filepath.replace("photonAdvcat2","misID")
-    filepath = filepath.replace("photonAdvcat3","fakes")
-    filepath = filepath.replace("photonAdvcat4","PUphotons")
+filepath = "logs/%i_%s_EventList_%s%s.dat"%(args.year,sample.name,selection, "_noOR" if args.noOverlap else "")
+filepath = filepath.replace("photonAdvcat0","genuine")
+filepath = filepath.replace("photonAdvcat1","hadronics")
+filepath = filepath.replace("photonAdvcat2","misID")
+filepath = filepath.replace("photonAdvcat3","fakes")
+filepath = filepath.replace("photonAdvcat4","PUphotons")
 
-    with open(filepath, "w") as f:
-        while r.run():
-            run, lumi, evt = r.event.run, r.event.luminosityBlock, r.event.event
-            f.write(str(run) + "," + str(lumi) + "," + str(evt) + "\n")
+with open(filepath, "w") as f:
+    while r.run():
+        run, lumi, evt = r.event.run, r.event.luminosityBlock, r.event.event
+        f.write(str(run) + "," + str(lumi) + "," + str(evt) + "\n")
 
-#    del r

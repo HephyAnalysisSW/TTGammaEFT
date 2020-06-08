@@ -21,7 +21,7 @@ from TTGammaEFT.Tools.objectSelection import isBJet, photonSelector, vidNestedWP
 
 from Analysis.Tools.metFilters        import getFilterCut
 from Analysis.Tools.helpers           import getCollection, deltaR
-from Analysis.Tools.overlapRemovalTTG import photonFromTopDecay, hasMesonMother, getParentIds, isIsolatedPhoton, getPhotonCategory, hasLeptonMother, getPhotonMother, getAdvancedPhotonCategory
+from TTGammaEFT.Tools.overlapRemovalTTG import photonFromTopDecay, hasMesonMother, getParentIds, isIsolatedPhoton, getPhotonCategory, hasLeptonMother, getPhotonMother, getAdvancedPhotonCategory
 
 # Default Parameter
 loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET']
@@ -196,19 +196,19 @@ if args.year == 2016:
     if args.onlyTT: all = TT_pow_16
     elif args.onlyTTLep: all = TT_Lep_16
     elif args.onlyTTSemiLep: all = TT_SemiLep_16
-    else: all = all_16
+    else: all = all_noQCD_16
     data_sample = Run2016
 elif args.year == 2017:
     if args.onlyTT: all = TT_pow_17
     elif args.onlyTTLep: all = TT_Lep_17
     elif args.onlyTTSemiLep: all = TT_SemiLep_17
-    else: all = all_17
+    else: all = all_noQCD_17
     data_sample = Run2017
 elif args.year == 2018:
     if args.onlyTT: all = TT_pow_18
     elif args.onlyTTLep: all = TT_Lep_18
     elif args.onlyTTSemiLep: all = TT_SemiLep_18
-    else: all = all_18
+    else: all = all_noQCD_18
     data_sample = Run2018
 
 data_sample.scale = 1.
