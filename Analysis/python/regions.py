@@ -46,6 +46,7 @@ preFiringSumJetPt     = getRegionsFromThresholds( "Jet_pt",  [30, 40, 50, 60, 70
 preFiringSumJetPtLog  = getRegionsFromThresholds( "Jet_pt",  [30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 600, 700, 800, 900, -999] )
 preFiringSumJet       = getRegionsFromThresholds( "Jet_phi", [-pi, -pi*(4./5), -pi*(3./5), -pi*(2./5), -pi*(1./5), 0., pi*(1./5), pi*(2./5), pi*(3./5), pi*(4./5), pi], gtLastThreshold=False )
 
+#pTG_thresh         = [ 20, 70, 120, 170, 220, 270, 320, -999 ]
 pTG_thresh         = [ 20, 120, 220, -999 ]
 etaG_thresh        = [ -1.5, -0.5, 0.5, 1.5 ]
 regionsTTG         = getRegionsFromThresholds( "PhotonGood0_pt", pTG_thresh )
@@ -81,16 +82,17 @@ regionsTTGEtaFine  = getRegionsFromThresholds( "PhotonGood0_eta", etaG_thresh_fi
 regionsTTGlooseFine     = getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", pTG_thresh_fine )
 regionsTTGlooseEtaFine  = getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_eta", etaG_thresh_fine )
 
-#mlg_tresh = [ 0, mLgThresh, -999 ]
+#pTG_thresh = [ 20, 70, 120, 170, 220 ]
+#highpTG_thresh = [ 220, 270, 320, -999 ]
 mlg_tresh = [ 0, mLgThresh, -999 ]
-mLgPtRegions = getRegions2D( "PhotonGood0_pt", pTG_thresh, "mLtight0Gamma", mlg_tresh )
+mLgPtRegions = getRegions2D( "PhotonGood0_pt", pTG_thresh, "mLtight0Gamma", mlg_tresh )# + getRegionsFromThresholds( "PhotonGood0_pt", highpTG_thresh )
 mLgRegions   = getRegionsFromThresholds( "mLtight0Gamma", mlg_tresh )
 
 m3_thresh    = [0, 140, 210, 280, 350, 420, -999]
 m3Regions    = getRegionsFromThresholds( "m3", m3_thresh )
-m3PtRegions  = getRegions2D( "PhotonGood0_pt",  pTG_thresh,  "m3", m3_thresh )
+m3PtRegions  = getRegions2D( "PhotonGood0_pt",  pTG_thresh,  "m3", m3_thresh )# + getRegionsFromThresholds( "PhotonGood0_pt", highpTG_thresh )
 m3EtaRegions = getRegions2D( "PhotonGood0_eta", etaG_thresh, "m3", m3_thresh )
-m3PtlooseRegions  = getRegions2D( "PhotonNoChgIsoNoSieie0_pt",  pTG_thresh,  "m3", m3_thresh )
+m3PtlooseRegions  = getRegions2D( "PhotonNoChgIsoNoSieie0_pt",  pTG_thresh,  "m3", m3_thresh )# + getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", highpTG_thresh )
 m3EtalooseRegions = getRegions2D( "PhotonNoChgIsoNoSieie0_eta", etaG_thresh, "m3", m3_thresh )
 
 chgIso_thresh = [0, 1.141, 4, 9, 16, -999]
