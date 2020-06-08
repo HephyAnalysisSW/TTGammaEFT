@@ -75,35 +75,17 @@ os.environ["gammaSkim"]="False" #always false for QCD estimate
 if args.year == 2016:
     from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed  import *
     from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
-    mc          = [ TTG_16, Top_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
-    ttg         = TTG_16
-    tt          = Top_16
-    wjets       = WJets_16
-    ttg         = TTG_16
-    wg          = WG_16
-    other       = rest_16
+    mc          = [ Top_16, DY_LO_16, WJets_16, rest_16 ]
     data_sample = Run2016
 elif args.year == 2017:
     from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed    import *
     from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
-    mc          = [ TTG_17, Top_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
-    ttg         = TTG_17
-    tt          = Top_17
-    wjets       = WJets_17
-    ttg         = TTG_17
-    wg          = WG_17
-    other       = rest_17
+    mc          = [ Top_17, DY_LO_17, WJets_17, rest_17 ]
     data_sample = Run2017
 elif args.year == 2018:
     from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed  import *
     from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
-    mc          = [ TTG_18, Top_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
-    ttg         = TTG_18
-    tt          = Top_18
-    wjets       = WJets_18
-    ttg         = TTG_18
-    wg          = WG_18
-    other       = rest_18
+    mc          = [ Top_18, DY_LO_18, WJets_18, rest_18 ]
     data_sample = Run2018
 
 read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval/I",
@@ -124,11 +106,11 @@ read_variables = [ "weight/F",
 
 lumi_scale   = data_sample.lumi * 0.001
 
-filterCutData = getFilterCut( args.year, isData=True,  skipBadChargedCandidate=False )
-filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=False )
+filterCutData = getFilterCut( args.year, isData=True,  skipBadChargedCandidate=True )
+filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )
 
 blinding = []
-if args.year != 2016 and not "VG" in args.selection and not "mis" in args.selection:
+if args.year != 2016 and not "VGfake" in args.selection:
     if "lowSieieNoChgIso" in args.addCut:
         blinding += [ cutInterpreter.cutString( "lowSieieHighChgIso" ) ]
     if "lowChgIsoNoSieie" in args.addCut:
@@ -145,7 +127,7 @@ if args.small:
 print data_sample.selectionString
 
 for s in mc:
-    s.setSelectionString( [ filterCutMc, "overlapRemoval==1" ] )
+    s.setSelectionString( [ filterCutMc ] )
 #    s.setSelectionString( [ filterCutMc, triggerCutMc, "overlapRemoval==1" ] )
     s.read_variables = read_variables_MC
     sampleWeight     = "1"
@@ -159,12 +141,10 @@ replaceSelection = {
     "nLeptonTight":       "nLeptonTightInvIso",
     "nMuonTight":         "nMuonTightInvIso",
     "nElectronTight":     "nElectronTightInvIso",
-#    "mLtight0Gamma":      "mLinvtight0Gamma",
-    "mLtight0GammaNoSieieNoChgIso":      "mLinvtight0GammaNoSieieNoChgIso",
+    "mLtight0Gamma":      "mLinvtight0Gamma",
     "ltight0GammadPhi":   "linvtight0GammadPhi",
     "ltight0GammadR":     "linvtight0GammadR",
     "nPhotonGood":        "nPhotonGoodInvLepIso",
-#    "nJetGoodNoChgIsoNoSieie": "nJetGoodNoChgIsoNoSieieInvLepIso",
     "nJetGood":           "nJetGoodInvLepIso",
     "nBTagGood":          "nBTagGoodInvLepIso",
     "mT":                 "mTinv",
@@ -172,7 +152,6 @@ replaceSelection = {
     "LeptonTight0":       "LeptonTightInvIso0",
     "JetGood0":           "JetGoodInvLepIso0",
     "JetGood1":           "JetGoodInvLepIso1",
-    "nPhotonNoChgIsoNoSieie": "nPhotonNoChgIsoNoSieieInvLepIso",
     "PhotonNoChgIsoNoSieie0": "PhotonNoChgIsoNoSieieInvLepIso0",
     "ltight0GammaNoSieieNoChgIsodR": "ltight0GammaNoSieieNoChgIsoInvLepIsodR",
 }
@@ -215,47 +194,19 @@ else:
     raise Exception("Region not implemented")
 
 if "2" in args.selection and not "2p" in args.selection:
-    DYSF_val    = DY2SF_val
     misIDSF_val = misID2SF_val
-    WGSF_val    = WG2SF_val
-    ZGSF_val    = ZG2SF_val
-    QCDSF_val   = QCD2SF_val
 elif "3" in args.selection and not "3p" in args.selection:
-    DYSF_val    = DY3SF_val
     misIDSF_val = misID3SF_val
-    WGSF_val    = WG3SF_val
-    ZGSF_val    = ZG3SF_val
-    QCDSF_val   = QCD3SF_val
 elif "4" in args.selection and not "4p" in args.selection:
-    DYSF_val    = DY4SF_val
     misIDSF_val = misID4SF_val
-    WGSF_val    = WG4SF_val
-    ZGSF_val    = ZG4SF_val
-    QCDSF_val   = QCD4SF_val
 elif "5" in args.selection:
-    DYSF_val    = DY5SF_val
     misIDSF_val = misID5SF_val
-    WGSF_val    = WG5SF_val
-    ZGSF_val    = ZG5SF_val
-    QCDSF_val   = QCD5SF_val
 elif "2p" in args.selection:
-    DYSF_val    = DY2pSF_val
     misIDSF_val = misID2pSF_val
-    WGSF_val    = WG2pSF_val
-    ZGSF_val    = ZG2pSF_val
-    QCDSF_val   = QCD2pSF_val
 elif "3p" in args.selection:
-    DYSF_val    = DY3pSF_val
     misIDSF_val = misID3pSF_val
-    WGSF_val    = WG3pSF_val
-    ZGSF_val    = ZG3pSF_val
-    QCDSF_val   = QCD3pSF_val
 elif "4p" in args.selection:
-    DYSF_val    = DY4pSF_val
     misIDSF_val = misID4pSF_val
-    WGSF_val    = WG4pSF_val
-    ZGSF_val    = ZG4pSF_val
-    QCDSF_val   = QCD4pSF_val
 
 weightString    = "%f*weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
 weightStringIL  = "%f*weight*reweightHEM*reweightInvIsoTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSFInvIso*reweightLeptonTrackingTightSFInvIso*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
@@ -344,10 +295,10 @@ dataHist_SB.Scale(0)
 genCat = [None]
 if args.photonCat:
     hists = {}
-    genCat = ["noChgIsoNoSieiephotoncat0","noChgIsoNoSieiephotoncat2","noChgIsoNoSieiephotoncat1","noChgIsoNoSieiephotoncat3","noChgIsoNoSieiephotoncat4"]
+    genCat = ["noChgIsoNoSieiephotoncat0","noChgIsoNoSieiephotoncat1","noChgIsoNoSieiephotoncat2","noChgIsoNoSieiephotoncat3","noChgIsoNoSieiephotoncat4"]
     catSettings = { "noChgIsoNoSieiephotoncat0":{"texName":"gen #gamma",  "color":color.gen  },
-                    "noChgIsoNoSieiephotoncat2":{"texName":"misID-e",     "color":color.misID},
                     "noChgIsoNoSieiephotoncat1":{"texName":"had #gamma",  "color":color.had  },
+                    "noChgIsoNoSieiephotoncat2":{"texName":"misID-e",     "color":color.misID},
                     "noChgIsoNoSieiephotoncat3":{"texName":"fake #gamma", "color":color.fakes},
                     "noChgIsoNoSieiephotoncat4":{"texName":"PU #gamma",   "color":color.PU}  }
     for g in genCat:
@@ -362,7 +313,7 @@ for s in mc:
         selectionString = selection + "&&" + cutInterpreter.cutString( g ) if g else selection
         s.setWeightString( weightStringAR + "*" + sampleWeight )
         key = (s.name, "AR", args.variable, "_".join(map(str,args.binning)), s.weightString, s.selectionString, selectionString)
-        if dirDB.contains(key) and not args.overwrite:
+        if dirDB.contains(key) and not args.overwrite and s.name != "WG":
             s.hist = copy.deepcopy(dirDB.get(key).Clone(s.name))
         else:
             s.hist = s.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=selectionString )
@@ -437,10 +388,10 @@ for i_pt, pt in enumerate(ptBins[:-1]):
         data_sample.setSelectionString( [filterCutData, "reweightHEM>0"] )
         key = (data_sample.name, "SB", args.variable, "_".join(map(str,args.binning)), data_sample.weightString, data_sample.selectionString, leptonPtEtaCut)
         if dirDB.contains(key) and not args.overwrite:
-            dataHist_SB_tmp = dirDB.get(key).Clone("SBdata")
+            dataHist_SB_tmp = dirDB.get(key).Clone("sbdata")
         else:
             dataHist_SB_tmp = data_sample.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=leptonPtEtaCut )
-            dirDB.add(key, dataHist_SB_tmp.Clone("SBdata"), overwrite=True)
+            dirDB.add(key, dataHist_SB_tmp.Clone("sbdata"), overwrite=True)
 
         dataHist_SB.Add(dataHist_SB_tmp)
         qcdHist_tmp = dataHist_SB_tmp.Clone("qcdtmp_%i_%i"%(i_pt,i_eta))
@@ -514,7 +465,7 @@ qcdTemplate.Scale(1./ qcdTemplate.Integral() if qcdTemplate.Integral() else 0. )
 maxQCD = qcdTemplate.GetMaximum()
 
 if args.photonCat:
-    histos     = [[hists[g] for g in genCat] + [qcdHist], [dataHist]]
+    histos     = [[h for h in hists.values()] + [qcdHist], [dataHist]]
 else:
     histos     = [[s.hist    for s in mc] + [qcdHist], [dataHist]]
 histos_SB  = [[s.hist_SB for s in mc],             [dataHist_SB], [qcdTemplate], [oneHist]]
@@ -543,10 +494,10 @@ for plot in plots:
 
         selDir = args.selection
         if args.addCut and not args.survey: selDir += "-" + args.addCut
-        plot_directory_ = os.path.join( plot_directory, "fakeHistos", str(args.year), args.plot_directory, selDir, args.mode + "_cat" if args.photonCat else args.mode, "log" if log else "lin" )
+        plot_directory_ = os.path.join( plot_directory, "fakeNORHistos", str(args.year), args.plot_directory, selDir, args.mode + "_cat" if args.photonCat else args.mode, "log" if log else "lin" )
         plotting.draw( plot,
                        plot_directory = plot_directory_,
-                       logX = False, logY = log, sorting = not args.photonCat,
+                       logX = False, logY = log, #sorting = True,#plot.name != "mT_fit",
                        yRange = (0.3, "auto"),
                        ratio = ratio,
                        drawObjects = drawObjects( lumi_scale ),

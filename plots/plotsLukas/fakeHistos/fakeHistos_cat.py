@@ -24,7 +24,7 @@ from Analysis.Tools.MergingDirDB      import MergingDirDB
 # Default Parameter
 loggerChoices = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTSET"]
 
-addSF = True
+addSF = False
 ptBins  = [0, 45, 65, 80, 100, 120, -1]
 etaBins = [0, 1.479, 1.7, 2.1, -1]
 
@@ -41,7 +41,6 @@ argParser.add_argument("--year",               action="store",      default=2016
 argParser.add_argument("--mode",               action="store",      default="all",  type=str,  choices=["mu", "e", "all"],                   help="lepton selection")
 argParser.add_argument("--small",              action="store_true",                                                                          help="Run only on a small subset of the data?")
 argParser.add_argument("--survey",             action="store_true",                                                                          help="all plots in one directory?")
-argParser.add_argument("--photonCat",          action="store_true",                                                                          help="all plots in one directory?")
 argParser.add_argument("--overwrite",          action="store_true",                                                                          help="overwrite cache?")
 args = argParser.parse_args()
 
@@ -124,11 +123,11 @@ read_variables = [ "weight/F",
 
 lumi_scale   = data_sample.lumi * 0.001
 
-filterCutData = getFilterCut( args.year, isData=True,  skipBadChargedCandidate=False )
-filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=False )
+filterCutData = getFilterCut( args.year, isData=True,  skipBadChargedCandidate=True )
+filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )
 
 blinding = []
-if args.year != 2016 and not "VG" in args.selection and not "mis" in args.selection:
+if args.year != 2016:
     if "lowSieieNoChgIso" in args.addCut:
         blinding += [ cutInterpreter.cutString( "lowSieieHighChgIso" ) ]
     if "lowChgIsoNoSieie" in args.addCut:
@@ -159,12 +158,10 @@ replaceSelection = {
     "nLeptonTight":       "nLeptonTightInvIso",
     "nMuonTight":         "nMuonTightInvIso",
     "nElectronTight":     "nElectronTightInvIso",
-#    "mLtight0Gamma":      "mLinvtight0Gamma",
-    "mLtight0GammaNoSieieNoChgIso":      "mLinvtight0GammaNoSieieNoChgIso",
+    "mLtight0Gamma":      "mLinvtight0Gamma",
     "ltight0GammadPhi":   "linvtight0GammadPhi",
     "ltight0GammadR":     "linvtight0GammadR",
     "nPhotonGood":        "nPhotonGoodInvLepIso",
-#    "nJetGoodNoChgIsoNoSieie": "nJetGoodNoChgIsoNoSieieInvLepIso",
     "nJetGood":           "nJetGoodInvLepIso",
     "nBTagGood":          "nBTagGoodInvLepIso",
     "mT":                 "mTinv",
@@ -172,7 +169,6 @@ replaceSelection = {
     "LeptonTight0":       "LeptonTightInvIso0",
     "JetGood0":           "JetGoodInvLepIso0",
     "JetGood1":           "JetGoodInvLepIso1",
-    "nPhotonNoChgIsoNoSieie": "nPhotonNoChgIsoNoSieieInvLepIso",
     "PhotonNoChgIsoNoSieie0": "PhotonNoChgIsoNoSieieInvLepIso0",
     "ltight0GammaNoSieieNoChgIsodR": "ltight0GammaNoSieieNoChgIsoInvLepIsodR",
 }
@@ -215,47 +211,19 @@ else:
     raise Exception("Region not implemented")
 
 if "2" in args.selection and not "2p" in args.selection:
-    DYSF_val    = DY2SF_val
     misIDSF_val = misID2SF_val
-    WGSF_val    = WG2SF_val
-    ZGSF_val    = ZG2SF_val
-    QCDSF_val   = QCD2SF_val
 elif "3" in args.selection and not "3p" in args.selection:
-    DYSF_val    = DY3SF_val
     misIDSF_val = misID3SF_val
-    WGSF_val    = WG3SF_val
-    ZGSF_val    = ZG3SF_val
-    QCDSF_val   = QCD3SF_val
 elif "4" in args.selection and not "4p" in args.selection:
-    DYSF_val    = DY4SF_val
     misIDSF_val = misID4SF_val
-    WGSF_val    = WG4SF_val
-    ZGSF_val    = ZG4SF_val
-    QCDSF_val   = QCD4SF_val
 elif "5" in args.selection:
-    DYSF_val    = DY5SF_val
     misIDSF_val = misID5SF_val
-    WGSF_val    = WG5SF_val
-    ZGSF_val    = ZG5SF_val
-    QCDSF_val   = QCD5SF_val
 elif "2p" in args.selection:
-    DYSF_val    = DY2pSF_val
     misIDSF_val = misID2pSF_val
-    WGSF_val    = WG2pSF_val
-    ZGSF_val    = ZG2pSF_val
-    QCDSF_val   = QCD2pSF_val
 elif "3p" in args.selection:
-    DYSF_val    = DY3pSF_val
     misIDSF_val = misID3pSF_val
-    WGSF_val    = WG3pSF_val
-    ZGSF_val    = ZG3pSF_val
-    QCDSF_val   = QCD3pSF_val
 elif "4p" in args.selection:
-    DYSF_val    = DY4pSF_val
     misIDSF_val = misID4pSF_val
-    WGSF_val    = WG4pSF_val
-    ZGSF_val    = ZG4pSF_val
-    QCDSF_val   = QCD4pSF_val
 
 weightString    = "%f*weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
 weightStringIL  = "%f*weight*reweightHEM*reweightInvIsoTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSFInvIso*reweightLeptonTrackingTightSFInvIso*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
@@ -333,59 +301,41 @@ QCDTF_updates_2J = copy.deepcopy(QCDTF_updates)
 
 key = (data_sample.name, "AR", args.variable, "_".join(map(str,args.binning)), data_sample.weightString, data_sample.selectionString, selection)
 if dirDB.contains(key) and not args.overwrite:
-    dataHist = dirDB.get(key).Clone("data")
+    dataHist = dirDB.get(key.Clone("dataAR"))
 else:
     dataHist = data_sample.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=selection )
-    dirDB.add(key, dataHist.Clone("data"), overwrite=True)
+    dirDB.add(key, dataHist.Clone("dataAR"), overwrite=True)
 
 dataHist_SB  = dataHist.Clone("data_SB")
 dataHist_SB.Scale(0)
-
-genCat = [None]
-if args.photonCat:
-    hists = {}
-    genCat = ["noChgIsoNoSieiephotoncat0","noChgIsoNoSieiephotoncat2","noChgIsoNoSieiephotoncat1","noChgIsoNoSieiephotoncat3","noChgIsoNoSieiephotoncat4"]
-    catSettings = { "noChgIsoNoSieiephotoncat0":{"texName":"gen #gamma",  "color":color.gen  },
-                    "noChgIsoNoSieiephotoncat2":{"texName":"misID-e",     "color":color.misID},
-                    "noChgIsoNoSieiephotoncat1":{"texName":"had #gamma",  "color":color.had  },
-                    "noChgIsoNoSieiephotoncat3":{"texName":"fake #gamma", "color":color.fakes},
-                    "noChgIsoNoSieiephotoncat4":{"texName":"PU #gamma",   "color":color.PU}  }
-    for g in genCat:
-        hists[g] = dataHist.Clone(g)
-        hists[g].Scale(0)
 
 qcdHist = dataHist.Clone("qcd")
 qcdHist.Scale(0)
 
 for s in mc:
-    for g in genCat:
-        selectionString = selection + "&&" + cutInterpreter.cutString( g ) if g else selection
-        s.setWeightString( weightStringAR + "*" + sampleWeight )
-        key = (s.name, "AR", args.variable, "_".join(map(str,args.binning)), s.weightString, s.selectionString, selectionString)
-        if dirDB.contains(key) and not args.overwrite:
-            s.hist = copy.deepcopy(dirDB.get(key).Clone(s.name))
-        else:
-            s.hist = s.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=selectionString )
-            dirDB.add(key, s.hist.Clone(s.name), overwrite=True)
+    s.setWeightString( weightStringAR + "*" + sampleWeight )
+    key = (s.name, "AR", args.variable, "_".join(map(str,args.binning)), s.weightString, s.selectionString, selection)
+    if dirDB.contains(key) and not args.overwrite and s.name != "WG":
+        s.hist = dirDB.get(key).Clone(s.name)
+    else:
+        s.hist = s.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=selection )
+        dirDB.add(key, s.hist.Clone(s.name), overwrite=True)
 
-        if addSF:
-            if "DY" in s.name:
-                s.hist.Scale(DYSF_val[args.year].val)
-            elif "WJets" in s.name:
-                s.hist.Scale(WJetsSF_val[args.year].val)
-            elif "Top" in s.name:
-                s.hist.Scale(TTSF_val[args.year].val)
-            elif "ZG" in s.name:# and njets < 4:
-                s.hist.Scale(ZGSF_val[args.year].val)
-            elif "other" in s.name:# and njets < 4:
-                s.hist.Scale(otherSF_val[args.year].val)
-            elif "WG" in s.name:# and njets > 3:
-                s.hist.Scale(WGSF_val[args.year].val)
-            elif "TTG" in s.name:
-                s.hist.Scale(SSMSF_val[args.year].val)
-
-        if args.photonCat:
-            hists[g].Add(s.hist)
+    if addSF:
+        if "DY" in s.name:
+            s.hist.Scale(DYSF_val[args.year].val)
+        elif "WJets" in s.name:
+            s.hist.Scale(WJetsSF_val[args.year].val)
+        elif "Top" in s.name:
+            s.hist.Scale(TTSF_val[args.year].val)
+        elif "ZG" in s.name:# and njets < 4:
+            s.hist.Scale(ZGSF_val[args.year].val)
+        elif "other" in s.name:# and njets < 4:
+            s.hist.Scale(otherSF_val[args.year].val)
+        elif "WG" in s.name:# and njets > 3:
+            s.hist.Scale(WGSF_val[args.year].val)
+        elif "TTG" in s.name:
+            s.hist.Scale(SSMSF_val[args.year].val)
 
     s.hist_SB = copy.deepcopy(dataHist.Clone(s.name+"_SB"))
     s.hist_SB.Scale(0)
@@ -394,11 +344,6 @@ for s in mc:
     s.hist_SB.legendText = s.texName
     s.hist.style         = styles.fillStyle( s.color )
     s.hist.legendText    = s.texName
-
-if args.photonCat:
-    for g in genCat:
-        hists[g].style = styles.fillStyle( catSettings[g]["color"] )
-        hists[g].legendText = catSettings[g]["texName"]
 
 dataHist_SB.style      = styles.errorStyle( ROOT.kBlack )
 dataHist_SB.legendText = "data (%s)"%args.mode.replace("mu","#mu")
@@ -434,10 +379,9 @@ for i_pt, pt in enumerate(ptBins[:-1]):
         print leptonPtEtaCut
 
         # histos
-        data_sample.setSelectionString( [filterCutData, "reweightHEM>0"] )
         key = (data_sample.name, "SB", args.variable, "_".join(map(str,args.binning)), data_sample.weightString, data_sample.selectionString, leptonPtEtaCut)
         if dirDB.contains(key) and not args.overwrite:
-            dataHist_SB_tmp = dirDB.get(key).Clone("SBdata")
+            dataHist_SB_tmp = dirDB.get(key.Clone("SBdata"))
         else:
             dataHist_SB_tmp = data_sample.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=leptonPtEtaCut )
             dirDB.add(key, dataHist_SB_tmp.Clone("SBdata"), overwrite=True)
@@ -448,8 +392,8 @@ for i_pt, pt in enumerate(ptBins[:-1]):
         for s in mc:
             s.setWeightString( weightStringInv + "*" + sampleWeight )
             key = (s.name, "SB", args.variable, "_".join(map(str,args.binning)), s.weightString, s.selectionString, leptonPtEtaCut)
-            if dirDB.contains(key) and not args.overwrite:
-                s.hist_SB_tmp = dirDB.get(key).Clone("SB"+s.name)
+            if dirDB.contains(key) and not args.overwrite and s.name != "WG":
+                s.hist_SB_tmp = dirDB.get(key.Clone("SB"+s.name))
             else:
                 s.hist_SB_tmp = s.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=leptonPtEtaCut )
                 dirDB.add(key, s.hist_SB_tmp.Clone("SB"+s.name), overwrite=True)
@@ -505,7 +449,7 @@ sbInt = qcdHist.Integral()
 qcdHist.Scale(QCDSF_val[args.year].val)
 
 qcdHist.style          = styles.fillStyle( color.QCD )
-qcdHist.legendText     = "QCD"
+qcdHist.legendText     = "QCD (%i)"%int(qcdHist.Integral())
 
 qcdTemplate            = qcdHist.Clone("QCDTemplate")
 qcdTemplate.style      = styles.fillStyle( color.QCD )
@@ -513,10 +457,7 @@ qcdTemplate.legendText = "QCD template (%i)"%int(sbInt)
 qcdTemplate.Scale(1./ qcdTemplate.Integral() if qcdTemplate.Integral() else 0. )
 maxQCD = qcdTemplate.GetMaximum()
 
-if args.photonCat:
-    histos     = [[hists[g] for g in genCat] + [qcdHist], [dataHist]]
-else:
-    histos     = [[s.hist    for s in mc] + [qcdHist], [dataHist]]
+histos     = [[s.hist    for s in mc] + [qcdHist], [dataHist]]
 histos_SB  = [[s.hist_SB for s in mc],             [dataHist_SB], [qcdTemplate], [oneHist]]
 
 Plot.setDefaults()
@@ -543,10 +484,10 @@ for plot in plots:
 
         selDir = args.selection
         if args.addCut and not args.survey: selDir += "-" + args.addCut
-        plot_directory_ = os.path.join( plot_directory, "fakeHistos", str(args.year), args.plot_directory, selDir, args.mode + "_cat" if args.photonCat else args.mode, "log" if log else "lin" )
+        plot_directory_ = os.path.join( plot_directory, "fakeHistos", str(args.year), args.plot_directory, selDir, args.mode, "log" if log else "lin" )
         plotting.draw( plot,
                        plot_directory = plot_directory_,
-                       logX = False, logY = log, sorting = not args.photonCat,
+                       logX = False, logY = log, #sorting = True,#plot.name != "mT_fit",
                        yRange = (0.3, "auto"),
                        ratio = ratio,
                        drawObjects = drawObjects( lumi_scale ),
