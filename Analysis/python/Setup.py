@@ -62,13 +62,13 @@ class Setup:
         os.environ["gammaSkim"] = str(photonSelection)
         if year == 2016 and not checkOnly:
             #define samples
-            from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed  import TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, QCD_16, GJets_16, rest_16, TTG_TuneUp_16, TTG_TuneDown_16, TTG_erdOn_16
+            from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed  import TTG_16, Top_16, DY_LO_16, WJets_16, WG_16, ZG_16, QCD_16, GJets_16, rest_16, TTG_TuneUp_16, TTG_TuneDown_16, TTG_erdOn_16
             from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import Run2016
             ttg         = TTG_16
             ttg_TuneUp   = TTG_TuneUp_16
             ttg_TuneDown = TTG_TuneDown_16
             ttg_erdOn    = TTG_erdOn_16
-            tt          = TT_pow_16
+            tt          = Top_16
             DY          = DY_LO_16
             zg          = ZG_16
             wg          = WG_16
@@ -80,13 +80,13 @@ class Setup:
 
         elif year == 2017 and not checkOnly:
             #define samples
-            from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed    import TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, QCD_17, GJets_17, rest_17, TTG_TuneUp_17, TTG_TuneDown_17, TTG_erdOn_17
+            from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed    import TTG_17, Top_17, DY_LO_17, WJets_17, WG_17, ZG_17, QCD_17, GJets_17, rest_17, TTG_TuneUp_17, TTG_TuneDown_17, TTG_erdOn_17
             from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import Run2017
             ttg          = TTG_17
             ttg_TuneUp   = TTG_TuneUp_17
             ttg_TuneDown = TTG_TuneDown_17
             ttg_erdOn    = TTG_erdOn_17
-            tt           = TT_pow_17
+            tt           = Top_17
             DY           = DY_LO_17
             zg           = ZG_17
             wg           = WG_17
@@ -98,13 +98,13 @@ class Setup:
 
         elif year == 2018 and not checkOnly:
             #define samples
-            from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed  import TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, QCD_18, GJets_18, rest_18, TTG_TuneUp_18, TTG_TuneDown_18, TTG_erdOn_18
+            from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed  import TTG_18, Top_18, DY_LO_18, WJets_18, WG_18, ZG_18, QCD_18, GJets_18, rest_18, TTG_TuneUp_18, TTG_TuneDown_18, TTG_erdOn_18
             from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import Run2018
             ttg         = TTG_18
             ttg_TuneUp   = TTG_TuneUp_18
             ttg_TuneDown = TTG_TuneDown_18
             ttg_erdOn    = TTG_erdOn_18
-            tt          = TT_pow_18
+            tt          = Top_18
             DY          = DY_LO_18
             zg          = ZG_18
             wg          = WG_18
@@ -121,6 +121,10 @@ class Setup:
             self.processes.update( { sample+"_gen":   None for sample in default_sampleList + default_systematicList } )
             self.processes.update( { sample+"_misID": None for sample in default_sampleList + default_systematicList } )
             self.processes.update( { sample+"_had":   None for sample in default_sampleList + default_systematicList } )
+            self.processes.update( { sample+"_hp":    None for sample in default_sampleList + default_systematicList } )
+            self.processes.update( { sample+"_fake":  None for sample in default_sampleList + default_systematicList } )
+            self.processes.update( { sample+"_PU":    None for sample in default_sampleList + default_systematicList } )
+            self.processes.update( { sample+"_np":    None for sample in default_sampleList + default_systematicList } )
             self.processes["Data"] = "Run%i"%self.year
 
             if year == 2016:
@@ -141,6 +145,10 @@ class Setup:
             self.processes.update( { sample.name+"_gen":   sample for sample in mc } )
             self.processes.update( { sample.name+"_misID": sample for sample in mc } )
             self.processes.update( { sample.name+"_had":   sample for sample in mc } )
+            self.processes.update( { sample.name+"_hp":    sample for sample in mc } )
+            self.processes.update( { sample.name+"_fake":  sample for sample in mc } )
+            self.processes.update( { sample.name+"_PU":    sample for sample in mc } )
+            self.processes.update( { sample.name+"_np":    sample for sample in mc } )
             self.processes["Data"] = data
 
             self.lumi     = data.lumi
@@ -265,15 +273,16 @@ class Setup:
         assert zWindow in ["offZeg", "onZeg", "onZSFllTight", "onZSFllgTight", "all"], "zWindow must be one of onZeg, offZeg, onZSFllTight, onZSFllgTight, all. Got %r"%zWindow
         assert m3Window in ["offM3", "onM3", "all"], "m3Window must be one of onM3, offM3, all. Got %r"%m3Window
         assert photonIso in [None, "highSieieNoChgIso", "lowSieieNoChgIso", "noSieie", "highSieie", "lowChgIsoNoSieie", "highChgIsoNoSieie", "noChgIso", "highChgIso", "noChgIsoNoSieie", "highChgIsohighSieie"], "PhotonIso must be one of highSieie, highChgIso, highChgIsohighSieie. Got %r"%photonIso
-        assert processCut in [None, "cat0","cat2","cat13","cat134", "cat4"], "Process specific cut must be one of cat0, cat2, cat13, cat4. Got %r"%processCut
+        assert processCut in [None, "cat0","cat1","cat2","cat3","cat13","cat134", "cat4"], "Process specific cut must be one of cat0, cat2, cat13, cat4. Got %r"%processCut
         if self.sys['selectionModifier']:
-            assert self.sys['selectionModifier'] in jmeVariations+metVariations, "Don't know about systematic variation %r, take one of %s"%(self.sys['selectionModifier'], ",".join(jmeVariations+metVariations))
+            assert self.sys['selectionModifier'] in jmeVariations+metVariations+eVariations+muVariations, "Don't know about systematic variation %r, take one of %s"%(self.sys['selectionModifier'], ",".join(jmeVariations+metVariations+eVariations+muVariations))
 
         res={"cuts":[], "prefixes":[]}
 
         # default lepton selections
         tightLepton  = "nLepTight1"
         vetoLepton   = "nLepVeto1"
+#        vetoLepton   = "nLepNoCorrVeto1"
         jetCutVar    = "nJetGood"
         jetPrefix    = "nJet"
         btagCutVar   = "nBTagGood"
@@ -300,12 +309,16 @@ class Setup:
             tightLepton = "nLepTight2-OStight"
             vetoLepton = "nLepVeto2"
 
+        if photonIso:
+            zWindow     += "SB"
+
         if invertLepIso:
             # invert leptonIso in lepton cuts
             channel     += "Inv"
             zWindow     += "Inv"
             tightLepton  = "nInvLepTight1"
             vetoLepton   = "nLepVeto1"
+#            vetoLepton   = "nLepNoCorrVeto1"
             jetCutVar    = "nJetGoodInvLepIso"
             jetPrefix    = "nInvLJet"
             btagCutVar   = "nBTagGoodInvLepIso"
@@ -367,31 +380,47 @@ class Setup:
             zWindow = "all"
 
         #Postfix for variables (only for MC and if we have a jme variation)
-        sysStr = ""
+        jSysStr = ""
         if dataMC == "MC" and self.sys['selectionModifier'] in jmeVariations + metVariations:
-            sysStr = "_" + self.sys['selectionModifier']
+            jSysStr = "_" + self.sys['selectionModifier']
+        pSysStr = ""
+        lSysStr = ""
+        isEVar  = False
+        isMuVar = False
+        if dataMC == "MC" and self.sys['selectionModifier'] in muVariations:
+            lSysStr = "_" + self.sys['selectionModifier']
+            leptonPtCutVar += "_totalUp" if "up" in self.sys['selectionModifier'].lower() else "_totalDown"
+            isMuVar = True
+        if dataMC == "MC" and self.sys['selectionModifier'] in eVariations:
+            lSysStr = "_" + self.sys['selectionModifier']
+            pSysStr = "_" + self.sys['selectionModifier']
+            isEVar = True
+            leptonPtCutVar += "_totalUp" if "up" in self.sys['selectionModifier'].lower() else "_totalDown"
 
         #leptons or inv. iso leptons
         res["prefixes"].append( tightLepton )
         lepSel = cutInterpreter.cutString( tightLepton )
+        if lSysStr: lepSel = lepSel.replace("==","%s=="%lSysStr)
         res["cuts"].append( lepSel )
               
         #lepton channel or inv. iso lepton channel
         res["prefixes"].append( channel )
         chStr = cutInterpreter.cutString( channel )
+        if lSysStr and ( (channel in ["e","eetight"] and isEVar) or (channel in ["mu","mumutight"] and isMuVar) ): chStr = chStr.replace("==","%s=="%lSysStr)
         res["cuts"].append(chStr)
 
         #lepton veto or no Iso lepton veto
         res["prefixes"].append( vetoLepton )
         chVetoStr = cutInterpreter.cutString( vetoLepton )
+        if lSysStr: chVetoStr = chVetoStr.replace("==","%s=="%lSysStr)
         res["cuts"].append( chVetoStr )
 
         if nJet and not (nJet[0]==0 and nJet[1]<0):
             assert nJet[0]>=0 and (nJet[1]>=nJet[0] or nJet[1]<0), "Not a good nJet selection: %r"%nJet
-            njetsstr = jetCutVar+sysStr+">="+str(nJet[0])
+            njetsstr = jetCutVar+jSysStr+">="+str(nJet[0])
             prefix   = jetPrefix+str(nJet[0])
             if nJet[1]>=0:
-                njetsstr+= "&&"+jetCutVar+sysStr+"<="+str(nJet[1])
+                njetsstr+= "&&"+jetCutVar+jSysStr+"<="+str(nJet[1])
                 if nJet[1]!=nJet[0]: prefix+="To"+str(nJet[1])
             else:
                 prefix+="p"
@@ -400,12 +429,12 @@ class Setup:
 
         if nBTag and not (nBTag[0]==0 and nBTag[1]<0):
             assert nBTag[0]>=0 and (nBTag[1]>=nBTag[0] or nBTag[1]<0), "Not a good nBTag selection: %r"% nBTag
-            if sysStr: nbtstr = btagCutVar+sysStr+">="+str(nBTag[0])
-            else:      nbtstr = btagCutVar+sysStr+">="+str(nBTag[0])
+            if jSysStr: nbtstr = btagCutVar+jSysStr+">="+str(nBTag[0])
+            else:      nbtstr = btagCutVar+jSysStr+">="+str(nBTag[0])
             prefix = btagPrefix+str(nBTag[0])
             if nBTag[1]>=0:
-                if sysStr: nbtstr+= "&&"+btagCutVar+sysStr+"<="+str(nBTag[1])
-                else:      nbtstr+= "&&"+btagCutVar+sysStr+"<="+str(nBTag[1])
+                if jSysStr: nbtstr+= "&&"+btagCutVar+jSysStr+"<="+str(nBTag[1])
+                else:      nbtstr+= "&&"+btagCutVar+jSysStr+"<="+str(nBTag[1])
                 if nBTag[1]!=nBTag[0]: prefix+="To"+str(nBTag[1])
             else:
                 prefix+="p"
@@ -415,10 +444,10 @@ class Setup:
         if photonSel:
             #photon cut
             assert nPhoton[0]>=0 and (nPhoton[1]>=nPhoton[0] or nPhoton[1]<0), "Not a good nPhoton selection: %r"%nPhoton
-            nphotonsstr = photonCutVar+">="+str(nPhoton[0])
+            nphotonsstr = photonCutVar+pSysStr+">="+str(nPhoton[0])
             prefix      = photonPrefix+str(nPhoton[0])
             if nPhoton[1]>=0:
-                nphotonsstr+= "&&"+photonCutVar+"<="+str(nPhoton[1])
+                nphotonsstr+= "&&"+photonCutVar+pSysStr+"<="+str(nPhoton[1])
                 if nPhoton[1]!=nPhoton[0]: prefix+="To"+str(nPhoton[1])
             else:
                 prefix+="p"
@@ -426,10 +455,10 @@ class Setup:
             res["prefixes"].append(prefix)
 
             if photonVetoCutVar:
-                nphotonVetosstr = photonVetoCutVar+">="+str(nPhoton[0])
+                nphotonVetosstr = photonVetoCutVar+pSysStr+">="+str(nPhoton[0])
                 prefix          = photonVetoPrefix+str(nPhoton[0])
                 if nPhoton[1]>=0:
-                    nphotonVetosstr += "&&"+photonVetoCutVar+"<="+str(nPhoton[1])
+                    nphotonVetosstr += "&&"+photonVetoCutVar+pSysStr+"<="+str(nPhoton[1])
                     if nPhoton[1] != nPhoton[0]: prefix+="To"+str(nPhoton[1])
                 else:
                     prefix+="p"
@@ -438,10 +467,10 @@ class Setup:
 
         else:
             addMisIDSF   = False
-            res["cuts"].append(photonCutVar+"==0")
+            res["cuts"].append(photonCutVar+pSysStr+"==0")
             res["prefixes"].append(photonPrefix+"0")
             if photonVetoCutVar:
-                res["cuts"].append(photonVetoCutVar+"==0")
+                res["cuts"].append(photonVetoCutVar+pSysStr+"==0")
                 res["prefixes"].append(photonVetoPrefix+"0")
 
         #leptonEta cut
@@ -469,10 +498,10 @@ class Setup:
         #MET cut
         if MET and not (MET[0]==0 and MET[1]<0):
             assert MET[0]>=0 and (MET[1]>=MET[0] or MET[1]<0), "Not a good MET selection: %r"%MET
-            metsstr = "MET_pt"+sysStr+">="+str(MET[0])
+            metsstr = "MET_pt"+jSysStr+">="+str(MET[0])
             prefix   = "met"+str(MET[0])
             if MET[1]>=0:
-                metsstr+= "&&"+"MET_pt"+sysStr+"<"+str(MET[1])
+                metsstr+= "&&"+"MET_pt"+jSysStr+"<"+str(MET[1])
                 if MET[1]!=MET[0]: prefix+="To"+str(MET[1])
             res["cuts"].append(metsstr)
             res["prefixes"].append(prefix)
@@ -503,6 +532,8 @@ class Setup:
 
         if invertLepIso:
             res["cuts"].append( "triggeredInvIso==1" )
+        elif lSysStr:
+            res["cuts"].append( "triggered"+lSysStr+"==1" )
         else:
             res["cuts"].append( "triggered==1" )
 
@@ -667,20 +698,21 @@ if __name__ == "__main__":
     setup = Setup( year=2016 )
     for name, dict in allRegions.items():
 #        if not "wjetsec3" in name.lower() and not "wjetsbarrel3" in name.lower(): continue
-        if not "vg4p" in name.lower(): continue
+        if not "sr3" in name.lower(): continue
         print
         print name
+#        dict["parameters"]["invertLepIso"] = False
         print
         setup = setup.sysClone( parameters=dict["parameters"] )
-#        setup = setup.sysClone({"selectionModifier":"jerUp"})
+        setup = setup.sysClone({"selectionModifier":"eTotalUp"})
         for channel in dict["channels"]:
             print
             print channel
             print
             res = setup.selection("MC", channel=channel, **setup.defaultParameters( update=dict["parameters"] ))
             print res["cut"]
-            print res["prefix"]
-            print res["weightStr"]
+#            print res["prefix"]
+#            print res["weightStr"]
 
 
 
