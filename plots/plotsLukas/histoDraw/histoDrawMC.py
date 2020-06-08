@@ -71,21 +71,21 @@ os.environ["gammaSkim"]="False" #always false for QCD estimate
 if args.year == 2016:
     from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed  import *
     from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
-    mc          = [ TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16, QCD_16, GJets_16 ]
+    mc          = [ TTG_16, Top_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16, QCD_16, GJets_16 ]
     qcd = QCD_16
     gjets = GJets_16
     data_sample = Run2016
 elif args.year == 2017:
     from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed    import *
     from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
-    mc          = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17, QCD_17, GJets_17 ]
+    mc          = [ TTG_17, Top_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17, QCD_17, GJets_17 ]
     qcd = QCD_17
     gjets = GJets_17
     data_sample = Run2017
 elif args.year == 2018:
     from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed  import *
     from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
-    mc          = [ TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18, QCD_18, GJets_18 ]
+    mc          = [ TTG_18, Top_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18, QCD_18, GJets_18 ]
     qcd = QCD_18
     gjets = GJets_18
     data_sample = Run2018
@@ -228,14 +228,14 @@ if dirDB.contains(key) and not args.overwrite:
     dataHist_SB = dirDB.get(key)
 else:
     dataHist_SB = data_sample.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=preSelection, addOverFlowBin="upper" )
-    dirDB.add(key, dataHist_SB)
+    dirDB.add(key, dataHist_SB, overwrite=True)
 
 key = (data_sample.name, "AR", args.variable, "_".join(map(str,args.binning)), data_sample.weightString, data_sample.selectionString, selection)
 if dirDB.contains(key) and not args.overwrite:
     dataHist = dirDB.get(key)
 else:
     dataHist = data_sample.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=selection, addOverFlowBin="upper" )
-    dirDB.add(key, dataHist)
+    dirDB.add(key, dataHist, overwrite=True)
 
 dataHist_SB.style      = styles.errorStyle( ROOT.kBlack )
 dataHist_SB.legendText = "data (%s)"%args.mode.replace("mu","#mu")
@@ -258,7 +258,7 @@ for s in mc:
         s.hist_SB = dirDB.get(key)
     else:
         s.hist_SB = s.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=preSelection, addOverFlowBin="upper" )
-        dirDB.add(key, s.hist_SB)
+        dirDB.add(key, s.hist_SB, overwrite=True)
 
     s.setWeightString( weightStringAR + "*" + sampleWeight )
     key = (s.name, "AR", args.variable, "_".join(map(str,args.binning)), s.weightString, s.selectionString, selection)
@@ -266,7 +266,7 @@ for s in mc:
         s.hist = dirDB.get(key)
     else:
         s.hist = s.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=selection, addOverFlowBin="upper" )
-        dirDB.add(key, s.hist)
+        dirDB.add(key, s.hist, overwrite=True)
 
     # apply SF after histo caching
     if addSF:
@@ -276,7 +276,7 @@ for s in mc:
         elif "WJets" in s.name:
             s.hist.Scale(WJetsSF_val[args.year].val)
             s.hist_SB.Scale(WJetsSF_val[args.year].val)
-        elif "TT_pow" in s.name:
+        elif "Top" in s.name:
             s.hist.Scale(TTSF_val[args.year].val)
             s.hist_SB.Scale(TTSF_val[args.year].val)
         elif "ZG" in s.name:# and njets < 4:

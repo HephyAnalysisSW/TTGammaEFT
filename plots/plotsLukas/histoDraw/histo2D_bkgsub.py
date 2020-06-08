@@ -65,9 +65,9 @@ os.environ["gammaSkim"]="False" #always false for QCD estimate
 if args.year == 2016:
     from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed  import *
     from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
-    mc          = [ TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
+    mc          = [ TTG_16, Top_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
     ttg         = TTG_16
-    tt          = TT_pow_16
+    tt          = Top_16
     wjets       = WJets_16
     ttg         = TTG_16
     wg          = WG_16
@@ -76,9 +76,9 @@ if args.year == 2016:
 elif args.year == 2017:
     from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed    import *
     from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
-    mc          = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
+    mc          = [ TTG_17, Top_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
     ttg         = TTG_17
-    tt          = TT_pow_17
+    tt          = Top_17
     wjets       = WJets_17
     ttg         = TTG_17
     wg          = WG_17
@@ -87,9 +87,9 @@ elif args.year == 2017:
 elif args.year == 2018:
     from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed  import *
     from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
-    mc          = [ TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
+    mc          = [ TTG_18, Top_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
     ttg         = TTG_18
-    tt          = TT_pow_18
+    tt          = Top_18
     wjets       = WJets_18
     ttg         = TTG_18
     wg          = WG_18
@@ -157,7 +157,7 @@ else:
     raise Exception("Region not implemented")
 
 # histos
-binning = [24, 30, 150, 48, -2.4, 2.4]
+binning = [12, 30, 150, 16, -2.4, 2.4]
 var     = "LeptonTight0_eta:LeptonTight0_pt"
 invVar  = "LeptonTightInvIso0_eta:LeptonTightInvIso0_pt"
 
@@ -178,21 +178,21 @@ for s in mc:
         elif "WJets" in s.name:
             s.hist.Scale(WJetsSF_val[args.year].val)
             s.hist_SB.Scale(WJetsSF_val[args.year].val)
-        elif "TT_pow" in s.name:
+        elif "Top" in s.name:
             s.hist.Scale(TTSF_val[args.year].val)
             s.hist_SB.Scale(TTSF_val[args.year].val)
-        elif "ZG" in s.name:# and njets < 4:
-            s.hist.Scale(ZGSF_val[args.year].val)
-            s.hist_SB.Scale(ZGSF_val[args.year].val)
-        elif "other" in s.name:# and njets < 4:
-            s.hist.Scale(otherSF_val[args.year].val)
-            s.hist_SB.Scale(otherSF_val[args.year].val)
-        elif "WG" in s.name:# and njets > 3:
-            s.hist.Scale(WGSF_val[args.year].val)
-            s.hist_SB.Scale(WGSF_val[args.year].val)
-        elif "TTG" in s.name:
-            s.hist.Scale(SSMSF_val[args.year].val)
-            s.hist_SB.Scale(SSMSF_val[args.year].val)
+#        elif "ZG" in s.name:# and njets < 4:
+#            s.hist.Scale(ZGSF_val[args.year].val)
+#            s.hist_SB.Scale(ZGSF_val[args.year].val)
+#        elif "other" in s.name:# and njets < 4:
+#            s.hist.Scale(otherSF_val[args.year].val)
+#            s.hist_SB.Scale(otherSF_val[args.year].val)
+#        elif "WG" in s.name:# and njets > 3:
+#            s.hist.Scale(WGSF_val[args.year].val)
+#            s.hist_SB.Scale(WGSF_val[args.year].val)
+#        elif "TTG" in s.name:
+#            s.hist.Scale(SSMSF_val[args.year].val)
+#            s.hist_SB.Scale(SSMSF_val[args.year].val)
 
     dataHist_SB.Add( s.hist_SB, -1 )
     dataHist.Add( s.hist, -1 )
@@ -220,10 +220,21 @@ for plot in plots:
         if args.addCut: selDir += "-" + args.addCut
         plot_directory_ = os.path.join( plot_directory, "qcdChecks", str(args.year), args.plot_directory, selDir, args.mode, "log" if log else "lin" )
 
+        if not "ratio" in plot.name:
+            zRange = (0.1 if log else 0., "auto")
+        elif args.mode == "e" and "WJets" in args.selection:
+            zRange = (0.1 if log else 0., 6)
+        elif args.mode == "mu" and "WJets" in args.selection:
+            zRange = (0.1 if log else 0., 12)
+        elif args.mode == "e" and "TT" in args.selection:
+            zRange = (0.1 if log else 0., 0.6)
+        elif args.mode == "mu" and "TT" in args.selection:
+            zRange = (0.1 if log else 0., 2)
+        
         plotting.draw2D( plot,
                          plot_directory = plot_directory_,
                          logX = False, logY = False, logZ = log,
-                         zRange = (0.1, 6 if "ratio" in plot.name else "auto") if log else (0., 6 if "ratio" in plot.name else "auto"),
+                         zRange = zRange,
                          drawObjects = drawObjects( lumi_scale ),
                          copyIndexPHP = True,
                        )

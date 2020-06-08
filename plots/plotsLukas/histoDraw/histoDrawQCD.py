@@ -24,7 +24,6 @@ from Analysis.Tools.MergingDirDB      import MergingDirDB
 # Default Parameter
 loggerChoices = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTSET"]
 
-addSF = True
 ptBins  = [0, 45, 65, 80, 100, 120, -1]
 etaBins = [0, 1.479, 1.7, 2.1, -1]
 
@@ -41,9 +40,11 @@ argParser.add_argument("--year",               action="store",      default=2016
 argParser.add_argument("--mode",               action="store",      default="all",  type=str,  choices=["mu", "e", "all"],                   help="lepton selection")
 argParser.add_argument("--small",              action="store_true",                                                                          help="Run only on a small subset of the data?")
 argParser.add_argument("--overwrite",          action="store_true",                                                                          help="overwrite cache?")
+argParser.add_argument("--postfit",            action="store_true",                                                                          help="overwrite cache?")
 args = argParser.parse_args()
 
 args.binning[0] = int(args.binning[0])
+addSF = args.postfit
 
 # Logger
 import Analysis.Tools.logger as logger
@@ -73,9 +74,9 @@ os.environ["gammaSkim"]="False" #always false for QCD estimate
 if args.year == 2016:
     from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed  import *
     from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
-    mc          = [ TTG_16, TT_pow_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
+    mc          = [ TTG_16, Top_16, DY_LO_16, WJets_16, WG_16, ZG_16, rest_16 ]
     ttg         = TTG_16
-    tt          = TT_pow_16
+    tt          = Top_16
     wjets       = WJets_16
     ttg         = TTG_16
     wg          = WG_16
@@ -84,9 +85,9 @@ if args.year == 2016:
 elif args.year == 2017:
     from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed    import *
     from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
-    mc          = [ TTG_17, TT_pow_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
+    mc          = [ TTG_17, Top_17, DY_LO_17, WJets_17, WG_17, ZG_17, rest_17 ]
     ttg         = TTG_17
-    tt          = TT_pow_17
+    tt          = Top_17
     wjets       = WJets_17
     ttg         = TTG_17
     wg          = WG_17
@@ -95,9 +96,9 @@ elif args.year == 2017:
 elif args.year == 2018:
     from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed  import *
     from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
-    mc          = [ TTG_18, TT_pow_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
+    mc          = [ TTG_18, Top_18, DY_LO_18, WJets_18, WG_18, ZG_18, rest_18 ]
     ttg         = TTG_18
-    tt          = TT_pow_18
+    tt          = Top_18
     wjets       = WJets_18
     ttg         = TTG_18
     wg          = WG_18
@@ -199,6 +200,7 @@ replaceSelection = {
     "ltight0GammadPhi":   "linvtight0GammadPhi",
     "ltight0GammadR":     "linvtight0GammadR",
     "nPhotonGood":        "nPhotonGoodInvLepIso",
+    "nPhotonNoChgIsoNoSieie": "nPhotonNoChgIsoNoSieieInvLepIso",
     "nJetGood":           "nJetGoodInvLepIso",
     "nBTagGood":          "nBTagGoodInvLepIso",
     "mT":                 "mTinv",
@@ -235,19 +237,28 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
 else:
     raise Exception("Region not implemented")
 
+print
+print selection
+print
+
 weightString    = "%f*weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
 weightStringIL  = "%f*weight*reweightHEM*reweightInvIsoTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSFInvIso*reweightLeptonTrackingTightSFInvIso*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
 if "nPhotonGood==0" in selection:
     weightStringInv = weightStringIL
     weightStringAR  = weightString
+elif not addSF:
+    weightStringAR  = weightString
+    weightStringInv = "((%s)+(%s*%f*((nPhotonNoChgIsoNoSieieInvLepIso>0)*(PhotonNoChgIsoNoSieieInvLepIso0_photonCatMagic==2))))"%(weightStringIL,weightStringIL,(misIDSF_val[args.year].val-1))
 else:
-    weightStringInv = "((%s)+(%s*%f*((nPhotonGoodInvLepIso>0)*(PhotonGoodInvLepIso0_photonCatMagic==2))))"%(weightStringIL,weightStringIL,(misIDSF_val[args.year].val-1))
-    weightStringAR  = "((%s)+(%s*%f*((nPhotonGood>0)*(PhotonGood0_photonCatMagic==2))))"%(weightString,weightString,(misIDSF_val[args.year].val-1))
+    weightStringInv = "((%s)+(%s*%f*((nPhotonNoChgIsoNoSieieInvLepIso>0)*(PhotonNoChgIsoNoSieieInvLepIso0_photonCatMagic==2))))"%(weightStringIL,weightStringIL,(misIDSF_val[args.year].val-1))
+    weightStringAR  = "((%s)+(%s*%f*((nPhotonNoChgIsoNoSieie>0)*(PhotonNoChgIsoNoSieie0_photonCatMagic==2))))"%(weightString,weightString,(misIDSF_val[args.year].val-1))
 
 
 replaceVariable = {
+    "photonNoSieieNoChgIsoJetdR":     "photonNoSieieNoChgIsoJetInvLepIsodR",
     "ltight0GammadR":     "linvtight0GammadR",
     "ltight0GammadPhi":   "linvtight0GammadPhi",
+    "WPt":                "WinvPt",
     "mT":                 "mTinv",
     "m3":                 "m3inv",
     "ht":                 "htinv",
@@ -265,6 +276,16 @@ replaceVariable = {
     "LeptonTight0_phi":   "LeptonTightInvIso0_phi",
     "LeptonTight0_eta":   "LeptonTightInvIso0_eta",
     "LeptonTight0_pt":    "LeptonTightInvIso0_pt",
+
+    
+    "PhotonNoChgIsoNoSieie0_pt": "PhotonNoChgIsoNoSieieInvLepIso0_pt",
+    "PhotonNoChgIsoNoSieie0_eta": "PhotonNoChgIsoNoSieieInvLepIso0_eta",
+    "PhotonNoChgIsoNoSieie0_phi": "PhotonNoChgIsoNoSieieInvLepIso0_phi",
+    "mLtight0GammaNoSieieNoChgIso": "mLinvtight0GammaNoSieieNoChgIso",
+    "ltight0GammaNoSieieNoChgIsodPhi": "linvtight0GammaNoSieieNoChgIsodPhi",
+    "ltight0GammaNoSieieNoChgIsodR": "linvtight0GammaNoSieieNoChgIsodR",
+    "PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt": "PhotonNoChgIsoNoSieieInvLepIso0_pfRelIso03_chg*PhotonNoChgIsoNoSieieInvLepIso0_pt",
+    "PhotonNoChgIsoNoSieie0_sieie": "PhotonNoChgIsoNoSieieInvLepIso0_sieie",
 
     "PhotonGood0_phi":   "PhotonGoodInvLepIso0_phi",
     "PhotonGood0_eta":   "PhotonGoodInvLepIso0_eta",
@@ -310,7 +331,7 @@ if dirDB.contains(key) and not args.overwrite:
     dataHist = dirDB.get(key).Clone("dataAR")
 else:
     dataHist = data_sample.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=selection, addOverFlowBin="upper" )
-    dirDB.add(key, dataHist.Clone("dataAR"))
+    dirDB.add(key, dataHist.Clone("dataAR"), overwrite=True)
 
 dataHist_SB  = dataHist.Clone("data_SB")
 dataHist_SB.Scale(0)
@@ -325,7 +346,7 @@ for s in mc:
         s.hist = copy.deepcopy(dirDB.get(key).Clone(s.name+"AR"))
     else:
         s.hist = s.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=selection, addOverFlowBin="upper" )
-        dirDB.add(key, s.hist.Clone("%s_AR"%s.name))
+        dirDB.add(key, s.hist.Clone("%s_AR"%s.name), overwrite=True)
 
     if addSF:
         if setup.isPhotonSelection:
@@ -342,7 +363,7 @@ for s in mc:
                 s.hist.Scale(DYSF_val[args.year].val)
             elif "WJets" in s.name:
                 s.hist.Scale(WJetsSF_val[args.year].val)
-            elif "TT_pow" in s.name:
+            elif "Top" in s.name:
                 s.hist.Scale(TTSF_val[args.year].val)
 
     s.hist_SB = copy.deepcopy(dataHist.Clone(s.name+"_SB"))
@@ -393,7 +414,7 @@ for i_pt, pt in enumerate(ptBins[:-1]):
             dataHist_SB_tmp = dirDB.get(key).Clone("dataSB")
         else:
             dataHist_SB_tmp = data_sample.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=leptonPtEtaCut, addOverFlowBin="upper" )
-            dirDB.add(key, dataHist_SB_tmp.Clone("dataSB"))
+            dirDB.add(key, dataHist_SB_tmp.Clone("dataSB"), overwrite=True)
 
         dataHist_SB.Add(dataHist_SB_tmp)
         qcdHist_tmp = dataHist_SB_tmp.Clone("qcdtmp_%i_%i"%(i_pt,i_eta))
@@ -405,10 +426,10 @@ for i_pt, pt in enumerate(ptBins[:-1]):
                 s.hist_SB_tmp = dirDB.get(key).Clone(s.name+"SB")
             else:
                 s.hist_SB_tmp = s.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=leptonPtEtaCut, addOverFlowBin="upper" )
-                dirDB.add(key, s.hist_SB_tmp.Clone("%s_SB"%s.name))
+                dirDB.add(key, s.hist_SB_tmp.Clone("%s_SB"%s.name), overwrite=True)
 
             # apply SF after histo caching
-            if addSF:
+            if True: #addSF:
                 if setup.isPhotonSelection:
                     if "DY" in s.name:
                         s.hist_SB_tmp.Scale(DYSF_val[args.year].val)
@@ -423,7 +444,7 @@ for i_pt, pt in enumerate(ptBins[:-1]):
                         s.hist_SB_tmp.Scale(DYSF_val[args.year].val)
                     elif "WJets" in s.name:
                         s.hist_SB_tmp.Scale(WJetsSF_val[args.year].val)
-                    elif "TT_pow" in s.name:
+                    elif "Top" in s.name:
                         s.hist_SB_tmp.Scale(TTSF_val[args.year].val)
 
             s.hist_SB.Add(s.hist_SB_tmp)
@@ -492,7 +513,7 @@ for plot in plots:
 
         selDir = args.selection
         if args.addCut: selDir += "-" + args.addCut
-        plot_directory_ = os.path.join( plot_directory, "qcdChecks", str(args.year), args.plot_directory, selDir, args.mode, "log" if log else "lin" )
+        plot_directory_ = os.path.join( plot_directory, "qcdChecks", str(args.year), args.plot_directory, selDir, "postfit" if addSF else "prefit", args.mode, "log" if log else "lin" )
         plotting.draw( plot,
                        plot_directory = plot_directory_,
                        logX = False, logY = log, sorting = True,#plot.name != "mT_fit",
