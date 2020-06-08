@@ -29,9 +29,13 @@ class SystematicEstimator:
         self.initCache(cacheDir)
         self.processCut = None
 
-        if   "_gen"   in name: self.processCut = "cat0"  #"photoncat0"
-        elif "_misID" in name: self.processCut = "cat2"  #"photoncat2"
+        if   "_gen"   in name: self.processCut = "cat0"   #"photoncat0"
+        elif "_misID" in name: self.processCut = "cat2"   #"photoncat2"
         elif "_had"   in name: self.processCut = "cat134" #"photoncat134"
+        elif "_np"    in name: self.processCut = "cat134" #"photoncat134"
+        elif "_hp"    in name: self.processCut = "cat1"   #"photoncat1"
+        elif "_fake"  in name: self.processCut = "cat3"   #"photoncat3"
+        elif "_PU"    in name: self.processCut = "cat4"   #"photoncat4"
 
     def initCache(self, cacheDir="systematics"):
         logger.info("Initializing cache for %s in directory %s"%(self.name, cacheDir))
@@ -197,6 +201,18 @@ class SystematicEstimator:
         down = self.cachedEstimate(region, channel, setup.sysClone({"reweight":["reweightPUDown"]}))
         return abs(0.5*(up-down)/ref) if ref > 0 else max(up,down)
 
+    def EERSystematic(self, region, channel, setup):
+        ref  = self.cachedEstimate(region, channel, setup)
+        up   = self.cachedEstimate(region, channel, setup.sysClone({"selectionModifier":"eTotalUp"}))
+        down = self.cachedEstimate(region, channel, setup.sysClone({"selectionModifier":"eTotalDown"}))
+        return abs(0.5*(up-down)/ref) if ref > 0 else max(up, down)
+
+    def MERSystematic(self, region, channel, setup):
+        ref  = self.cachedEstimate(region, channel, setup)
+        up   = self.cachedEstimate(region, channel, setup.sysClone({"selectionModifier":"muTotalUp"}))
+        down = self.cachedEstimate(region, channel, setup.sysClone({"selectionModifier":"muTotalDown"}))
+        return abs(0.5*(up-down)/ref) if ref > 0 else max(up, down)
+
     def JERSystematic(self, region, channel, setup):
         ref  = self.cachedEstimate(region, channel, setup)
         up   = self.cachedEstimate(region, channel, setup.sysClone({"selectionModifier":"jerUp"}))
@@ -267,6 +283,12 @@ class SystematicEstimator:
         l = [
             (region, channel, setup.sysClone({"reweight":["reweightPUUp"]}), None),
             (region, channel, setup.sysClone({"reweight":["reweightPUDown"]}), None),
+
+#            (region, channel, setup.sysClone({"selectionModifier":"eTotalUp"}), None),
+#            (region, channel, setup.sysClone({"selectionModifier":"eTotalDown"}), None),
+
+            (region, channel, setup.sysClone({"selectionModifier":"muTotalUp"}), None),
+            (region, channel, setup.sysClone({"selectionModifier":"muTotalDown"}), None),
 
             (region, channel, setup.sysClone({"selectionModifier":"jerUp"}), None),
             (region, channel, setup.sysClone({"selectionModifier":"jerDown"}), None),
