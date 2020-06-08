@@ -228,9 +228,9 @@ muonRelIsoCutVeto  = 0.25
 def muonSelector( lepton_selection ):
     # According to AN-2017/197
     if lepton_selection == 'tight':
-        def func(l, removedCuts=[]):
+        def func(l, removedCuts=[], ptVar="pt"):
             if not "pt" in removedCuts:
-                if l["pt"]          <  30:                        return False
+                if l[ptVar]          <  30:                        return False
             if not "eta" in removedCuts:
                 if abs(l["eta"])    > 2.4:                        return False
             if not l["tightId"]:                                  return False
@@ -245,12 +245,12 @@ def muonSelector( lepton_selection ):
         return func
 
     elif lepton_selection == 'medium':
-        def func(l, leading=False, removedCuts=[]):
+        def func(l, leading=False, removedCuts=[], ptVar="pt"):
             if not "pt" in removedCuts:
                 if leading:
-                    if l["pt"]         <= 25:            return False
+                    if l[ptVar]         <= 25:            return False
                 else:
-                    if l["pt"]         <= 15:            return False
+                    if l[ptVar]         <= 15:            return False
             if not "eta" in removedCuts:
                 if abs(l["eta"])    > 2.4:               return False
             if not l["mediumId"]:                        return False
@@ -266,9 +266,9 @@ def muonSelector( lepton_selection ):
 
     elif lepton_selection == 'veto2l':
         # muon loose requirement
-        def func(l, removedCuts=[]):
+        def func(l, removedCuts=[], ptVar="pt"):
             if not "pt" in removedCuts:
-                if l["pt"]          < 15:                            return False
+                if l[ptVar]          < 15:                            return False
             if not "eta" in removedCuts:
                 if abs(l["eta"])    > 2.4:                           return False
             if not "ID" in removedCuts:
@@ -286,9 +286,9 @@ def muonSelector( lepton_selection ):
 
     elif lepton_selection == 'veto':
         # muon loose requirement
-        def func(l, removedCuts=[]):
+        def func(l, removedCuts=[], ptVar="pt"):
             if not "pt" in removedCuts:
-                if l["pt"]          < 15:                            return False
+                if l[ptVar]          < 15:                            return False
             if not "eta" in removedCuts:
                 if abs(l["eta"])    > 2.4:                           return False
             if not "ID" in removedCuts:
@@ -329,10 +329,10 @@ def eleSelector( lepton_selection ):
     idVar = "cutBased"
     # According to AN-2017/197
     if lepton_selection == 'tight':
-        def func(l, removedCuts=[]):
+        def func(l, removedCuts=[], ptVar="pt"):
             if not barrelEndcapVeto(l):                      return False
             if not "pt" in removedCuts:
-                if l["pt"]          < 35:                    return False
+                if l[ptVar]          < 35:                    return False
             if not "eta" in removedCuts:
                 if abs(l["eta"])    > 2.4:                   return False
             if not electronVIDSelector( l, vidNestedWPBitMap["tight"], removedCuts=removedCuts ): return False
@@ -349,13 +349,13 @@ def eleSelector( lepton_selection ):
         return func
 
     elif lepton_selection == 'tight2l':
-        def func(l, leading=False, removedCuts=[]):
+        def func(l, leading=False, removedCuts=[], ptVar="pt"):
             if not barrelEndcapVeto(l):                  return False
             if not "pt" in removedCuts:
                 if leading:
-                    if l["pt"]         <= 25:            return False
+                    if l[ptVar]         <= 25:            return False
                 else:
-                    if l["pt"]         <= 15:            return False
+                    if l[ptVar]         <= 15:            return False
             if not "eta" in removedCuts:
                 if abs(l["eta"])   >= 2.4:               return False
             if not electronVIDSelector( l, vidNestedWPBitMap["tight"], removedCuts=removedCuts ): return False
@@ -372,13 +372,13 @@ def eleSelector( lepton_selection ):
         return func
 
     elif lepton_selection == 'medium':
-        def func(l, leading=False, removedCuts=[]):
+        def func(l, leading=False, removedCuts=[], ptVar="pt"):
             if not barrelEndcapVeto(l):                  return False
             if not "pt" in removedCuts:
                 if leading:
-                    if l["pt"]         <= 25:            return False
+                    if l[ptVar]         <= 25:            return False
                 else:
-                    if l["pt"]         <= 15:            return False
+                    if l[ptVar]         <= 15:            return False
             if not "eta" in removedCuts:
                 if abs(l["eta"])   >= 2.4:               return False
 #            if not electronVIDSelector( l, vidNestedWPBitMap["medium"], removedCuts=removedCuts ): return False
@@ -395,10 +395,10 @@ def eleSelector( lepton_selection ):
         return func
 
     elif lepton_selection == 'veto':
-        def func(l, removedCuts=[]):
+        def func(l, removedCuts=[], ptVar="pt"):
             if not barrelEndcapVeto(l):                return False
             if not "pt" in removedCuts:
-                if l["pt"]          < 15:              return False
+                if l[ptVar]          < 15:              return False
             if not "eta" in removedCuts:
                 if abs(l["eta"])    > 2.4:             return False
             if not electronVIDSelector( l, vidNestedWPBitMap["veto"], removedCuts=removedCuts ): return False
@@ -427,9 +427,9 @@ def photonSelector( selection, year=None ):
     photonId = photonIdCutBased if year==2016 else photonIdCutBasedBitmap
 
     if selection == "mva":
-        def func(g, removedCuts=[]):
+        def func(g, removedCuts=[], ptVar="pt"):
             if not "pt" in removedCuts:
-                if g["pt"]       <= 20:        return False
+                if g[ptVar]       <= 20:        return False
 #                if not g["isScEtaEB"]:        return False # Supercluster Barrel only
             if not "eta" in removedCuts:
                 if abs(g["eta"]) >= 1.4442:    return False # Barrel only
@@ -443,9 +443,9 @@ def photonSelector( selection, year=None ):
         return func
 
     if selection == "medium":
-        def func(g, removedCuts=[]):
+        def func(g, removedCuts=[], ptVar="pt"):
             if not "pt" in removedCuts:
-                if g["pt"]       <= 20:                                                  return False
+                if g[ptVar]       <= 20:                                                  return False
 #                if not g["isScEtaEB"]:                                                   return False # Supercluster Barrel only
             if not "eta" in removedCuts:
                 if abs(g["eta"]) >= 1.4442:                                              return False # Barrel only
@@ -460,9 +460,9 @@ def photonSelector( selection, year=None ):
         return func
 
     elif selection == "loose":
-        def func(g, removedCuts=[]):
+        def func(g, removedCuts=[], ptVar="pt"):
             if not "pt" in removedCuts:
-                if g["pt"]       <= 20:                                             return False
+                if g[ptVar]       <= 20:                                             return False
 #                if not g["isScEtaEB"]:                                                   return False # Supercluster Barrel only
             if not "eta" in removedCuts:
                 if abs(g["eta"]) >= 1.479:                                          return False # Barrel only

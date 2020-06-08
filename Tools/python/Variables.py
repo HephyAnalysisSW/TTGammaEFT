@@ -32,6 +32,8 @@ class NanoVariables:
 
         self.ElectronVariables = [\
                                   Variable( "pt",                       "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
+                                  Variable( "pt_totalUp",               "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
+                                  Variable( "pt_totalDown",             "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
                                   Variable( "eta",                      "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                   Variable( "phi",                      "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                   Variable( "pfRelIso03_all",           "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
@@ -82,6 +84,8 @@ class NanoVariables:
 
         self.MuonVariables = [\
                               Variable( "pt",               "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
+                              Variable( "pt_totalUp",       "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
+                              Variable( "pt_totalDown",     "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
                               Variable( "eta",              "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                               Variable( "phi",              "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                               Variable( "pfRelIso03_all",   "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
@@ -186,6 +190,8 @@ class NanoVariables:
                                 Variable( "pfRelIso03_chg",    "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                 Variable( "phi",               "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                 Variable( "pt",                "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
+                                Variable( "pt_totalUp",        "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
+                                Variable( "pt_totalDown",      "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
                                 Variable( "sieie",             "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                 Variable( photonCutVarName,    "I", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                 Variable( "electronVeto",      "O", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
