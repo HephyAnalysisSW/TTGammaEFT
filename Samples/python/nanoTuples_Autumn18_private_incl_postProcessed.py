@@ -46,12 +46,13 @@ logger.info( "Loading MC samples from directory %s", os.path.join( data_director
 
 # Directories
 dirs = {}
-dirs["TTG_NoFullyHad_priv"] = ["TTGNoFullyHad_priv"]
-dirs["TTG_NoFullyHad_fnal"] = ["TTGNoFullyHad_fnal"]
+dirs["TTGLep"]           = ["TTGLep_LO"]
+dirs["TTGSemiLep"]       = ["TTGSingleLep_LO"]
+dirs["TTG"]              = ["TTGLep_LO", "TTGSingleLep_LO", "TTGHad_LO"]
 
 directories = { key : [ os.path.join( data_directory_, postprocessing_directory_, dir) for dir in dirs[key] ] for key in dirs.keys() }
 
 # Samples
-TTG_NoFullyHad_priv_18 = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_NoFullyHad_priv"], noCheckProxy=True, fromDPM=fromDPM)
-TTG_NoFullyHad_fnal_18 = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_NoFullyHad_fnal"], noCheckProxy=True, fromDPM=fromDPM)
-
+TTG_18             = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG"], noCheckProxy=True, fromDPM=fromDPM)
+TTGSemiLep_18      = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTGSemiLep"], noCheckProxy=True, fromDPM=fromDPM)
+TTGLep_18          = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTGLep"], noCheckProxy=True, fromDPM=fromDPM)
