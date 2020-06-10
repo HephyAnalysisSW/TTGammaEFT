@@ -37,10 +37,11 @@ argParser.add_argument("--addCut",             action="store",      default=None
 argParser.add_argument("--variable",           action="store",      default="LeptonTight0_eta", type=str,                                    help="variable to plot")
 argParser.add_argument("--binning",            action="store",      default=[20,-2.4,2.4],  type=float, nargs="*",                           help="binning of plots")
 argParser.add_argument("--year",               action="store",      default=2016,   type=int,  choices=[2016,2017,2018],                     help="Which year to plot?")
-argParser.add_argument("--mode",               action="store",      default="all",  type=str,  choices=["mu", "e", "all"],                   help="lepton selection")
+argParser.add_argument("--mode",               action="store",      default="all",  type=str,  choices=["mu", "eetight", "mumutight", "e", "all"],                   help="lepton selection")
 argParser.add_argument("--small",              action="store_true",                                                                          help="Run only on a small subset of the data?")
 argParser.add_argument("--overwrite",          action="store_true",                                                                          help="overwrite cache?")
 argParser.add_argument("--postfit",            action="store_true",                                                                          help="overwrite cache?")
+argParser.add_argument("--photonCat",          action="store_true",                                                                          help="all plots in one directory?")
 args = argParser.parse_args()
 
 args.binning[0] = int(args.binning[0])
@@ -211,9 +212,12 @@ replaceSelection = {
 }
 
 
+skipQCD = False
 if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
     print( "Plotting region from SetupHelpers: %s"%args.selection )
 
+    channels = allRegions[args.selection]["channels"]
+    skipQCD  = "ee" in channels[0] or "mumu" in channels[0] or "SF" in channels[0]
     setup = Setup( year=args.year, photonSelection=False, checkOnly=False, runOnLxPlus=False ) #photonselection always false for qcd estimate
     setup = setup.sysClone( parameters=allRegions[args.selection]["parameters"] )
 
@@ -225,14 +229,15 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
         selection += "&&" + cutInterpreter.cutString( args.addCut )
     print( "Using selection string: %s"%args.selection )
 
-    preSelection  = setup.selection("MC",   channel=args.mode, **setup.defaultParameters(update=QCD_updates))["prefix"]
-    preSelection  = cutInterpreter.cutString( preSelection )
-    preSelection += "&&triggeredInvIso==1"
-    if args.addCut:
-        addSel = cutInterpreter.cutString( args.addCut )
-        for iso, invIso in replaceSelection.iteritems():
-            addSel = addSel.replace(iso,invIso)
-        preSelection += "&&" + addSel
+    if not skipQCD:
+        preSelection  = setup.selection("MC",   channel=args.mode, **setup.defaultParameters(update=QCD_updates))["prefix"]
+        preSelection  = cutInterpreter.cutString( preSelection )
+        preSelection += "&&triggeredInvIso==1"
+        if args.addCut:
+            addSel = cutInterpreter.cutString( args.addCut )
+            for iso, invIso in replaceSelection.iteritems():
+                addSel = addSel.replace(iso,invIso)
+            preSelection += "&&" + addSel
 
 else:
     raise Exception("Region not implemented")
@@ -276,29 +281,42 @@ replaceVariable = {
     "LeptonTight0_phi":   "LeptonTightInvIso0_phi",
     "LeptonTight0_eta":   "LeptonTightInvIso0_eta",
     "LeptonTight0_pt":    "LeptonTightInvIso0_pt",
-
     
     "PhotonNoChgIsoNoSieie0_pt": "PhotonNoChgIsoNoSieieInvLepIso0_pt",
     "PhotonNoChgIsoNoSieie0_eta": "PhotonNoChgIsoNoSieieInvLepIso0_eta",
     "PhotonNoChgIsoNoSieie0_phi": "PhotonNoChgIsoNoSieieInvLepIso0_phi",
+    "PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt": "PhotonNoChgIsoNoSieieInvLepIso0_pfRelIso03_chg*PhotonNoChgIsoNoSieieInvLepIso0_pt",
+    "(PhotonNoChgIsoNoSieie0_pfRelIso03_all-PhotonNoChgIsoNoSieie0_pfRelIso03_chg)*PhotonNoChgIsoNoSieie0_pt": "(PhotonNoChgIsoNoSieieInvLepIso0_pfRelIso03_all-PhotonNoChgIsoNoSieieInvLepIso0_pfRelIso03_chg)*PhotonNoChgIsoNoSieieInvLepIso0_pt",
+    "PhotonNoChgIsoNoSieie0_sieie": "PhotonNoChgIsoNoSieieInvLepIso0_sieie",
+    "PhotonNoChgIsoNoSieie0_hoe": "PhotonNoChgIsoNoSieieInvLepIso0_hoe",
+    "PhotonNoChgIsoNoSieie0_electronVeto": "PhotonNoChgIsoNoSieieInvLepIso0_electronVeto",
+    "PhotonNoChgIsoNoSieie0_pixelSeed": "PhotonNoChgIsoNoSieieInvLepIso0_pixelSeed",
+    "PhotonNoChgIsoNoSieie0_mvaID": "PhotonNoChgIsoNoSieieInvLepIso0_mvaID",
+    "PhotonNoChgIsoNoSieie0_mvaID_WP90": "PhotonNoChgIsoNoSieieInvLepIso0_mvaID_WP90",
+    "PhotonNoChgIsoNoSieie0_mvaID_WP80": "PhotonNoChgIsoNoSieieInvLepIso0_mvaID_WP80",
+    "PhotonNoChgIsoNoSieie0_pfRelIso03_chg": "PhotonNoChgIsoNoSieieInvLepIso0_pfRelIso03_chg",
+    "PhotonNoChgIsoNoSieie0_pfRelIso03_all": "PhotonNoChgIsoNoSieieInvLepIso0_pfRelIso03_all",
+    "PhotonNoChgIsoNoSieie0_r9": "PhotonNoChgIsoNoSieieInvLepIso0_r9",
+    "PhotonNoChgIsoNoSieie0_cutBased": "PhotonNoChgIsoNoSieieInvLepIso0_cutBased",
+
     "mLtight0GammaNoSieieNoChgIso": "mLinvtight0GammaNoSieieNoChgIso",
     "ltight0GammaNoSieieNoChgIsodPhi": "linvtight0GammaNoSieieNoChgIsodPhi",
     "ltight0GammaNoSieieNoChgIsodR": "linvtight0GammaNoSieieNoChgIsodR",
-    "PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt": "PhotonNoChgIsoNoSieieInvLepIso0_pfRelIso03_chg*PhotonNoChgIsoNoSieieInvLepIso0_pt",
-    "PhotonNoChgIsoNoSieie0_sieie": "PhotonNoChgIsoNoSieieInvLepIso0_sieie",
-
     "PhotonGood0_phi":   "PhotonGoodInvLepIso0_phi",
     "PhotonGood0_eta":   "PhotonGoodInvLepIso0_eta",
     "PhotonGood0_pt":    "PhotonGoodInvLepIso0_pt",
 
     "LeptonTight0_sip3d":    "LeptonTightInvIso0_sip3d",
+    "LeptonTight0_ip3d":    "LeptonTightInvIso0_ip3d",
     "LeptonTight0_dr03EcalRecHitSumEt":    "LeptonTightInvIso0_dr03EcalRecHitSumEt",
     "LeptonTight0_dr03HcalDepth1TowerSumEt":    "LeptonTightInvIso0_dr03HcalDepth1TowerSumEt",
     "LeptonTight0_dr03TkSumPt":    "LeptonTightInvIso0_dr03TkSumPt",
     "LeptonTight0_ip3d":    "LeptonTightInvIso0_ip3d",
     "LeptonTight0_r9":    "LeptonTightInvIso0_r9",
+    "LeptonTight0_pfRelIso03_all":    "LeptonTightInvIso0_pfRelIso03_all",
+    "LeptonTight0_pfRelIso03_chg":    "LeptonTightInvIso0_pfRelIso03_chg",
+    "LeptonTight0_lostHits":    "LeptonTightInvIso0_lostHits",
     "LeptonTight0_eInvMinusPInv":    "LeptonTightInvIso0_eInvMinusPInv",
-
     "LeptonTight0_dxy":    "LeptonTightInvIso0_dxy",
     "LeptonTight0_dz":    "LeptonTightInvIso0_dz",
     "LeptonTight0_sieie":    "LeptonTightInvIso0_sieie",
@@ -313,9 +331,10 @@ replaceVariable = {
 invVariable = replaceVariable[args.variable] if args.variable in replaceVariable.keys() else args.variable
 
 # get cached transferfactors
-estimators = EstimatorList( setup, processes=["QCD-DD"] )
-estimate   = getattr(estimators, "QCD-DD")
-estimate.initCache(setup.defaultCacheDir())
+if not skipQCD:
+    estimators = EstimatorList( setup, processes=["QCD-DD"] )
+    estimate   = getattr(estimators, "QCD-DD")
+    estimate.initCache(setup.defaultCacheDir())
 
 # Accounting for 
 leptonPtCutVar = "LeptonTightInvIso0_pt"
@@ -336,35 +355,51 @@ else:
 dataHist_SB  = dataHist.Clone("data_SB")
 dataHist_SB.Scale(0)
 
+genCat = [None]
+if args.photonCat:
+    hists = {}
+    genCat = ["noChgIsoNoSieiephotoncat0","noChgIsoNoSieiephotoncat2","noChgIsoNoSieiephotoncat1","noChgIsoNoSieiephotoncat3","noChgIsoNoSieiephotoncat4"]
+    catSettings = { "noChgIsoNoSieiephotoncat0":{"texName":"gen #gamma",  "color":color.gen  },
+                    "noChgIsoNoSieiephotoncat2":{"texName":"misID-e",     "color":color.misID},
+                    "noChgIsoNoSieiephotoncat1":{"texName":"had #gamma",  "color":color.had  },
+                    "noChgIsoNoSieiephotoncat3":{"texName":"fake #gamma", "color":color.fakes},
+                    "noChgIsoNoSieiephotoncat4":{"texName":"PU #gamma",   "color":color.PU}  }
+    for g in genCat:
+        hists[g] = dataHist.Clone(g)
+        hists[g].Scale(0)
+
 qcdHist = dataHist.Clone("qcd")
 qcdHist.Scale(0)
 
 for s in mc:
-    s.setWeightString( weightStringAR + "*" + sampleWeight )
-    key = (s.name, "AR", args.variable, "_".join(map(str,args.binning)), s.weightString, s.selectionString, selection)
-    if dirDB.contains(key) and not args.overwrite:
-        s.hist = copy.deepcopy(dirDB.get(key).Clone(s.name+"AR"))
-    else:
-        s.hist = s.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=selection, addOverFlowBin="upper" )
-        dirDB.add(key, s.hist.Clone("%s_AR"%s.name), overwrite=True)
-
-    if addSF:
-        if setup.isPhotonSelection:
-            if "DY" in s.name:
-                s.hist.Scale(DYSF_val[args.year].val)
-            elif "ZG" in s.name:# and njets < 4:
-                s.hist.Scale(ZGSF_val[args.year].val)
-            elif "WG" in s.name:# and njets > 3:
-                s.hist.Scale(WGSF_val[args.year].val)
-            elif "TTG" in s.name:
-                s.hist.Scale(SSMSF_val[args.year].val)
+    for g in genCat:
+        selectionString = selection + "&&" + cutInterpreter.cutString( g ) if g else selection
+        s.setWeightString( weightStringAR + "*" + sampleWeight )
+        key = (s.name, "AR", args.variable, "_".join(map(str,args.binning)), s.weightString, s.selectionString, selectionString)
+        if dirDB.contains(key) and not args.overwrite:
+            s.hist = copy.deepcopy(dirDB.get(key).Clone(s.name+"AR"))
         else:
-            if "DY" in s.name:
-                s.hist.Scale(DYSF_val[args.year].val)
-            elif "WJets" in s.name:
-                s.hist.Scale(WJetsSF_val[args.year].val)
-            elif "Top" in s.name:
-                s.hist.Scale(TTSF_val[args.year].val)
+            s.hist = s.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=selectionString, addOverFlowBin="upper" )
+            dirDB.add(key, s.hist.Clone("%s_AR"%s.name), overwrite=True)
+
+        if addSF:
+            if setup.isPhotonSelection:
+                if "DY" in s.name:
+                    s.hist.Scale(DYSF_val[args.year].val)
+                elif "ZG" in s.name:# and njets < 4:
+                    s.hist.Scale(ZGSF_val[args.year].val)
+                elif "WG" in s.name:# and njets > 3:
+                    s.hist.Scale(WGSF_val[args.year].val)
+                elif "TTG" in s.name:
+                    s.hist.Scale(SSMSF_val[args.year].val)
+            else:
+                if "DY" in s.name:
+                    s.hist.Scale(DYSF_val[args.year].val)
+                elif "WJets" in s.name:
+                    s.hist.Scale(WJetsSF_val[args.year].val)
+
+        if args.photonCat:
+            hists[g].Add(s.hist)
 
     s.hist_SB = copy.deepcopy(dataHist.Clone(s.name+"_SB"))
     s.hist_SB.Scale(0)
@@ -374,10 +409,15 @@ for s in mc:
     s.hist.style         = styles.fillStyle( s.color )
     s.hist.legendText    = s.texName
 
+if args.photonCat:
+    for g in genCat:
+        hists[g].style = styles.fillStyle( catSettings[g]["color"] )
+        hists[g].legendText = catSettings[g]["texName"]
+
 dataHist_SB.style      = styles.errorStyle( ROOT.kBlack )
-dataHist_SB.legendText = "data (%s)"%args.mode.replace("mu","#mu")
+dataHist_SB.legendText = "data (%s)"%args.mode.replace("mu","#mu").replace("tight","")
 dataHist.style         = styles.errorStyle( ROOT.kBlack )
-dataHist.legendText    = "data (%s)"%args.mode.replace("mu","#mu")
+dataHist.legendText    = "data (%s)"%args.mode.replace("mu","#mu").replace("tight","")
 
 oneHist = dataHist.Clone("one")
 oneHist.notInLegend = True
@@ -387,7 +427,8 @@ for i in range(oneHist.GetNbinsX()):
 
 
 
-for i_pt, pt in enumerate(ptBins[:-1]):
+if not skipQCD:
+  for i_pt, pt in enumerate(ptBins[:-1]):
     for i_eta, eta in enumerate(etaBins[:-1]):
         etaLow, etaHigh = eta, etaBins[i_eta+1]
         ptLow, ptHigh   = pt,  ptBins[i_pt+1]
@@ -444,8 +485,6 @@ for i_pt, pt in enumerate(ptBins[:-1]):
                         s.hist_SB_tmp.Scale(DYSF_val[args.year].val)
                     elif "WJets" in s.name:
                         s.hist_SB_tmp.Scale(WJetsSF_val[args.year].val)
-                    elif "Top" in s.name:
-                        s.hist_SB_tmp.Scale(TTSF_val[args.year].val)
 
             s.hist_SB.Add(s.hist_SB_tmp)
             qcdHist_tmp.Add(s.hist_SB_tmp, -1)
@@ -482,15 +521,19 @@ if setup.isPhotonSelection:
     qcdHist.Scale(QCDSF_val[args.year].val)
 
 qcdHist.style          = styles.fillStyle( color.QCD )
-qcdHist.legendText     = "QCD (%i)"%int(qcdHist.Integral())
+qcdHist.legendText     = "QCD (data)"
 
 qcdTemplate            = qcdHist.Clone("QCDTemplate")
 qcdTemplate.style      = styles.fillStyle( color.QCD )
 qcdTemplate.legendText = "QCD template (%i)"%int(sbInt)
-qcdTemplate.Scale(1./ qcdTemplate.Integral() )
+if not skipQCD:
+    qcdTemplate.Scale(1./ qcdTemplate.Integral() )
 maxQCD = qcdTemplate.GetMaximum()
 
-histos     = [[s.hist    for s in mc] + [qcdHist], [dataHist]]
+if args.photonCat:
+    histos     = [[hists[g] for g in genCat] + [qcdHist], [dataHist]]
+else:
+    histos     = [[s.hist    for s in mc] + [qcdHist], [dataHist]]
 histos_SB  = [[s.hist_SB for s in mc],             [dataHist_SB], [qcdTemplate], [oneHist]]
 
 Plot.setDefaults()
@@ -513,10 +556,10 @@ for plot in plots:
 
         selDir = args.selection
         if args.addCut: selDir += "-" + args.addCut
-        plot_directory_ = os.path.join( plot_directory, "qcdChecks", str(args.year), args.plot_directory, selDir, "postfit" if addSF else "prefit", args.mode, "log" if log else "lin" )
+        plot_directory_ = os.path.join( plot_directory, "qcdChecks", str(args.year), args.plot_directory, selDir, "postfit" if addSF else "prefit", args.mode + "_cat" if args.photonCat else args.mode, "log" if log else "lin" )
         plotting.draw( plot,
                        plot_directory = plot_directory_,
-                       logX = False, logY = log, sorting = True,#plot.name != "mT_fit",
+                       logX = False, logY = log, sorting = not args.photonCat,
                        yRange = (0.3, "auto"),
                        ratio = ratio,
                        drawObjects = drawObjects( lumi_scale ),

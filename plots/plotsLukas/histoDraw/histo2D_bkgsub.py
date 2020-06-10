@@ -178,21 +178,6 @@ for s in mc:
         elif "WJets" in s.name:
             s.hist.Scale(WJetsSF_val[args.year].val)
             s.hist_SB.Scale(WJetsSF_val[args.year].val)
-        elif "Top" in s.name:
-            s.hist.Scale(TTSF_val[args.year].val)
-            s.hist_SB.Scale(TTSF_val[args.year].val)
-#        elif "ZG" in s.name:# and njets < 4:
-#            s.hist.Scale(ZGSF_val[args.year].val)
-#            s.hist_SB.Scale(ZGSF_val[args.year].val)
-#        elif "other" in s.name:# and njets < 4:
-#            s.hist.Scale(otherSF_val[args.year].val)
-#            s.hist_SB.Scale(otherSF_val[args.year].val)
-#        elif "WG" in s.name:# and njets > 3:
-#            s.hist.Scale(WGSF_val[args.year].val)
-#            s.hist_SB.Scale(WGSF_val[args.year].val)
-#        elif "TTG" in s.name:
-#            s.hist.Scale(SSMSF_val[args.year].val)
-#            s.hist_SB.Scale(SSMSF_val[args.year].val)
 
     dataHist_SB.Add( s.hist_SB, -1 )
     dataHist.Add( s.hist, -1 )

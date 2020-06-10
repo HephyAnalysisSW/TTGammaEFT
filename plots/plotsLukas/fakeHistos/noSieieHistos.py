@@ -282,12 +282,8 @@ for s in mc:
                 s.hist.Scale(DYSF_val[args.year].val)
             elif "WJets" in s.name:
                 s.hist.Scale(WJetsSF_val[args.year].val)
-            elif "Top" in s.name:
-                s.hist.Scale(TTSF_val[args.year].val)
             elif "ZG" in s.name:# and njets < 4:
                 s.hist.Scale(ZGSF_val[args.year].val)
-            elif "other" in s.name:# and njets < 4:
-                s.hist.Scale(otherSF_val[args.year].val)
             elif "WG" in s.name:# and njets > 3:
                 s.hist.Scale(WGSF_val[args.year].val)
             elif "TTG" in s.name:
@@ -357,12 +353,8 @@ for i_pt, pt in enumerate(ptBins[:-1]):
                     s.hist_SB_tmp.Scale(DYSF_val[args.year].val)
                 elif "WJets" in s.name:
                     s.hist_SB_tmp.Scale(WJetsSF_val[args.year].val)
-                elif "Top" in s.name:
-                    s.hist_SB_tmp.Scale(TTSF_val[args.year].val)
                 elif "ZG" in s.name:# and njets < 4:
                     s.hist_SB_tmp.Scale(ZGSF_val[args.year].val)
-                elif "other" in s.name:# and njets < 4:
-                    s.hist_SB_tmp.Scale(otherSF_val[args.year].val)
                 elif "WG" in s.name:# and njets > 3:
                     s.hist_SB_tmp.Scale(WGSF_val[args.year].val)
                 elif "TTG" in s.name:
