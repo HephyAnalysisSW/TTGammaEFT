@@ -87,6 +87,16 @@ options = get_parser().parse_args()
 if "clip" in hostname.lower():
     options.writeToDPM = False
 
+stitching = None
+# combine ttg samples is they are nominal
+if "TTG" in options.samples[0] and not "Tune" in options.samples[0] and not "erd" in options.samples[0]:
+    if "ptG" in options.samples[0]:
+        stitching = "high"
+    else:
+        stitching = "low"
+
+print stitching
+
 # B-Tagger
 tagger = 'DeepCSV'
 #tagger = 'CSVv2'
@@ -703,7 +713,7 @@ if isMC:
     new_variables += [ 'GenJets[%s]'      %writeGenJetVarString ]
     new_variables += [ 'GenBJet[%s]'     %writeGenJetVarString ]
     new_variables += [ 'GenTop[%s]'      %writeGenVarString ]
-    new_variables += [ 'isTTGamma/I', 'isZWGamma/I', 'isTGamma/I', 'isGJets/I', 'overlapRemoval/I', 'pTStitching/I' ]
+    new_variables += [ 'isTTGamma/I', 'isZWGamma/I', 'isTGamma/I', 'isGJets/I', 'overlapRemoval/I', 'pTStitching/I', "stitchedPt/F" ]
 
     new_variables += [ 'nGenZ/I', 'nGenW/I', 'nGenWFromTop/I', 'nGenWJets/I', 'nGenWElectron/I', 'nGenWMuon/I','nGenWTau/I', 'nGenWTauJets/I', 'nGenWTauElectron/I', 'nGenWTauMuon/I' ]
     new_variables += [ 'GenW0_' + var for var in writeGenVariables ]
@@ -977,6 +987,14 @@ def filler( event ):
         GenIsoPhotonGJets          = filter( lambda g: isIsolatedPhoton( g, gPart, coneSize=0.4,  ptCut=5, excludedPdgIds=[12,-12,14,-14,16,-16] ), GenPhoton    )
         GenIsoPhotonNoMesonGJets   = filter( lambda g: not hasMesonMother( getParentIds( g, gPart ) ), GenIsoPhotonGJets )
 
+        ttgGenPhoton = filter( lambda g: genPhotonSel_TTG_OR(g), GenIsoPhotonNoMesonTTG )
+        ttgGenPhoton.sort( key = lambda p: -p['pt'] )
+        ttgGenPhoton = (ttgGenPhoton[:1] + [None])[0]
+
+        event.stitchedPt = -1
+        if ttgGenPhoton:
+            event.stitchedPt = ttgGenPhoton["pt"]
+
         event.isTTGamma = len( filter( lambda g: genPhotonSel_TTG_OR(g), GenIsoPhotonNoMesonTTG     ) ) > 0
         event.isZWGamma = len( filter( lambda g: genPhotonSel_ZG_OR(g),  GenIsoPhotonNoMeson        ) ) > 0
         event.isTGamma  = len( filter( lambda g: genPhotonSel_T_OR(g),   GenIsoPhotonNoMesonTG      ) ) > 0 
@@ -1002,7 +1020,25 @@ def filler( event ):
         else:
             event.overlapRemoval = 1 # all other events
 
-        event.pTStitching = 1 # all other events
+        if stitching:
+            if stitching == "low" and ttgGenPhoton:
+                # take the nominal sample for low pt
+                event.pTStitching = ttgGenPhoton["pt"] < 110
+            elif stitching == "low" and not ttgGenPhoton:
+                # take the nominal sample in case there is no gen-photon
+                event.pTStitching = 1
+            elif stitching == "high" and ttgGenPhoton:
+                event.pTStitching = ttgGenPhoton["pt"] >= 110
+            elif stitching == "high" and not ttgGenPhoton:
+                # take the nominal sample in case there is no gen-photon
+                event.pTStitching = 0
+            else:
+                event.pTStitching = 1
+        else:
+            # all other events
+            event.pTStitching = 1
+
+        print ttgGenPhoton["pt"] if ttgGenPhoton else "none", event.pTStitching
 
         GenMuon                                    = filterGenMuons( gPart, status='last' )
         GenElectron                                = filterGenElectrons( gPart, status='last' )
@@ -1776,7 +1812,6 @@ def filler( event ):
 
     if tightLeptons:
         event.lpTight = lp( tightLeptons[0]["pt"], tightLeptons[0]["phi"], met["pt"], met["phi"] )
-        print tightLeptons[0]["pt"], tightLeptons[0]["pt_totalUp"], tightLeptons[0]["pt_totalDown"]
         event.mT      = mT( tightLeptons[0], met )
         event.WPt     = ( get2DVec(tightLeptons[0]) + get2DVec(met) ).Mod()
 
