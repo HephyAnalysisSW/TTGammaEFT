@@ -293,236 +293,252 @@ default_m3Window     = "all"
 default_photonIso    = None
 
 SSMSF_val = {}
-SSMSF_val[2016] = u_float( 0.78, 0.08 ) #26012020
-SSMSF_val[2017] = u_float( 0.78, 0.08 ) #26012020
-SSMSF_val[2018] = u_float( 0.78, 0.08 ) #26012020
+SSMSF_val[2016]    = u_float( 0.78, 0.08 ) #26012020
+SSMSF_val[2017]    = u_float( 0.78, 0.08 ) #26012020
+SSMSF_val[2018]    = u_float( 0.78, 0.08 ) #26012020
+SSMSF_val["RunII"] = u_float( 0.78, 0.08 ) #26012020
 
 WJetsSF_val = {}
-WJetsSF_val[2016] = u_float( 1.14, 0.13 )
-WJetsSF_val[2017] = u_float( 1.09, 0.13 )
-WJetsSF_val[2018] = u_float( 1.09, 0.13 )
+WJetsSF_val[2016]    = u_float( 1.14, 0.13 )
+WJetsSF_val[2017]    = u_float( 1.09, 0.13 )
+WJetsSF_val[2018]    = u_float( 1.09, 0.13 )
+WJetsSF_val["RunII"] = u_float( 1.09, 0.13 )
 
 QCDSF_val = {}
-QCDSF_val[2016] = u_float( 1.45, 0.0 )
-QCDSF_val[2017] = u_float( 1.07, 0.0 )
-QCDSF_val[2018] = u_float( 1.35, 0.0 )
+QCDSF_val[2016]    = u_float( 1.45, 0.0 )
+QCDSF_val[2017]    = u_float( 1.07, 0.0 )
+QCDSF_val[2018]    = u_float( 1.35, 0.0 )
+QCDSF_val["RunII"] = u_float( 1.35, 0.0 )
 
 QCD2SF_val = {}
-QCD2SF_val[2016] = u_float( 1.21, 0.0 )
-QCD2SF_val[2017] = u_float( 1.28, 0.0 )
-QCD2SF_val[2018] = u_float( 0.95, 0.0 )
+QCD2SF_val[2016]    = u_float( 1.21, 0.0 )
+QCD2SF_val[2017]    = u_float( 1.28, 0.0 )
+QCD2SF_val[2018]    = u_float( 0.95, 0.0 )
+QCD2SF_val["RunII"] = u_float( 0.95, 0.0 )
 
 QCD3SF_val = {}
-QCD3SF_val[2016] = u_float( 1.45, 0.0 )
-QCD3SF_val[2017] = u_float( 1.07, 0.0 )
-QCD3SF_val[2018] = u_float( 1.35, 0.0 )
+QCD3SF_val[2016]    = u_float( 1.45, 0.0 )
+QCD3SF_val[2017]    = u_float( 1.07, 0.0 )
+QCD3SF_val[2018]    = u_float( 1.35, 0.0 )
+QCD3SF_val["RunII"] = u_float( 1.35, 0.0 )
 
 QCD4SF_val = {}
-QCD4SF_val[2016] = u_float( 1.26, 0.0 )
-QCD4SF_val[2017] = u_float( 0.70, 0.0 )
-QCD4SF_val[2018] = u_float( 1.16, 0.0 )
+QCD4SF_val[2016]    = u_float( 1.26, 0.0 )
+QCD4SF_val[2017]    = u_float( 0.70, 0.0 )
+QCD4SF_val[2018]    = u_float( 1.16, 0.0 )
+QCD4SF_val["RunII"] = u_float( 1.16, 0.0 )
 
 QCD5SF_val = {}
-QCD5SF_val[2016] = u_float( 1.12, 0.0 )
-QCD5SF_val[2017] = u_float( 1.05, 0.0 )
-QCD5SF_val[2018] = u_float( 1.08, 0.0 )
+QCD5SF_val[2016]    = u_float( 1.12, 0.0 )
+QCD5SF_val[2017]    = u_float( 1.05, 0.0 )
+QCD5SF_val[2018]    = u_float( 1.08, 0.0 )
+QCD5SF_val["RunII"] = u_float( 1.08, 0.0 )
 
 QCD2pSF_val = {}
-QCD2pSF_val[2016] = u_float( 1.28, 0.0 )
-QCD2pSF_val[2017] = u_float( 1.20, 0.0 )
-QCD2pSF_val[2018] = u_float( 0.73, 0.0 ) #
+QCD2pSF_val[2016]    = u_float( 1.28, 0.0 )
+QCD2pSF_val[2017]    = u_float( 1.20, 0.0 )
+QCD2pSF_val[2018]    = u_float( 0.73, 0.0 ) #
+QCD2pSF_val["RunII"] = u_float( 0.73, 0.0 ) #
 
 QCD3pSF_val = {}
-QCD3pSF_val[2016] = u_float( 1.50, 0.0 )
-QCD3pSF_val[2017] = u_float( 1.08, 0.0 )
-QCD3pSF_val[2018] = u_float( 1.32, 0.0 )
+QCD3pSF_val[2016]    = u_float( 1.50, 0.0 )
+QCD3pSF_val[2017]    = u_float( 1.08, 0.0 )
+QCD3pSF_val[2018]    = u_float( 1.32, 0.0 )
+QCD3pSF_val["RunII"] = u_float( 1.32, 0.0 )
 
 QCD4pSF_val = {}
-QCD4pSF_val[2016] = u_float( 1.39, 0.0 )
-QCD4pSF_val[2017] = u_float( 0.93, 0.0 )
-QCD4pSF_val[2018] = u_float( 1.34, 0.0 )
-
-TTSF_val = {}
-TTSF_val[2016] = u_float( 1.00, 0.0 )
-TTSF_val[2017] = u_float( 1.00, 0.0 )
-TTSF_val[2018] = u_float( 1.00, 0.0 )
-
+QCD4pSF_val[2016]    = u_float( 1.39, 0.0 )
+QCD4pSF_val[2017]    = u_float( 0.93, 0.0 )
+QCD4pSF_val[2018]    = u_float( 1.34, 0.0 )
+QCD4pSF_val["RunII"] = u_float( 1.34, 0.0 )
 
 # SF with systematics, pull from JEC
 DYSF_val = {}
-DYSF_val[2016] = u_float( 1.20, 0.09 )
-DYSF_val[2017] = u_float( 1.17, 0.12 )
-DYSF_val[2018] = u_float( 1.14, 0.12 )
+DYSF_val[2016]    = u_float( 1.20, 0.09 )
+DYSF_val[2017]    = u_float( 1.17, 0.12 )
+DYSF_val[2018]    = u_float( 1.14, 0.12 )
+DYSF_val["RunII"] = u_float( 1.14, 0.12 )
 
 DY2SF_val = {}
-DY2SF_val[2016] = u_float( 1.18, 0.07 )
-DY2SF_val[2017] = u_float( 1.16, 0.09 )
-DY2SF_val[2018] = u_float( 1.16, 0.10 )
+DY2SF_val[2016]    = u_float( 1.18, 0.07 )
+DY2SF_val[2017]    = u_float( 1.16, 0.09 )
+DY2SF_val[2018]    = u_float( 1.16, 0.10 )
+DY2SF_val["RunII"] = u_float( 1.16, 0.10 )
 
 DY3SF_val = {}
-DY3SF_val[2016] = u_float( 1.20, 0.08 )
-DY3SF_val[2017] = u_float( 1.17, 0.12 )
-DY3SF_val[2018] = u_float( 1.14, 0.12 )
+DY3SF_val[2016]    = u_float( 1.20, 0.08 )
+DY3SF_val[2017]    = u_float( 1.17, 0.12 )
+DY3SF_val[2018]    = u_float( 1.14, 0.12 )
+DY3SF_val["RunII"] = u_float( 1.14, 0.12 )
 
 DY4SF_val = {}
-DY4SF_val[2016] = u_float( 1.08, 0.09 )
-DY4SF_val[2017] = u_float( 1.12, 0.12 )
-DY4SF_val[2018] = u_float( 1.08, 0.13 )
+DY4SF_val[2016]    = u_float( 1.08, 0.09 )
+DY4SF_val[2017]    = u_float( 1.12, 0.12 )
+DY4SF_val[2018]    = u_float( 1.08, 0.13 )
+DY4SF_val["RunII"] = u_float( 1.08, 0.13 )
 
 DY5SF_val = {}
-DY5SF_val[2016] = u_float( 1.01, 0.10 )
-DY5SF_val[2017] = u_float( 1.19, 0.16 )
-DY5SF_val[2018] = u_float( 1.13, 0.17 )
+DY5SF_val[2016]    = u_float( 1.01, 0.10 )
+DY5SF_val[2017]    = u_float( 1.19, 0.16 )
+DY5SF_val[2018]    = u_float( 1.13, 0.17 )
+DY5SF_val["RunII"] = u_float( 1.13, 0.17 )
 
 DY2pSF_val = {}
-DY2pSF_val[2016] = u_float( 1.18, 0.08 )
-DY2pSF_val[2017] = u_float( 1.16, 0.10 )
-DY2pSF_val[2018] = u_float( 1.16, 0.10 )
+DY2pSF_val[2016]    = u_float( 1.18, 0.08 )
+DY2pSF_val[2017]    = u_float( 1.16, 0.10 )
+DY2pSF_val[2018]    = u_float( 1.16, 0.10 )
+DY2pSF_val["RunII"] = u_float( 1.16, 0.10 )
 
 DY3pSF_val = {}
-DY3pSF_val[2016] = u_float( 1.17, 0.09 )
-DY3pSF_val[2017] = u_float( 1.16, 0.12 )
-DY3pSF_val[2018] = u_float( 1.13, 0.12 )
+DY3pSF_val[2016]    = u_float( 1.17, 0.09 )
+DY3pSF_val[2017]    = u_float( 1.16, 0.12 )
+DY3pSF_val[2018]    = u_float( 1.13, 0.12 )
+DY3pSF_val["RunII"] = u_float( 1.13, 0.12 )
 
 DY4pSF_val = {}
-DY4pSF_val[2016] = u_float( 1.07, 0.09 )
-DY4pSF_val[2017] = u_float( 1.14, 0.13 )
-DY4pSF_val[2018] = u_float( 1.09, 0.14 )
+DY4pSF_val[2016]    = u_float( 1.07, 0.09 )
+DY4pSF_val[2017]    = u_float( 1.14, 0.13 )
+DY4pSF_val[2018]    = u_float( 1.09, 0.14 )
+DY4pSF_val["RunII"] = u_float( 1.09, 0.14 )
 
 
 
 
 misIDSF_val = {}
-misIDSF_val[2016] = u_float( 2.23, 0.39 )
-misIDSF_val[2017] = u_float( 2.60, 0.50 )
-misIDSF_val[2018] = u_float( 1.55, 0.27 )
+misIDSF_val[2016]    = u_float( 2.23, 0.39 )
+misIDSF_val[2017]    = u_float( 2.60, 0.50 )
+misIDSF_val[2018]    = u_float( 1.55, 0.27 )
 
 misID2SF_val = {}
-misID2SF_val[2016] = u_float( 2.32, 0.35 )
-misID2SF_val[2017] = u_float( 2.90, 0.50 )
-misID2SF_val[2018] = u_float( 1.62, 0.24 )
+misID2SF_val[2016]    = u_float( 2.32, 0.35 )
+misID2SF_val[2017]    = u_float( 2.90, 0.50 )
+misID2SF_val[2018]    = u_float( 1.62, 0.24 )
 
 misID3SF_val = {}
-misID3SF_val[2016] = u_float( 2.23, 0.39 )
-misID3SF_val[2017] = u_float( 2.60, 0.50 )
-misID3SF_val[2018] = u_float( 1.55, 0.27 )
+misID3SF_val[2016]    = u_float( 2.23, 0.39 )
+misID3SF_val[2017]    = u_float( 2.60, 0.50 )
+misID3SF_val[2018]    = u_float( 1.55, 0.27 )
 
 misID4SF_val = {}
-misID4SF_val[2016] = u_float( 1.93, 0.40 )
-misID4SF_val[2017] = u_float( 3.20, 1.00 )
-misID4SF_val[2018] = u_float( 1.80, 0.41 )
+misID4SF_val[2016]    = u_float( 1.93, 0.40 )
+misID4SF_val[2017]    = u_float( 3.20, 1.00 )
+misID4SF_val[2018]    = u_float( 1.80, 0.41 )
 
 misID5SF_val = {}
-misID5SF_val[2016] = u_float( 1.50, 1.00 )
-misID5SF_val[2017] = u_float( 2.10, 1.40 )
-misID5SF_val[2018] = u_float( 1.10, 0.60 )
+misID5SF_val[2016]    = u_float( 1.50, 1.00 )
+misID5SF_val[2017]    = u_float( 2.10, 1.40 )
+misID5SF_val[2018]    = u_float( 1.10, 0.60 )
 
 misID2pSF_val = {}
-misID2pSF_val[2016] = u_float( 2.27, 0.33 ) #
-misID2pSF_val[2017] = u_float( 3.10, 0.50 )
-misID2pSF_val[2018] = u_float( 1.50, 0.23 ) #
+misID2pSF_val[2016]    = u_float( 2.27, 0.33 ) #
+misID2pSF_val[2017]    = u_float( 3.10, 0.50 )
+misID2pSF_val[2018]    = u_float( 1.50, 0.23 ) #
 
 misID3pSF_val = {}
-misID3pSF_val[2016] = u_float( 2.14, 0.36 )
-misID3pSF_val[2017] = u_float( 2.80, 0.50 )
-misID3pSF_val[2018] = u_float( 1.61, 0.28 )
+misID3pSF_val[2016]    = u_float( 2.14, 0.36 )
+misID3pSF_val[2017]    = u_float( 2.80, 0.50 )
+misID3pSF_val[2018]    = u_float( 1.61, 0.28 )
 
 misID4pSF_val = {}
-misID4pSF_val[2016] = u_float( 1.93, 0.38 )
-misID4pSF_val[2017] = u_float( 3.00, 0.90 )
-misID4pSF_val[2018] = u_float( 1.78, 0.41 )
-
-
-
-fakeSF_val = {}
-fakeSF_val[2016] = u_float( 1.00, 0.09 )
-fakeSF_val[2017] = u_float( 1.00, 0.09 )
-fakeSF_val[2018] = u_float( 1.00, 0.09 )
+misID4pSF_val[2016]    = u_float( 1.93, 0.38 )
+misID4pSF_val[2017]    = u_float( 3.00, 0.90 )
+misID4pSF_val[2018]    = u_float( 1.78, 0.41 )
 
 WGSF_val = {}
-WGSF_val[2016] = u_float( 0.98, 0.15 )
-WGSF_val[2017] = u_float( 1.17, 0.16 )
-WGSF_val[2018] = u_float( 1.09, 0.21 )
+WGSF_val[2016]    = u_float( 0.98, 0.15 )
+WGSF_val[2017]    = u_float( 1.17, 0.16 )
+WGSF_val[2018]    = u_float( 1.09, 0.21 )
+WGSF_val["RunII"] = u_float( 1.09, 0.21 )
 
 WG2SF_val = {}
-WG2SF_val[2016] = u_float( 1.14, 0.10 )
-WG2SF_val[2017] = u_float( 1.08, 0.10 )
-WG2SF_val[2018] = u_float( 1.07, 0.14 )
+WG2SF_val[2016]    = u_float( 1.14, 0.10 )
+WG2SF_val[2017]    = u_float( 1.08, 0.10 )
+WG2SF_val[2018]    = u_float( 1.07, 0.14 )
+WG2SF_val["RunII"] = u_float( 1.07, 0.14 )
 
 WG3SF_val = {}
-WG3SF_val[2016] = u_float( 0.98, 0.15 )
-WG3SF_val[2017] = u_float( 1.17, 0.16 )
-WG3SF_val[2018] = u_float( 1.09, 0.21 )
+WG3SF_val[2016]    = u_float( 0.98, 0.15 )
+WG3SF_val[2017]    = u_float( 1.17, 0.16 )
+WG3SF_val[2018]    = u_float( 1.09, 0.21 )
+WG3SF_val["RunII"] = u_float( 1.09, 0.21 )
 
 WG4SF_val = {}
-WG4SF_val[2016] = u_float( 1.16, 0.19 )
-WG4SF_val[2017] = u_float( 1.38, 0.27 )
-WG4SF_val[2018] = u_float( 1.11, 0.29 )
+WG4SF_val[2016]    = u_float( 1.16, 0.19 )
+WG4SF_val[2017]    = u_float( 1.38, 0.27 )
+WG4SF_val[2018]    = u_float( 1.11, 0.29 )
+WG4SF_val["RunII"] = u_float( 1.11, 0.29 )
 
 WG5SF_val = {}
-WG5SF_val[2016] = u_float( 1.18, 0.38 )
-WG5SF_val[2017] = u_float( 1.70, 0.4 )
-WG5SF_val[2018] = u_float( 1.37, 0.42 )
+WG5SF_val[2016]    = u_float( 1.18, 0.38 )
+WG5SF_val[2017]    = u_float( 1.70, 0.4 )
+WG5SF_val[2018]    = u_float( 1.37, 0.42 )
+WG5SF_val["RunII"] = u_float( 1.37, 0.42 )
 
 WG2pSF_val = {}
-WG2pSF_val[2016] = u_float( 1.14, 0.10 ) #
-WG2pSF_val[2017] = u_float( 1.16, 0.10 )
-WG2pSF_val[2018] = u_float( 1.23, 0.22 ) #
+WG2pSF_val[2016]    = u_float( 1.14, 0.10 ) #
+WG2pSF_val[2017]    = u_float( 1.16, 0.10 )
+WG2pSF_val[2018]    = u_float( 1.23, 0.22 ) #
+WG2pSF_val["RunII"] = u_float( 1.23, 0.22 ) #
 
 WG3pSF_val = {}
-WG3pSF_val[2016] = u_float( 1.02, 0.14 )
-WG3pSF_val[2017] = u_float( 1.26, 0.16 )
-WG3pSF_val[2018] = u_float( 1.18, 0.22 )
+WG3pSF_val[2016]    = u_float( 1.02, 0.14 )
+WG3pSF_val[2017]    = u_float( 1.26, 0.16 )
+WG3pSF_val[2018]    = u_float( 1.18, 0.22 )
+WG3pSF_val["RunII"] = u_float( 1.18, 0.22 )
 
 WG4pSF_val = {}
-WG4pSF_val[2016] = u_float( 1.17, 0.20 )
-WG4pSF_val[2017] = u_float( 1.44, 0.28 )
-WG4pSF_val[2018] = u_float( 1.31, 0.30 )
-
-otherSF_val = {}
-otherSF_val[2016] = u_float( 1.00, 0.2 )
-otherSF_val[2017] = u_float( 1.00, 0.2 )
-otherSF_val[2018] = u_float( 1.00, 0.2 )
+WG4pSF_val[2016]    = u_float( 1.17, 0.20 )
+WG4pSF_val[2017]    = u_float( 1.44, 0.28 )
+WG4pSF_val[2018]    = u_float( 1.31, 0.30 )
+WG4pSF_val["RunII"] = u_float( 1.31, 0.30 )
 
 ZGSF_val = {}
-ZGSF_val[2016] = u_float( 1.08, 0.0 )
-ZGSF_val[2017] = u_float( 0.94, 0.0 )
-ZGSF_val[2018] = u_float( 1.05, 0.0 )
+ZGSF_val[2016]    = u_float( 1.08, 0.0 )
+ZGSF_val[2017]    = u_float( 0.94, 0.0 )
+ZGSF_val[2018]    = u_float( 1.05, 0.0 )
+ZGSF_val["RunII"] = u_float( 1.05, 0.0 )
 
 ZG2SF_val = {}
-ZG2SF_val[2016] = u_float( 0.91, 0.0 )
-ZG2SF_val[2017] = u_float( 0.91, 0. )
-ZG2SF_val[2018] = u_float( 1.01, 0.0 )
+ZG2SF_val[2016]    = u_float( 0.91, 0.0 )
+ZG2SF_val[2017]    = u_float( 0.91, 0. )
+ZG2SF_val[2018]    = u_float( 1.01, 0.0 )
+ZG2SF_val["RunII"] = u_float( 1.01, 0.0 )
 
 ZG3SF_val = {}
-ZG3SF_val[2016] = u_float( 1.08, 0.0 )
-ZG3SF_val[2017] = u_float( 0.94, 0.0 )
-ZG3SF_val[2018] = u_float( 1.05, 0.0 )
+ZG3SF_val[2016]    = u_float( 1.08, 0.0 )
+ZG3SF_val[2017]    = u_float( 0.94, 0.0 )
+ZG3SF_val[2018]    = u_float( 1.05, 0.0 )
+ZG3SF_val["RunII"] = u_float( 1.05, 0.0 )
 
 ZG4SF_val = {}
-ZG4SF_val[2016] = u_float( 1.10, 0.0 )
-ZG4SF_val[2017] = u_float( 1.04, 0.0 )
-ZG4SF_val[2018] = u_float( 1.12, 0.0 )
+ZG4SF_val[2016]    = u_float( 1.10, 0.0 )
+ZG4SF_val[2017]    = u_float( 1.04, 0.0 )
+ZG4SF_val[2018]    = u_float( 1.12, 0.0 )
+ZG4SF_val["RunII"] = u_float( 1.12, 0.0 )
 
 ZG5SF_val = {}
-ZG5SF_val[2016] = u_float( 1.02, 0.0 )
-ZG5SF_val[2017] = u_float( 1.07, 0.0 )
-ZG5SF_val[2018] = u_float( 1.03, 0.0)
+ZG5SF_val[2016]    = u_float( 1.02, 0.0 )
+ZG5SF_val[2017]    = u_float( 1.07, 0.0 )
+ZG5SF_val[2018]    = u_float( 1.03, 0.0)
+ZG5SF_val["RunII"] = u_float( 1.03, 0.0)
 
 ZG2pSF_val = {}
-ZG2pSF_val[2016] = u_float( 0.93, 0. ) #
-ZG2pSF_val[2017] = u_float( 0.95, 0. )
-ZG2pSF_val[2018] = u_float( 1.00, 0. ) #
+ZG2pSF_val[2016]    = u_float( 0.93, 0. ) #
+ZG2pSF_val[2017]    = u_float( 0.95, 0. )
+ZG2pSF_val[2018]    = u_float( 1.00, 0. ) #
+ZG2pSF_val["RunII"] = u_float( 1.00, 0. ) #
 
 ZG3pSF_val = {}
-ZG3pSF_val[2016] = u_float( 1.10, 0.0 )
-ZG3pSF_val[2017] = u_float( 1.02, 0.0 )
-ZG3pSF_val[2018] = u_float( 1.08, 0.0 )
+ZG3pSF_val[2016]    = u_float( 1.10, 0.0 )
+ZG3pSF_val[2017]    = u_float( 1.02, 0.0 )
+ZG3pSF_val[2018]    = u_float( 1.08, 0.0 )
+ZG3pSF_val["RunII"] = u_float( 1.08, 0.0 )
 
 ZG4pSF_val = {}
-ZG4pSF_val[2016] = u_float( 1.11, 0.0 )
-ZG4pSF_val[2017] = u_float( 1.08, 0.0 )
-ZG4pSF_val[2018] = u_float( 1.06, 0.0 )
+ZG4pSF_val[2016]    = u_float( 1.11, 0.0 )
+ZG4pSF_val[2017]    = u_float( 1.08, 0.0 )
+ZG4pSF_val[2018]    = u_float( 1.06, 0.0 )
+ZG4pSF_val["RunII"] = u_float( 1.06, 0.0 )
 
 # all processes are all samples + them splitted in photon categories
 allProcesses            = copy.copy(default_sampleList)
@@ -698,37 +714,30 @@ controlRegions["misfake4p"]     = { "parameters": { "zWindow":"onZeg", "nJet":(4
                                  "processes":  processes,
                                }
  
-controlRegions["fake4phigh"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1), "photonIso":"highSieieNoChgIso" },
-                                 "channels":   lepChannels,
-                                 "regions":    chgIsoPtRegions,
-                                 "inclRegion": chgIsoRegions,
-                                 "noPhotonCR": False,
-                                 "processes":  processes,
-                               }
- 
-controlRegions["fake3low"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1), "photonIso":"lowSieieNoChgIso" },
-                                "channels":   lepChannels,
-                                "regions":    chgIsoNoSRPtRegions,
-                                "inclRegion": chgIsoNoSRRegions,
+controlRegions["DLfake3"]  = { "parameters": { "dileptonic":True, "zWindow":"onZSFllTight", "nJet":(3,3),  "nBTag":(0,0), "nPhoton":(1,1) },
+                                "channels":   dilepChannels,
+                                "regions":    regionsTTG,
+                                "inclRegion": inclRegionsTTG,
                                 "noPhotonCR": False,
                                 "processes":  processes,
                               }
- 
-controlRegions["fake3plow"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1), "nBTag":(1,-1), "nPhoton":(1,1), "photonIso":"lowSieieNoChgIso" },
-                                "channels":   lepChannels,
-                                "regions":    chgIsoNoSRPtRegions,
-                                "inclRegion": chgIsoNoSRRegions,
+                            
+controlRegions["DLfake3p"]  = { "parameters": { "dileptonic":True, "zWindow":"onZSFllTight", "nJet":(3,-1),  "nBTag":(0,0), "nPhoton":(1,1) },
+                                "channels":   dilepChannels,
+                                "regions":    regionsTTG,
+                                "inclRegion": inclRegionsTTG,
                                 "noPhotonCR": False,
                                 "processes":  processes,
                               }
- 
-controlRegions["fake4plow"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1), "photonIso":"lowSieieNoChgIso" },
-                                "channels":   lepChannels,
-                                "regions":    chgIsoNoSRPtRegions,
-                                "inclRegion": chgIsoNoSRRegions,
+                            
+controlRegions["DLfake4p"]  = { "parameters": { "dileptonic":True, "zWindow":"onZSFllTight", "nJet":(4,-1),  "nBTag":(0,0), "nPhoton":(1,1) },
+                                "channels":   dilepChannels,
+                                "regions":    regionsTTG,
+                                "inclRegion": inclRegionsTTG,
                                 "noPhotonCR": False,
                                 "processes":  processes,
                               }
+                            
 
 # dileptonic ee/mumu all m(l,l) nBTag0 nPhoton0 CR for DY ScaleFactor
 controlRegions["DY2"]  = { "parameters": { "dileptonic":True, "zWindow":"onZSFllTight", "nJet":(2,2),  "nBTag":(0,0), "nPhoton":(0,0) },
@@ -1027,7 +1036,7 @@ controlRegions["misDY4p"] = { "parameters": { "zWindow":"onZeg", "nJet":(4,-1), 
                             }
 
 # nPhoton1p nBTag2 nJet2 offZeg m(e,gamma) CR for misID ScaleFactor TTbar
-controlRegions["misTT2"] = { "parameters": { "zWindow":"offZeg", "nJet":(2,2), "nBTag":(2,2), "nPhoton":(1,1) },
+controlRegions["misTT2"] = { "parameters": { "zWindow":"all", "nJet":(2,2), "nBTag":(2,2), "nPhoton":(1,1) },
                              "channels":   lepChannels,
                              "regions":    regionsTTG,
                              "inclRegion": inclRegionsTTG,
@@ -1035,7 +1044,7 @@ controlRegions["misTT2"] = { "parameters": { "zWindow":"offZeg", "nJet":(2,2), "
                              "processes":  processes,
                            }
 
-controlRegions["misTT1"] = { "parameters": { "zWindow":"offZeg", "nJet":(2,2), "nBTag":(1,1), "nPhoton":(1,1) },
+controlRegions["misTT1"] = { "parameters": { "zWindow":"all", "nJet":(2,2), "nBTag":(1,1), "nPhoton":(1,1) },
                              "channels":   lepChannels,
                              "regions":    regionsTTG,
                              "inclRegion": inclRegionsTTG,

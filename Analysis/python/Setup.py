@@ -250,7 +250,7 @@ class Setup:
         """Define full selection
            dataMC: "Data" or "MC"
            channel: all, e or mu, eetight, mumutight, SFtight
-           zWindow: offZeg, onZeg, onZSFllTight, onZSFllgTight or all
+           zWindow: offZeg, onZeg, onZSFllTight, onZSFllgTight, onZSFlloffZSFllg or all
            m3Window: offM3, onM3 or all
            photonIso: highSieie, highChgIso, highChgIsohighSieie
         """
@@ -270,7 +270,7 @@ class Setup:
         #Consistency checks
         assert dataMC in ["Data","MC","DataMC"], "dataMC = Data or MC or DataMC, got %r."%dataMC
         assert channel in allChannels, "channel must be one of "+",".join(allChannels)+". Got %r."%channel
-        assert zWindow in ["offZeg", "onZeg", "onZSFllTight", "onZSFllgTight", "all"], "zWindow must be one of onZeg, offZeg, onZSFllTight, onZSFllgTight, all. Got %r"%zWindow
+        assert zWindow in ["offZeg", "onZeg", "onZSFllTight", "onZSFllgTight", "onZSFlloffZSFllg", "all"], "zWindow must be one of onZeg, offZeg, onZSFllTight, onZSFllgTight, all. Got %r"%zWindow
         assert m3Window in ["offM3", "onM3", "all"], "m3Window must be one of onM3, offM3, all. Got %r"%m3Window
         assert photonIso in [None, "highSieieNoChgIso", "lowSieieNoChgIso", "noSieie", "highSieie", "lowChgIsoNoSieie", "highChgIsoNoSieie", "noChgIso", "highChgIso", "noChgIsoNoSieie", "highChgIsohighSieie"], "PhotonIso must be one of highSieie, highChgIso, highChgIsohighSieie. Got %r"%photonIso
         assert processCut in [None, "cat0","cat1","cat2","cat3","cat13","cat134", "cat4"], "Process specific cut must be one of cat0, cat2, cat13, cat4. Got %r"%processCut

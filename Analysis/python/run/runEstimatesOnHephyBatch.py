@@ -29,17 +29,20 @@ for name, cr in crs.items():
     if not est and not "processes" in cr: est = default_sampleList
     elif not est:                         est = [ e for eList in cr["processes"].values() for e in eList["process"] ] + ["Data"]
 
-    est = allProcesses
+#    est = allProcesses
 
     if "unfold" in name.lower(): continue
     if "fake" in name.lower(): continue
     if "fine" in name.lower(): continue
     if "vgmis" in name.lower(): continue
     if "eta" in name.lower(): continue
-#    if name=="SR2": continue
-#    if name=="SR3": continue
-#    if name=="SR4p": continue
-    if not "SR" in name or "M3" in name: continue
+    if "tt" in name.lower(): continue
+    if "wjets" in name.lower(): continue
+    if name=="SR2": continue
+    if name=="SR3": continue
+    if name=="SR3p": continue
+    if name=="SR4p": continue
+#    if not "SR" in name or "M3" in name: continue
 
 #    if not "3p" in name: continue
 #    if not "SR" in name: continue
@@ -48,7 +51,7 @@ for name, cr in crs.items():
         opt = option if not "QCD-DD" in estimator else option + " --noSystematics"
         title = " --title est%s_%s"%(year[2:], estimator) if submitCMD.count("submit") else ""
 
-        if not "np" in estimator and not "fake" in estimator and not "hp" in estimator and not "PU" in estimator: continue
+#        if not "np" in estimator and not "fake" in estimator and not "hp" in estimator and not "PU" in estimator: continue
 #        if not "had" in estimator or "SR" in name: continue # safe time for qcd estimate
 #        if not ("had" in estimator and "SR" in name): continue # safe time for qcd estimate
 #        if not "QCD-DD" in estimator: continue # safe time for qcd estimate

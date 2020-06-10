@@ -35,7 +35,6 @@ argParser.add_argument( "--addVGSF",            action="store_true",            
 argParser.add_argument( "--addZGSF",            action="store_true",                                                        help="add default DY scale factor" )
 argParser.add_argument( "--addWGSF",            action="store_true",                                                        help="add default DY scale factor" )
 argParser.add_argument( "--addDYSF",            action="store_true",                                                        help="add default DY scale factor" )
-argParser.add_argument( "--addTTSF",            action="store_true",                                                        help="add default DY scale factor" )
 argParser.add_argument( "--addWJetsSF",         action="store_true",                                                        help="add default DY scale factor" )
 argParser.add_argument( "--addFakeSF",          action="store_true",                                                        help="add default fake scale factor" )
 argParser.add_argument( "--addMisIDSF",         action="store_true",                                                        help="add default misID scale factor" )
@@ -149,7 +148,6 @@ for reg in limitOrdering:
 
 # use the regions as key for caches
 regionNames.sort()
-if args.addTTSF:     regionNames.append("addTTSF")
 if args.addWJetsSF:  regionNames.append("addWJetsSF")
 if args.addDYSF:     regionNames.append("addDYSF")
 if args.addVGSF:     regionNames.append("addVGSF")
@@ -427,9 +425,6 @@ def wrapper():
                             if signal and args.addSSM:
                                 exp_yield *= SSMSF_val[args.year].val
                                 logger.info( "Scaling signal by %f"%(SSMSF_val[args.year].val) )
-                            if e.name.count( "TT_pow" ) and args.addTTSF:
-                                exp_yield *= TTSF_val[args.year].val
-                                logger.info( "Scaling TT background %s by %f"%(e.name,TTSF_val[args.year].val) )
                             if e.name.count( "WJets" ) and args.addWJetsSF:
                                 exp_yield *= WJetsSF_val[args.year].val
                                 logger.info( "Scaling WJets background %s by %f"%(e.name,WJetsSF_val[args.year].val) )
@@ -521,13 +516,10 @@ def wrapper():
                                     continue # no systematics for data-driven QCD
 
                                 if e.name.count( "DY" ):
-#                                    dyUnc    += y_scale * getSFUncertainty( proc_yield=e.expYield.val, sf=DYSF_val[args.year] )
                                     dyUnc    += y_scale * default_DY_unc
                                 if e.name.count( "TT_pow" ) or (args.ttPOI and signal):
-#                                    ttUnc    += y_scale * getSFUncertainty( proc_yield=e.expYield.val, sf=TTSF_val[args.year] )
                                     ttUnc    += y_scale * default_TT_unc
                                 if e.name.count( "WJets" ) or (args.wJetsPOI and signal):
-#                                    wjetsUnc    += y_scale * getSFUncertainty( proc_yield=e.expYield.val, sf=WJetsSF_val[args.year] )
                                     wjetsUnc += y_scale * default_WJets_unc
                                 if not args.inclRegion and not newPOI_input and ((e.name.count( "signal" ) and setup.signalregion) or counter==1):
                                         pT_index = max( [ i_pt if ptCut.cutString() in r.cutString() else -1 for i_pt, ptCut in enumerate(regionsTTG) ] )

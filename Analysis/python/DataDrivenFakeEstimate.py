@@ -184,9 +184,6 @@ class DataDrivenFakeEstimate(SystematicEstimator):
 #                    elif "WJets" in s:
 #                        y_HsLc *= WJetsSF_val[setup.year].val #add WJets SF
 #                        y_HsHc *= WJetsSF_val[setup.year].val #add WJets SF
-#                    elif "Top" in s:
-#                        y_HsLc *= TTSF_val[setup.year].val #add TT SF
-#                        y_HsHc *= TTSF_val[setup.year].val #add TT SF
                     elif "TTG" in s:
                         y_HsLc *= SSMSF_val[setup.year].val #add TTG SF
                         y_HsHc *= SSMSF_val[setup.year].val #add TTG SF
@@ -297,7 +294,6 @@ class DataDrivenFakeEstimate(SystematicEstimator):
                 if addSF:
                     if "DY_LO" in s:    y_LsHc *= DYSF_val[setup.year].val #add DY SF
 #                    elif "WJets" in s:  y_LsHc *= WJetsSF_val[setup.year].val #add WJets SF
-#                    elif "Top" in s: y_LsHc *= TTSF_val[setup.year].val #add TT SF
                     elif "TTG" in s:    y_LsHc *= SSMSF_val[setup.year].val #add TTG SF
                     elif "ZG" in s:     y_LsHc *= ZGSF_val[setup.year].val #add ZGamma SF
                     elif "WG" in s:     y_LsHc *= WGSF_val[setup.year].val #add WGamma SF
@@ -413,11 +409,6 @@ class DataDrivenFakeEstimate(SystematicEstimator):
 #                        y_LsHc *= WJetsSF_val[setup.year].val #add WJets SF
 #                        y_HsLc *= WJetsSF_val[setup.year].val #add WJets SF
 #                        y_HsHc *= WJetsSF_val[setup.year].val #add WJets SF
-#                    elif "Top" in s:
-#                        y_LsLc *= TTSF_val[setup.year].val #add TT SF
-#                        y_LsHc *= TTSF_val[setup.year].val #add TT SF
-#                        y_HsLc *= TTSF_val[setup.year].val #add TT SF
-#                        y_HsHc *= TTSF_val[setup.year].val #add TT SF
                     elif "TTG" in s:
                         y_LsLc *= SSMSF_val[setup.year].val #add TTG SF
                         y_LsHc *= SSMSF_val[setup.year].val #add TTG SF
@@ -511,7 +502,6 @@ class DataDrivenFakeEstimate(SystematicEstimator):
                 if addSF:
                     if "DY_LO" in s:    y_LsLc *= DYSF_val[setup.year].val #add DY SF
 #                    elif "WJets" in s:  y_LsLc *= WJetsSF_val[setup.year].val #add WJets SF
-#                    elif "Top" in s: y_LsLc *= TTSF_val[setup.year].val #add TT SF
                     elif "TTG" in s:    y_LsLc *= SSMSF_val[setup.year].val #add TTG SF
                     elif "ZG" in s:     y_LsLc *= ZGSF_val[setup.year].val #add ZGamma SF
                     elif "WG" in s:     y_LsLc *= WGSF_val[setup.year].val #add WGamma SF

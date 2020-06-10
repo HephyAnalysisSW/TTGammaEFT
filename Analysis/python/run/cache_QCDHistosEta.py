@@ -375,8 +375,6 @@ for sample in mc:
             sample.scale *= DYSF_val[args.year].val
         elif "WJets" in sample.name:
             sample.scale *= WJetsSF_val[args.year].val
-        elif "TT_pow" in sample.name:
-            sample.scale *= TTSF_val[args.year].val
         elif "ZG" in sample.name:
             sample.scale *= ZGSF_val[args.year].val
         elif "WG" in sample.name:
@@ -681,11 +679,6 @@ for index, mode in enumerate( allModes ):
                     y_SR_EC *= WJetsSF_val[setup.year] #add WJets SF
                     y_CR_Barrel *= WJetsSF_val[setup.year] #add WJets SF
                     y_SR_Barrel *= WJetsSF_val[setup.year] #add WJets SF
-                elif "TT_pow" in sample.name:
-                    y_CR_EC *= TTSF_val[setup.year] #add TT SF
-                    y_SR_EC *= TTSF_val[setup.year] #add TT SF
-                    y_CR_Barrel *= TTSF_val[setup.year] #add TT SF
-                    y_SR_Barrel *= TTSF_val[setup.year] #add TT SF
                 elif "ZG" in sample.name:
                     y_CR_EC *= ZGSF_val[setup.year] #add ZGamma SF
                     y_SR_EC *= ZGSF_val[setup.year] #add ZGamma SF

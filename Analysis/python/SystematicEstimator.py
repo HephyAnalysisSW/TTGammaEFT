@@ -287,8 +287,8 @@ class SystematicEstimator:
 #            (region, channel, setup.sysClone({"selectionModifier":"eTotalUp"}), None),
 #            (region, channel, setup.sysClone({"selectionModifier":"eTotalDown"}), None),
 
-            (region, channel, setup.sysClone({"selectionModifier":"muTotalUp"}), None),
-            (region, channel, setup.sysClone({"selectionModifier":"muTotalDown"}), None),
+#            (region, channel, setup.sysClone({"selectionModifier":"muTotalUp"}), None),
+#            (region, channel, setup.sysClone({"selectionModifier":"muTotalDown"}), None),
 
             (region, channel, setup.sysClone({"selectionModifier":"jerUp"}), None),
             (region, channel, setup.sysClone({"selectionModifier":"jerDown"}), None),

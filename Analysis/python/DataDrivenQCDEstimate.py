@@ -236,9 +236,6 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                 elif "WJets" in s:
                     y_CR *= WJetsSF_val[setup.year] #add WJets SF
                     y_SR *= WJetsSF_val[setup.year] #add WJets SF
-                elif "Top" in s:
-                    y_CR *= TTSF_val[setup.year] #add TT SF
-                    y_SR *= TTSF_val[setup.year] #add TT SF
                 elif "TTG" in s:
                     y_CR *= SSMSF_val[setup.year] #add TTG SF
                     y_SR *= SSMSF_val[setup.year] #add TTG SF
@@ -408,12 +405,6 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                 elif "WJets" in s:
                     tmp_SR.Scale(WJetsSF_val[setup.year].val)
                     tmp_CR.Scale(WJetsSF_val[setup.year].val)
-                elif "Top" in s:
-                    tmp_SR.Scale(TTSF_val[setup.year].val)
-                    tmp_CR.Scale(TTSF_val[setup.year].val)
-                elif "other" in s:
-                    tmp_SR.Scale(otherSF_val[setup.year].val)
-                    tmp_CR.Scale(otherSF_val[setup.year].val)
                 elif "ZG" in s:
                     tmp_SR.Scale(ZGSF_val[setup.year].val)
                     tmp_CR.Scale(ZGSF_val[setup.year].val)
@@ -668,8 +659,6 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                                 y *= DYSF_val[setup.year]    #add DY SF
                             elif s == "WJets":
                                 y *= WJetsSF_val[setup.year] #add WJets SF
-                            elif s == "Top":
-                                y *= TTSF_val[setup.year]    #add TT SF
                             elif s == "ZG":
                                 y *= ZGSF_val[setup.year]    #add ZGamma SF
                             elif s == "WG":
