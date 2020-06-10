@@ -65,7 +65,6 @@ special_cuts = {
     "onZSFllgNoSieie":         "((abs(mllgammaNoSieie-%s)<=%s&&(nElectronGood==2||nMuonGood==2))||(nElectronGood==1&&nMuonGood==1))"%(mZ, zMassRange),                 # Cut Z-Window only for SF dilep events
     "onZSFllgNoChgIsoNoSieie": "((abs(mllgammaNoChgIsoNoSieie-%s)<=%s&&(nElectronGood==2||nMuonGood==2))||(nElectronGood==1&&nMuonGood==1))"%(mZ, zMassRange),                 # Cut Z-Window only for SF dilep events
 
-#    "onZSFllTight":      "((abs(mlltight-%s)<=%s&&(nElectronTight==2||nMuonTight==2))||(nElectronTight==1&&nMuonTight==1))"%("90", zMassRange),            # Cut Z-Window only for SF dilep events
     "onZSFllTight":      "((abs(mlltight-%s)<=%s&&(nElectronTight==2||nMuonTight==2))||(nElectronTight==1&&nMuonTight==1))"%(mZ, zMassRange),            # Cut Z-Window only for SF dilep events
     "onZSFllgTight":     "((abs(mllgammatight-%s)<=%s&&(nElectronTight==2||nMuonTight==2))||(nElectronTight==1&&nMuonTight==1))"%(mZ, zMassRange),       # Cut Z-Window only for SF dilep events
     "mumu":              "nElectronGood==0&&nMuonGood==2",
@@ -104,6 +103,9 @@ special_cuts = {
     "onZegSB":                "((abs(mLtight0GammaNoSieieNoChgIso-%s)<=%s&&nElectronTight==1)||(nElectronTight==0))"%(mZ, zMassRange),             # Cut Z-Window only for egamma
     "offZegSBInv":               "((abs(mLinvtight0GammaNoSieieNoChgIso-%s)>%s&&nElectronTightInvIso==1)||(nElectronTightInvIso==0))"%(mZ, zMassRange),             # Cut Z-Window only for egamma
     "onZegSBInv":                "((abs(mLinvtight0GammaNoSieieNoChgIso-%s)<=%s&&nElectronTightInvIso==1)||(nElectronTightInvIso==0))"%(mZ, zMassRange),             # Cut Z-Window only for egamma
+
+    "onZSFlloffZSFllg":    "((abs(mlltight-%s)<=%s&&abs(mllgammatight-%s)>%s&&(nElectronTight==2||nMuonTight==2))||(nElectronTight==1&&nMuonTight==1))"%(mZ,zMassRange,mZ,zMassRange),
+    "onZSFlloffZSFllgSB":  "((abs(mlltight-%s)<=%s&&abs(mllgammatightNoChgIsoNoSieie-%s)>%s&&(nElectronTight==2||nMuonTight==2))||(nElectronTight==1&&nMuonTight==1))"%(mZ,zMassRange,mZ,zMassRange),
 
     "offZeg":               "((abs(mLtight0Gamma-%s)>%s&&nElectronTight==1)||(nElectronTight==0))"%(mZ, zMassRange),             # Cut Z-Window only for egamma
     "onZeg":                "((abs(mLtight0Gamma-%s)<=%s&&nElectronTight==1)||(nElectronTight==0))"%(mZ, zMassRange),             # Cut Z-Window only for egamma
