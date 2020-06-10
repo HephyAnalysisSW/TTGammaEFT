@@ -54,6 +54,24 @@ if os.environ["USER"] in ["lukas.lechner"]: #CBE cluster
     dpm_directory                       = "/scratch/lukas.lechner/TTGammaEFT/nanoTuples/"
     eos_directory                       = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/"
 
+if os.environ["USER"] in ["robert.schoefbeck"]: #CBE cluster
+    tmp_directory                       = "/mnt/hephy/cms/robert.schoefbeck/tmp/TTGammaEFT/"
+    results_directory                   = "/mnt/hephy/cms/robert.schoefbeck/TTGammaEFT/results/"
+
+    mva_directory                       = "/mnt/hephy/cms/robert.schoefbeck/TTGammaEFT/mva/"
+    plot_directory                      = "/mnt/hephy/cms/robert.schoefbeck/www/TTGammaEFT/"
+
+    postprocessing_output_directory     = "/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/"
+    gridpack_directory                  = "/mnt/hephy/cms/robert.schoefbeck/TTGammaEFT/gridpacks/"
+
+    analysis_results                    = results_directory
+    cache_directory                     = "/users/robert.schoefbeck/public/cache/"
+    combineReleaseLocation              = "/users/robert.schoefbeck/public/CMSSW_10_2_18/src/tmp/"
+    cardfileLocation                    = "/mnt/hephy/cms/robert.schoefbeck/TTGammaEFT/results/cardfiles/"
+
+    dpm_directory                       = "/scratch/lukas.lechner/TTGammaEFT/nanoTuples/"
+    eos_directory                       = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/"
+
 if os.environ["USER"] in ["rosmarie.schoefbeck"]: #CBE cluster
     tmp_directory                       = "/mnt/hephy/cms/rosmarie.schoefbeck/tmp/TTGammaEFT/"
     results_directory                   = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/results/"

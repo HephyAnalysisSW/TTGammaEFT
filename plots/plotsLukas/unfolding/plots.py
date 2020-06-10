@@ -58,16 +58,13 @@ if args.normalize:
     lumi_scale = 1.
 
 if args.year == 2016:
-    from TTGammaEFT.Samples.nanoTuples_Summer16_private_incl_postProcessed         import TTGSemiLep_16, TTG_16
-    sample = TTGSemiLep_16 if args.ttgSingleLep else TTG_16
-
+    from TTGammaEFT.Samples.nanoTuples_Summer16_private_incl_postProcessed         import TTGSemiLep, TTG
 elif args.year == 2017:
-    from TTGammaEFT.Samples.nanoTuples_Fall17_private_incl_postProcessed           import TTGSemiLep_17, TTG_17
-    sample = TTGSemiLep_17 if args.ttgSingleLep else TTG_17
-
+    from TTGammaEFT.Samples.nanoTuples_Fall17_private_incl_postProcessed           import TTGSemiLep, TTG
 elif args.year == 2018:
-    from TTGammaEFT.Samples.nanoTuples_Autumn18_private_incl_postProcessed         import TTGSemiLep_18, TTG_18
-    sample = TTGSemiLep_18 if args.ttgSingleLep else TTG_18
+    from TTGammaEFT.Samples.nanoTuples_Autumn18_private_incl_postProcessed         import TTGSemiLep, TTG
+
+sample = TTGSemiLep if args.ttgSingleLep else TTG
 
 norm = 1.
 if args.small:           
