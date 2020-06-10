@@ -157,7 +157,6 @@ def wrapper(arg):
             if addSF:
                 if "DY_LO" in estimate.name:    y *= DYSF_val[setup.year].val #add DY SF
                 elif "WJets" in estimate.name:  y *= WJetsSF_val[setup.year].val #add WJets SF
-                elif "Top" in estimate.name: y *= TTSF_val[setup.year].val #add TT SF
                 elif "TTG" in estimate.name:    y *= SSMSF_val[setup.year].val #add TTG SF
                 elif "ZG" in estimate.name:     y *= ZGSF_val[setup.year].val #add ZGamma SF
                 elif "WG" in estimate.name:     y *= WGSF_val[setup.year].val #add WGamma SF

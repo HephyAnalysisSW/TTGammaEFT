@@ -265,27 +265,9 @@ for s in mc:
 
     # apply SF after histo caching
     if addSF:
-#        if "DY" in s.name:
-#            s.hist.Scale(DYSF_val[args.year].val)
-#            s.hist_SB.Scale(DYSF_val[args.year].val)
         if "WJets" in s.name:
             s.hist.Scale(WJetsSF_val[args.year].val)
             s.hist_SB.Scale(WJetsSF_val[args.year].val)
-#        elif "Top" in s.name:
-#            s.hist.Scale(TTSF_val[args.year].val)
-#            s.hist_SB.Scale(TTSF_val[args.year].val)
-#        elif "ZG" in s.name:
-#            s.hist.Scale(ZGSF_val[args.year].val)
-#            s.hist_SB.Scale(ZGSF_val[args.year].val)
-#        elif "other" in s.name:
-#            s.hist.Scale(otherSF_val[args.year].val)
-#            s.hist_SB.Scale(otherSF_val[args.year].val)
-#        elif "WG" in s.name:
-#            s.hist.Scale(WGSF_val[args.year].val)
-#            s.hist_SB.Scale(WGSF_val[args.year].val)
-#        elif "TTG" in s.name:
-#            s.hist.Scale(SSMSF_val[args.year].val)
-#            s.hist_SB.Scale(SSMSF_val[args.year].val)
 
     qcdHist.Add( s.hist_SB, -1 )
 

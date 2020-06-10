@@ -463,12 +463,8 @@ if args.variation == "central":
                             s.hist_SB_tmp.Scale(DYSF_val[args.year].val)
 #                        elif "WJets" in s.name:
 #                            s.hist_SB_tmp.Scale(WJetsSF_val[args.year].val)
-#                        elif "Top" in s.name:
-#                            s.hist_SB_tmp.Scale(TTSF_val[args.year].val)
                         elif "ZG" in s.name:# and njets < 4:
                             s.hist_SB_tmp.Scale(ZGSF_val[args.year].val)
-#                        elif "other" in s.name:# and njets < 4:
-#                            s.hist_SB_tmp.Scale(otherSF_val[args.year].val)
                         elif "WG" in s.name:# and njets > 3:
                             s.hist_SB_tmp.Scale(WGSF_val[args.year].val)
                         elif "TTG" in s.name:
@@ -572,12 +568,8 @@ for s in mc:
                     s.hist[variation].Scale(DYSF_val[args.year].val)
 #                elif "WJets" in s.name:
 #                    s.hist[variation].Scale(WJetsSF_val[args.year].val)
-#                elif "Top" in s.name:
-#                    s.hist[variation].Scale(TTSF_val[args.year].val)
                 elif "ZG" in s.name:# and njets < 4:
                     s.hist[variation].Scale(ZGSF_val[args.year].val)
-#                elif "other" in s.name:# and njets < 4:
-#                    s.hist[variation].Scale(otherSF_val[args.year].val)
                 elif "WG" in s.name:# and njets > 3:
                     s.hist[variation].Scale(WGSF_val[args.year].val)
                 elif "TTG" in s.name:

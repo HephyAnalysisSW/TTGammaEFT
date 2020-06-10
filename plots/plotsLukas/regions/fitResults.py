@@ -37,7 +37,7 @@ argParser.add_argument("--postFit",              action="store_true",           
 argParser.add_argument("--expected",             action="store_true",                            help="Run expected?")
 argParser.add_argument("--preliminary",          action="store_true",                            help="Run expected?")
 #argParser.add_argument("--systOnly",             action="store_true",                            help="correlation matrix with systematics only?")
-argParser.add_argument("--year",                 action="store",      type=int, default=2016,    help="Which year?")
+argParser.add_argument("--year",                 action="store",      type=str, default="2016",    help="Which year?")
 argParser.add_argument("--carddir",              action='store',                default='limits/cardFiles/defaultSetup/observed',      help="which cardfile directory?")
 argParser.add_argument("--cardfile",             action='store',                default='',      help="which cardfile?")
 argParser.add_argument("--substituteCard",       action='store',                default=None,    help="which cardfile to substitute the plot with?")
@@ -61,6 +61,7 @@ import RootTools.core.logger as logger_rt
 logger    = logger.get_logger(    args.logLevel, logFile = None )
 logger_rt = logger_rt.get_logger( args.logLevel, logFile = None )
 
+if args.year != "combined": args.year = int(args.year)
 # fix label (change later)
 args.preliminary = True
 # make sure the list is always in the same order
@@ -78,6 +79,7 @@ if args.plotChannels and "mu"  in args.plotChannels: args.plotChannels += ["mumu
 if   args.year == 2016: lumi_scale = 35.92
 elif args.year == 2017: lumi_scale = 41.53
 elif args.year == 2018: lumi_scale = 59.74
+elif args.year == "combined": lumi_scale = 35.92 + 41.53 + 59.74
 
 dirName  = "_".join( [ item for item in args.cardfile.split("_") if not (item.startswith("add") or item == "incl") ] )
 add      = [ item for item in args.cardfile.split("_") if (item.startswith("add") or item == "incl")  ]
@@ -86,7 +88,7 @@ if args.expected: add += ["expected"]
 fit      = "_".join( ["postFit" if args.postFit else "preFit"] + add )
 
 plotDirectory = os.path.join(plot_directory, "fit", str(args.year), fit, dirName)
-cardFile      = os.path.join( cache_directory, "analysis", str(args.year), args.carddir, args.cardfile+".txt" )
+cardFile      = os.path.join( cache_directory, "analysis", str(args.year) if args.year != "combined" else "COMBINED", args.carddir, args.cardfile+".txt" )
 logger.info("Plotting from cardfile %s"%cardFile)
 
 # replace the combineResults object by the substituted card object
@@ -98,16 +100,16 @@ if args.substituteCard:
     Results     = CombineResults( cardFile=subCardFile, plotDirectory=plotDirectory, year=args.year, bkgOnly=args.bkgOnly, isSearch=False )
 
 # get list of labels
-labelFormater   = lambda x: ", ".join( [x.split(" ")[2], x.split(" ")[0].replace("mu","#mu").replace("tight","")] )
-labels = [ ( i, label ) for i, label in enumerate(Results.getBinLabels( labelFormater=lambda x:x.split(" "))) ]
-if args.plotRegions:  labels = filter( lambda (i,(ch, lab, reg)): reg in args.plotRegions, labels )
-if args.plotChannels: labels = filter( lambda (i,(ch, lab, reg)): ch in args.plotChannels, labels )
+labelFormater   = lambda x: ", ".join( [x.split(" ")[3], x.split(" ")[1].replace("mu","#mu").replace("tight","")] )
+labels = [ ( i, label ) for i, label in enumerate(Results.getBinLabels( labelFormater=lambda x:x.split(" "))) if str(args.year) in label or "2016" in label]
+if args.plotRegions:  labels = filter( lambda (i,(year, ch, lab, reg)): reg in args.plotRegions, labels )
+if args.plotChannels: labels = filter( lambda (i,(year, ch, lab, reg)): ch in args.plotChannels, labels )
 
-crName    = [ cr for i, (lep, reg, cr) in labels ]
-plotBins  = [ i  for i, (lep, reg, cr) in labels ]
-crLabel   = map( lambda (i,(ch, lab, reg)): ", ".join( [ reg, ch.replace("mu","#mu").replace("tight","") ] ), labels )
-ptLabels  = map( lambda (i,(ch, lab, reg)): convLabel(lab), labels )
-nBins     = len(crLabel)
+crName    = [ cr for i, (year, lep, reg, cr) in labels ]
+plotBins  = [ i  for i, (year, lep, reg, cr) in labels ]
+crLabel   = map( lambda (i,(year, ch, lab, reg)): ", ".join( [ reg, ch.replace("mu","#mu").replace("tight","") ] ), labels )
+ptLabels  = map( lambda (i,(year, ch, lab, reg)): convLabel(lab), labels )
+nBins     = int(len(crLabel)/3.) if args.year == "combined" else len(crLabel)
 
 
 if "misIDPOI" in args.cardfile:
@@ -124,7 +126,15 @@ else:
 # region plot, sorted/not sorted, w/ or w/o +-1sigma changes in one nuisance
 def plotRegions( sorted=True ):
     # get region histograms
-    hists = Results.getRegionHistos( postFit=args.postFit, plotBins=plotBins, nuisances=args.plotNuisances, bkgSubstracted=args.bkgSubstracted, labelFormater=labelFormater, directory="Bin0" )["Bin0"]
+    if args.year == "combined":
+        for i, dir in enumerate(["dc_2016", "dc_2017", "dc_2018"]):
+            hists_tmp = Results.getRegionHistos( postFit=args.postFit, plotBins=plotBins, nuisances=args.plotNuisances, bkgSubstracted=args.bkgSubstracted, labelFormater=labelFormater, directory=dir )[dir]
+            if i == 0: hists = copy.deepcopy(hists_tmp)
+            else:
+                for key, hist in hists_tmp.iteritems():
+                    hists[key].Add(hist)
+    else:
+        hists = Results.getRegionHistos( postFit=args.postFit, plotBins=plotBins, nuisances=args.plotNuisances, bkgSubstracted=args.bkgSubstracted, labelFormater=labelFormater, directory="Bin0" )["Bin0"]
     
     differential = False
     ch = "all"
@@ -151,12 +161,11 @@ def plotRegions( sorted=True ):
                 hists[h_key] = h_sub.Clone(h_key)
                 del h_sub
 
-    minMax = 0.5 if args.bkgSubstracted and xLabel.endswith("_pt") else 0.5
+    minMax = 0.19 if args.bkgSubstracted and xLabel.endswith("_pt") else 0.19
     if args.bkgSubstracted:
         boxes,     ratio_boxes     = getErrorBoxes( copy.copy(hists["data"]), minMax, lineColor=ROOT.kAzure-3, fillColor=ROOT.kAzure-3, hashcode=1001 )
         boxes_sys, ratio_boxes_sys = getErrorBoxes( copy.copy(hists["data_syst"]), minMax, lineColor=ROOT.kOrange-2, fillColor=ROOT.kOrange-2, hashcode=1001 )
     else:
-        print  hists["total"]
         boxes,     ratio_boxes     = getUncertaintyBoxes( hists["total"], minMax, lineColor=ROOT.kGray+3, fillColor=ROOT.kGray+3, hashcode=formatSettings(nBins)["hashcode"] )
 
     hists["data"].style        = styles.errorStyle( ROOT.kBlack )
@@ -201,7 +210,7 @@ def plotRegions( sorted=True ):
         ratioHistModifications += [lambda h: h.GetXaxis().SetLabelOffset(0.035)]
 
     # get histo list
-    plots, ratioHistos = Results.getRegionHistoList( hists, processes=processes, noData=False, sorted=sorted and not args.bkgSubstracted, bkgSubstracted=args.bkgSubstracted )
+    plots, ratioHistos = Results.getRegionHistoList( hists, processes=processes, noData=False, sorted=sorted and not args.bkgSubstracted, bkgSubstracted=args.bkgSubstracted, directory="dc_2016" if args.year=="combined" else "total" )
 #    if args.bkgSubstracted: plots += [[hists["empty"]]]
 
     addon = []
