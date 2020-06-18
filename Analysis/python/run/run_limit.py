@@ -254,6 +254,10 @@ def wrapper():
         default_ZG_unc    = 0.3
         c.addUncertainty( "ZGamma_normalization",      shapeString )
 
+        default_ZG_gluon_unc    = 0.12 # only on the fraction of 2 gen b-jets in the SR
+        default_WG_gluon_unc    = 0.04 # only on the fraction of 2 gen b-jets in the SR
+        c.addUncertainty( "Gluon_splitting",      shapeString )
+
         default_Other_unc    = 0.30
         c.addUncertainty( "Other_normalization",      shapeString )
 
@@ -414,7 +418,7 @@ def wrapper():
                         ps, scale, pdf, isr = 0, 0, 0, 0
                         qcdTF3, qcdTF4, wjets4p, wg4p = 0, 0, 0, 0
                         dyGenUnc, ttGenUnc, vgGenUnc, wjetsGenUnc, otherGenUnc, misIDUnc, lowSieieUnc, highSieieUnc, misIDPtUnc = 0, 0, 0, 0, 0.001, 0, 0.001, 0.001, 0.001
-                        hadFakes17Unc, hadFakesUnc, wg, zg, misID4p, dy4p, zg4p, misIDUnc, qcdUnc, vgUnc, wgUnc, zgUnc, dyUnc, ttUnc, wjetsUnc, other0pUnc, otherUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                        gluon, hadFakes17Unc, hadFakesUnc, wg, zg, misID4p, dy4p, zg4p, misIDUnc, qcdUnc, vgUnc, wgUnc, zgUnc, dyUnc, ttUnc, wjetsUnc, other0pUnc, otherUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                         for i in range(len(gammaPT_thresholds)-1):
                             locals()["ttg_bin%i_unc"%i] = 0
 
@@ -450,6 +454,8 @@ def wrapper():
 
                                 if e.name.count( "ZG" ):
                                     zg += y_scale * default_ZG_unc
+                                    if setup.signalregion:
+                                        gluon += y_scale * default_ZG_gluon_unc
 
                                 if e.name.count( "ZG" ) and "4" in setup.name:
                                     zg4p += y_scale * default_ZG4p_unc
@@ -459,6 +465,8 @@ def wrapper():
 
                                 if e.name.count( "WG" ) and "4" in setup.name:
                                     wg4p += y_scale * default_WG4p_unc
+                                    if setup.signalregion:
+                                        gluon += y_scale * default_WG_gluon_unc
 
                                 if e.name.count( "misID" ) and "4" in setup.name:
                                     misID4p += y_scale * default_misID4p_unc
@@ -547,6 +555,8 @@ def wrapper():
                             addUnc( c, "ZJets_nJet_dependence", binname, pName, dy4p, expected.val, signal )
                         if wg4p:
                             addUnc( c, "WGamma_nJet_dependence", binname, pName, wg4p, expected.val, signal )
+                        if gluon:
+                            addUnc( c, "Gluon_splitting", binname, pName, gluon, expected.val, signal )
                         if hadFakesUnc: # and args.addFakeSF:
                             addUnc( c, "fake_photon_normalization", binname, pName, hadFakesUnc, expected.val, signal )
                         if hadFakes17Unc: # and args.addFakeSF:
