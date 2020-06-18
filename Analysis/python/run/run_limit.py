@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, copy, time
+import os, copy, time, sys
 import ROOT
 from shutil                              import copyfile
 from math                                import sqrt
@@ -10,13 +10,14 @@ from TTGammaEFT.Analysis.EstimatorList   import EstimatorList
 from TTGammaEFT.Analysis.DataObservation import DataObservation
 from TTGammaEFT.Analysis.MCBasedEstimate import MCBasedEstimate
 from TTGammaEFT.Analysis.Setup           import Setup
-from TTGammaEFT.Analysis.regions         import regionsTTG, noPhotonRegionTTG, inclRegionsTTG, regionsTTGfake, inclRegionsTTGfake, chgIso_thresh, chgIsoRegions, gammaPT_thresholds, mLgRegions
+from TTGammaEFT.Analysis.regions         import regionsTTG, noPhotonRegionTTG, inclRegionsTTG, regionsTTGfake, inclRegionsTTGfake, chgIso_thresh, chgIsoRegions, pTG_thresh, highpTG_thresh, mLgRegions
 from TTGammaEFT.Analysis.SetupHelpers    import *
 
 from TTGammaEFT.Tools.user               import cache_directory, combineReleaseLocation, cardfileLocation
 from Analysis.Tools.MergingDirDB         import MergingDirDB
 from Analysis.Tools.u_float              import u_float
 from Analysis.Tools.cardFileWriter       import cardFileWriter
+from Analysis.Tools.cardFileWriter.CombineResults       import CombineResults
 from Analysis.Tools.getPostFit           import getPrePostFitFromMLF, getFitResults
 
 # Default Parameter
@@ -43,10 +44,12 @@ argParser.add_argument( "--expected",           action="store_true",            
 argParser.add_argument( "--useTxt",             action="store_true",                                                        help="Use txt based cardFiles instead of root/shape based ones?" )
 argParser.add_argument( "--skipFitDiagnostics", action="store_true",                                                        help="Don't do the fitDiagnostics (this is necessary for pre/postfit plots, but not 2D scans)?" )
 argParser.add_argument( "--significanceScan",   action="store_true",                                                        help="Calculate significance instead?")
-argParser.add_argument( "--year",               action="store",      default=2016,   type=int,                              help="Which year?" )
+argParser.add_argument( "--year",               action="store",      default="2016",   type=str,                              help="Which year?" )
+argParser.add_argument( "--linTest",            action="store",      default=1,   type=float,                              help="linearity test: scale data by factor" )
 argParser.add_argument( "--runOnLxPlus",        action="store_true",                                                        help="Change the global redirector of samples")
 argParser.add_argument( "--misIDPOI",           action="store_true",                                                        help="Change POI to misID SF")
 argParser.add_argument( "--dyPOI",              action="store_true",                                                        help="Change POI to misID SF")
+argParser.add_argument( "--wgPOI",              action="store_true",                                                        help="Change POI to WGamma SF")
 argParser.add_argument( "--ttPOI",              action="store_true",                                                        help="Change POI to misID SF")
 argParser.add_argument( "--wJetsPOI",           action="store_true",                                                        help="Change POI to misID SF")
 argParser.add_argument( "--checkOnly",          action="store_true",                                                        help="Check the SF only")
@@ -54,6 +57,10 @@ argParser.add_argument( "--bkgOnly",            action="store_true",            
 argParser.add_argument( "--unblind",            action="store_true",                                                        help="unblind 2017/2018")
 argParser.add_argument( "--plot",               action="store_true",                                                        help="run plots?")
 args=argParser.parse_args()
+
+if args.year != "RunII": args.year = int(args.year)
+# linearity test with expected observation
+if args.linTest != 1: args.expected = True
 
 # Logging
 import Analysis.Tools.logger as logger
@@ -139,10 +146,12 @@ if args.addSSM:      regionNames.append("addSSM")
 if args.addMisIDSF:  regionNames.append("addMisIDSF")
 if args.inclRegion:  regionNames.append("incl")
 if args.misIDPOI:    regionNames.append("misIDPOI")
+if args.wgPOI:       regionNames.append("wgPOI")
 if args.dyPOI:       regionNames.append("dyPOI")
 if args.wJetsPOI:    regionNames.append("wJetsPOI")
 if args.ttPOI:       regionNames.append("ttPOI")
 if args.useChannels: regionNames.append("_".join([ch for ch in args.useChannels if not "tight" in ch]))
+if args.linTest != 1: regionNames.append(str(args.linTest).replace(".","_"))
 
 baseDir       = os.path.join( cache_directory, "analysis",  str(args.year), "limits" )
 limitDir      = os.path.join( baseDir, "cardFiles", args.label, "expected" if args.expected else "observed" )
@@ -221,14 +230,25 @@ def wrapper():
             c.addUncertainty( "Parton_Showering",            shapeString)
 #            c.addUncertainty( "ISR",           shapeString)
 
+        default_TTGpT_unc = 0.1
+        gammaPT_thresholds = sorted(list(set(pTG_thresh + highpTG_thresh)))
+        gammaPT_thresholds = gammaPT_thresholds[1:] + [ gammaPT_thresholds[0] ]
+        if not args.inclRegion and with1pCR:
+            for i in range(len(gammaPT_thresholds)-1):
+                c.addUncertainty( "TTG_pTBin%i"%i, shapeString )
+
         default_QCD_unc = 0.5
         c.addUncertainty( "QCD_normalization", shapeString )
 #        c.addUncertainty( "QCD_TF", shapeString )
 
-        default_HadFakes_unc = 0.10
+        default_HadFakes_unc = 0.15
         c.addUncertainty( "fake_photon_normalization",      shapeString )
 
-        if with1pCR:
+        default_HadFakes_2017_unc = 0.20
+        if args.year == 2017:
+            c.addUncertainty( "fake_photon_model_2017",      shapeString )
+
+        if with1pCR and not args.wgPOI:
             c.addFreeParameter("WGamma_normalization", '*WG*', 1, '[0.,2.]')
 
         default_ZG_unc    = 0.3
@@ -253,12 +273,13 @@ def wrapper():
         if any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] ):
             c.addUncertainty( "WGamma_nJet_dependence",      shapeString )
     
-        default_DY_unc    = 0.1
+        default_DY_unc    = 0.08
         if any( [ name in ["DY2","DY3","DY4","DY4p","DY5"] for name in args.useRegions] ) and not args.dyPOI:
             c.addFreeParameter("ZJets_normalization", '*DY*', 1, '[0.,2.]')
 #            c.addFreeParameter("DY", 'DY', 1, '[0.5,1.5]')
         elif not args.dyPOI:
             c.addUncertainty( "ZJets_normalization", shapeString )
+            c.addUncertainty( "ZJets_extrapolation", shapeString )
 
         if not args.addMisIDSF and not args.misIDPOI and with1pCR:
             c.addFreeParameter("MisID_normalization_%i"%args.year, '*misID*', 1, '[0.,5.]')
@@ -284,6 +305,8 @@ def wrapper():
 
                     if args.misIDPOI:
                         c.addBin( binname, [ pName.replace("signal","TTG") for pName in setup.processes.keys() if not "misID" in pName and pName != "Data" ], niceName)
+                    elif args.wgPOI:
+                        c.addBin( binname, [ pName.replace("signal","TTG") for pName in setup.processes.keys() if not "WG" in pName and pName != "Data" ], niceName)
                     elif args.dyPOI:
                         c.addBin( binname, [ pName.replace("signal","TTG") for pName in setup.processes.keys() if not "DY" in pName and pName != "Data" ], niceName)
                     elif args.ttPOI:
@@ -303,11 +326,12 @@ def wrapper():
                         if pName == "Data": continue
                         misIDPOI = "misID" in pName and args.misIDPOI
                         dyPOI    = "DY" in pName and args.dyPOI
+                        wgPOI    = "WG" in pName and args.wgPOI
                         wJetsPOI = "WJets" in pName and args.wJetsPOI
                         ttPOI    = "TT"    in pName and not "TTG" in pName and args.ttPOI
 
-                        newPOI_input = any( [args.misIDPOI, args.dyPOI, args.wJetsPOI, args.ttPOI] )
-                        newPOI       = any( [misIDPOI, dyPOI, wJetsPOI, ttPOI] )
+                        newPOI_input = any( [args.misIDPOI, args.dyPOI, args.wJetsPOI, args.ttPOI, args.wgPOI] )
+                        newPOI       = any( [misIDPOI, dyPOI, wJetsPOI, ttPOI, wgPOI] )
                         
                         if newPOI_input and pName == "signal":
                             pName = "TTG"
@@ -317,52 +341,55 @@ def wrapper():
 
                         for e in pList:
                             exp_yield = e.cachedEstimate( r, channel, setup )
+                            if signal and args.linTest != 1:# and setup.signalregion:
+                                exp_yield /= args.linTest
+                                
                             if signal and args.addSSM:
-                                exp_yield *= SSMSF_val[args.year].val
-                                logger.info( "Scaling signal by %f"%(SSMSF_val[args.year].val) )
+                                exp_yield *= SSMSF_val["RunII"].val
+                                logger.info( "Scaling signal by %f"%(SSMSF_val["RunII"].val) )
                             if e.name.count( "WJets" ) and args.addWJetsSF:
-                                exp_yield *= WJetsSF_val[args.year].val
-                                logger.info( "Scaling WJets background %s by %f"%(e.name,WJetsSF_val[args.year].val) )
+                                exp_yield *= WJetsSF_val["RunII"].val
+                                logger.info( "Scaling WJets background %s by %f"%(e.name,WJetsSF_val["RunII"].val) )
                             if e.name.count( "DY" ) and args.addDYSF:
 
                                 if "2" in setup.name and not "2p" in setup.name:
-                                    exp_yield *= DY2SF_val[args.year].val
-                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY2SF_val[args.year].val) )
+                                    exp_yield *= DY2SF_val["RunII"].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY2SF_val["RunII"].val) )
 
                                 elif "3" in setup.name and not "3p" in setup.name:
-                                    exp_yield *= DY3SF_val[args.year].val
-                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY3SF_val[args.year].val) )
+                                    exp_yield *= DY3SF_val["RunII"].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY3SF_val["RunII"].val) )
 
                                 elif "4" in setup.name and not "4p" in setup.name:
-                                    exp_yield *= DY4SF_val[args.year].val
-                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY4SF_val[args.year].val) )
+                                    exp_yield *= DY4SF_val["RunII"].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY4SF_val["RunII"].val) )
 
                                 elif "5" in setup.name:
-                                    exp_yield *= DY5SF_val[args.year].val
-                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY5SF_val[args.year].val) )
+                                    exp_yield *= DY5SF_val["RunII"].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY5SF_val["RunII"].val) )
 
                                 elif "2p" in setup.name:
-                                    exp_yield *= DY2pSF_val[args.year].val
-                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY2pSF_val[args.year].val) )
+                                    exp_yield *= DY2pSF_val["RunII"].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY2pSF_val["RunII"].val) )
 
                                 elif "3p" in setup.name:
-                                    exp_yield *= DY3pSF_val[args.year].val
-                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY3pSF_val[args.year].val) )
+                                    exp_yield *= DY3pSF_val["RunII"].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY3pSF_val["RunII"].val) )
 
                                 elif "4p" in setup.name:
-                                    exp_yield *= DY4pSF_val[args.year].val
-                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY4pSF_val[args.year].val) )
+                                    exp_yield *= DY4pSF_val["RunII"].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY4pSF_val["RunII"].val) )
 
                                 else:
-                                    exp_yield *= DYSF_val[args.year].val
-                                    logger.info( "Scaling DY background %s by %f"%(e.name,DYSF_val[args.year].val) )
+                                    exp_yield *= DYSF_val["RunII"].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DYSF_val["RunII"].val) )
 
                             if e.name.count( "WG" ) and args.addWGSF:
-                                exp_yield *= WGSF_val[args.year].val
-                                logger.info( "Scaling WG background %s by %f"%(e.name,WGSF_val[args.year].val) )
+                                exp_yield *= WGSF_val["RunII"].val
+                                logger.info( "Scaling WG background %s by %f"%(e.name,WGSF_val["RunII"].val) )
                             if e.name.count( "ZG" ) and args.addZGSF:
-                                exp_yield *= ZGSF_val[args.year].val
-                                logger.info( "Scaling ZG background %s by %f"%(e.name,ZGSF_val[args.year].val) )
+                                exp_yield *= ZGSF_val["RunII"].val
+                                logger.info( "Scaling ZG background %s by %f"%(e.name,ZGSF_val["RunII"].val) )
                             if e.name.count( "misID" ) and args.addMisIDSF:
                                 exp_yield *= misIDSF_val[args.year].val
                                 logger.info( "Scaling misID background %s by %f"%(e.name,misIDSF_val[args.year].val) )
@@ -377,14 +404,17 @@ def wrapper():
                         else:
                             c.specifyExpectation( binname, pName, expected.val if expected.val > 0 else 0.01 )
 
-                        total_exp_bkg += expected.val
+                        if signal and args.linTest != 1:# and setup.signalregion:
+                            total_exp_bkg += expected.val*args.linTest
+                        else:
+                            total_exp_bkg += expected.val
                         if signal and expected.val <= 0.01: mute = True
 
                         tune, erdOn, pu, jec, jer, sfb, sfl, trigger, lepSF, lepTrSF, phSF, eVetoSF, pfSF = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                         ps, scale, pdf, isr = 0, 0, 0, 0
                         qcdTF3, qcdTF4, wjets4p, wg4p = 0, 0, 0, 0
                         dyGenUnc, ttGenUnc, vgGenUnc, wjetsGenUnc, otherGenUnc, misIDUnc, lowSieieUnc, highSieieUnc, misIDPtUnc = 0, 0, 0, 0, 0.001, 0, 0.001, 0.001, 0.001
-                        hadFakesUnc, wg, zg, misID4p, dy4p, zg4p, misIDUnc, qcdUnc, vgUnc, wgUnc, zgUnc, dyUnc, ttUnc, wjetsUnc, other0pUnc, otherUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                        hadFakes17Unc, hadFakesUnc, wg, zg, misID4p, dy4p, zg4p, misIDUnc, qcdUnc, vgUnc, wgUnc, zgUnc, dyUnc, ttUnc, wjetsUnc, other0pUnc, otherUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                         for i in range(len(gammaPT_thresholds)-1):
                             locals()["ttg_bin%i_unc"%i] = 0
 
@@ -406,7 +436,7 @@ def wrapper():
                                     dyUnc    += y_scale * default_DY_unc
                                 if e.name.count( "TT_pow" ) or (args.ttPOI and signal):
                                     ttUnc    += y_scale * default_TT_unc
-                                if not args.inclRegion and not newPOI_input and ((e.name.count( "signal" ) and setup.signalregion) or counter==1):
+                                if not args.inclRegion and not newPOI_input and ((e.name.count( "signal" ) and setup.signalregion)):
                                         pT_index = max( [ i_pt if ptCut.cutString() in r.cutString() else -1 for i_pt, ptCut in enumerate(regionsTTG) ] )
                                         if pT_index >= 0:
                                             locals()["ttg_bin%i_unc"%pT_index] = y_scale * default_TTGpT_unc
@@ -415,6 +445,8 @@ def wrapper():
 
                                 if e.name.count( "_had" ) or e.name.count( "fakes-DD" ):
                                     hadFakesUnc += y_scale * default_HadFakes_unc
+                                    if args.year == 2017:
+                                        hadFakes17Unc += y_scale * default_HadFakes_2017_unc
 
                                 if e.name.count( "ZG" ):
                                     zg += y_scale * default_ZG_unc
@@ -484,7 +516,7 @@ def wrapper():
                         addUnc( c, "L1_Prefiring",     binname, pName, pfSF,    expected.val, signal )
                         if with1pCR:
                             addUnc( c, "photon_ID",      binname, pName, phSF,    expected.val, signal )
-                            addUnc( c, "pixelSeed_veto_%i"%args.year,       binname, pName, eVetoSF, expected.val, signal )
+                            addUnc( c, "pixelSeed_veto_%i"%args.year,       binname, pName, eVetoSF if eVetoSF > 0 else 0.001, expected.val, signal )
                         
 
                         if qcdUnc:
@@ -493,8 +525,16 @@ def wrapper():
 #                        if qcdTF3:
 #                            addUnc( c, "QCD_TF", binname, pName, qcdTF3, expected.val, signal )
 
+                        if not args.inclRegion and with1pCR:
+                            for i in range(len(gammaPT_thresholds)-1):
+                                if locals()["ttg_bin%i_unc"%i]:
+                                    addUnc( c, "TTG_pTBin%i"%i, binname, pName, locals()["ttg_bin%i_unc"%i], expected.val, signal )
+#                                elif counter == 1 and not setup.signalregion and signal and not newPOI_input:
+#                                    addUnc( c, "TTG_pTBin%i"%i, binname, pName, 0.01, expected.val, signal )
+
                         if dyUnc:
                             addUnc( c, "ZJets_normalization", binname, pName, dyUnc, expected.val, signal )
+                            addUnc( c, "ZJets_extrapolation", binname, pName, dyUnc, expected.val, signal )
                         if otherUnc:
                             addUnc( c, "Other_normalization", binname, pName, otherUnc, expected.val, signal )
                         if zg:
@@ -509,6 +549,8 @@ def wrapper():
                             addUnc( c, "WGamma_nJet_dependence", binname, pName, wg4p, expected.val, signal )
                         if hadFakesUnc: # and args.addFakeSF:
                             addUnc( c, "fake_photon_normalization", binname, pName, hadFakesUnc, expected.val, signal )
+                        if hadFakes17Unc: # and args.addFakeSF:
+                            addUnc( c, "fake_photon_model_2017", binname, pName, hadFakes17Unc, expected.val, signal )
 
                         # MC bkg stat (some condition to neglect the smaller ones?)
                         uname = "Stat_%s_%s"%(binname, pName if not (newPOI_input and signal) else "signal")
@@ -525,8 +567,12 @@ def wrapper():
                                 c.specifyUncertainty( key, binname, "signal", 1 + val.sigma/sigExp.val )
 
                     if args.expected or (args.year in [2017,2018] and not args.unblind and setup.signalregion):
-                        c.specifyObservation( binname, int( round( total_exp_bkg, 0 ) ) )
-                        logger.info( "Expected observation: %s", int( round( total_exp_bkg, 0 ) ) )
+#                        if args.linTest != 1:# and setup.signalregion:
+#                            c.specifyObservation( binname, int( round( total_exp_bkg*args.linTest, 0 ) ) )
+#                            logger.info( "Expected observation: %s", int( round( total_exp_bkg*args.linTest, 0 ) ) )
+#                        else:
+                            c.specifyObservation( binname, int( round( total_exp_bkg, 0 ) ) )
+                            logger.info( "Expected observation: %s", int( round( total_exp_bkg, 0 ) ) )
                     else:
                         c.specifyObservation( binname,  int( observation.cachedObservation(r, channel, setup).val ) )
                         logger.info( "Observation: %s", int( observation.cachedObservation(r, channel, setup).val ) )
@@ -592,10 +638,10 @@ def wrapper():
             cdir  = "limits/cardFiles/defaultSetup/observed"
         cfile = cardFileNameTxt.split("/")[-1].split(".")[0]
 
-        cmd = "python %s/fitResults.py --carddir %s --cardfile %s --year %i --plotCovMatrix --plotRegionPlot %s --cores %i %s %s %s %s %s"%(path, cdir, cfile, args.year, "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "", "--misIDPOI" if args.misIDPOI else "", "--ttPOI" if args.ttPOI else "", "--dyPOI" if args.dyPOI else "", "--wJetsPOI" if args.wJetsPOI else "")
+        cmd = "python %s/fitResults.py --carddir %s --cardfile %s --linTest %s --year %i --plotCovMatrix --plotRegionPlot %s --cores %i %s %s %s %s %s %s"%(path, cdir, cfile, str(args.linTest), args.year, "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "", "--wgPOI" if args.wgPOI else "", "--misIDPOI" if args.misIDPOI else "", "--ttPOI" if args.ttPOI else "", "--dyPOI" if args.dyPOI else "", "--wJetsPOI" if args.wJetsPOI else "")
         logger.info("Executing plot command: %s"%cmd)
         os.system(cmd)
-        cmd = "python %s/fitResults.py --carddir %s --cardfile %s --year %i --plotCorrelations --plotCovMatrix --plotRegionPlot --plotImpacts --postFit %s --cores %i %s %s %s %s %s"%(path, cdir, cfile, args.year, "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "", "--misIDPOI" if args.misIDPOI else "", "--ttPOI" if args.ttPOI else "", "--dyPOI" if args.dyPOI else "", "--wJetsPOI" if args.wJetsPOI else "")
+        cmd = "python %s/fitResults.py --carddir %s --cardfile %s --linTest %s --year %i --plotCorrelations --plotCovMatrix --plotRegionPlot --plotImpacts --postFit %s --cores %i %s %s %s %s %s %s"%(path, cdir, cfile, str(args.linTest), args.year, "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "", "--wgPOI" if args.wgPOI else "", "--misIDPOI" if args.misIDPOI else "", "--ttPOI" if args.ttPOI else "", "--dyPOI" if args.dyPOI else "", "--wJetsPOI" if args.wJetsPOI else "")
         logger.info("Executing plot command: %s"%cmd)
         os.system(cmd)
 
@@ -605,15 +651,38 @@ def wrapper():
     if not args.useTxt and not args.skipFitDiagnostics:
         # Would be a bit more complicated with the classical txt files, so only automatically extract the SF when using shape based datacards
         
-        combineWorkspace = cardFileNameShape.replace( "shapeCard.txt","shapeCard_FD.root" )
-        logger.info( "Extracting fit results from %s"%combineWorkspace )
+        default_QCD_unc = 0.5
+        default_HadFakes_unc = 0.15
+        default_HadFakes_2017_unc = 0.20
+        default_ZG_unc    = 0.3
+        default_Other_unc    = 0.30
+        default_misID4p_unc    = 0.5
+        default_ZG4p_unc    = 0.8
+        default_DY4p_unc    = 0.8
+        default_WG4p_unc    = 0.5
+        default_DY_unc    = 0.08
+        unc = {
+                "QCD_normalization":default_QCD_unc,
+                "ZGamma_normalization":default_ZG_unc,
+                "Other_normalization":default_Other_unc,
+                "fake_photon_normalization":default_HadFakes_unc,
+                "fake_photon_model_2017":default_HadFakes_2017_unc,
+                "MisID_nJet_dependence":default_misID4p_unc,
+                "ZGamma_nJet_dependence":default_ZG4p_unc,
+                "ZJets_nJet_dependence":default_DY4p_unc,
+                "WGamma_nJet_dependence":default_WG4p_unc,
+                "ZJets_normalization":default_DY_unc,
+              }
+        rateParam = [
+                    "MisID_normalization_2016",
+                    "MisID_normalization_2017",
+                    "MisID_normalization_2018",
+                    "WGamma_normalization",
+#                    "ZJets_normalization",
+                    ]
 
-        postFitResults = getFitResults( combineWorkspace )
-        postFit        = postFitResults["tree_fit_b" if args.bkgOnly else "tree_fit_sb"]
-        print postFit
-        preFit         = postFitResults["tree_prefit"]
-        printSF        = ["QCD_normalization", "ZGamma_normalization"]
-        unc            = {"QCD_normalization":default_QCD_unc, "ZGamma_normalization":default_ZG_unc}
+        Results = CombineResults( cardFile=cardFileNameTxt, plotDirectory="./", year=args.year, bkgOnly=args.bkgOnly, isSearch=False )
+        postFit = Results.getPulls( postFit=True )
 
         if not os.path.isdir("logs"): os.mkdir("logs")
         write_time  = time.strftime("%Y %m %d %H:%M:%S", time.localtime())
@@ -622,34 +691,21 @@ def wrapper():
             f.write( cardFileNameTxt + "\n" )
 
         with open("logs/scaleFactors.dat", "a") as f:
-            f.write( "\n\n" + cardFileNameTxt + ", Fit Status: %i\n"%postFit["fit_status"] )
-            f.write( "\n\n POI: %f\n"%postFit["r"] )
-            print
-            print "## Scale Factors for backgrounds, fit status: %i ##"%postFit["fit_status"]
-            print "POI: %f"%postFit["r"]
+            f.write( "\n\n" + cardFileNameTxt + "\n")
 
-            for sf_name in printSF:
+            sf = "{:20} {:4.2f} +- {:4.2f}".format( "POI", postFit["r"].val, postFit["r"].sigma )
+            print sf
+            f.write( str(args.year) + ": " + write_time + ": " + "_".join( regionNames ) + ": " + sf + "\n" )
+            for sf_name in unc.keys():
                 if sf_name not in postFit.keys(): continue
-                sf = "{:20}{:4.2f}".format( sf_name, 1+(postFit[sf_name]*unc[sf_name]) )
+                sf = "{:20} {:4.2f} +- {:4.2f}".format( sf_name, 1+(postFit[sf_name].val*unc[sf_name]), postFit[sf_name].sigma*unc[sf_name] )
                 print sf
                 f.write( str(args.year) + ": " + write_time + ": " + "_".join( regionNames ) + ": " + sf + "\n" )
-
-    if res: 
-        sString = "-".join(regionNames)
-        if args.significanceScan:
-            try:   
-                print "Result: %r significance %5.3f"%(sString, res["-1.000"])
-                return sConfig, res
-            except:
-                print "Problem with limit: %r" + str(res)
-                return None
-        else:
-            try:
-                print "Result: %r obs %5.3f exp %5.3f -1sigma %5.3f +1sigma %5.3f"%(sString, res["-1.000"], res["0.500"], res["0.160"], res["0.840"])
-                return sConfig, res
-            except:
-                print "Problem with limit: %r"%str(res)
-                return None
+            for sf_name in rateParam:
+                if sf_name not in postFit.keys(): continue
+                sf = "{:20} {:4.2f} +- {:4.2f}".format( sf_name, postFit[sf_name].val, postFit[sf_name].sigma )
+                print sf
+                f.write( str(args.year) + ": " + write_time + ": " + "_".join( regionNames ) + ": " + sf + "\n" )
 
 
 ######################################

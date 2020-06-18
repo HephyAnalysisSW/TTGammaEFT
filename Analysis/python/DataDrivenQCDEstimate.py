@@ -80,12 +80,12 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         weight_MC = selection_MC_SR["weightStr"] # w/o misID SF
 
         # The QCD yield in the CR with SR weight (sic)
-        yield_QCD_CR     = self.yieldFromCache(setup, "QCD",    channel, cut_MC_CR,   weight_MC,   overwrite=overwrite)*setup.dataLumi/1000.
-        yield_QCD_CR    += self.yieldFromCache(setup, "GJets",  channel, cut_MC_CR,   weight_MC,   overwrite=overwrite)*setup.dataLumi/1000.
+        yield_QCD_CR     = self.yieldFromCache(setup, "QCD",    channel, cut_MC_CR,   weight_MC,   overwrite=overwrite)#*setup.dataLumi/1000.
+        yield_QCD_CR    += self.yieldFromCache(setup, "GJets",  channel, cut_MC_CR,   weight_MC,   overwrite=overwrite)#*setup.dataLumi/1000.
 
         # The QCD yield in the signal regions
-        yield_QCD_SR     = self.yieldFromCache(setup, "QCD",    channel, cut_MC_SR,   weight_MC,  overwrite=overwrite)*setup.lumi/1000.
-        yield_QCD_SR    += self.yieldFromCache(setup, "GJets",  channel, cut_MC_SR,   weight_MC,  overwrite=overwrite)*setup.lumi/1000.
+        yield_QCD_SR     = self.yieldFromCache(setup, "QCD",    channel, cut_MC_SR,   weight_MC,  overwrite=overwrite)#*setup.lumi/1000.
+        yield_QCD_SR    += self.yieldFromCache(setup, "GJets",  channel, cut_MC_SR,   weight_MC,  overwrite=overwrite)#*setup.lumi/1000.
 
         transferFac = yield_QCD_SR/yield_QCD_CR if yield_QCD_CR > 0 else u_float(0, 0)
 
@@ -227,7 +227,8 @@ class DataDrivenQCDEstimate(SystematicEstimator):
             if s in ["QCD-DD", "QCD", "GJets", "Data"]: continue
             y_CR = self.yieldFromCache( setup, s, channel, cut_MC_CR, weight_MC_CR, overwrite=overwrite )
             y_SR = self.yieldFromCache( setup, s, channel, cut_MC_SR, weight_MC_SR, overwrite=overwrite )
-            print "without SF", s, "CR", y_CR*setup.dataLumi/1000., "SR", y_SR*setup.dataLumi/1000.
+#            print "without SF", s, "CR", y_CR*setup.dataLumi/1000., "SR", y_SR*setup.dataLumi/1000.
+            print "without SF", s, "CR", y_CR, "SR", y_SR
 
             if addSF:
                 if "DY_LO" in s:
@@ -245,12 +246,13 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                 elif "WG" in s:
                     y_CR *= WGSF_val[setup.year] #add WGamma SF
                     y_SR *= WGSF_val[setup.year] #add WGamma SF
-            print "with SF", s, "CR", y_CR*setup.dataLumi/1000., "SR", y_SR*setup.dataLumi/1000.
+#            print "with SF", s, "CR", y_CR*setup.dataLumi/1000., "SR", y_SR*setup.dataLumi/1000.
+            print "with SF", s, "CR", y_CR, "SR", y_SR
             yield_other_CR += y_CR
             yield_other_SR += y_SR
 
-        yield_other_CR *= setup.dataLumi/1000.
-        yield_other_SR *= setup.dataLumi/1000.
+#        yield_other_CR *= setup.dataLumi/1000.
+#        yield_other_SR *= setup.dataLumi/1000.
 
         qcd_est_CR   = yield_data_CR - yield_other_CR
         qcd_est_SR   = yield_data_SR - yield_other_SR
@@ -315,12 +317,6 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         cut_Data_CR   = selection_Data_CR["cut"]
         cut_MC_SR     = selection_MC_SR["cut"]
         cut_Data_SR   = selection_Data_SR["cut"]
-
-#        if setup.year == 2017:
-#            cut_MC_CR   += "&&(" + cutInterpreter.cutString("BadEEJetVeto") + ")"
-#            cut_Data_CR += "&&(" + cutInterpreter.cutString("BadEEJetVeto") + ")"
-#            cut_MC_SR   += "&&(" + cutInterpreter.cutString("BadEEJetVeto") + ")"
-#            cut_Data_SR += "&&(" + cutInterpreter.cutString("BadEEJetVeto") + ")"
 
         print( "Using QCD TF CR MC total cut %s"%(cut_MC_CR) )
         print( "Using QCD TF CR Data total cut %s"%(cut_Data_CR) )
@@ -415,8 +411,8 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                     tmp_SR.Scale(SSMSF_val[setup.year].val)
                     tmp_CR.Scale(SSMSF_val[setup.year].val)
 
-            tmp_SR.Scale( setup.dataLumi/1000. )
-            tmp_CR.Scale( setup.dataLumi/1000. )
+#            tmp_SR.Scale( setup.dataLumi/1000. )
+#            tmp_CR.Scale( setup.dataLumi/1000. )
 
             qcdHist.Add( tmp_CR, -1 )
             if s == floatSample: floatHist = tmp_SR.Clone("float")
@@ -429,8 +425,8 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         for i in range(qcdHist.GetNbinsX()):
             if qcdHist.GetBinContent(i+1) < 0: qcdHist.SetBinContent(i+1, 0)
 
-        # fix electron channel floating sf to muon sf
-        if var == "mT" and photonRegion:
+        # fix electron channel floating sf to muon sf, skip that
+        if var == "mT" and photonRegion and False:
             cache_dir = os.path.join(cache_directory, "qcdTFHistosSF", str(setup.year))
             dirDBSF = MergingDirDB(cache_dir)
             if not dirDBSF: raise
@@ -469,7 +465,12 @@ class DataDrivenQCDEstimate(SystematicEstimator):
 #        if var == "mT" and channel == "e": # cant make it fixed, as the nDOF is not matching, no clue how to change that, nice workaround
 #        if var == "mT" and photonRegion and channel == "e": # cant make it fixed, as the nDOF is not matching, no clue how to change that, nice workaround
         # let it float a bit
-        tfitter.Config().ParSettings(1).Set("float", nFloatScale, 0.001, nFloatScale*0.8, nFloatScale*1.2)
+        if photonRegion:
+            tfitter.Config().ParSettings(1).Set("float", nFloatScale, 0.001, nFloatScale*0.999, nFloatScale*1.001)
+        elif bjetRegion:
+            tfitter.Config().ParSettings(1).Set("float", nFloatScale, 0.001, nFloatScale*0.5, nFloatScale*1.5)
+        else:
+            tfitter.Config().ParSettings(1).Set("float", nFloatScale, 0.001, nFloatScale*0.8, nFloatScale*1.2)
 
 
         print("Performing Fit!")
@@ -488,7 +489,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         floatSF     = u_float( floatSFVal, floatSFErr ) / nFloatScale
 
 #        if var == "mT" and channel == "mu":
-        if var == "mT" and photonRegion and channel == "mu":
+        if var == "mT" and photonRegion and channel == "mu" and False:
             key = (floatSample, "mu", var, "_".join(map(str,binning)), weight_MC_SR, cut_MC_SR.replace("Muon","Lepton").replace("Electron","Lepton"))
             dirDBSF.add( key, floatSF.val, overwrite=True )
             print("Storing floating SF of %f"%floatSF.val)
@@ -665,7 +666,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                                 y *= WGSF_val[setup.year]    #add WGamma SF
                         yield_other += y
 
-                    yield_other  *= setup.dataLumi/1000.
+#                    yield_other  *= setup.dataLumi/1000.
 
                     normRegYield = yield_data - yield_other
                     if normRegYield <= 0: continue

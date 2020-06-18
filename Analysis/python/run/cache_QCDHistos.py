@@ -44,7 +44,7 @@ argParser.add_argument("--selection",          action="store",      default="dil
 argParser.add_argument("--small",              action="store_true",                                                                    help="Run only on a small subset of the data?", )
 argParser.add_argument("--overwrite",          action="store_true",                                                                    help="overwrite cache entry?", )
 argParser.add_argument("--checkOnly",          action="store_true",                                                                    help="check cached histos?", )
-argParser.add_argument("--year",               action="store",      default=None,   type=int,  choices=[2016,2017,2018],               help="Which year to plot?")
+argParser.add_argument("--year",               action="store",      default=None,   type=str,  choices=["2016","2017","2018","RunII"],               help="Which year to plot?")
 argParser.add_argument("--mode",               action="store",      default="None", type=str, choices=["mu", "e", "all"],              help="plot lepton mode" )
 argParser.add_argument("--nJobs",              action="store",      default=1,      type=int, choices=[1,2,3,4,5],                     help="Maximum number of simultaneous jobs.")
 argParser.add_argument("--job",                action="store",      default=0,      type=int, choices=[0,1,2,3,4],                     help="Run only job i")
@@ -52,6 +52,8 @@ argParser.add_argument("--runOnLxPlus",        action="store_true",             
 argParser.add_argument("--addBadEEJetVeto",    action="store_true",                                                                    help="remove BadEEJetVeto", )
 argParser.add_argument("--addHEMweight",       action="store_true",                                                                    help="remove HEMweight", )
 args = argParser.parse_args()
+
+if args.year != "RunII": args.year = int(args.year)
 
 # Logging
 if __name__=="__main__":
@@ -100,6 +102,9 @@ elif args.year == 2017 and not args.checkOnly:
 elif args.year == 2018 and not args.checkOnly:
     import TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed as mc_samples
     from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import Run2018 as data_sample
+elif args.year == "RunII" and not checkOnly:
+    import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
+    from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
 def getYieldPlots():
     yieldPlots = []
@@ -344,11 +349,15 @@ else:
     mc = []
     stack = Stack( mc )
 
+lumiString = "(35.92*(year==2016)+41.53*(year==2017)+59.74*(year==2018))"
+ws   = "(%s*weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF)"%lumiString
+ws16 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2016))" %(ws, misIDSF_val[2016].val)
+ws17 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2017))" %(ws, misIDSF_val[2017].val)
+ws18 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2018))" %(ws, misIDSF_val[2018].val)
+weightString = ws
+weightStringMisIDSF = ws + ws16 + ws17 + ws18
 
-sampleWeight = lambda event, sample: (event.reweightTrigger*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)+((misIDSF_val[args.year].val-1)*(event.nPhotonGood>0)*(event.PhotonGood0_photonCatMagic==2)*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)
-weightString = "reweightL1Prefire*reweightTrigger*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"
-
-weightStringMisIDSF = "(%s)+(%s*%f*((nPhotonGood>0)*(PhotonGood0_photonCatMagic==2)))"%(weightString,weightString,(misIDSF_val[args.year].val-1))
+sampleWeight = lambda event, sample: (event.reweightHEM*event.reweightTrigger*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)+((misIDSF_val[2016].val-1)*(event.year==2016)(event.PhotonNoChgIsoNoSieie0_photonCatMagic==2)*event.reweightHEM*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)+((misIDSF_val[2017].val-1)*(event.year==2017)(event.PhotonNoChgIsoNoSieie0_photonCatMagic==2)*event.reweightHEM*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)+((misIDSF_val[2018].val-1)*(event.year==2018)(event.PhotonNoChgIsoNoSieie0_photonCatMagic==2)*event.reweightHEM*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)
 
 for sample in mc:
     sample.read_variables = read_variables_MC

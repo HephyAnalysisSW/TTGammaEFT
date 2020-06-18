@@ -49,7 +49,7 @@ argParser.add_argument( "--expected",           action="store_true",            
 argParser.add_argument( "--useTxt",             action="store_true",                                                        help="Use txt based cardFiles instead of root/shape based ones?" )
 argParser.add_argument( "--skipFitDiagnostics", action="store_true",                                                        help="Don't do the fitDiagnostics (this is necessary for pre/postfit plots, but not 2D scans)?" )
 argParser.add_argument( "--significanceScan",   action="store_true",                                                        help="Calculate significance instead?")
-argParser.add_argument( "--year",               action="store",      default=2016,   type=int,                              help="Which year?" )
+argParser.add_argument( "--year",               action="store",      default="2016",   type=str,                              help="Which year?" )
 argParser.add_argument( "--runOnLxPlus",        action="store_true",                                                        help="Change the global redirector of samples")
 argParser.add_argument( "--misIDPOI",           action="store_true",                                                        help="Change POI to misID SF")
 argParser.add_argument( "--vgPOI",              action="store_true",                                                        help="Change POI to misID SF")
@@ -63,6 +63,8 @@ argParser.add_argument('--order',              action='store',      default=2, t
 argParser.add_argument('--parameters',         action='store',      default=['ctZI', '2', 'ctWI', '2', 'ctZ', '2', 'ctW', '2'], type=str, nargs='+', help = "argument parameters")
 argParser.add_argument('--mode',               action='store',      default="all", type=str, choices=["mu", "e", "all"],               help="plot lepton mode" )
 args=argParser.parse_args()
+
+if args.year != "RunII": args.year = int(args.year)
 
 # Logging
 import Analysis.Tools.logger as logger

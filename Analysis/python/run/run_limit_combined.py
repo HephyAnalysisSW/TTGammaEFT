@@ -19,6 +19,8 @@ from Analysis.Tools.u_float              import u_float
 from Analysis.Tools.cardFileWriter       import cardFileWriter
 from Analysis.Tools.getPostFit           import getPrePostFitFromMLF, getFitResults
 
+from Analysis.Tools.cardFileWriter.CombineResults   import CombineResults
+
 # Default Parameter
 loggerChoices = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTSET"]
 
@@ -41,6 +43,7 @@ argParser.add_argument( "--addSSM",             action="store_true",            
 argParser.add_argument( "--keepCard",           action="store_true",                                                        help="Overwrite existing output files" )
 argParser.add_argument( "--expected",           action="store_true",                                                        help="Use sum of backgrounds instead of data." )
 argParser.add_argument( "--misIDPOI",           action="store_true",                                                        help="Change POI to misID SF")
+argParser.add_argument( "--wgPOI",              action="store_true",                                                        help="Change POI to WGamma SF")
 argParser.add_argument( "--dyPOI",              action="store_true",                                                        help="Change POI to misID SF")
 argParser.add_argument( "--ttPOI",              action="store_true",                                                        help="Change POI to misID SF")
 argParser.add_argument( "--wJetsPOI",           action="store_true",                                                        help="Change POI to misID SF")
@@ -50,7 +53,10 @@ argParser.add_argument( "--plot",               action="store_true",            
 argParser.add_argument( "--useTxt",             action="store_true",                                                        help="Use txt based cardFiles instead of root/shape based ones?" )
 argParser.add_argument( "--skipFitDiagnostics", action="store_true",                                                        help="Don't do the fitDiagnostics (this is necessary for pre/postfit plots" )
 argParser.add_argument( "--significanceScan",   action="store_true",                                                        help="Calculate significance instead?")
+argParser.add_argument( "--linTest",            action="store",      default=1,   type=float,                              help="linearity test: scale data by factor" )
 args=argParser.parse_args()
+
+if args.linTest != 1: args.expected = True
 
 # Logging
 import Analysis.Tools.logger as logger
@@ -128,10 +134,12 @@ if args.addSSM:      regionNames.append("addSSM")
 if args.addMisIDSF:  regionNames.append("addMisIDSF")
 if args.inclRegion:  regionNames.append("incl")
 if args.misIDPOI:    regionNames.append("misIDPOI")
+if args.wgPOI:       regionNames.append("wgPOI")
 if args.dyPOI:       regionNames.append("dyPOI")
 if args.wJetsPOI:    regionNames.append("wJetsPOI")
 if args.ttPOI:       regionNames.append("ttPOI")
 if args.useChannels: regionNames.append("_".join([ch for ch in args.useChannels if not "tight" in ch]))
+if args.linTest != 1: regionNames.append(str(args.linTest).replace(".","_"))
 
 years = [2016,2017,2018]
 
@@ -189,10 +197,10 @@ def wrapper():
             cdir  = "limits/cardFiles/defaultSetup/observed"
         cfile = cardFileNameTxt.split("/")[-1].split(".")[0]
 
-        cmd = "python %s/fitResults.py --carddir %s --cardfile %s --year %s --plotCovMatrix --plotRegionPlot %s --cores %i %s %s %s %s %s"%(path, cdir, cfile, "combined", "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "", "--misIDPOI" if args.misIDPOI else "", "--ttPOI" if args.ttPOI else "", "--dyPOI" if args.dyPOI else "", "--wJetsPOI" if args.wJetsPOI else "")
+        cmd = "python %s/fitResults.py --carddir %s --cardfile %s --linTest %s --year %s --plotCovMatrix --plotRegionPlot %s --cores %i %s %s %s %s %s %s"%(path, cdir, cfile, str(args.linTest), "combined", "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "", "--misIDPOI" if args.misIDPOI else "", "--wgPOI" if args.wgPOI else "", "--ttPOI" if args.ttPOI else "", "--dyPOI" if args.dyPOI else "", "--wJetsPOI" if args.wJetsPOI else "")
         logger.info("Executing plot command: %s"%cmd)
         os.system(cmd)
-        cmd = "python %s/fitResults.py --carddir %s --cardfile %s --year %s --plotCorrelations --plotCovMatrix --plotRegionPlot --plotImpacts --postFit %s --cores %i %s %s %s %s %s"%(path, cdir, cfile, "combined", "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "", "--misIDPOI" if args.misIDPOI else "", "--ttPOI" if args.ttPOI else "", "--dyPOI" if args.dyPOI else "", "--wJetsPOI" if args.wJetsPOI else "")
+        cmd = "python %s/fitResults.py --carddir %s --cardfile %s --linTest %s --year %s --plotCorrelations --plotCovMatrix --plotRegionPlot --plotImpacts --postFit %s --cores %i %s %s %s %s %s %s"%(path, cdir, cfile, str(args.linTest), "combined", "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "", "--misIDPOI" if args.misIDPOI else "", "--wgPOI" if args.wgPOI else "", "--ttPOI" if args.ttPOI else "", "--dyPOI" if args.dyPOI else "", "--wJetsPOI" if args.wJetsPOI else "")
 #        cmd = "python %s/fitResults.py --carddir %s --cardfile %s --year %s --plotImpacts --postFit %s --cores %i %s %s %s %s %s"%(path, cdir, cfile, "combined", "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "", "--misIDPOI" if args.misIDPOI else "", "--ttPOI" if args.ttPOI else "", "--dyPOI" if args.dyPOI else "", "--wJetsPOI" if args.wJetsPOI else "")
         logger.info("Executing plot command: %s"%cmd)
         os.system(cmd)
@@ -200,18 +208,37 @@ def wrapper():
     ###################
     # extract the SFs #
     ###################
-    if not args.useTxt and not args.skipFitDiagnostics:
-        # Would be a bit more complicated with the classical txt files, so only automatically extract the SF when using shape based datacards
-        
-        combineWorkspace = cardFileNameShape.replace( "shapeCard.txt","shapeCard_FD.root" )
-        logger.info( "Extracting fit results from %s"%combineWorkspace )
+    if True:
+        default_QCD_unc = 0.5
+        default_HadFakes_unc = 0.10
+        default_ZG_unc    = 0.3
+        default_Other_unc    = 0.30
+        default_misID4p_unc    = 0.5
+        default_ZG4p_unc    = 0.8
+        default_DY4p_unc    = 0.8
+        default_WG4p_unc    = 0.5
+        default_DY_unc    = 0.1
+        unc = {
+                "QCD_normalization":default_QCD_unc,
+                "ZGamma_normalization":default_ZG_unc,
+                "Other_normalization":default_Other_unc,
+                "fake_photon_normalization":default_HadFakes_unc,
+                "MisID_nJet_dependence":default_misID4p_unc,
+                "ZGamma_nJet_dependence":default_ZG4p_unc,
+                "ZJets_nJet_dependence":default_DY4p_unc,
+                "WGamma_nJet_dependence":default_WG4p_unc,
+                "ZJets_normalization":default_DY_unc,
+              }
+        rateParam = [
+                    "MisID_normalization_2016",
+                    "MisID_normalization_2017",
+                    "MisID_normalization_2018",
+                    "WGamma_normalization",
+#                    "ZJets_normalization",
+                    ]
 
-        postFitResults = getFitResults( combineWorkspace )
-        postFit        = postFitResults["tree_fit_b" if args.bkgOnly else "tree_fit_sb"]
-        print postFit
-        preFit         = postFitResults["tree_prefit"]
-        printSF        = ["QCD_1p", "ZG_norm"]
-        unc            = {"QCD_1p":default_QCD_unc, "ZG_norm":default_ZG_unc}
+        Results = CombineResults( cardFile=cardFileNameTxt, plotDirectory="./", year="combined", bkgOnly=args.bkgOnly, isSearch=False )
+        postFit = Results.getPulls( postFit=True )
 
         if not os.path.isdir("logs"): os.mkdir("logs")
         write_time  = time.strftime("%Y %m %d %H:%M:%S", time.localtime())
@@ -220,17 +247,22 @@ def wrapper():
             f.write( cardFileNameTxt + "\n" )
 
         with open("logs/scaleFactors.dat", "a") as f:
-            f.write( "\n\n" + cardFileNameTxt + ", Fit Status: %i\n"%postFit["fit_status"] )
-            f.write( "\n\n POI: %f\n"%postFit["r"] )
-            print
-            print "## Scale Factors for backgrounds, fit status: %i ##"%postFit["fit_status"]
-            print "POI: %f"%postFit["r"]
+            f.write( "\n\n" + cardFileNameTxt + "\n")
 
-            for sf_name in printSF:
+            sf = "{:20} {:4.2f} +- {:4.2f}".format( "POI", postFit["r"].val, postFit["r"].sigma )
+            print sf
+            f.write( str("combined") + ": " + write_time + ": " + "_".join( regionNames ) + ": " + sf + "\n" )
+            for sf_name in unc.keys():
                 if sf_name not in postFit.keys(): continue
-                sf = "{:20}{:4.2f}".format( sf_name, 1+(postFit[sf_name]*unc[sf_name]) )
+                sf = "{:20} {:4.2f} +- {:4.2f}".format( sf_name, 1+(postFit[sf_name].val*unc[sf_name]), postFit[sf_name].sigma*unc[sf_name] )
                 print sf
-                f.write( "combined" + ": " + write_time + ": " + "_".join( regionNames ) + ": " + sf + "\n" )
+                f.write( str("combined") + ": " + write_time + ": " + "_".join( regionNames ) + ": " + sf + "\n" )
+            for sf_name in rateParam:
+                if sf_name not in postFit.keys(): continue
+                sf = "{:20} {:4.2f} +- {:4.2f}".format( sf_name, postFit[sf_name].val, postFit[sf_name].sigma )
+                print sf
+                f.write( str("combined") + ": " + write_time + ": " + "_".join( regionNames ) + ": " + sf + "\n" )
+
 
 ######################################
 # Load the signals and run the code! #

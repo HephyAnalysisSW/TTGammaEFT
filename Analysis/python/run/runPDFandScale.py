@@ -41,7 +41,7 @@ argParser.add_argument( "--logLevel",            action="store",      default="I
 argParser.add_argument( "--selectRegion",        action="store",      default=None, type=int,                             help="select region?" )
 argParser.add_argument( "--controlRegion",       action="store",      default=None, type=str, choices=CRChoices,          help="For CR region?" )
 argParser.add_argument( "--selectEstimator",     action="store",      default=None, type=str,                             help="select estimator?" )
-argParser.add_argument( "--year",                action="store",      default=2016, type=int, choices=[2016, 2017, 2018], help="which year?" )
+argParser.add_argument( "--year",                action="store",      default=2016, type=str, choices=["2016", "2017", "2018", "RunII"], help="which year?" )
 argParser.add_argument( "--nJobs",               action="store",      default=1, type=int,                                help="How many jobs?" )
 argParser.add_argument( "--job",                 action="store",      default=0, type=int,                                help="Which job?" )
 argParser.add_argument( "--overwrite",           action="store_true",                                                     help="Overwrite existing output files, bool flag set to True  if used" )
@@ -49,6 +49,8 @@ argParser.add_argument( "--checkOnly",           action="store_true",           
 argParser.add_argument( "--combine",             action="store_true",                                                     help="calculate final uncertainties?" )
 argParser.add_argument( "--runOnLxPlus",         action="store_true",                                                     help="Change the global redirector of samples")
 args = argParser.parse_args()
+
+if args.year != "RunII": args.year = int(args.year)
 
 # Logging
 import Analysis.Tools.logger as logger
