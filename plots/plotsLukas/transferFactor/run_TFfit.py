@@ -32,11 +32,13 @@ argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",           action="store",      default="INFO", nargs="?", choices=loggerChoices,                        help="Log level for logging")
 argParser.add_argument("--plot_directory",     action="store",      default="102X_TTG_ppv29_v1",                                             help="plot sub-directory")
 argParser.add_argument("--selection",          action="store",      default="WJets2",                                                        help="reco region")
-argParser.add_argument("--year",               action="store",      default=2016,   type=int,  choices=[2016,2017,2018],                     help="Which year to plot?")
+argParser.add_argument("--year",               action="store",      default="2016",   type=str,  choices=["2016","2017","2018","RunII"],                     help="Which year to plot?")
 argParser.add_argument("--mode",               action="store",      default="e",    type=str,  choices=["mu", "e"],                          help="lepton selection")
 argParser.add_argument("--addCut",             action="store",      default=None, type=str,                                                  help="additional cuts")
 argParser.add_argument("--overwrite",          action="store_true",                                                                          help="overwrite cache?")
 args = argParser.parse_args()
+
+if args.year != "RunII": args.year = int(args.year)
 
 # Logger
 import Analysis.Tools.logger as logger
@@ -52,7 +54,7 @@ def drawObjects( lumi_scale ):
     tex.SetTextAlign(11) # align right
     line = (0.65, 0.95, "%3.1f fb{}^{-1} (13 TeV)" % lumi_scale)
     lines = [
-      (0.15, 0.95, "CMS #bf{#it{Preliminary}}"),
+      (0.15, 0.95, "CMS #bf{#it{Preliminary}} (%s)"%args.selection),
       line
     ]
     return [tex.DrawLatex(*l) for l in lines]
@@ -102,6 +104,9 @@ elif args.year == 2017:
 elif args.year == 2018:
     import TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed as mc_samples
     from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import Run2018 as data_sample
+elif args.year == "RunII":
+    import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
+    from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
 mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
 
@@ -122,10 +127,18 @@ read_variables = [ "weight/F",
                  ]
 
 lumi_scale   = data_sample.lumi * 0.001
-weightString    = "%f*weight*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
-weightStringIL  = "%f*weight*reweightInvIsoTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSFInvIso*reweightLeptonTrackingTightSFInvIso*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
-weightStringInv  = "((%s)+(%s*%f*((nPhotonGoodInvLepIso>0)*(PhotonGoodInvLepIso0_photonCatMagic==2))))"%(weightStringIL,weightStringIL,(misIDSF_val[args.year].val-1))
-weightStringAR = "((%s)+(%s*%f*((nPhotonGood>0)*(PhotonGood0_photonCatMagic==2))))"%(weightString,weightString,(misIDSF_val[args.year].val-1))
+lumiString = "(35.92*(year==2016)+41.53*(year==2017)+59.74*(year==2018))"
+ws   = "(%s*weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF)"%lumiString
+ws16 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2016))" %(ws, misIDSF_val[2016].val)
+ws17 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2017))" %(ws, misIDSF_val[2017].val)
+ws18 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2018))" %(ws, misIDSF_val[2018].val)
+weightStringAR = ws + ws16 + ws17 + ws18
+
+wsInv   = "(%s*weight*reweightHEM*reweightInvIsoTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSFInvIso*reweightLeptonTrackingTightSFInvIso*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF)"%lumiString
+wsInv16 = "+(%s*(PhotonNoChgIsoNoSieieInvLepIso0_photonCatMagic==2)*(%f-1)*(year==2016))" %(wsInv, misIDSF_val[2016].val)
+wsInv17 = "+(%s*(PhotonNoChgIsoNoSieieInvLepIso0_photonCatMagic==2)*(%f-1)*(year==2017))" %(wsInv, misIDSF_val[2017].val)
+wsInv18 = "+(%s*(PhotonNoChgIsoNoSieieInvLepIso0_photonCatMagic==2)*(%f-1)*(year==2018))" %(wsInv, misIDSF_val[2018].val)
+weightStringInv = wsInv + wsInv16 + wsInv17 + wsInv18
 
 filterCutData = getFilterCut( args.year, isData=True,  skipBadChargedCandidate=True )
 filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )
@@ -284,12 +297,12 @@ maxQCD = qcdTemplate.GetMaximum()
 mTHistos_SB.append( [qcdTemplate] )
 mTHistos_SB.append( [oneHist] )
 
-if       photonRegion and not bjetRegion:                floatSample = wg
-elif     photonRegion and     bjetRegion and njets == 2: floatSample = other
-elif     photonRegion and     bjetRegion:                floatSample = ttg
-elif not photonRegion and not bjetRegion:                floatSample = wjets
-elif not photonRegion and     bjetRegion and njets == 2: floatSample = wjets
-elif not photonRegion and     bjetRegion:                floatSample = tt
+if       photonRegion and not bjetRegion:                floatSample = mc_samples.WG
+elif     photonRegion and     bjetRegion and njets == 2: floatSample = mc_samples.rest
+elif     photonRegion and     bjetRegion:                floatSample = mc_samples.TTG
+elif not photonRegion and not bjetRegion:                floatSample = mc_samples.WJets
+elif not photonRegion and     bjetRegion and njets == 2: floatSample = mc_samples.WJets
+elif not photonRegion and     bjetRegion:                floatSample = mc_samples.Top
 
 print("Using sample %s as free floating histogram!"%floatSample.name)
 

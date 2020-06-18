@@ -36,16 +36,18 @@ argParser.add_argument("--selection",          action="store",      default="WJe
 argParser.add_argument("--addCut",             action="store",      default=None, type=str,                                                  help="additional cuts")
 argParser.add_argument("--variable",           action="store",      default="LeptonTight0_eta", type=str,                                    help="variable to plot")
 argParser.add_argument("--binning",            action="store",      default=[20,-2.4,2.4],  type=float, nargs="*",                           help="binning of plots")
-argParser.add_argument("--year",               action="store",      default=2016,   type=int,  choices=[2016,2017,2018],                     help="Which year to plot?")
+argParser.add_argument("--year",               action="store",      default="2016",   type=str,  choices=["2016","2017","2018","RunII"],                     help="Which year to plot?")
 argParser.add_argument("--mode",               action="store",      default="all",  type=str,  choices=["mu", "eetight", "mumutight", "e", "all"],                   help="lepton selection")
 argParser.add_argument("--small",              action="store_true",                                                                          help="Run only on a small subset of the data?")
 argParser.add_argument("--overwrite",          action="store_true",                                                                          help="overwrite cache?")
 argParser.add_argument("--postfit",            action="store_true",                                                                          help="overwrite cache?")
 argParser.add_argument("--photonCat",          action="store_true",                                                                          help="all plots in one directory?")
+argParser.add_argument("--inclQCDTF",          action="store_true",                                                                          help="plot with inclusive qcd TF")
 args = argParser.parse_args()
 
 args.binning[0] = int(args.binning[0])
 addSF = args.postfit
+if args.year != "RunII": args.year = int(args.year)
 
 # Logger
 import Analysis.Tools.logger as logger
@@ -61,7 +63,7 @@ def drawObjects( lumi_scale ):
     tex.SetTextAlign(11) # align right
     line = (0.65, 0.95, "%3.1f fb{}^{-1} (13 TeV)" % lumi_scale)
     lines = [
-      (0.15, 0.95, "CMS #bf{#it{Preliminary}}"),
+      (0.15, 0.95, "CMS #bf{#it{Preliminary}} (%s)"%args.selection),
       line
     ]
     return [tex.DrawLatex(*l) for l in lines]
@@ -81,6 +83,9 @@ elif args.year == 2017:
 elif args.year == 2018:
     import TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed as mc_samples
     from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import Run2018 as data_sample
+elif args.year == "RunII":
+    import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
+    from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
 mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
 
@@ -220,21 +225,26 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
 else:
     raise Exception("Region not implemented")
 
-print
-print selection
-print
+lumiString = "(35.92*(year==2016)+41.53*(year==2017)+59.74*(year==2018))"
+ws   = "(%s*weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF)"%lumiString
+ws16 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2016))" %(ws, misIDSF_val[2016].val)
+ws17 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2017))" %(ws, misIDSF_val[2017].val)
+ws18 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2018))" %(ws, misIDSF_val[2018].val)
 
-weightString    = "%f*weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
-weightStringIL  = "%f*weight*reweightHEM*reweightInvIsoTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSFInvIso*reweightLeptonTrackingTightSFInvIso*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
+wsInv   = "(%s*weight*reweightHEM*reweightInvIsoTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSFInvIso*reweightLeptonTrackingTightSFInvIso*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF)"%lumiString
+wsInv16 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2016))" %(wsInv, misIDSF_val[2016].val)
+wsInv17 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2017))" %(wsInv, misIDSF_val[2017].val)
+wsInv18 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2018))" %(wsInv, misIDSF_val[2018].val)
+
 if "nPhotonGood==0" in selection:
-    weightStringInv = weightStringIL
-    weightStringAR  = weightString
+    weightStringInv = wsInv
+    weightStringAR  = ws
 elif not addSF:
-    weightStringAR  = weightString
-    weightStringInv = "((%s)+(%s*%f*((nPhotonNoChgIsoNoSieieInvLepIso>0)*(PhotonNoChgIsoNoSieieInvLepIso0_photonCatMagic==2))))"%(weightStringIL,weightStringIL,(misIDSF_val[args.year].val-1))
+    weightStringAR  = ws
+    weightStringInv = wsInv + wsInv16 + wsInv17 + wsInv18
 else:
-    weightStringInv = "((%s)+(%s*%f*((nPhotonNoChgIsoNoSieieInvLepIso>0)*(PhotonNoChgIsoNoSieieInvLepIso0_photonCatMagic==2))))"%(weightStringIL,weightStringIL,(misIDSF_val[args.year].val-1))
-    weightStringAR  = "((%s)+(%s*%f*((nPhotonNoChgIsoNoSieie>0)*(PhotonNoChgIsoNoSieie0_photonCatMagic==2))))"%(weightString,weightString,(misIDSF_val[args.year].val-1))
+    weightStringAR = ws + ws16 + ws17 + ws18
+    weightStringInv = wsInv + wsInv16 + wsInv17 + wsInv18
 
 
 replaceVariable = {
@@ -393,9 +403,9 @@ if args.photonCat:
         hists[g].legendText = catSettings[g]["texName"]
 
 dataHist_SB.style      = styles.errorStyle( ROOT.kBlack )
-dataHist_SB.legendText = "data (%s)"%args.mode.replace("mu","#mu").replace("tight","")
+dataHist_SB.legendText = "data (%s)"%args.mode.replace("mu","#mu").replace("tight","").replace("all","e+#mu")
 dataHist.style         = styles.errorStyle( ROOT.kBlack )
-dataHist.legendText    = "data (%s)"%args.mode.replace("mu","#mu").replace("tight","")
+dataHist.legendText    = "data (%s)"%args.mode.replace("mu","#mu").replace("tight","").replace("all","e+#mu")
 
 oneHist = dataHist.Clone("one")
 oneHist.notInLegend = True
@@ -406,90 +416,101 @@ for i in range(oneHist.GetNbinsX()):
 
 
 if not skipQCD:
-  for i_pt, pt in enumerate(ptBins[:-1]):
-    for i_eta, eta in enumerate(etaBins[:-1]):
-        etaLow, etaHigh = eta, etaBins[i_eta+1]
-        ptLow, ptHigh   = pt,  ptBins[i_pt+1]
+    allModes = ["eInv","muInv"] if args.mode == "all" else [args.mode + "Inv"]
+    for mode in allModes:
+        preSel = preSelection + "&&" + cutInterpreter.cutString( mode )
 
-        # Remove that for now
-        # define the 2016 e-channel QCD sideband in barrel only (bad mT fit in EC)
-        if False and args.mode == "e" and args.year == 2016 and (etaHigh > 1.479 or etaHigh < 0):
-            leptonPtEtaCut  = [ leptonEtaCutVar + ">=0", leptonPtCutVar + ">=" + str(ptLow) ]
-            leptonPtEtaCut += [ leptonEtaCutVar + "<1.479" ]
-            if ptHigh > 0:  leptonPtEtaCut += [ leptonPtCutVar + "<" + str(ptHigh) ]
-        else:
-            leptonPtEtaCut = [ leptonEtaCutVar + ">=" + str(etaLow), leptonPtCutVar + ">=" + str(ptLow) ]
-            if etaHigh > 0: leptonPtEtaCut += [ leptonEtaCutVar + "<" + str(etaHigh) ]
-            if ptHigh > 0:  leptonPtEtaCut += [ leptonPtCutVar + "<" + str(ptHigh) ]
+        for i_pt, pt in enumerate(ptBins[:-1]):
+            for i_eta, eta in enumerate(etaBins[:-1]):
+                etaLow, etaHigh = eta, etaBins[i_eta+1]
+                ptLow, ptHigh   = pt,  ptBins[i_pt+1]
 
-        leptonPtEtaCut = "&&".join( [preSelection] + leptonPtEtaCut )
-
-        print "Running histograms for qcd selection:"
-        print leptonPtEtaCut
-
-        # histos
-        key = (data_sample.name, "SB", args.variable, "_".join(map(str,args.binning)), data_sample.weightString, data_sample.selectionString, leptonPtEtaCut)
-        if dirDB.contains(key) and not args.overwrite:
-            dataHist_SB_tmp = dirDB.get(key).Clone("dataSB")
-        else:
-            dataHist_SB_tmp = data_sample.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=leptonPtEtaCut, addOverFlowBin="upper" )
-            dirDB.add(key, dataHist_SB_tmp.Clone("dataSB"), overwrite=True)
-
-        dataHist_SB.Add(dataHist_SB_tmp)
-        qcdHist_tmp = dataHist_SB_tmp.Clone("qcdtmp_%i_%i"%(i_pt,i_eta))
-
-        for s in mc:
-            s.setWeightString( weightStringInv + "*" + sampleWeight )
-            key = (s.name, "SB", args.variable, "_".join(map(str,args.binning)), s.weightString, s.selectionString, leptonPtEtaCut)
-            if dirDB.contains(key) and not args.overwrite:
-                s.hist_SB_tmp = dirDB.get(key).Clone(s.name+"SB")
-            else:
-                s.hist_SB_tmp = s.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=leptonPtEtaCut, addOverFlowBin="upper" )
-                dirDB.add(key, s.hist_SB_tmp.Clone("%s_SB"%s.name), overwrite=True)
-
-            # apply SF after histo caching
-            if True: #addSF:
-                if setup.isPhotonSelection:
-                    if "DY" in s.name:
-                        s.hist_SB_tmp.Scale(DYSF_val[args.year].val)
-                    elif "ZG" in s.name:# and njets < 4:
-                        s.hist_SB_tmp.Scale(ZGSF_val[args.year].val)
-                    elif "WG" in s.name:# and njets > 3:
-                        s.hist_SB_tmp.Scale(WGSF_val[args.year].val)
-                    elif "TTG" in s.name:
-                        s.hist_SB_tmp.Scale(SSMSF_val[args.year].val)
+                # Remove that for now
+                # define the 2016 e-channel QCD sideband in barrel only (bad mT fit in EC)
+                if False and mode == "eInv" and args.year == 2016 and (etaHigh > 1.479 or etaHigh < 0):
+                    leptonPtEtaCut  = [ leptonEtaCutVar + ">=0", leptonPtCutVar + ">=" + str(ptLow) ]
+                    leptonPtEtaCut += [ leptonEtaCutVar + "<1.479" ]
+                    if ptHigh > 0:  leptonPtEtaCut += [ leptonPtCutVar + "<" + str(ptHigh) ]
                 else:
-                    if "DY" in s.name:
-                        s.hist_SB_tmp.Scale(DYSF_val[args.year].val)
-                    elif "WJets" in s.name:
-                        s.hist_SB_tmp.Scale(WJetsSF_val[args.year].val)
+                    leptonPtEtaCut = [ leptonEtaCutVar + ">=" + str(etaLow), leptonPtCutVar + ">=" + str(ptLow) ]
+                    if etaHigh > 0: leptonPtEtaCut += [ leptonEtaCutVar + "<" + str(etaHigh) ]
+                    if ptHigh > 0:  leptonPtEtaCut += [ leptonPtCutVar + "<" + str(ptHigh) ]
 
-            s.hist_SB.Add(s.hist_SB_tmp)
-            qcdHist_tmp.Add(s.hist_SB_tmp, -1)
+                leptonPtEtaCut = "&&".join( [preSel] + leptonPtEtaCut )
+
+                print "Running histograms for qcd selection:"
+                print leptonPtEtaCut
+
+                # histos
+                key = (data_sample.name, "SB", args.variable, "_".join(map(str,args.binning)), data_sample.weightString, data_sample.selectionString, leptonPtEtaCut)
+                if dirDB.contains(key) and not args.overwrite:
+                    dataHist_SB_tmp = dirDB.get(key).Clone("dataSB")
+                else:
+                    dataHist_SB_tmp = data_sample.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=leptonPtEtaCut, addOverFlowBin="upper" )
+                    dirDB.add(key, dataHist_SB_tmp.Clone("dataSB"), overwrite=True)
+
+                dataHist_SB.Add(dataHist_SB_tmp)
+                qcdHist_tmp = dataHist_SB_tmp.Clone("qcdtmp_%i_%i"%(i_pt,i_eta))
+
+                for s in mc:
+                    s.setWeightString( weightStringInv + "*" + sampleWeight )
+                    key = (s.name, "SB", args.variable, "_".join(map(str,args.binning)), s.weightString, s.selectionString, leptonPtEtaCut)
+                    if dirDB.contains(key) and not args.overwrite:
+                        s.hist_SB_tmp = dirDB.get(key).Clone(s.name+"SB")
+                    else:
+                        s.hist_SB_tmp = s.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=leptonPtEtaCut, addOverFlowBin="upper" )
+                        dirDB.add(key, s.hist_SB_tmp.Clone("%s_SB"%s.name), overwrite=True)
+
+                    # apply SF after histo caching
+                    if True: #addSF:
+                        if setup.isPhotonSelection:
+                            if "DY" in s.name:
+                                s.hist_SB_tmp.Scale(DYSF_val[args.year].val)
+                            elif "ZG" in s.name:# and njets < 4:
+                                s.hist_SB_tmp.Scale(ZGSF_val[args.year].val)
+                            elif "WG" in s.name:# and njets > 3:
+                                s.hist_SB_tmp.Scale(WGSF_val[args.year].val)
+                            elif "TTG" in s.name:
+                                s.hist_SB_tmp.Scale(SSMSF_val[args.year].val)
+                        else:
+                            if "DY" in s.name:
+                                s.hist_SB_tmp.Scale(DYSF_val[args.year].val)
+                            elif "WJets" in s.name:
+                                s.hist_SB_tmp.Scale(WJetsSF_val[args.year].val)
+
+                    s.hist_SB.Add(s.hist_SB_tmp)
+                    qcdHist_tmp.Add(s.hist_SB_tmp, -1)
 
 
-        # Transfer Factor, get the QCD histograms always in barrel regions
-        QCDTF_updates_2J["CR"]["leptonEta"] = ( etaLow, etaHigh )
-        QCDTF_updates_2J["CR"]["leptonPt"]  = ( ptLow,  ptHigh   )
-        QCDTF_updates_2J["SR"]["leptonEta"] = ( etaLow, etaHigh )
-        QCDTF_updates_2J["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
+                # Transfer Factor, get the QCD histograms always in barrel regions
+                if args.inclQCDTF:
+                    # run it this way since you may have already stored the sideband histograms
+                    QCDTF_updates_2J["CR"]["leptonEta"] = ( 0, -1 )
+                    QCDTF_updates_2J["CR"]["leptonPt"]  = ( 0, -1 )
+                    QCDTF_updates_2J["SR"]["leptonEta"] = ( 0, -1 )
+                    QCDTF_updates_2J["SR"]["leptonPt"]  = ( 0, -1 )
+                else:
+                    QCDTF_updates_2J["CR"]["leptonEta"] = ( etaLow, etaHigh )
+                    QCDTF_updates_2J["CR"]["leptonPt"]  = ( ptLow,  ptHigh   )
+                    QCDTF_updates_2J["SR"]["leptonEta"] = ( etaLow, etaHigh )
+                    QCDTF_updates_2J["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
 
-        # REMOVE THAT FOR NOW
-        # define the 2016 e-channel QCD sideband in barrel only (bad mT fit in EC)
-        if False and args.mode == "e" and args.year == 2016 and (etaHigh > 1.479 or etaHigh < 0):
-            QCDTF_updates_2J["CR"]["leptonEta"] = ( 0, 1.479 )
+                # REMOVE THAT FOR NOW
+                # define the 2016 e-channel QCD sideband in barrel only (bad mT fit in EC)
+                if False and mode == "eInv" and args.year == 2016 and (etaHigh > 1.479 or etaHigh < 0) and not args.inclQCDTF:
+                    QCDTF_updates_2J["CR"]["leptonEta"] = ( 0, 1.479 )
 
-        qcdUpdates  = { "CR":QCDTF_updates_2J["CR"], "SR":QCDTF_updates_2J["SR"] }
-        transferFac = estimate.cachedTransferFactor( args.mode, setup, qcdUpdates=qcdUpdates, overwrite=False, checkOnly=False )
+                qcdUpdates  = { "CR":QCDTF_updates_2J["CR"], "SR":QCDTF_updates_2J["SR"] }
+                transferFac = estimate.cachedTransferFactor( mode.replace("Inv",""), setup, qcdUpdates=qcdUpdates, overwrite=False, checkOnly=False )
 
-        print "pt", ptLow, ptHigh, "eta", etaLow, etaHigh, "TF:", transferFac
+                print "pt", ptLow, ptHigh, "eta", etaLow, etaHigh, "TF:", transferFac
 
-        # remove negative bins
-        for i in range(qcdHist_tmp.GetNbinsX()):
-            if qcdHist_tmp.GetBinContent(i+1) < 0: qcdHist_tmp.SetBinContent(i+1, 0)
+                # remove negative bins
+                for i in range(qcdHist_tmp.GetNbinsX()):
+                    if qcdHist_tmp.GetBinContent(i+1) < 0: qcdHist_tmp.SetBinContent(i+1, 0)
 
-        qcdHist_tmp.Scale(transferFac.val)
-        qcdHist.Add(qcdHist_tmp)
+                qcdHist_tmp.Scale(transferFac.val)
+                qcdHist.Add(qcdHist_tmp)
 
 
 sbInt = qcdHist.Integral()
@@ -516,8 +537,37 @@ histos_SB  = [[s.hist_SB for s in mc],             [dataHist_SB], [qcdTemplate],
 
 Plot.setDefaults()
 
+lep = args.mode.replace("mu","#mu") if args.mode != "all" else "l"
+replaceLabel = {
+    "PhotonNoChgIsoNoSieie0_sieie": "#sigma_{i#eta i#eta}(#gamma)",
+    "MET_pt": "E^{miss}_{T} (GeV)",
+    "mT": "M_{T} (GeV)",
+    "mLtight0Gamma": "M(#gamma,%s) (GeV)"%lep,
+    "LeptonTight0_eta": "#eta(%s)"%lep,
+    "LeptonTight0_phi": "#phi(%s)"%lep,
+    "LeptonTight0_pt": "p_{T}(%s) (GeV)"%lep,
+    "m3": "M_{3} (GeV)",
+    "ht": "H_{T} (GeV)",
+    "lpTight": "L_{p}",
+    "JetGood0_eta": "#eta(j_{0})",
+    "JetGood0_phi": "#phi(j_{0})",
+    "JetGood0_pt": "p_{T}(j_{0})",
+    "JetGood1_eta": "#eta(j_{1})",
+    "JetGood1_phi": "#phi(j_{1})",
+    "JetGood1_pt": "p_{T}(j_{1})",
+    "PhotonNoChgIsoNoSieie0_pt": "p_{T}(#gamma)",
+    "PhotonNoChgIsoNoSieie0_eta": "#eta(#gamma)",
+    "PhotonNoChgIsoNoSieie0_phi": "#phi(#gamma)",
+    "PhotonGood0_pt": "p_{T}(#gamma)",
+    "PhotonGood0_eta": "#eta(#gamma)",
+    "PhotonGood0_phi": "#phi(#gamma)",
+    "ltight0GammadPhi": "#Delta#phi(%s,#gamma)"%lep,
+    "ltight0GammadR": "#DeltaR(%s,#gamma)"%lep,
+    "photonJetdR": "min #Delta#phi(j,#gamma)",
+}
+
 plots = []
-plots.append( Plot.fromHisto( args.variable,             histos,        texX = args.variable,                   texY = "Number of Events" ) )
+plots.append( Plot.fromHisto( args.variable,             histos,        texX = replaceLabel[args.variable],                   texY = "Number of Events" ) )
 #plots.append( Plot.fromHisto( args.variable+"_sideband", histos_SB,     texX = args.variable+" (QCD sideband)", texY = "Number of Events" ) )
 
 for plot in plots:
@@ -534,7 +584,10 @@ for plot in plots:
 
         selDir = args.selection
         if args.addCut: selDir += "-" + args.addCut
-        plot_directory_ = os.path.join( plot_directory, "qcdChecks", str(args.year), args.plot_directory, selDir, "postfit" if addSF else "prefit", args.mode + "_cat" if args.photonCat else args.mode, "log" if log else "lin" )
+        modeAddon = ""
+        if args.photonCat: modeAddon += "_cat"
+        if args.inclQCDTF: modeAddon += "_inclQCD"
+        plot_directory_ = os.path.join( plot_directory, "qcdChecks", str(args.year), args.plot_directory, selDir, "postfit" if addSF else "prefit", args.mode + modeAddon, "log" if log else "lin" )
         plotting.draw( plot,
                        plot_directory = plot_directory_,
                        logX = False, logY = log, sorting = not args.photonCat,

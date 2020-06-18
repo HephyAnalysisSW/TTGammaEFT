@@ -36,7 +36,7 @@ argParser.add_argument('--selection',          action='store',      default='dil
 argParser.add_argument('--small',              action='store_true',                                                                       help='Run only on a small subset of the data?', )
 argParser.add_argument('--noData',             action='store_true', default=False,                                                        help='also plot data?')
 argParser.add_argument('--signal',             action='store',      default=None,   nargs='?', choices=[None],                            help="Add signal to plot")
-argParser.add_argument('--year',               action='store',      default=None,   type=int,  choices=[2016,2017,2018],                  help="Which year to plot?")
+argParser.add_argument('--year',               action='store',      default="2016",   type=str,  choices=["2016","2017","2018","RunII"],                  help="Which year to plot?")
 argParser.add_argument('--onlyTTG',            action='store_true', default=False,                                                        help="Plot only ttG")
 argParser.add_argument('--normalize',          action='store_true', default=False,                                                        help="Normalize yields" )
 argParser.add_argument('--addOtherBg',         action='store_true', default=False,                                                        help="add others background" )
@@ -45,6 +45,8 @@ argParser.add_argument('--mode',               action='store',      default="Non
 argParser.add_argument('--nJobs',              action='store',      default=1,      type=int, choices=[1,2,3,4,5],                        help="Maximum number of simultaneous jobs.")
 argParser.add_argument('--job',                action='store',      default=0,      type=int, choices=[0,1,2,3,4],                        help="Run only job i")
 args = argParser.parse_args()
+
+if args.year != "RunII": args.year = int(args.year)
 
 # Logger
 import Analysis.Tools.logger as logger
@@ -66,20 +68,19 @@ os.environ["gammaSkim"]="False"
 if args.year == 2016:
     import TTGammaEFT.Samples.nanoTuples_Summer16_private_postProcessed as mc_samples
     if not args.noData:
-        del postprocessing_directory
         from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_postProcessed import Run2016 as data_sample
-
 elif args.year == 2017:
     import TTGammaEFT.Samples.nanoTuples_Fall17_private_postProcessed as mc_samples
     if not args.noData:
-        del postprocessing_directory
         from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_postProcessed import Run2017 as data_sample
-
 elif args.year == 2018:
     import TTGammaEFT.Samples.nanoTuples_Autumn18_private_postProcessed as mc_samples
     if not args.noData:
-        del postprocessing_directory
         from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_postProcessed import Run2018 as data_sample
+elif args.year == "RunII":
+    import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
+    if not args.noData:
+        from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
 # Text on the plots
 def drawObjects( plotData, dataMCScale, lumi_scale ):
@@ -326,6 +327,7 @@ if args.noData:
     if args.year == 2016:   lumi_scale = 35.92
     elif args.year == 2017: lumi_scale = 41.53
     elif args.year == 2018: lumi_scale = 59.74
+    elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
     stack = Stack( mc )
 else:
     data_sample.texName        = "data (legacy)"

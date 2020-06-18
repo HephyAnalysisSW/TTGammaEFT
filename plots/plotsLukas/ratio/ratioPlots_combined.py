@@ -61,19 +61,24 @@ if args.normalize:       args.plot_directory += "_normalize"
 # Samples
 os.environ["gammaSkim"]="True"
 if args.year == 2016:
-    from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed      import *
+    import TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed as mc_samples
     if not args.noData:
-        from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
+        from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import Run2016 as data_sample
 
 elif args.year == 2017:
-    from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed        import *
+    import TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed as mc_samples
     if not args.noData:
-        from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
+        from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import Run2017 as data_sample
 
 elif args.year == 2018:
-    from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed      import *
+    import TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed as mc_samples
     if not args.noData:
-        from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
+        from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import Run2018 as data_sample
+
+elif args.year == "RunII":
+    import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
+    if not args.noData:
+        from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
 
 # Text on the plots
@@ -249,21 +254,10 @@ def minDR( event, sample ):
 sequence = []
 
 # Sample definition
-if args.year == 2016:
-    if args.onlyTT: all = TT_pow_16
-    elif args.onlyTTLep: all = TT_Lep_16
-    elif args.onlyTTSemiLep: all = TT_SemiLep_16
-    else: all = all_noQCD_16
-elif args.year == 2017:
-    if args.onlyTT: all = TT_pow_17
-    elif args.onlyTTLep: all = TT_Lep_17
-    elif args.onlyTTSemiLep: all = TT_SemiLep_17
-    else: all = all_noQCD_17
-elif args.year == 2018:
-    if args.onlyTT: all = TT_pow_18
-    elif args.onlyTTLep: all = TT_Lep_18
-    elif args.onlyTTSemiLep: all = TT_SemiLep_18
-    else: all = all_noQCD_18
+if args.onlyTT: all = mc_samples.TT_pow_16
+elif args.onlyTTLep: all = mc_samples.TT_Lep_16
+elif args.onlyTTSemiLep: all = mc_samples.TT_SemiLep_16
+else: all = mc_samples.all_noQCD
 
 all_sb = copy.deepcopy(all)
 all_sb.name = "sb"
@@ -295,11 +289,9 @@ if args.noData:
     if args.year == 2016:   lumi_scale = 35.92
     elif args.year == 2017: lumi_scale = 41.53
     elif args.year == 2018: lumi_scale = 59.74
+    elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
     stack = Stack( *stackSamples )
 else:
-    if args.year == 2016:   data_sample = Run2016
-    elif args.year == 2017: data_sample = Run2017
-    elif args.year == 2018: data_sample = Run2018
     data_sample.texName        = "data (legacy)"
     data_sample.name           = "data"
     data_sample.read_variables = [ "event/I", "run/I" ]
@@ -326,9 +318,8 @@ elif "Jet4p" in args.selection:
 
 for sample in mc:
     sample.read_variables = read_variables_MC
-    sample.scale          = lumi_scale
     sample.style          = styles.fillStyle( sample.color )
-    sample.weight         = lambda event, sample: (event.reweightHEM*event.reweightTrigger*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)+((event.nPhotonNoChgIsoNoSieie>0)*(event.PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(misIDSF_val[args.year].val-1)*event.reweightHEM*event.reweightTrigger*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)
+    sample.weight         = lambda event, sample: ((35.92*(event.year==2016)+41.53*(event.year==2017)+59.74*(event.year==2018))*event.reweightHEM*event.reweightTrigger*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)+((event.year==2016)*(event.PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(misIDSF_val[2016].val-1)*(35.92*(event.year==2016)+41.53*(event.year==2017)+59.74*(event.year==2018))*event.reweightHEM*event.reweightTrigger*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)+((event.year==2017)*(event.PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(misIDSF_val[2017].val-1)*(35.92*(event.year==2016)+41.53*(event.year==2017)+59.74*(event.year==2018))*event.reweightHEM*event.reweightTrigger*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)+((event.year==2018)*(event.PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(misIDSF_val[2018].val-1)*(35.92*(event.year==2016)+41.53*(event.year==2017)+59.74*(event.year==2018))*event.reweightHEM*event.reweightTrigger*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)
 
 if args.small:
     for sample in stack.samples:

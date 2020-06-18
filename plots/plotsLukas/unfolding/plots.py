@@ -26,12 +26,14 @@ argParser.add_argument("--plot_directory",     action="store",      default="102
 #argParser.add_argument("--recoSelection",      action="store",      default="SR4p",                                                          help="reco region")
 argParser.add_argument("--genSelection",       action="store",      default="nGenLepCMS1-nGenJetCMS4p-nGenBTagCMS1p-nGenPhotonCMS1",         help="gen selection string")
 #argParser.add_argument("--genPtVariable",      action="store",      default="GenPhotonCMSUnfold0_pt",                                        help="gen photon pt variable")
-argParser.add_argument("--year",               action="store",      default=2016,   type=int,  choices=[2016,2017,2018],                     help="Which year to plot?")
+argParser.add_argument("--year",               action="store",      default="2016",   type=str,  choices=["2016","2017","2018","RunII"],                     help="Which year to plot?")
 argParser.add_argument("--mode",               action="store",      default="all",  type=str,  choices=["mu", "e", "all"],                   help="lepton selection")
 argParser.add_argument("--ttgSingleLep",       action="store_true",                                                                          help="Run on ttg single lepton sample only?")
 argParser.add_argument("--normalize",          action="store_true",                                                                          help="Scale to 1 fb-1?")
 argParser.add_argument("--small",              action="store_true",                                                                          help="Run only on a small subset of the data?")
 args = argParser.parse_args()
+
+if args.year != "RunII": args.year = int(args.year)
 
 # Logger
 import Analysis.Tools.logger as logger
@@ -53,6 +55,7 @@ if args.ttgSingleLep: args.plot_directory += "_singleLep"
 if   args.year == 2016: lumi_scale = 35.92
 elif args.year == 2017: lumi_scale = 41.53
 elif args.year == 2018: lumi_scale = 59.74
+elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
 
 if args.normalize:
     lumi_scale = 1.
@@ -63,6 +66,8 @@ elif args.year == 2017:
     from TTGammaEFT.Samples.nanoTuples_Fall17_private_incl_postProcessed           import TTGSemiLep, TTG
 elif args.year == 2018:
     from TTGammaEFT.Samples.nanoTuples_Autumn18_private_incl_postProcessed         import TTGSemiLep, TTG
+elif args.year == "RunII":
+    from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed                         import TTGSemiLep, TTG
 
 sample = TTGSemiLep if args.ttgSingleLep else TTG
 

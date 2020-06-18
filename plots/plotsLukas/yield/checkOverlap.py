@@ -27,8 +27,10 @@ import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument('--logLevel',           action='store',      default='INFO', nargs='?', choices=loggerChoices,                  help="Log level for logging")
 argParser.add_argument('--selection',          action='store',      default='dilepOS-nLepVeto2-offZSFll-mll40-nJet2p-nBTag1p-nPhoton1p')
-argParser.add_argument('--year',               action='store',      type=int, default=2018 )
+argParser.add_argument('--year',               action='store',      type=str, default="2018" )
 args = argParser.parse_args()
+
+if args.year != "RunII": args.year = int(args.year)
 
 # Logger
 import Analysis.Tools.logger as logger
@@ -39,14 +41,13 @@ logger_rt = logger_rt.get_logger(args.logLevel, logFile = None)
 
 os.environ["gammaSkim"]="True"
 if args.year == 2016:
-    from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import Run2016
-    sample = Run2016
+    from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import Run2016 as sample
 elif args.year == 2017:
-    from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import Run2017
-    sample = Run2017
+    from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import Run2017 as sample
 elif args.year == 2018:
-    from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import Run2018
-    sample = Run2018
+    from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import Run2018 as sample
+elif args.year == "RunII":
+    from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as sample
 
 if True:
 

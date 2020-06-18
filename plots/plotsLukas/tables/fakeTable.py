@@ -34,13 +34,14 @@ argParser.add_argument("--controlRegion",      action="store",      default=None
 argParser.add_argument("--removeNegative",     action="store_true",                                                                    help="Set negative values to 0?", )
 argParser.add_argument("--cores",            action="store",  default=1,      type=int,                        help="run multicore?")
 argParser.add_argument("--noData",             action="store_true", default=False,                                                     help="also plot data?")
-argParser.add_argument("--year",               action="store",      default=None,   type=int,  choices=[2016,2017,2018],               help="which year?")
+argParser.add_argument("--year",               action="store",      default="2016",   type=str,  choices=["2016","2017","2018","RunII"],               help="which year?")
 argParser.add_argument("--label",              action="store",      default="Region",  type=str, nargs="*",                            help="which region label?")
 args = argParser.parse_args()
 
+if args.year !=  "RunII": args.year = int(args.year)
+
 args.label = " ".join(args.label)
 args.label = args.label.replace("geq", "$\\geq$")
-
 cr = args.controlRegion
 
 if not os.path.isdir("logs"): os.mkdir("logs")

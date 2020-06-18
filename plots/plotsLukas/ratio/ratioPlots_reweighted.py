@@ -35,7 +35,7 @@ argParser.add_argument("--selection",          action="store",      default="WJe
 argParser.add_argument("--addCut",             action="store",      default=None, type=str,                                                  help="additional cuts")
 argParser.add_argument("--variable",           action="store",      default="LeptonTight0_eta", type=str,                                    help="variable to plot")
 argParser.add_argument("--binning",            action="store",      default=[20,-2.4,2.4],  type=float, nargs="*",                           help="binning of plots")
-argParser.add_argument("--year",               action="store",      default=2016,   type=int,  choices=[2016,2017,2018],                     help="Which year to plot?")
+argParser.add_argument("--year",               action="store",      default="2016",   type=str,  choices=["2016","2017","2018","RunII"],                     help="Which year to plot?")
 argParser.add_argument("--mode",               action="store",      default="None",  type=str,  choices=["mu", "e", "all", "None"],          help="lepton selection")
 argParser.add_argument('--nJobs',              action='store',      default=1,         type=int, choices=[1,2,3],                            help="Maximum number of simultaneous jobs.")
 argParser.add_argument('--job',                action='store',      default=0,         type=int, choices=[0,1,2],                            help="Run only job i")
@@ -47,6 +47,7 @@ args = argParser.parse_args()
 
 args.binning[0] = int(args.binning[0])
 addSF = True
+if args.year != "RunII": args.year = int(args.year)
 
 if args.mode == "None":
     allModes = [ "mu", "e", "all" ]
@@ -61,6 +62,7 @@ logger_rt = logger_rt.get_logger( args.logLevel, logFile=None )
 if args.year == 2016:   lumi_scale = 35.92
 elif args.year == 2017: lumi_scale = 41.53
 elif args.year == 2018: lumi_scale = 59.74
+elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
 
 # Text on the plots
 def drawObjects( lumi_scale ):
@@ -82,14 +84,15 @@ if not dirDB: raise
 # Sample definition
 os.environ["gammaSkim"]="False" #always false for QCD estimate
 if args.year == 2016:
-    from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed  import *
-    all = all_noQCD_16
+    import TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed as mc_samples
 elif args.year == 2017:
-    from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed    import *
-    all = all_noQCD_16
+    import TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed as mc_samples
 elif args.year == 2018:
-    from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed  import *
-    all = all_noQCD_18
+    import TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed  as mc_samples
+elif args.year == "RunII":
+    import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
+
+all = mc_samples.all_noQCD
 
 all_sb = copy.deepcopy(all)
 all_sb.name = "sb"
@@ -175,13 +178,17 @@ for s in mc:
 all_fit.addSelectionString( cutInterpreter.cutString( "lowSieieNoChgIso" if "chg" in args.variable else "lowChgIsoNoSieie"   ) )
 all_sb.addSelectionString(  cutInterpreter.cutString( "highSieieNoChgIso" if "chg" in args.variable else "highChgIsoNoSieie" ) )
 
-weightString    = "%f*weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
+lumiString = "(35.92*(year==2016)+41.53*(year==2017)+59.74*(year==2018))"
+ws = "(%s*weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF)"%lumiString
 if not addSF:
-    weightStringAR  = weightString
+    weightStringAR  = ws
     sampleWeight = lambda event, sample: lumi_scale*event.reweightHEM*event.reweightTrigger*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
 else:
-    weightStringAR  = "((%s)+(%s*%f*((nPhotonNoChgIsoNoSieie>0)*(PhotonNoChgIsoNoSieie0_photonCatMagic==2))))"%(weightString,weightString,(misIDSF_val[args.year].val-1))
-    sampleWeight = lambda event, sample: (lumi_scale*event.reweightHEM*event.reweightTrigger*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)*( misIDSF_val[args.year].val if event.PhotonNoChgIsoNoSieie0_photonCatMagic==2 else 1. )
+    ws16 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2016))" %(ws, misIDSF_val[2016].val)
+    ws17 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2017))" %(ws, misIDSF_val[2017].val)
+    ws18 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2018))" %(ws, misIDSF_val[2018].val)
+    weightStringAR = ws + ws16 + ws17 + ws18
+    sampleWeight = lambda event, sample: ((35.92*(event.year==2016)+41.53*(event.year==2017)+59.74*(event.year==2018))*event.reweightHEM*event.reweightTrigger*event.reweightL1Prefire*event.reweightPU*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF)*( misIDSF_val[2016].val if event.PhotonNoChgIsoNoSieie0_photonCatMagic==2 and event.year == 2016 else 1. )*( misIDSF_val[2017].val if event.PhotonNoChgIsoNoSieie0_photonCatMagic==2 and event.year == 2017 else 1. )*( misIDSF_val[2018].val if event.PhotonNoChgIsoNoSieie0_photonCatMagic==2 and event.year == 2018 else 1. )
 
 for s in mc:
     s.setWeightString( weightStringAR )
