@@ -267,6 +267,8 @@ special_cuts = {
     "noLooseGenMatch":        "PhotonNoChgIsoNoSieie0_genPartIdx<0",
     "noGenMatch":             "PhotonGood0_genPartIdx<0",
 
+    "photonPhi": "PhotonNoChgIsoNoSieie0_phi<2.8",
+
     "looseLeptonMother":       "PhotonNoChgIsoNoSieie0_leptonMother==1",
     "noLooseLeptonMother":     "PhotonNoChgIsoNoSieie0_leptonMother==0",
     "leptonMother":            "PhotonGood0_leptonMother==1",

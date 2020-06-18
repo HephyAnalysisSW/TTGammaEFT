@@ -64,6 +64,7 @@ class PhotonElectronVetoEfficiency:
 
     def getSF( self, pt, eta, sigma=0 ):
         if pt       >= 200: pt  = 199
+        if pt       <= 10:  pt  = 11
         if abs(eta) >= 2.5: eta = 2.49 
         if self.year == 2018:
             sf = self.mult( [ self.getPartialSF( effMap, pt, abs(eta), self.g_sf_unc[i] ) for i, effMap in enumerate(self.g_sf) ] )
@@ -76,69 +77,74 @@ class PhotonElectronVetoEfficiency:
 if __name__ == "__main__":
 
     sigma = 0
-    print "2016"
+    #print "2016"
     LSF = PhotonElectronVetoEfficiency(year=2016)
-    print LSF.getSF(20, 1, sigma=sigma)
-    print LSF.getSF(20, -1, sigma=sigma)
-    print LSF.getSF(20, 1, sigma=sigma)
-    print LSF.getSF(20, -1, sigma=sigma)
+    #print LSF.getSF(20, 1, sigma=sigma)
+    #print LSF.getSF(20, -1, sigma=sigma)
+    #print LSF.getSF(20, 1, sigma=sigma)
+    #print LSF.getSF(20, -1, sigma=sigma)
 
-    print LSF.getSF(200, 1, sigma=sigma)
-    print LSF.getSF(200, -1, sigma=sigma)
-    print LSF.getSF(200, 1, sigma=sigma)
-    print LSF.getSF(200, -1, sigma=sigma)
+    #print LSF.getSF(200, 1, sigma=sigma)
+    #print LSF.getSF(200, -1, sigma=sigma)
+    #print LSF.getSF(200, 1, sigma=sigma)
+    #print LSF.getSF(200, -1, sigma=sigma)
 
-    print LSF.getSF(20, 1.4, sigma=sigma)
-    print LSF.getSF(20, -1.4, sigma=sigma)
-    print LSF.getSF(20, 1.4, sigma=sigma)
-    print LSF.getSF(20, -1.4, sigma=sigma)
+    #print LSF.getSF(20, 1.4, sigma=sigma)
+    #print LSF.getSF(20, -1.4, sigma=sigma)
+    #print LSF.getSF(20, 1.4, sigma=sigma)
+    #print LSF.getSF(20, -1.4, sigma=sigma)
 
-    print LSF.getSF(200, 1.4, sigma=sigma)
-    print LSF.getSF(200, -1.4, sigma=sigma)
-    print LSF.getSF(200, 1.4, sigma=sigma)
-    print LSF.getSF(200, -1.4, sigma=sigma)
+    #print LSF.getSF(200, 1.4, sigma=sigma)
+    #print LSF.getSF(200, -1.4, sigma=sigma)
+    #print LSF.getSF(200, 1.4, sigma=sigma)
+    #print LSF.getSF(200, -1.4, sigma=sigma)
 
-    print "2017"
+    #print "2017"
     LSF = PhotonElectronVetoEfficiency(year=2017)
-    print LSF.getSF(20, 1, sigma=sigma)
-    print LSF.getSF(20, -1, sigma=sigma)
-    print LSF.getSF(20, 1, sigma=sigma)
-    print LSF.getSF(20, -1, sigma=sigma)
+    #print LSF.getSF(20, 1, sigma=sigma)
+    #print LSF.getSF(20, -1, sigma=sigma)
+    #print LSF.getSF(20, 1, sigma=sigma)
+    #print LSF.getSF(20, -1, sigma=sigma)
 
-    print LSF.getSF(200, 1, sigma=sigma)
-    print LSF.getSF(200, -1, sigma=sigma)
-    print LSF.getSF(200, 1, sigma=sigma)
-    print LSF.getSF(200, -1, sigma=sigma)
+    #print LSF.getSF(200, 1, sigma=sigma)
+    #print LSF.getSF(200, -1, sigma=sigma)
+    #print LSF.getSF(200, 1, sigma=sigma)
+    #print LSF.getSF(200, -1, sigma=sigma)
 
-    print LSF.getSF(20, 1.4, sigma=sigma)
-    print LSF.getSF(20, -1.4, sigma=sigma)
-    print LSF.getSF(20, 1.4, sigma=sigma)
-    print LSF.getSF(20, -1.4, sigma=sigma)
+    #print LSF.getSF(20, 1.4, sigma=sigma)
+    #print LSF.getSF(20, -1.4, sigma=sigma)
+    #print LSF.getSF(20, 1.4, sigma=sigma)
+    #print LSF.getSF(20, -1.4, sigma=sigma)
 
-    print LSF.getSF(200, 1.4, sigma=sigma)
-    print LSF.getSF(200, -1.4, sigma=sigma)
-    print LSF.getSF(200, 1.4, sigma=sigma)
-    print LSF.getSF(200, -1.4, sigma=sigma)
+    #print LSF.getSF(200, 1.4, sigma=sigma)
+    #print LSF.getSF(200, -1.4, sigma=sigma)
+    #print LSF.getSF(200, 1.4, sigma=sigma)
+    #print LSF.getSF(200, -1.4, sigma=sigma)
 
-    print "2018"
+    #print "2018"
     LSF = PhotonElectronVetoEfficiency(year=2018)
-    print LSF.getSF(20, 1, sigma=sigma)
-    print LSF.getSF(20, -1, sigma=sigma)
-    print LSF.getSF(20, 1, sigma=sigma)
-    print LSF.getSF(20, -1, sigma=sigma)
+    print LSF.getSF(19, 0, sigma=-1) / LSF.getSF(19, 0, sigma=0)
+    print LSF.getSF(19, 0, sigma=0)
+    print LSF.getSF(19, 0, sigma=1) / LSF.getSF(19, 0, sigma=0)
+    print LSF.getSF(19, -0.5, sigma=-1) / LSF.getSF(19, 0.5, sigma=0)
+    print LSF.getSF(19, -0.5, sigma=0)
+    print LSF.getSF(19, -0.5, sigma=1) / LSF.getSF(19, 0.5, sigma=0)
 
-    print LSF.getSF(200, 1, sigma=sigma)
-    print LSF.getSF(200, -1, sigma=sigma)
-    print LSF.getSF(200, 1, sigma=sigma)
-    print LSF.getSF(200, -1, sigma=sigma)
+    #print LSF.getSF(20, 1, sigma=sigma)
+    #print LSF.getSF(20, -1, sigma=sigma)
 
-    print LSF.getSF(20, 1.4, sigma=sigma)
-    print LSF.getSF(20, -1.4, sigma=sigma)
-    print LSF.getSF(20, 1.4, sigma=sigma)
-    print LSF.getSF(20, -1.4, sigma=sigma)
+    #print LSF.getSF(200, 1, sigma=sigma)
+    #print LSF.getSF(200, -1, sigma=sigma)
+    #print LSF.getSF(200, 1, sigma=sigma)
+    #print LSF.getSF(200, -1, sigma=sigma)
 
-    print LSF.getSF(200, 1.4, sigma=sigma)
-    print LSF.getSF(200, -1.4, sigma=sigma)
-    print LSF.getSF(200, 1.4, sigma=sigma)
-    print LSF.getSF(200, -1.4, sigma=sigma)
+    #print LSF.getSF(20, 1.4, sigma=sigma)
+    #print LSF.getSF(20, -1.4, sigma=sigma)
+    #print LSF.getSF(20, 1.4, sigma=sigma)
+    #print LSF.getSF(20, -1.4, sigma=sigma)
+
+    #print LSF.getSF(200, 1.4, sigma=sigma)
+    #print LSF.getSF(200, -1.4, sigma=sigma)
+    #print LSF.getSF(200, 1.4, sigma=sigma)
+    #print LSF.getSF(200, -1.4, sigma=sigma)
 
