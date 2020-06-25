@@ -19,8 +19,9 @@ from RootTools.core.standard                     import *
 from Analysis.Tools.helpers                      import checkRootFile, deepCheckRootFile, deepCheckWeight
 
 # Tools for systematics
-from Analysis.Tools.helpers                      import checkRootFile, bestDRMatchInCollection, deltaR, deltaPhi, mT, mTg, lp
-from Analysis.Tools.MetSignificance              import MetSignificance
+from Analysis.Tools.helpers                      import checkRootFile, bestDRMatchInCollection, deltaR, deltaPhi, mT
+#from Analysis.Tools.MetSignificance              import MetSignificance
+from TTGammaEFT.Tools.JMECorrector               import JMECorrector
 from TTGammaEFT.Tools.helpers                    import m3
 from TTGammaEFT.Tools.user                       import cache_directory
 
@@ -30,8 +31,8 @@ from TTGammaEFT.Tools.cutInterpreter             import highSieieThresh, lowSiei
 
 from TTGammaEFT.Tools.overlapRemovalTTG          import *
 from TTGammaEFT.Tools.puProfileCache             import puProfile
+
 from Analysis.Tools.L1PrefireWeight              import L1PrefireWeight
-from Analysis.Tools.mt2Calculator                import mt2Calculator
 
 # environment
 hostname   = os.getenv("HOSTNAME").lower()
@@ -63,7 +64,6 @@ def get_parser():
     argParser.add_argument('--interpolationOrder',          action='store',         nargs='?',  type=int,                           default=2,                          help="Interpolation order for EFT weights.")
     argParser.add_argument('--triggerSelection',            action='store_true',                                                                                        help="Trigger selection?" )
     argParser.add_argument('--addPreFiringFlag',            action='store_true',                                                                                        help="Add flag for events w/o prefiring?" )
-    argParser.add_argument('--topReco',                     action='store_true',                                                                                        help="Run Top Reco?")
     argParser.add_argument('--checkOnly',                   action='store_true',                                                                                        help="Check files at target and remove corrupt ones without reprocessing? Not possible with overwrite!")
     argParser.add_argument('--isTopSample',                 action='store_true',                                                                                        help="use top efficiencies in btagging?")
     argParser.add_argument('--addWPtWeight',                action='store_true',                                                                                        help="add weight for Wpt reweighting")
@@ -78,7 +78,6 @@ def get_parser():
     argParser.add_argument('--skipSF',                      action='store_true',                                                                                        help="Skip scale factors")
     argParser.add_argument('--skipNanoTools',               action='store_true',                                                                                        help="Skip nanoTools")
     argParser.add_argument('--skipSystematicVariations',    action='store_true',                                                                                        help="Skip syst var")
-    argParser.add_argument('--reuseNanoAOD',                action='store_true',                                                                                        help="Keep nanoAOD output?")
     argParser.add_argument('--noTopPtReweighting',          action='store_true',                                                                                        help="Skip top pt reweighting?")
     argParser.add_argument('--reduceSizeBy',                action='store',                     type=int,                           default=1,                          help="Reduce the size of the sample by a factor of...")
     return argParser
@@ -88,15 +87,10 @@ options = get_parser().parse_args()
 if "clip" in hostname.lower():
     options.writeToDPM = False
 
-stitching = None
+stitching = False
 # combine ttg samples is they are nominal
-if "TTG" in options.samples[0] and not "Tune" in options.samples[0] and not "erd" in options.samples[0]:
-    if "ptG" in options.samples[0]:
-        stitching = "high"
-    else:
-        stitching = "low"
-
-print stitching
+if "TTG" in options.samples[0] and not "Tune" in options.samples[0] and not "erd" in options.samples[0] and not "ptG" in options.samples[0]:
+    stitching = True
 
 # B-Tagger
 tagger = 'DeepCSV'
@@ -213,7 +207,6 @@ Ts = TriggerSelector( options.year )
 if isData and options.triggerSelection:
     triggerCond = Ts.getDataTrigger( options.samples[0] )
     logger.info("Sample will have the following trigger skim: %s"%triggerCond)
-    print triggerCond
     skimConds.append( triggerCond )
 
 # MET Filter
@@ -229,6 +222,9 @@ if len(samples)>1:
 elif len(samples)==1:
     sample      = samples[0]
     sampleForPU = samples[0]
+
+    if options.small:
+        sample.files = sample.files[:maxNFiles]
 
 if options.reduceSizeBy > 1:
     if isData:
@@ -539,17 +535,26 @@ writePhotonVariables  = NanoVars.getVariables( "Photon",   postprocessed=True,  
 
 # Read Variables
 read_variables  = map( TreeVariable.fromString, ['run/I', 'luminosityBlock/I', 'event/l'] + Ts.getTriggerVariableList() )
-read_variables += map( TreeVariable.fromString, ['MET_pt/F', 'MET_phi/F'] )
 
 if not options.skipNanoTools:
     if options.year == 2017 and not runOnUL:
-        read_variables += map(TreeVariable.fromString, [ 'METFixEE2017_pt/F', 'METFixEE2017_phi/F', 'METFixEE2017_pt_nom/F', 'METFixEE2017_phi_nom/F', 'MET_pt_min/F'])
-        if isMC:
-            read_variables += map(TreeVariable.fromString, [ 'METFixEE2017_pt_jesTotalUp/F', 'METFixEE2017_pt_jesTotalDown/F', 'METFixEE2017_pt_jerUp/F', 'METFixEE2017_pt_jerDown/F', 'METFixEE2017_pt_unclustEnDown/F', 'METFixEE2017_phi_unclustEnUp/F'])
-    read_variables += map(TreeVariable.fromString, [ 'MET_pt_nom/F', 'MET_phi_nom/F' ])
-    if isMC:
-        read_variables += map(TreeVariable.fromString, [ 'MET_pt_jesTotalUp/F', 'MET_pt_jesTotalDown/F', 'MET_pt_jerUp/F', 'MET_pt_jerDown/F', 'MET_pt_unclustEnDown/F', 'MET_pt_unclustEnUp/F'])
-        read_variables += map(TreeVariable.fromString, [ 'MET_phi_jesTotalUp/F', 'MET_phi_jesTotalDown/F', 'MET_phi_jerUp/F', 'MET_phi_jerDown/F', 'MET_phi_unclustEnDown/F', 'MET_phi_unclustEnUp/F'])
+        metBranchName = "METFixEE2017"
+    else: 
+        metBranchName = "MET"
+
+    #read_variables += map(TreeVariable.fromString, [ 'METFixEE2017_pt/F', 'METFixEE2017_phi/F', 'METFixEE2017_pt_nom/F', 'METFixEE2017_phi_nom/F'])
+    #if isMC:
+    #    read_variables += map(TreeVariable.fromString, [ 'METFixEE2017_pt_jesTotalUp/F', 'METFixEE2017_pt_jesTotalDown/F', 'METFixEE2017_pt_jerUp/F', 'METFixEE2017_pt_jerDown/F', 'METFixEE2017_pt_unclustEnDown/F', 'METFixEE2017_phi_unclustEnUp/F'])
+
+    #read_variables += map(TreeVariable.fromString, [ 'MET_pt_nom/F', 'MET_phi_nom/F', 'MET_pt/F', 'MET_phi/F'] )
+    #if isMC:
+    #    read_variables += map(TreeVariable.fromString, [ 'MET_pt_jesTotalUp/F', 'MET_pt_jesTotalDown/F', 'MET_pt_jerUp/F', 'MET_pt_jerDown/F', 'MET_pt_unclustEnDown/F', 'MET_pt_unclustEnUp/F'])
+    #    read_variables += map(TreeVariable.fromString, [ 'MET_phi_jesTotalUp/F', 'MET_phi_jesTotalDown/F', 'MET_phi_jerUp/F', 'MET_phi_jerDown/F', 'MET_phi_unclustEnDown/F', 'MET_phi_unclustEnUp/F'])
+    met_read_branches = ["%s_pt_nom/F"%metBranchName, "%s_phi_nom/F"%metBranchName] 
+    for ext in ["", "_jesTotalUp", "_jesTotalDown", "_jerUp", "_jerDown", "_unclustEnDown", "_unclustEnUp"]:
+        for kin in ["pt", "phi"]:
+            met_read_branches.append("{metBranchName}_{kin}{ext}/F".format(metBranchName=metBranchName,kin=kin,ext=ext))
+    read_variables.extend( map( TreeVariable.fromString, met_read_branches ) )
 
 read_variables += [ TreeVariable.fromString('nElectron/I'),
                     VectorTreeVariable.fromString('Electron[%s]'%readElectronVarString) ]
@@ -564,6 +569,8 @@ if isMC:
     read_variables += [ TreeVariable.fromString('Pileup_nTrueInt/F') ]
     read_variables += [ TreeVariable.fromString('nGenPart/I'),
                         VectorTreeVariable.fromString('GenPart[%s]'%readGenVarString, nMax = 1000) ] # all needed for genMatching
+    read_variables += [ TreeVariable.fromString('nLHEPart/I'),
+                        VectorTreeVariable.fromString('LHEPart[%s]'%'phi/F,pt/F,pdgId/I,eta/F', nMax = 1000) ]
     read_variables += [ TreeVariable.fromString('nGenJet/I'),
                         VectorTreeVariable.fromString('GenJet[%s]'%readGenJetVarString) ]
 
@@ -667,14 +674,15 @@ new_variables += [ 'ht/F', 'htinv/F' ]
 new_variables += [ 'photonJetdR/F', 'photonLepdR/F', 'leptonJetdR/F', 'tightLeptonJetdR/F' ] 
 new_variables += [ 'photonJetInvLepIsodR/F', 'photonNoSieieNoChgIsoJetdR/F', 'photonNoSieieNoChgIsoJetInvLepIsodR/F' ] 
 new_variables += [ 'invtightLeptonJetdR/F' ] 
-new_variables += [ 'MET_pt_photonEstimated/F', 'MET_phi_photonEstimated/F', 'METSig_photonEstimated/F' ]
-new_variables += [ 'MET_pt/F', 'MET_phi/F', 'MET_pt_min/F', 'METSig/F', 'METSiginv/F' ]
+new_variables += [ 'MET_pt/F', 'MET_phi/F' ]
 if addSystematicVariations:
-    for var in ['jesTotalUp', 'jesTotalDown', 'jerUp', 'jerDown', 'unclustEnUp', 'unclustEnDown']:
+    for var in ['jesTotalUp', 'jesTotalDown', 'jerUp', 'jerDown']:
         new_variables.extend( ['nJetGoodNoChgIsoNoSieie_'+var+'/I', 'nBTagGoodNoChgIsoNoSieie_'+var+'/I'] )
         new_variables.extend( ['nJetGood_'+var+'/I', 'nBTagGood_'+var+'/I','ht_'+var+'/F'] )
-        new_variables.extend( ['MET_pt_'+var+'/F', 'MET_phi_'+var+'/F', 'METSig_'+var+'/F'] )
         new_variables.extend( ['ht_'+var+'/F', 'm3_'+var+'/F', 'mT_'+var+'/F'] )
+        new_variables.extend( ['MET_pt_'+var+'/F', 'MET_phi_'+var+'/F'] )
+    for var in ['unclustEnUp', 'unclustEnDown']:
+        new_variables.extend( ['MET_pt_'+var+'/F', 'MET_phi_'+var+'/F', 'mT_'+var+'/F'] )
 
     for var in ['eTotalUp', 'eTotalDown']:
         new_variables += [ "nPhotonGood_"+var+"/I" ] 
@@ -715,8 +723,6 @@ new_variables += [ 'lldR/F', 'lldPhi/F' ]
 new_variables += [ 'bbdR/F', 'bbdPhi/F' ] 
 new_variables += [ 'mLtight0GammaNoSieieNoChgIso/F', 'mLtight0Gamma/F',  'mL0Gamma/F',  'mL1Gamma/F' ] 
 new_variables += [ 'mLinvtight0GammaNoSieieNoChgIso/F', 'mLinvtight0Gamma/F' ] 
-new_variables += [ 'lpTight/F' ] 
-new_variables += [ 'lpInvTight/F' ] 
 new_variables += [ 'l0GammadR/F',  'l0GammadPhi/F' ] 
 new_variables += [ 'ltight0GammadR/F', 'ltight0GammadPhi/F' ] 
 new_variables += [ 'linvtight0GammadR/F', 'linvtight0GammadPhi/F' ] 
@@ -726,9 +732,7 @@ new_variables += [ 'l1GammadR/F',  'l1GammadPhi/F' ]
 new_variables += [ 'j0GammadR/F',  'j0GammadPhi/F' ] 
 new_variables += [ 'j1GammadR/F',  'j1GammadPhi/F' ] 
 
-new_variables += [ 'mT/F', 'mTg/F', 'mT2ll/F', 'mT2lg/F', 'mT2bb/F', 'mT2blbl/F']
-new_variables += [ 'mTinv/F', 'mTginv/F', 'mT2linvg/F']
-mt2Calculator = mt2Calculator()
+new_variables += [ 'mT/F', 'mTinv/F']
 
 if options.addPreFiringFlag: new_variables += [ 'unPreFirableEvent/I' ]
 
@@ -786,27 +790,8 @@ if isMC:
             if var!='MC':
                 new_variables += [ 'reweightBTag_'+var+'/F' ]
 
-# TopReco
-if options.topReco:
-    # Import the main top reco class
-    from Analysis.TopReco.TopReco import topReco
-    # Variables
-    for name in [ "lp", "lm", "jetB", "jetBbar", "Wp", "Wm", "neutrino", "neutrinoBar", "top", "topBar" ]:
-        for var in ["pt", "eta", "phi", "mass"]:
-            new_variables.append( "topReco_"+name+"_"+var+'/F' )
-    # Simple setter for top reco candidates
-    def setParticle( event, name, particle ):
-        setattr( event, "topReco_"+name+"_pt", particle.Pt() )
-        setattr( event, "topReco_"+name+"_eta", particle.Eta() )
-        setattr( event, "topReco_"+name+"_phi", particle.Phi() )
-        setattr( event, "topReco_"+name+"_mass", particle.M() )
-
 if isData:
     new_variables += ['jsonPassed/I']
-
-#ptVar="pt_nom" if not options.skipNanoTools else "pt"
-# with the latest change, getAllJets calculates the correct jet pt (removing JER) and stores it as Jet_pt again. No need for Jet_pt_nom anymore
-ptVar="pt"
 
 # Overlap removal Selection
 genPhotonSel_TTG_OR = genPhotonSelector( 'overlapTTGamma' )
@@ -850,16 +835,16 @@ if options.addPreFiringFlag:
     del PreFire
 
 if not options.skipNanoTools:
-    # prepare metsignificance and jes/jer
-    MetSig = MetSignificance( sample, options.year, output_directory, runOnUL=runOnUL )
-    MetSig( "&&".join(skimConds) )
-    newfiles = MetSig.getNewSampleFilenames()
+    # prepare jes/jer
+    JMECorr = JMECorrector( sample, options.year, output_directory, runOnUL=runOnUL )
+    JMECorr( "&&".join(skimConds) )
+    newfiles = JMECorr.getNewSampleFilenames()
     sample.clear()
     sample.files = copy.copy(newfiles)
-    sample.name  = MetSig.name
+    sample.name  = JMECorr.name
     if isMC: sample.normalization = sample.getYieldFromDraw(weightString="genWeight")['val']
     sample.isData = isData
-    del MetSig
+    del JMECorr
 
 # Define a reader
 #sel = "&&".join(skimConds) if options.skipNanoTools else "(1)"
@@ -876,31 +861,6 @@ def getMetPhotonEstimated( met_pt, met_phi, photon ):
   gamma.SetPtEtaPhiM(photon['pt'], photon['eta'], photon['phi'], photon['mass'] )
   metGamma = met + gamma
   return (metGamma.Pt(), metGamma.Phi())
-
-## Calculate corrected met pt/phi using systematics for jets
-def getMetJetCorrected(met_pt, met_phi, jets, var, ptVar='pt'):
-    met_corr_px  = met_pt*cos(met_phi) + sum([(j[ptVar]-j['pt_'+var])*cos(j['phi']) if j[ptVar]>15 else 0 for j in jets])
-    met_corr_py  = met_pt*sin(met_phi) + sum([(j[ptVar]-j['pt_'+var])*sin(j['phi']) if j[ptVar]>15 else 0 for j in jets])
-    met_corr_pt  = sqrt(met_corr_px**2 + met_corr_py**2)
-    met_corr_phi = atan2(met_corr_py, met_corr_px)
-    return (met_corr_pt, met_corr_phi)
-
-def getMetCorrected( r, var, addPhoton=None ):
-    if not var: # why is this here??
-#        if addPhoton: return getMetPhotonEstimated(r.MET_pt_nom, r.MET_phi_nom, addPhoton)
-#        else:         return (r.MET_pt_nom, r.MET_phi_nom)
-        if addPhoton: return getMetPhotonEstimated(r.MET_pt, r.MET_phi, addPhoton)
-        else:         return (r.MET_pt, r.MET_phi)
-
-    elif var in [ "unclustEnUp", "unclustEnDown" ]:
-        var_ = var
-        MET_pt  = getattr(r, "MET_pt_"+var_)
-        MET_phi = getattr(r, "MET_phi_"+var_)
-        if addPhoton: return getMetPhotonEstimated(MET_pt, MET_phi, addPhoton)
-        else:         return (MET_pt, MET_phi)
-
-    else:
-        raise ValueError
 
 def addCorrRelIso( ele, mu, photons ):
     for e in ele:
@@ -924,7 +884,7 @@ def addJetFlags( jets, cleaningLeptons, cleaningPhotons ):
         minDRLep    = min( [ deltaR( l, j ) for l in cleaningLeptons ] + [999] )
         minDRPhoton = min( [ deltaR( g, j ) for g in cleaningPhotons ] + [999] )
         j["clean"]  = minDRLep > 0.4 and minDRPhoton > 0.1
-        j["isGood"] = recoJetSel( j, ptVar=ptVar ) and j["clean"]
+        j["isGood"] = recoJetSel( j ) and j["clean"]
         j["isBJet"] = isBJet( j, tagger=tagger, year=options.year )
 
 # Replace unsign. char type with integer (only necessary for output electrons)
@@ -1029,18 +989,6 @@ def filler( event ):
         GenIsoPhotonGJets          = filter( lambda g: isIsolatedPhoton( g, gPart, coneSize=0.4,  ptCut=5, excludedPdgIds=[12,-12,14,-14,16,-16] ), GenPhoton    )
         GenIsoPhotonNoMesonGJets   = filter( lambda g: not hasMesonMother( getParentIds( g, gPart ) ), GenIsoPhotonGJets )
 
-        ttgGenPhoton = filter( lambda g: not hasMesonMother( getParentIds( g, gPart ) ), GenPhoton )
-        ttgGenPhoton = filter( lambda g: genPhotonSel_TTG_OR(g), ttgGenPhoton )
-        ttgGenPhoton.sort( key = lambda p: -p['pt'] )
-        ttgGenPhoton = (ttgGenPhoton[:1] + [None])[0]
-
-        event.stitchedPt = -1
-        if ttgGenPhoton:
-            while 22 in getParentIds(ttgGenPhoton, gPart):
-                ttgGenPhoton = [ g for g in gPart if g["index"] == ttgGenPhoton["genPartIdxMother"] ][0]
-            event.stitchedPt = ttgGenPhoton["pt"]
-    
-
         event.isTTGamma = len( filter( lambda g: genPhotonSel_TTG_OR(g), GenIsoPhotonNoMesonTTG     ) ) > 0
         event.isZWGamma = len( filter( lambda g: genPhotonSel_ZG_OR(g),  GenIsoPhotonNoMeson        ) ) > 0
         event.isTGamma  = len( filter( lambda g: genPhotonSel_T_OR(g),   GenIsoPhotonNoMesonTG      ) ) > 0 
@@ -1066,25 +1014,19 @@ def filler( event ):
         else:
             event.overlapRemoval = 1 # all other events
 
-        if stitching:
-            if stitching == "low" and ttgGenPhoton:
-                # take the nominal sample for low pt
-                event.pTStitching = ttgGenPhoton["pt"] < 120
-            elif stitching == "low" and not ttgGenPhoton:
-                # take the nominal sample in case there is no gen-photon
-                event.pTStitching = 1
-            elif stitching == "high" and ttgGenPhoton:
-                event.pTStitching = ttgGenPhoton["pt"] >= 120
-            elif stitching == "high" and not ttgGenPhoton:
-                # take the nominal sample in case there is no gen-photon
-                event.pTStitching = 0
-            else:
-                event.pTStitching = 1
-        else:
-            # all other events
-            event.pTStitching = 1
 
-        print ttgGenPhoton["pt"] if ttgGenPhoton else "none", event.pTStitching
+        ttgLHEPhoton = getParticles( r, collVars=['phi','pt','pdgId','eta'],    coll="LHEPart" )
+        ttgLHEPhoton = filter( lambda g: g["pdgId"]==22, ttgLHEPhoton )
+        ttgLHEPhoton.sort( key = lambda p: -p['pt'] ) #there is anyway only one
+        ttgLHEPhoton = (ttgLHEPhoton[:1] + [None])[0]
+
+        event.stitchedPt  = -1
+        event.pTStitching = 1
+        if ttgLHEPhoton:
+            event.stitchedPt = ttgLHEPhoton["pt"]
+            # take the nominal sample for low pt
+            if stitching:
+                event.pTStitching = ttgLHEPhoton["pt"] < 100
 
         GenMuon                                    = filterGenMuons( gPart, status='last' )
         GenElectron                                = filterGenElectrons( gPart, status='last' )
@@ -1545,7 +1487,7 @@ def filler( event ):
         for j in allJets: BTagEff.addBTagEffToJet( j )
 
     # Loose jets w/o pt/eta requirement
-    allGoodJets = list( filter( lambda j: recoJetSel(j, ptVar=ptVar, removedCuts=["pt", "eta"]), allJets ) )
+    allGoodJets = list( filter( lambda j: recoJetSel(j, removedCuts=["pt", "eta"]), allJets ) )
     addJetFlags( allGoodJets, tightLeptons, mediumPhotons )
     # Loose jets w/ pt/eta requirement (analysis jets)
     jets    = list( filter( lambda x: x["isGood"], allGoodJets ) )
@@ -1556,7 +1498,7 @@ def filler( event ):
 #    event.nJet      = len(allGoodJets)
 
     # get nJet for jets cleaned against photons with relaxed cuts
-    goodJets                    = list( filter( lambda j: recoJetSel(j, ptVar=ptVar), allGoodJets ) )
+    goodJets                    = list( filter( lambda j: recoJetSel(j), allGoodJets ) )
     goodJetsInvLepIso           = deltaRCleaning( goodJets, tightInvIsoLeptons, dRCut=0.4 )
     goodJetsNoLepIso            = deltaRCleaning( goodJets, tightNoIsoLeptons, dRCut=0.4 )
     goodJetsInvLepIsoNoLepSieie = deltaRCleaning( goodJets, tightInvIsoNoSieieLeptons, dRCut=0.4 )
@@ -1624,20 +1566,15 @@ def filler( event ):
 
     # store the correct MET (EE Fix for 2017, MET_min as backup in 2017)
     if options.year == 2017 and not options.skipNanoTools and not runOnUL:
-        # v2 recipe. Could also use our own recipe
-        event.MET_pt     = r.METFixEE2017_pt
-        event.MET_phi    = r.METFixEE2017_phi
-        event.MET_pt_min = r.MET_pt_min
+        # 'nom' is the re-corrected value in nanoAODTools.
+        event.MET_pt     = r.METFixEE2017_pt_nom
+        event.MET_phi    = r.METFixEE2017_phi_nom
     elif not options.skipNanoTools:
-#        event.MET_pt     = r.MET_pt_nom
-#        event.MET_phi    = r.MET_phi_nom
-        event.MET_pt     = r.MET_pt
-        event.MET_phi    = r.MET_phi
-        event.MET_pt_min = 0
+        event.MET_pt     = r.MET_pt_nom
+        event.MET_phi    = r.MET_phi_nom
     else:
         event.MET_pt     = r.MET_pt
         event.MET_phi    = r.MET_phi
-        event.MET_pt_min = 0
 
     # Additional observables
     event.m3          = m3( goodJets )[0]
@@ -1649,12 +1586,8 @@ def filler( event ):
     if len(mediumPhotonsInvLepIso) > 0:
         event.m3gammainv = m3( goodJetsInvLepIso, photon=mediumPhotonsInvLepIso[0] )[0]
 
-    event.ht = sum( [ j[ptVar] for j in goodJets ] )
-    event.htinv = sum( [ j[ptVar] for j in goodJetsInvLepIso ] )
-    if event.ht > 0:
-        event.METSig = event.MET_pt / sqrt( event.ht )
-    if event.htinv > 0:
-        event.METSiginv = event.MET_pt / sqrt( event.htinv )
+    event.ht = sum( [ j['pt'] for j in goodJets ] )
+    event.htinv = sum( [ j['pt'] for j in goodJetsInvLepIso ] )
 
     # variables w/ photons
     if len(mediumPhotons) > 0:
@@ -1666,10 +1599,6 @@ def filler( event ):
 #                g['photonCat'] = getPhotonCategory( genMatch, gPart )
 
         # additional observables
-        event.MET_pt_photonEstimated, event.MET_phi_photonEstimated = getMetPhotonEstimated( event.MET_pt, event.MET_phi, mediumPhotons[0] )
-
-        if event.ht > 0:
-            event.METSig_photonEstimated = event.MET_pt_photonEstimated / sqrt( event.ht )
 
         if goodJets:
             event.photonJetdR = min( deltaR( mediumPhotons[0], j ) for j in goodJets )
@@ -1857,36 +1786,12 @@ def filler( event ):
         event.leptonJetdR = min( deltaR( l, j ) for j in jets for l in tightLeptons )
 
     if tightLeptons:
-        event.lpTight = lp( tightLeptons[0]["pt"], tightLeptons[0]["phi"], met["pt"], met["phi"] )
         event.mT      = mT( tightLeptons[0], met )
         event.WPt     = ( get2DVec(tightLeptons[0]) + get2DVec(met) ).Mod()
 
     if tightInvIsoLeptons:
-        event.lpInvTight = lp(  tightInvIsoLeptons[0]["pt"], tightInvIsoLeptons[0]["phi"], met["pt"], met["phi"] )
         event.mTinv      = mT(  tightInvIsoLeptons[0], met )
         event.WinvPt     = ( get2DVec(tightInvIsoLeptons[0]) + get2DVec(met) ).Mod()
-
-    mt2Calculator.reset()
-    mt2Calculator.setMet( met["pt"], met["phi"] )
-    if len(tightInvIsoLeptons) > 0 and len(mediumPhotonsInvLepIso) > 0:
-        mt2Calculator.setLepton1( tightInvIsoLeptons[0]["pt"], tightInvIsoLeptons[0]["eta"], tightInvIsoLeptons[0]["phi"] )
-        mt2Calculator.setLepton2( mediumPhotonsInvLepIso[0]["pt"], mediumPhotonsInvLepIso[0]["eta"], mediumPhotonsInvLepIso[0]["phi"] )
-        event.mT2linvg   = mt2Calculator.mt2ll()
-        event.mTginv     = mTg( tightInvIsoLeptons[0], mediumPhotonsInvLepIso[0], met )
-    if len(tightLeptons) > 0 and len(mediumPhotons) > 0:
-        mt2Calculator.setLepton1( tightLeptons[0]["pt"], tightLeptons[0]["eta"], tightLeptons[0]["phi"] )
-        mt2Calculator.setLepton2( mediumPhotons[0]["pt"], mediumPhotons[0]["eta"], mediumPhotons[0]["phi"] )
-        event.mT2lg   = mt2Calculator.mt2ll()
-        event.mTg     = mTg( tightLeptons[0], mediumPhotons[0], met )
-    if len(tightLeptons) > 1:
-        mt2Calculator.setLepton1( tightLeptons[0]["pt"], tightLeptons[0]["eta"], tightLeptons[0]["phi"] )
-        mt2Calculator.setLepton2( tightLeptons[1]["pt"], tightLeptons[1]["eta"], tightLeptons[1]["phi"] )
-        event.mT2ll   = mt2Calculator.mt2ll()
-        if bj1:
-            mt2Calculator.setBJet1( bj0["pt"], bj0["eta"], bj0["phi"] )
-            mt2Calculator.setBJet2( bj1["pt"], bj1["eta"], bj1["phi"] )
-            event.mT2bb   = mt2Calculator.mt2bb()
-            event.mT2blbl = mt2Calculator.mt2blbl()
 
     jets_sys                   = {}
     bjets_sys                  = {}
@@ -1894,12 +1799,12 @@ def filler( event ):
     bjetsNoChgIsoNoSieie_sys   = {}
 
     if addSystematicVariations and not options.skipNanoTools and not options.skipSF:
+
         for var in ['jesTotalUp', 'jesTotalDown', 'jerUp', 'jerDown']: #, 'unclustEnUp', 'unclustEnDown']:
 
             jets_sys[var] = filter(lambda j: recoJetSel(j, ptVar="pt_"+var), allGoodJets)
             bjets_sys[var]    = filter(lambda j: j["isBJet"], jets_sys[var])
 
-            setattr(event, 'MET_pt_'+var, getattr(r, 'METFixEE2017_pt_'+var if options.year == 2017 and not runOnUL else 'MET_pt_'+var) )
             setattr(event, "nJetGood_"+var,  len(jets_sys[var]))
             setattr(event, "nBTagGood_"+var, len(bjets_sys[var]))
             setattr(event, "ht_"+var,        sum([j['pt_'+var] for j in jets_sys[var]]))
@@ -1911,43 +1816,10 @@ def filler( event ):
             setattr(event, "nBTagGoodNoChgIsoNoSieie_"+var, len(bjetsNoChgIsoNoSieie_sys[var]))
 
         for var in ['jesTotalUp', 'jesTotalDown', 'jerUp', 'jerDown', 'unclustEnUp', 'unclustEnDown']:
-            for i in ["", "_photonEstimated"]:
-                # use cmg MET correction values ecept for JER where it is zero. There, propagate jet variations.
-                if 'jer' in var or 'jes' in var:
-                  (MET_corr_pt, MET_corr_phi) = getMetJetCorrected(getattr(event, "MET_pt" + i), getattr(event,"MET_phi" + i), allJets, var, ptVar=ptVar)
-                else:
-                  (MET_corr_pt, MET_corr_phi) = getMetCorrected(r, var, mediumPhotons[0] if i.count("photonEstimated") and len(mediumPhotons) else None)
-
-                if len(tightLeptons) > 0:
-                    setattr(event, "lpTight"+i+"_"+var, lp( tightLeptons[0]["pt"], tightLeptons[0]["phi"], MET_corr_pt, MET_corr_phi ) )
-                    setattr(event, "mT"+i+"_"+var, mT( tightLeptons[0], {"pt":MET_corr_pt, "phi":MET_corr_phi} ) )
-
-                setattr(event, "MET_pt" +i+"_"+var, MET_corr_pt)
-                setattr(event, "MET_phi"+i+"_"+var, MET_corr_phi)
-                ht = getattr(event, "ht_"+var) if 'unclust' not in var else event.ht
-                setattr(event, "METSig" +i+"_"+var, getattr(event, "MET_pt"+i+"_"+var)/sqrt( ht ) if ht>0 else float('nan') )
-
-    # Topreco
-    if options.topReco:
-        #topReco = TopReco( ROOT.Era.run2_13tev_2016_25ns, 2, 1, 0, 'btagDeepB', 0.6321 )
-        solution = topReco.evaluate( tightLeptons, jets, met = met)
-        if solution:
-            event.topReco_nBTag   = solution.ntags
-            event.topReco_weight  = solution.weight
-            event.topReco_recMtop = solution.recMtop
-            event.topReco_met_pt  = solution.met.Pt()
-            event.topReco_met_phi = solution.met.Phi()
-            
-            setParticle(event, "lp",             solution.lp) 
-            setParticle(event, "lm",             solution.lm) 
-            setParticle(event, "jetB",           solution.jetB) 
-            setParticle(event, "jetBbar",        solution.jetBbar) 
-            setParticle(event, "Wp",             solution.Wplus) 
-            setParticle(event, "Wm",             solution.Wminus) 
-            setParticle(event, "neutrino",       solution.neutrino) 
-            setParticle(event, "neutrinoBar",    solution.neutrinoBar) 
-            setParticle(event, "top",            solution.top) 
-            setParticle(event, "topBar",         solution.topBar) 
+            setattr(event, 'MET_pt_'+var,  getattr(r, metBranchName+'_pt_'+var) )
+            setattr(event, 'MET_phi_'+var, getattr(r, metBranchName+'_phi_'+var) )
+            if len(tightLeptons) > 0:
+                setattr(event, "mT_"+var, mT( tightLeptons[0], {"pt":getattr( event, 'MET_pt_'+var ), "phi":getattr(event, 'MET_phi_'+var)} ) )
 
     nHEMObjects = nHEMJets + nHEMElectrons + nHEMPhotons
     if isData:
@@ -1960,7 +1832,6 @@ def filler( event ):
 
         # top pt reweighting
         event.reweightTopPt     = topPtReweightingFunc(getTopPtsForReweighting(r)) * topScaleF if doTopPtReweighting else 1.
-        print "weight", event.reweightTopPt
         # W pt reweighting for W+Jets samples in 2017/18
         event.reweightWPt    = 1.
         event.reweightWinvPt = 1.
