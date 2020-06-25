@@ -59,3 +59,56 @@ multiplicityGood_pt.append( Plot(
     binning   = [ 6, 0, 6 ],
 ))
 
+
+
+
+
+
+multiplicityGood_pt.append( Plot(
+    name      = 'nJetGoodInvIso_20ptG120',
+    texX      = 'N_{jet}',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.nJetGoodInvLepIso if event.PhotonGoodInvLepIso0_pt >= 20 and event.PhotonGoodInvLepIso0_pt < 120 else -999,
+    binning   = [ 10, 0, 10 ],
+))
+
+multiplicityGood_pt.append( Plot(
+    name      = 'nBJetGoodInvIso_20ptG120',
+    texX      = 'N_{bJet}',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.nBTagGoodInvLepIso if event.PhotonGoodInvLepIso0_pt >= 20 and event.PhotonGoodInvLepIso0_pt < 120 else -999,
+    binning   = [ 6, 0, 6 ],
+))
+
+multiplicityGood_pt.append( Plot(
+    name      = 'nJetGoodInvIso_120ptG220',
+    texX      = 'N_{jet}',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.nJetGoodInvLepIso if event.PhotonGoodInvLepIso0_pt >= 120 and event.PhotonGoodInvLepIso0_pt < 220 else -999,
+    binning   = [ 10, 0, 10 ],
+))
+
+multiplicityGood_pt.append( Plot(
+    name      = 'nBJetGoodInvIso_120ptG220',
+    texX      = 'N_{bJet}',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.nBTagGoodInvLepIso if event.PhotonGoodInvLepIso0_pt >= 120 and event.PhotonGoodInvLepIso0_pt < 220 else -999,
+    binning   = [ 6, 0, 6 ],
+))
+
+multiplicityGood_pt.append( Plot(
+    name      = 'nJetGoodInvIso_220ptGinf',
+    texX      = 'N_{jet}',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.nJetGoodInvLepIso if event.PhotonGoodInvLepIso0_pt >= 220 else -999,
+    binning   = [ 10, 0, 10 ],
+))
+
+multiplicityGood_pt.append( Plot(
+    name      = 'nBJetGoodInvIso_220ptGinf',
+    texX      = 'N_{bJet}',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.nBTagGoodInvLepIso if event.PhotonGoodInvLepIso0_pt >= 220 else -999,
+    binning   = [ 6, 0, 6 ],
+))
+

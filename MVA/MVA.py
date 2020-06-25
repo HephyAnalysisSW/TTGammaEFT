@@ -625,8 +625,13 @@ if __name__ == "__main__":
     #define samples
     from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed      import *
 
+<<<<<<< HEAD
     signal      = TTG_16
     backgrounds = [ WJets_16 ]
+=======
+    signal      = TTG
+    backgrounds = [ WJets_HT ]
+>>>>>>> 2cdffc90a056e7ba6b3016ca47af5b3ba1502738
 
     weightString = "weight"
 

@@ -16,7 +16,7 @@ genIso.append( Plot(
     texX      = 'min( #DeltaR(jet, jet) )',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.minDRjj,
-    binning   = [ 40, 0, 5 ],
+    binning   = [ 10, 0, 5 ],
 ))
 
 genIso.append( Plot(
@@ -24,7 +24,7 @@ genIso.append( Plot(
     texX      = 'min( #DeltaR(b-jet, b-jet) )',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.minDRbb,
-    binning   = [ 40, 0, 5 ],
+    binning   = [ 10, 0, 5 ],
 ))
 
 genIso.append( Plot(
@@ -32,7 +32,7 @@ genIso.append( Plot(
     texX      = 'min( #DeltaR(lep, lep) )',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.minDRll,
-    binning   = [ 40, 0, 5 ],
+    binning   = [ 10, 0, 5 ],
 ))
 
 genIso.append( Plot(
@@ -40,7 +40,7 @@ genIso.append( Plot(
     texX      = 'min( #DeltaR(#gamma, #gamma) )',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.minDRaa,
-    binning   = [ 40, 0, 1 ],
+    binning   = [ 10, 0, 1 ],
 ))
 
 genIso.append( Plot(
@@ -48,7 +48,7 @@ genIso.append( Plot(
     texX      = 'min( #DeltaR(b-jet, jet) )',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.minDRbj,
-    binning   = [ 40, 0, 5 ],
+    binning   = [ 10, 0, 5 ],
 ))
 
 genIso.append( Plot(
@@ -56,7 +56,7 @@ genIso.append( Plot(
     texX      = 'min( #DeltaR(#gamma, jet) )',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.minDRaj,
-    binning   = [ 40, 0, 5 ],
+    binning   = [ 10, 0, 5 ],
 ))
 
 genIso.append( Plot(
@@ -64,7 +64,7 @@ genIso.append( Plot(
     texX      = 'min( #DeltaR(jet, lep) )',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.minDRjl,
-    binning   = [ 40, 0, 5 ],
+    binning   = [ 10, 0, 5 ],
 ))
 
 genIso.append( Plot(
@@ -72,7 +72,7 @@ genIso.append( Plot(
     texX      = 'min( #DeltaR(#gamma, b-jet) )',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.minDRab,
-    binning   = [ 40, 0, 5 ],
+    binning   = [ 10, 0, 5 ],
 ))
 
 genIso.append( Plot(
@@ -80,7 +80,7 @@ genIso.append( Plot(
     texX      = 'min( #DeltaR(b-jet, lep) )',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.minDRbl,
-    binning   = [ 40, 0, 5 ],
+    binning   = [ 10, 0, 5 ],
 ))
 
 genIso.append( Plot(
@@ -88,7 +88,7 @@ genIso.append( Plot(
     texX      = 'min( #DeltaR(#gamma, lep) )',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.minDRal,
-    binning   = [ 40, 0, 5 ],
+    binning   = [ 10, 0, 5 ],
 ))
 
 
@@ -98,7 +98,7 @@ genIso.append( Plot(
     texX      = 'min( #DeltaR(jet, jet) )',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.minDRjj,
-    binning   = [ 40, 0, 1 ],
+    binning   = [ 10, 0, 1 ],
 ))
 
 genIso.append( Plot(
@@ -106,7 +106,7 @@ genIso.append( Plot(
     texX      = 'min( #DeltaR(b-jet, b-jet) )',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.minDRbb,
-    binning   = [ 40, 0, 1 ],
+    binning   = [ 10, 0, 1 ],
 ))
 
 genIso.append( Plot(
@@ -114,7 +114,7 @@ genIso.append( Plot(
     texX      = 'min( #DeltaR(lep, lep) )',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.minDRll,
-    binning   = [ 40, 0, 1 ],
+    binning   = [ 10, 0, 1 ],
 ))
 
 genIso.append( Plot(
@@ -122,7 +122,7 @@ genIso.append( Plot(
     texX      = 'min( #DeltaR(b-jet, jet) )',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.minDRbj,
-    binning   = [ 40, 0, 1 ],
+    binning   = [ 10, 0, 1 ],
 ))
 
 genIso.append( Plot(
@@ -130,7 +130,7 @@ genIso.append( Plot(
     texX      = 'min( #DeltaR(jet, lep) )',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.minDRjl,
-    binning   = [ 40, 0, 1 ],
+    binning   = [ 10, 0, 1 ],
 ))
 
 genIso.append( Plot(
@@ -138,6 +138,6 @@ genIso.append( Plot(
     texX      = 'min( #DeltaR(b-jet, lep) )',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.minDRbl,
-    binning   = [ 40, 0, 1 ],
+    binning   = [ 10, 0, 1 ],
 ))
 

@@ -16,7 +16,7 @@ genPhoton0.append( Plot(
     texX      = 'p_{T}(#gamma_{0}) (GeV)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenMGPhoton_pt[0],# if event.GenMGPhoton_status[0] > 1 else -999,
-    binning   = [ 48, 0, 120 ],
+    binning   = [ 20, 0, 120 ],
 ))
 
 genPhoton0.append( Plot(
@@ -24,7 +24,7 @@ genPhoton0.append( Plot(
     texX      = 'p_{T}(#gamma_{0}) (GeV)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenMGPhoton_pt[0],# if event.GenMGPhoton_status[0] > 1 else -999,
-    binning   = [ 48, 80, 220 ],
+    binning   = [ 20, 80, 220 ],
 ))
 
 genPhoton0.append( Plot(
@@ -32,7 +32,7 @@ genPhoton0.append( Plot(
     texX      = 'p_{T}(#gamma_{0}) (GeV)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenMGPhoton_pt[0],# if event.GenMGPhoton_status[0] > 1 else -999,
-    binning   = [ 48, 180, 420 ],
+    binning   = [ 20, 180, 420 ],
 ))
 
 genPhoton0.append( Plot(
@@ -48,7 +48,7 @@ genPhoton0.append( Plot(
     texX      = '#phi(#gamma_{0})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenMGPhoton_phi[0],# if event.GenMGPhoton_status[0] > 1 else -999,
-    binning   = [ 20, -pi, pi ],
+    binning   = [ 10, -pi, pi ],
 ))
 
 
@@ -57,7 +57,7 @@ genPhoton0.append( Plot(
     texX      = 'p_{T}(#gamma_{0}) (GeV)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenMGPhoton_pt[0] if event.GenMGPhoton_status[0] > 1 else -999,
-    binning   = [ 48, 0, 120 ],
+    binning   = [ 20, 0, 120 ],
 ))
 
 genPhoton0.append( Plot(
@@ -65,7 +65,7 @@ genPhoton0.append( Plot(
     texX      = 'p_{T}(#gamma_{0}) (GeV)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenMGPhoton_pt[0] if event.GenMGPhoton_status[0] > 1 else -999,
-    binning   = [ 48, 80, 220 ],
+    binning   = [ 20, 80, 220 ],
 ))
 
 genPhoton0.append( Plot(
@@ -73,6 +73,6 @@ genPhoton0.append( Plot(
     texX      = 'p_{T}(#gamma_{0}) (GeV)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenMGPhoton_pt[0] if event.GenMGPhoton_status[0] > 1 else -999,
-    binning   = [ 48, 180, 420 ],
+    binning   = [ 20, 180, 420 ],
 ))
 

@@ -23,6 +23,8 @@ from TTGammaEFT.plots.cutsLeptonTight1         import cutsLeptonTight1
 #from TTGammaEFT.plots.cutsPhotonNoIdCuts0      import cutsPhotonNoIdCuts0
 #from TTGammaEFT.plots.cutsPhotonNoIdCuts0_nPV  import cutsPhotonNoIdCuts0_nPV
 #from TTGammaEFT.plots.cutsPhotonNoIdCuts0_pt   import cutsPhotonNoIdCuts0_pt
+from TTGammaEFT.plots.cutsPhotonNoIdCuts0_noPhoton   import cutsPhotonNoIdCuts0_noPhoton
+from TTGammaEFT.plots.cutsPhotonNoIdCuts0_noPhoton_pt   import cutsPhotonNoIdCuts0_noPhoton_pt
 from TTGammaEFT.plots.cutsPhotonNoIdCuts0_invChgIso  import cutsPhotonNoIdCuts0_invChgIso
 from TTGammaEFT.plots.cutsPhotonNoIdCuts0_nPV_invChgIso  import cutsPhotonNoIdCuts0_nPV_invChgIso
 from TTGammaEFT.plots.cutsPhotonNoIdCuts0_pt_invChgIso   import cutsPhotonNoIdCuts0_pt_invChgIso
@@ -40,7 +42,7 @@ from TTGammaEFT.plots.leptonTight0             import leptonTight0
 from TTGammaEFT.plots.leptonTight1             import leptonTight1
 #from TTGammaEFT.plots.massGood                 import massGood
 #from TTGammaEFT.plots.massGood_pt              import massGood_pt
-#from TTGammaEFT.plots.massTight                import massTight
+from TTGammaEFT.plots.massTight_noPhoton       import massTight_noPhoton
 #from TTGammaEFT.plots.massTight_pt             import massTight_pt
 from TTGammaEFT.plots.met                      import met
 from TTGammaEFT.plots.metSig                   import metSig
@@ -66,6 +68,8 @@ plotListData += cutsLeptonTight1
 #plotListData += cutsPhotonNoIdCuts0
 #plotListData += cutsPhotonNoIdCuts0_nPV
 #plotListData += cutsPhotonNoIdCuts0_pt
+plotListData += cutsPhotonNoIdCuts0_noPhoton_pt
+plotListData += cutsPhotonNoIdCuts0_noPhoton
 plotListData += ht
 #plotListData += isolationGood
 plotListData += isolationTight
@@ -77,6 +81,7 @@ plotListData += leptonTight0
 plotListData += leptonTight1
 #plotListData += massGood
 #plotListData += massGood_pt
+plotListData += massTight_noPhoton
 #plotListData += massTight
 #plotListData += massTight_pt
 plotListData += met

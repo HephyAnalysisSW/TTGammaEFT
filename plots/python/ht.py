@@ -18,3 +18,11 @@ ht.append( Plot(
     attribute = TreeVariable.fromString( "ht/F" ),
     binning   = [ 20, 0, 600 ],
 ))
+
+ht.append( Plot(
+    name      = 'htinv',
+    texX      = 'H_{T} (GeV)',
+    texY      = 'Number of Events / 30 GeV',
+    attribute = TreeVariable.fromString( "htinv/F" ),
+    binning   = [ 20, 0, 600 ],
+))

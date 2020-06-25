@@ -25,7 +25,7 @@ from TTGammaEFT.plots.genIso          import genIso
 # plotList
 plotListData  = []
 plotListData += genMet
-plotListData += genPhoton0
+#plotListData += genPhoton0
 plotListData += genLepton0
 plotListData += genLepton1
 plotListData += genJet0
@@ -36,7 +36,7 @@ plotListData += genTop0
 plotListData += genTop1
 plotListData += genMultiplicity
 plotListData += genMass
-plotListData += genIso
+#plotListData += genIso
 
 plotListDataMC = plotListData
 

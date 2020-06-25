@@ -236,8 +236,8 @@ for index, mode in enumerate( allModes ):
     # Define 2l selections
     leptonSelection = cutInterpreter.cutString( mode )
 
-    Run2017_noPreFiring.setSelectionString( [ getFilterCut( 2017, isData=True ),  leptonSelection, "unPreFirableEvent==1"] )
-    Run2017.setSelectionString( [ getFilterCut( 2017, isData=True ), leptonSelection ] )
+    Run2017_noPreFiring.setSelectionString( [ getFilterCut( 2017, isData=True, skipBadChargedCandidate=True ),  leptonSelection, "unPreFirableEvent==1"] )
+    Run2017.setSelectionString( [ getFilterCut( 2017, isData=True, skipBadChargedCandidate=True ), leptonSelection ] )
 
     if args.triggerSelection:
         Run2017_noPreFiring.addSelectionString( triggerCond )

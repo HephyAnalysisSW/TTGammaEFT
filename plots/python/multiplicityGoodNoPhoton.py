@@ -139,3 +139,36 @@ multiplicityGoodNoPhoton.append( Plot(
     binning   = [ 4, 0, 4 ],
 ))
 
+
+multiplicityGoodNoPhoton.append( Plot(
+    name      = 'nJetGoodInvIso_wide',
+    texX      = 'N_{jet}',
+    texY      = 'Number of Events',
+    attribute = TreeVariable.fromString( "nJetGoodInvLepIso/I" ),
+    binning   = [ 15, 0, 15 ],
+))
+
+multiplicityGoodNoPhoton.append( Plot(
+    name      = 'nJetGoodInvIso',
+    texX      = 'N_{jet}',
+    texY      = 'Number of Events',
+    attribute = TreeVariable.fromString( "nJetGoodInvLepIso/I" ),
+    binning   = [ 6, 0, 6 ],
+))
+
+multiplicityGoodNoPhoton.append( Plot(
+    name      = 'nJetGoodInvIso_semi',
+    texX      = 'N_{jet}',
+    texY      = 'Number of Events',
+    attribute = TreeVariable.fromString( "nJetGoodInvLepIso/I" ),
+    binning   = [ 6, 4, 10 ],
+))
+
+multiplicityGoodNoPhoton.append( Plot(
+    name      = 'nBJetGoodInvIso',
+    texX      = 'N_{bJet}',
+    texY      = 'Number of Events',
+    attribute = TreeVariable.fromString( "nBTagGoodInvLepIso/I" ),
+    binning   = [ 4, 0, 4 ],
+))
+

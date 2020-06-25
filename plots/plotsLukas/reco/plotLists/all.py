@@ -51,8 +51,8 @@ from TTGammaEFT.plots.multiplicityGood_pt         import multiplicityGood_pt
 #from TTGammaEFT.plots.multiplicityGoodNoPhoton import multiplicityGoodNoPhoton
 from TTGammaEFT.plots.photonGood0              import photonGood0
 
-from TTGammaEFT.plots.cutsPhotonMVA0           import cutsPhotonMVA0
-from TTGammaEFT.plots.PhotonMVA0               import PhotonMVA0
+#from TTGammaEFT.plots.cutsPhotonMVA0           import cutsPhotonMVA0
+#from TTGammaEFT.plots.PhotonMVA0               import PhotonMVA0
 
 # plotList
 plotListData  = []
@@ -93,8 +93,8 @@ plotListData += multiplicityGood_pt
 plotListData += photonGood0
 #plotListData += photonGood1
 
-plotListData += cutsPhotonMVA0
-plotListData += PhotonMVA0
+#plotListData += cutsPhotonMVA0
+#plotListData += PhotonMVA0
 
 plotListData += cutsPhotonNoIdCuts0_invChgIso
 plotListData += cutsPhotonNoIdCuts0_nPV_invChgIso

@@ -1,0 +1,126 @@
+\documentclass[usenames,dvipsnames,nobibnotes]{beamer}
+\mode<presentation> {
+\usetheme{Copenhagen}
+\setbeamertemplate{navigation symbols}{
+    \usebeamerfont{footline}%
+    \usebeamercolor[fg]{footline}%
+    \hspace{1em}%
+    \insertframenumber/\inserttotalframenumber
+}
+}
+\usepackage{graphicx} % Allows including images
+\usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tabes
+\usepackage{subfigure}
+\usepackage{changepage}
+\usepackage{amsmath}
+\usepackage{overpic}
+\usepackage{array}
+\newcolumntype{M}[1]{>{\centering\arraybackslash}m{#1}}
+\usepackage{xcolor}
+\usepackage{stackengine,graphicx,xcolor}
+\usepackage{appendixnumberbeamer}
+\usepackage{multirow}
+\usepackage{bold-extra}
+\usepackage{tcolorbox}
+
+
+\def\ttZ{t$\bar{\text{t}}$Z }
+\def\ttg{t$\bar{\text{t}}\gamma$ }
+\def\ttbar{t$\bar{\text{t}}$ }
+\def\WZ{WZ }
+\def\tW{tW }
+\def\DY{DY }
+\def\ZG{Z$\gamma$ }
+\def\tZq{tZq }
+\def\tWZ{tWZ }
+
+\def\pT{p$_\text{T}$ }
+
+\def\nLep{N$_\ell$ }
+\def\nLepVeto{N$_{\ell, \text{veto}}$ }
+\def\nG{N$_\gamma$ }
+\def\nJet{N$_\text{jet}$ }
+\def\nBJet{N$_\text{b-jet}$ }
+\def\nPU{N$_\text{PV}$ }
+\def\ET{E$_\text{T}^\text{miss}$ }
+
+\def\ctA{C$_\text{tA}$ }
+\def\ctZ{C$_\text{tZ}$ }
+\def\ctZI{C$_\text{tZ}^\text{[Im]}$ }
+\def\cpt{C$_{\phi \text{t}}$ }
+\def\cpQM{C$_{\phi \text{Q}}$ }
+
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+
+\makeatletter
+\newcommand{\mybox}[1]{%
+  \setbox0=\hbox{#1}%
+  \setlength{\@tempdima}{\dimexpr\wd0+13pt}%
+  \begin{tcolorbox}[colframe=red,boxrule=0.5pt,arc=2pt,
+      left=3pt,right=3pt,top=3pt,bottom=3pt,boxsep=0pt,width=\@tempdima-5pt]
+    #1
+  \end{tcolorbox}
+
+}\newcommand{\backupbegin}{
+   \newcounter{framenumberappendix}
+   \setcounter{framenumberappendix}{\value{framenumber}}
+}
+\newcommand{\backupend}{
+   \addtocounter{framenumberappendix}{-\value{framenumber}}
+   \addtocounter{framenumber}{\value{framenumberappendix}} 
+}
+
+\makeatother
+
+\RequirePackage{pgfopts}
+\RequirePackage{etoolbox}
+
+\usepackage{appendixnumberbeamer}
+\setbeamertemplate{button}{\tikz
+  \node[
+  inner xsep=5pt,
+  draw=structure!80,
+  fill=structure!50,
+  rounded corners=1pt]  {\tiny \insertbuttontext};}
+
+\usetheme[usetotalslideindicator,usetitleprogressbar]{metropolis}
+\pgfkeys{
+/metropolis/titleformat/.code=\pgfkeysalso{
+font/titleformat title=#1,
+font/titleformat subtitle=#1,
+font/titleformat section=#1,
+font/titleformat frame=#1,
+titleformat plain=#1,
+}
+}
+
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\title{tt+$\gamma$ 1$\ell$ update}
+\subtitle{Yield Tables}
+
+\author[Lukas Lechner]{\textbf{Lukas Lechner}, Robert Sch\"ofbeck}
+
+\institute{\vspace{1cm}\normalsize HEPHY - Institute of High Energy Physics, Vienna}
+\date{\normalsize July 19$^\text{th}$, 2019} % Date, can be changed to a custom date
+
+\setbeamertemplate{headline}{}
+%\setbeamertemplate{itemize/enumerate body begin}{\large}
+\setbeamertemplate{itemize/enumerate subbody begin}{\footnotesize}
+
+\begin{document}
+\fontsize{9pt}{9}\selectfont
+
+
+\begin{frame}
+\titlepage
+\thispagestyle{empty}
+\end{frame}
+

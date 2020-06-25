@@ -6,7 +6,33 @@ import ROOT
 from RootTools.core.Sample import Sample 
 
 # TTGammaEFT Imports
-from TTGammaEFT.Samples.helpers import getDPMSample, merge
+from TTGammaEFT.Samples.helpers import getDataSample, merge
+
+# Data directory
+try:
+    data_directory_ = sys.modules['__main__'].data_directory
+except:
+    from TTGammaEFT.Tools.user import dpm_directory as data_directory_
+    data_directory_ += "postprocessed/"
+try:
+    postprocessing_directory_ = sys.modules['__main__'].postprocessing_directory
+except:
+    from TTGammaEFT.Samples.default_locations import postprocessing_locations
+    postprocessing_directory_ = postprocessing_locations.Run2017_semilep
+
+try:
+    fromDPM = sys.modules['__main__'].fromEOS != "True"
+except:
+    fromDPM = not "clip" in os.getenv("HOSTNAME").lower()
+
+#if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
+#    postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
+
+# Redirector
+try:
+    redirector = sys.modules['__main__'].redirector
+except:
+    from TTGammaEFT.Tools.user import redirector as redirector
 
 # Logging
 if __name__=="__main__":
@@ -18,28 +44,14 @@ else:
     import logging
     logger = logging.getLogger(__name__)
 
-# Data directory
-from TTGammaEFT.Tools.user import dpm_directory as data_directory
-data_directory += "postprocessed/"
-from TTGammaEFT.Samples.default_locations import postprocessing_locations
-postprocessing_directory = postprocessing_locations.Run2017_semilep
-if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True": postprocessing_directory = postprocessing_directory.replace("/semilep/", "/semilepGamma/")
-
-# Redirector
-try:
-    redirector = sys.modules['__main__'].redirector
-except:
-    from TTGammaEFT.Tools.user import redirector as redirector
-
-logger.info( "Loading data samples from directory %s", os.path.join(data_directory, postprocessing_directory ) )
+logger.info( "Loading data samples from directory %s", os.path.join(data_directory_, postprocessing_directory_ ) )
 
 allSamples = [ 'SingleMuon', 'SingleElectron' ]
-lumi       = 41.86
+lumi       = 41.53
 
 dirs = {}
 for ( run, version ) in [ ( 'B', '' ), ( 'C', '' ), ( 'D', '' ), ( 'E', '' ), ( 'F', '' ) ]:
-#    runTag = 'Run2017' + run + '_14Dec2018' + version
-    runTag = 'Run2017' + run + '_31Mar2018' + version
+    runTag = 'Run2017' + run + '_25Oct2019' + version
     for pd in allSamples:
         dirs[ pd + "_Run2017" + run + version ] = [ pd + "_" + runTag ]
 
@@ -48,15 +60,45 @@ for pd in allSamples:
     merge( pd, 'Run2017CDE', [ 'Run2017C', 'Run2017D', 'Run2017E' ], dirs )
 
 for key in dirs:
-    dirs[key] = [ os.path.join( data_directory, postprocessing_directory, dir ) for dir in dirs[key] ]
+    dirs[key] = [ os.path.join( data_directory_, postprocessing_directory_, dir ) for dir in dirs[key] ]
 
-allSamples_Data25ns  = []
+allSamples_Data25ns   = []
+allSamplesB_Data25ns  = []
+allSamplesC_Data25ns  = []
+allSamplesD_Data25ns  = []
+allSamplesE_Data25ns  = []
+allSamplesF_Data25ns  = []
 for pd in allSamples:
-    vars()[ pd + '_Run2017' ] = getDPMSample( pd, 'Run2017', lumi*1000, dirs, redirector )
-    allSamples_Data25ns += [ vars()[ pd + '_Run2017' ] ]
+    vars()[ pd + '_Run2017' ]  = getDataSample( pd, 'Run2017', lumi*1000, dirs, redirector=redirector, fromDPM=fromDPM )
+    vars()[ pd + '_Run2017B' ] = getDataSample( pd, 'Run2017B', lumi*1000, dirs, redirector=redirector, fromDPM=fromDPM )
+    vars()[ pd + '_Run2017C' ] = getDataSample( pd, 'Run2017C', lumi*1000, dirs, redirector=redirector, fromDPM=fromDPM )
+    vars()[ pd + '_Run2017D' ] = getDataSample( pd, 'Run2017D', lumi*1000, dirs, redirector=redirector, fromDPM=fromDPM )
+    vars()[ pd + '_Run2017E' ] = getDataSample( pd, 'Run2017E', lumi*1000, dirs, redirector=redirector, fromDPM=fromDPM )
+    vars()[ pd + '_Run2017F' ] = getDataSample( pd, 'Run2017F', lumi*1000, dirs, redirector=redirector, fromDPM=fromDPM )
+    allSamples_Data25ns  += [ vars()[ pd + '_Run2017' ] ]
+    allSamplesB_Data25ns += [ vars()[ pd + '_Run2017B' ] ]
+    allSamplesC_Data25ns += [ vars()[ pd + '_Run2017C' ] ]
+    allSamplesD_Data25ns += [ vars()[ pd + '_Run2017D' ] ]
+    allSamplesE_Data25ns += [ vars()[ pd + '_Run2017E' ] ]
+    allSamplesF_Data25ns += [ vars()[ pd + '_Run2017F' ] ]
 
 Run2017      = Sample.combine( "Run2017", allSamples_Data25ns, texName = "Data" )
 Run2017.lumi = lumi*1000
+
+Run2017B      = Sample.combine( "Run2017B", allSamplesB_Data25ns, texName = "Data" )
+Run2017B.lumi = lumi*1000
+
+Run2017C      = Sample.combine( "Run2017C", allSamplesC_Data25ns, texName = "Data" )
+Run2017C.lumi = lumi*1000
+
+Run2017D      = Sample.combine( "Run2017D", allSamplesD_Data25ns, texName = "Data" )
+Run2017D.lumi = lumi*1000
+
+Run2017E      = Sample.combine( "Run2017E", allSamplesE_Data25ns, texName = "Data" )
+Run2017E.lumi = lumi*1000
+
+Run2017F      = Sample.combine( "Run2017F", allSamplesF_Data25ns, texName = "Data" )
+Run2017F.lumi = lumi*1000
 
 for s in allSamples_Data25ns:
     s.color   = ROOT.kBlack

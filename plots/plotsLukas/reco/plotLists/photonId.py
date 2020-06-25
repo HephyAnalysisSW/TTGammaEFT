@@ -10,8 +10,8 @@ import copy
 from RootTools.core.standard          import *
 
 from TTGammaEFT.plots.photonGood0              import photonGood0
-from TTGammaEFT.plots.cutsPhotonMVA0           import cutsPhotonMVA0
-from TTGammaEFT.plots.PhotonMVA0               import PhotonMVA0
+#from TTGammaEFT.plots.cutsPhotonMVA0           import cutsPhotonMVA0
+#from TTGammaEFT.plots.PhotonMVA0               import PhotonMVA0
 
 from TTGammaEFT.plots.cutsPhotonGood0          import cutsPhotonGood0
 from TTGammaEFT.plots.cutsPhotonNoIdCuts0      import cutsPhotonNoIdCuts0
@@ -28,8 +28,8 @@ from TTGammaEFT.plots.cutsPhotonNoIdCuts0_pt_invSieie   import cutsPhotonNoIdCut
 plotListData  = []
 
 plotListData += photonGood0
-plotListData += cutsPhotonMVA0
-plotListData += PhotonMVA0
+#plotListData += cutsPhotonMVA0
+#plotListData += PhotonMVA0
 
 plotListData += cutsPhotonGood0
 plotListData += cutsPhotonNoIdCuts0

@@ -12,14 +12,15 @@ def singleton(class_):
     return instances[class_]
   return getinstance
 
-def getSample( pd, runName, lumi, dirs ):
-    sample  = Sample.fromDirectory( name=( pd + '_' + runName ), treeName="Events", texName=( pd + ' (' + runName + ')' ), directory=dirs[ pd + '_' + runName ] )
+def getDataSample( pd, runName, lumi, dirs, redirector=None, fromDPM=True ):
+    if fromDPM: sample = Sample.fromDPMDirectory( name=( pd + '_' + runName ), treeName="Events", redirector=redirector, texName=( pd + ' (' + runName + ')' ), directory=dirs[ pd + '_' + runName ], noCheckProxy=True )
+    else:       sample = Sample.fromDirectory( name=( pd + '_' + runName ), treeName="Events", texName=( pd + ' (' + runName + ')' ), directory=dirs[ pd + '_' + runName ] )
     sample.lumi = lumi
     return sample
 
-def getDPMSample( pd, runName, lumi, dirs, redirector ):
-    sample  = Sample.fromDPMDirectory( name=( pd + '_' + runName ), treeName="Events", redirector=redirector, texName=( pd + ' (' + runName + ')' ), directory=dirs[ pd + '_' + runName ], noCheckProxy=True )
-    sample.lumi = lumi
+def getMCSample( name, texName, directory, redirector=None, color=None, noCheckProxy=True, fromDPM=True ):
+    if fromDPM: sample = Sample.fromDPMDirectory( name=name, isData=False, color=color, treeName="Events", redirector=redirector, texName=texName, directory=directory, noCheckProxy=noCheckProxy )
+    else:       sample = Sample.fromDirectory(    name=name, isData=False, color=color, treeName="Events",                        texName=texName, directory=directory )
     return sample
 
 def merge( pd, totalRunName, listOfRuns, dirs ):

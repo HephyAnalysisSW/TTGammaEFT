@@ -32,6 +32,8 @@ class NanoVariables:
 
         self.ElectronVariables = [\
                                   Variable( "pt",                       "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
+                                  Variable( "pt_totalUp",               "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
+                                  Variable( "pt_totalDown",             "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
                                   Variable( "eta",                      "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                   Variable( "phi",                      "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                   Variable( "pfRelIso03_all",           "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
@@ -60,8 +62,8 @@ class NanoVariables:
                                   Variable( "energyErr",                "F", read=True,  write=True, inData=True,  inPlot=False, isSyst=False ),
                                   Variable( "ip3d",                     "F", read=True,  write=True,  inData=True,  inPlot=False, isSyst=False ),
                                   Variable( "mass",                     "F", read=True,  write=True,  inData=True,  inPlot=False, isSyst=False ),
-                                  Variable( "miniPFRelIso_all",         "F", read=True,  write=True,  inData=True,  inPlot=False, isSyst=False ),
-                                  Variable( "miniPFRelIso_chg",         "F", read=True,  write=True,  inData=True,  inPlot=False, isSyst=False ),
+                                  Variable( "miniPFRelIso_all",         "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
+                                  Variable( "miniPFRelIso_chg",         "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                   Variable( "r9",                       "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                   Variable( "mvaTTH",                   "F", read=True,  write=True, inData=True,  inPlot=False, isSyst=False ),
                                   Variable( "charge",                   "I", read=True,  write=True,  inData=True,  inPlot=False, isSyst=False ),
@@ -69,7 +71,7 @@ class NanoVariables:
                                   Variable( "photonIdx",                "I", read=True,  write=True, inData=True,  inPlot=True, isSyst=False ),
                                   Variable( "tightCharge",              "I", read=True,  write=True, inData=True,  inPlot=False, isSyst=False ),
                                   Variable( "cutBased_HEEP",            "O", read=True,  write=True,  inData=True,  inPlot=False, isSyst=False ),
-                                  Variable( "isPFcand",                 "O", read=True,  write=True,  inData=True,  inPlot=False, isSyst=False ),
+                                  Variable( "isPFcand",                 "O", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                   Variable( "cleanmask",                "O", read=True,  write=True,  inData=True,  inPlot=False, isSyst=False ),
 
                                   Variable( "genPartIdx",               "I", read=True,  write=True,  inData=False, inPlot=False, isSyst=False ),
@@ -82,6 +84,8 @@ class NanoVariables:
 
         self.MuonVariables = [\
                               Variable( "pt",               "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
+                              Variable( "pt_totalUp",       "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
+                              Variable( "pt_totalDown",     "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
                               Variable( "eta",              "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                               Variable( "phi",              "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                               Variable( "pfRelIso03_all",   "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
@@ -98,7 +102,7 @@ class NanoVariables:
                               Variable( "dxy",              "F", read=True,  write=True,  inData=True,  inPlot=False, isSyst=False ),
                               Variable( "miniPFRelIso_all", "F", read=True,  write=True,  inData=True,  inPlot=False, isSyst=False ),
                               Variable( "miniPFRelIso_chg", "F", read=True,  write=True,  inData=True,  inPlot=False, isSyst=False ),
-                              Variable( "pfRelIso04_all",   "F", read=True,  write=True,  inData=True,  inPlot=False, isSyst=False ),
+                              Variable( "pfRelIso04_all",   "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                               Variable( "ptErr",            "F", read=True,  write=True, inData=True,  inPlot=False, isSyst=False ),
                               Variable( "segmentComp",      "F", read=True,  write=True, inData=True,  inPlot=False, isSyst=False ),
                               Variable( "mvaTTH",           "F", read=True,  write=True, inData=True,  inPlot=False, isSyst=False ),
@@ -108,12 +112,12 @@ class NanoVariables:
                               Variable( "nTrackerLayers",   "I", read=True,  write=True,  inData=True,  inPlot=False, isSyst=False ),
                               Variable( "tightCharge",      "I", read=True,  write=True, inData=True,  inPlot=False, isSyst=False ),
                               Variable( "highPtId",         "I", read=True,  write=True, inData=True,  inPlot=False, isSyst=False ),
-                              Variable( "isPFcand",         "O", read=True,  write=True,  inData=True,  inPlot=False, isSyst=False ),
+                              Variable( "isPFcand",         "O", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                               Variable( "softId",           "O", read=True,  write=True,  inData=True,  inPlot=False, isSyst=False ),
-                              Variable( "tightId",          "O", read=True,  write=True,  inData=True,  inPlot=False, isSyst=False ),
+                              Variable( "tightId",          "O", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                               Variable( "cleanmask",        "O", read=True,  write=True,  inData=True,  inPlot=False, isSyst=False ),
-                              Variable( "isGlobal",         "O", read=True,  write=True,  inData=True,  inPlot=False, isSyst=False ),
-                              Variable( "isTracker",        "O", read=True,  write=True,  inData=True,  inPlot=False, isSyst=False ),
+                              Variable( "isGlobal",         "O", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
+                              Variable( "isTracker",        "O", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
 
                               Variable( "genPartIdx",       "I", read=True,  write=True,  inData=False, inPlot=False, isSyst=False ),
 
@@ -132,8 +136,8 @@ class NanoVariables:
                              Variable( "pt_jesTotalDown",  "F", read=True,  write=True,  inData=False, inPlot=True, isSyst=True ),
                              Variable( "pt_jerUp",         "F", read=True,  write=True,  inData=False, inPlot=True, isSyst=True ),
                              Variable( "pt_jerDown",       "F", read=True,  write=True,  inData=False, inPlot=True, isSyst=True ),
-#                             Variable( "pt_unclustEnUp",   "F", read=True,  write=True,  inData=False, inPlot=True, isSyst=False ),
-#                             Variable( "pt_unclustEnDown", "F", read=True,  write=True,  inData=False, inPlot=True, isSyst=False ),
+                             Variable( "pt_unclustEnUp",   "F", read=True,  write=True,  inData=False, inPlot=True, isSyst=True ),
+                             Variable( "pt_unclustEnDown", "F", read=True,  write=True,  inData=False, inPlot=True, isSyst=True ),
                              Variable( "eta",              "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                              Variable( "phi",              "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                              Variable( "neEmEF",           "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
@@ -186,6 +190,8 @@ class NanoVariables:
                                 Variable( "pfRelIso03_chg",    "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                 Variable( "phi",               "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                 Variable( "pt",                "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
+                                Variable( "pt_totalUp",        "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
+                                Variable( "pt_totalDown",      "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
                                 Variable( "sieie",             "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                 Variable( photonCutVarName,    "I", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                 Variable( "electronVeto",      "O", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
@@ -210,6 +216,9 @@ class NanoVariables:
                                 Variable( "genPartFlav",       "b", read=True,  write=False,  inData=False, inPlot=False, isSyst=False ),
                                 Variable( "genPartFlav",       "I", read=False, write=True,  inData=False, inPlot=False, isSyst=False ),
                                 Variable( "photonCat",         "I", read=False, write=True,  inData=True,  inPlot=True, isSyst=False ),
+                                Variable( "photonCatMagic",    "I", read=False, write=True,  inData=True,  inPlot=True, isSyst=False ),
+                                Variable( "leptonMother",      "I", read=False, write=True,  inData=True,  inPlot=True, isSyst=False ),
+                                Variable( "mother",            "I", read=False, write=True,  inData=True,  inPlot=True, isSyst=False ),
 
                                 Variable( "index",             "I", read=False, write=True,  inData=True, inPlot=False, isSyst=False ),
                                ]

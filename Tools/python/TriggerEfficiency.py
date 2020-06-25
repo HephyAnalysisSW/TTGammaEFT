@@ -1,135 +1,182 @@
 import ROOT
-import os
+import os, copy
+from Analysis.Tools.u_float import u_float
 from Analysis.Tools.helpers import getObjFromFile
 
 basedir = "$CMSSW_BASE/src/TTGammaEFT/Tools/data/triggerEff/"
 
-#OR of all backput triggers
-#2016
-ee_trigger2016_SF   = basedir + 'Run2016BCDEFG_HLT_ee_DZ_None_measuredInMET_minLeadLepPt0.root'
-mue_trigger2016_SF  = basedir + 'Run2016BCDEFG_HLT_mue_None_measuredInMET_minLeadLepPt0.root'
-mumu_trigger2016_SF = basedir + 'Run2016BCDEFG_HLT_mumuIso_None_measuredInMET_minLeadLepPt0.root'
+# 2016 Lumi Ratios
+lumiRatio2016_BCDEF = 19.695422959 / 35.921875595
+lumiRatio2016_GH    = 16.226452636 / 35.921875595
 
-ee_trigger2016_SF_with_backup   = basedir + 'Run2016BCDEFGH_HLT_ee_DZ_OR_HLT_ee_33_OR_HLT_ee_33_MW_OR_HLT_SingleEle_noniso_None_measuredInMET_minLeadLepPt0.root'
-mue_trigger2016_SF_with_backup  = basedir + 'Run2016BCDEFGH_HLT_mue_OR_HLT_mu30e30_OR_HLT_SingleEle_noniso_OR_HLT_SingleMu_noniso_None_measuredInMET_minLeadLepPt0.root'
-mumu_trigger2016_SF_with_backup = basedir + 'Run2016BCDEFGH_HLT_mumuIso_OR_HLT_mumuNoiso_OR_HLT_SingleMu_noniso_None_measuredInMET_minLeadLepPt0.root'
+#2016
+e_trigger2016_SF      = basedir + "sf_ele_2016_trig_v5.root"
+mu_trigger2016BtoF_SF = basedir + "mu_2016BCDEF_EfficienciesAndSF.root"
+mu_trigger2016GH_SF   = basedir + "mu_2016GH_EfficienciesAndSF.root"
 
 #2017
-# UPDATE WHEN AVAILABLE
-ee_trigger2017_SF   = basedir + 'Run2016BCDEFG_HLT_ee_DZ_None_measuredInMET_minLeadLepPt0.root'
-mue_trigger2017_SF  = basedir + 'Run2016BCDEFG_HLT_mue_None_measuredInMET_minLeadLepPt0.root'
-mumu_trigger2017_SF = basedir + 'Run2016BCDEFG_HLT_mumuIso_None_measuredInMET_minLeadLepPt0.root'
-
-ee_trigger2017_SF_with_backup   = basedir + 'Run2016BCDEFGH_HLT_ee_DZ_OR_HLT_ee_33_OR_HLT_ee_33_MW_OR_HLT_SingleEle_noniso_None_measuredInMET_minLeadLepPt0.root'
-mue_trigger2017_SF_with_backup  = basedir + 'Run2016BCDEFGH_HLT_mue_OR_HLT_mu30e30_OR_HLT_SingleEle_noniso_OR_HLT_SingleMu_noniso_None_measuredInMET_minLeadLepPt0.root'
-mumu_trigger2017_SF_with_backup = basedir + 'Run2016BCDEFGH_HLT_mumuIso_OR_HLT_mumuNoiso_OR_HLT_SingleMu_noniso_None_measuredInMET_minLeadLepPt0.root'
+e_trigger2017_SF   = basedir + "sf_ele_2017_trig_v5.root"
+mu_trigger2017_SF  = basedir + "mu_2017_EfficienciesAndSF.root"
 
 #2018
-# UPDATE WHEN AVAILABLE
-ee_trigger2018_SF   = basedir + 'Run2016BCDEFG_HLT_ee_DZ_None_measuredInMET_minLeadLepPt0.root'
-mue_trigger2018_SF  = basedir + 'Run2016BCDEFG_HLT_mue_None_measuredInMET_minLeadLepPt0.root'
-mumu_trigger2018_SF = basedir + 'Run2016BCDEFG_HLT_mumuIso_None_measuredInMET_minLeadLepPt0.root'
-
-ee_trigger2018_SF_with_backup   = basedir + 'Run2016BCDEFGH_HLT_ee_DZ_OR_HLT_ee_33_OR_HLT_ee_33_MW_OR_HLT_SingleEle_noniso_None_measuredInMET_minLeadLepPt0.root'
-mue_trigger2018_SF_with_backup  = basedir + 'Run2016BCDEFGH_HLT_mue_OR_HLT_mu30e30_OR_HLT_SingleEle_noniso_OR_HLT_SingleMu_noniso_None_measuredInMET_minLeadLepPt0.root'
-mumu_trigger2018_SF_with_backup = basedir + 'Run2016BCDEFGH_HLT_mumuIso_OR_HLT_mumuNoiso_OR_HLT_SingleMu_noniso_None_measuredInMET_minLeadLepPt0.root'
+e_trigger2018_SF   = basedir + "sf_ele_2018_trig_v5.root"
+mu_trigger2018_SF  = basedir + "mu_2018_EfficienciesAndSF.root"
 
 class TriggerEfficiency:
-    def __init__( self, with_backup_triggers=False, year=2016 ):
+    def __init__( self, year=2016 ):
 
         if year not in [ 2016, 2017, 2018 ]:
-            raise Exception("Lepton SF for year %i not known"%year)
+            raise Exception("Trigger SF for year %i not known"%year)
+
+        self.year = year
 
         if year == 2016:
-            if not with_backup_triggers:
-                self.mumu_highEta   = getObjFromFile(os.path.expandvars(mumu_trigger2016_SF), "eff_pt1_pt2_highEta1_veryCoarse")
-                self.mumu_lowEta    = getObjFromFile(os.path.expandvars(mumu_trigger2016_SF), "eff_pt1_pt2_lowEta1_veryCoarse")
-                self.ee_highEta     = getObjFromFile(os.path.expandvars(ee_trigger2016_SF),   "eff_pt1_pt2_highEta1_veryCoarse")
-                self.ee_lowEta      = getObjFromFile(os.path.expandvars(ee_trigger2016_SF),   "eff_pt1_pt2_lowEta1_veryCoarse")
-                self.mue_highEta    = getObjFromFile(os.path.expandvars(mue_trigger2016_SF),  "eff_pt1_pt2_highEta1_veryCoarse")
-                self.mue_lowEta     = getObjFromFile(os.path.expandvars(mue_trigger2016_SF),  "eff_pt1_pt2_lowEta1_veryCoarse")
-            else:
-                self.mumu_highEta   = getObjFromFile(os.path.expandvars(mumu_trigger2016_SF_with_backup), "eff_pt1_pt2_highEta1_veryCoarse")
-                self.mumu_lowEta    = getObjFromFile(os.path.expandvars(mumu_trigger2016_SF_with_backup), "eff_pt1_pt2_lowEta1_veryCoarse")
-                self.ee_highEta     = getObjFromFile(os.path.expandvars(ee_trigger2016_SF_with_backup),   "eff_pt1_pt2_highEta1_veryCoarse")
-                self.ee_lowEta      = getObjFromFile(os.path.expandvars(ee_trigger2016_SF_with_backup),   "eff_pt1_pt2_lowEta1_veryCoarse")
-                self.mue_highEta    = getObjFromFile(os.path.expandvars(mue_trigger2016_SF_with_backup),  "eff_pt1_pt2_highEta1_veryCoarse")
-                self.mue_lowEta     = getObjFromFile(os.path.expandvars(mue_trigger2016_SF_with_backup),  "eff_pt1_pt2_lowEta1_veryCoarse")
+            self.mu_SF   = getObjFromFile( os.path.expandvars(mu_trigger2016BtoF_SF), "abseta_pt_ratio" )
+            self.muGH_SF = getObjFromFile( os.path.expandvars(mu_trigger2016GH_SF),   "abseta_pt_ratio" )
+            self.e_SF    = getObjFromFile(os.path.expandvars(e_trigger2016_SF),       "EGamma_SF2D")
+            for effMap in [self.mu_SF,self.muGH_SF,self.e_SF]: assert effMap
 
         elif year == 2017:
-            if not with_backup_triggers:
-                self.mumu_highEta   = getObjFromFile(os.path.expandvars(mumu_trigger2016_SF), "eff_pt1_pt2_highEta1_veryCoarse")
-                self.mumu_lowEta    = getObjFromFile(os.path.expandvars(mumu_trigger2016_SF), "eff_pt1_pt2_lowEta1_veryCoarse")
-                self.ee_highEta     = getObjFromFile(os.path.expandvars(ee_trigger2016_SF),   "eff_pt1_pt2_highEta1_veryCoarse")
-                self.ee_lowEta      = getObjFromFile(os.path.expandvars(ee_trigger2016_SF),   "eff_pt1_pt2_lowEta1_veryCoarse")
-                self.mue_highEta    = getObjFromFile(os.path.expandvars(mue_trigger2016_SF),  "eff_pt1_pt2_highEta1_veryCoarse")
-                self.mue_lowEta     = getObjFromFile(os.path.expandvars(mue_trigger2016_SF),  "eff_pt1_pt2_lowEta1_veryCoarse")
-            else:
-                self.mumu_highEta   = getObjFromFile(os.path.expandvars(mumu_trigger2016_SF_with_backup), "eff_pt1_pt2_highEta1_veryCoarse")
-                self.mumu_lowEta    = getObjFromFile(os.path.expandvars(mumu_trigger2016_SF_with_backup), "eff_pt1_pt2_lowEta1_veryCoarse")
-                self.ee_highEta     = getObjFromFile(os.path.expandvars(ee_trigger2016_SF_with_backup),   "eff_pt1_pt2_highEta1_veryCoarse")
-                self.ee_lowEta      = getObjFromFile(os.path.expandvars(ee_trigger2016_SF_with_backup),   "eff_pt1_pt2_lowEta1_veryCoarse")
-                self.mue_highEta    = getObjFromFile(os.path.expandvars(mue_trigger2016_SF_with_backup),  "eff_pt1_pt2_highEta1_veryCoarse")
-                self.mue_lowEta     = getObjFromFile(os.path.expandvars(mue_trigger2016_SF_with_backup),  "eff_pt1_pt2_lowEta1_veryCoarse")
+            self.mu_SF = getObjFromFile(os.path.expandvars(mu_trigger2017_SF), "abseta_pt_ratio")
+            self.e_SF  = getObjFromFile(os.path.expandvars(e_trigger2017_SF),  "EGamma_SF2D")
+            for effMap in [self.mu_SF,self.e_SF]: assert effMap
 
         elif year == 2018:
-            if not with_backup_triggers:
-                self.mumu_highEta   = getObjFromFile(os.path.expandvars(mumu_trigger2016_SF), "eff_pt1_pt2_highEta1_veryCoarse")
-                self.mumu_lowEta    = getObjFromFile(os.path.expandvars(mumu_trigger2016_SF), "eff_pt1_pt2_lowEta1_veryCoarse")
-                self.ee_highEta     = getObjFromFile(os.path.expandvars(ee_trigger2016_SF),   "eff_pt1_pt2_highEta1_veryCoarse")
-                self.ee_lowEta      = getObjFromFile(os.path.expandvars(ee_trigger2016_SF),   "eff_pt1_pt2_lowEta1_veryCoarse")
-                self.mue_highEta    = getObjFromFile(os.path.expandvars(mue_trigger2016_SF),  "eff_pt1_pt2_highEta1_veryCoarse")
-                self.mue_lowEta     = getObjFromFile(os.path.expandvars(mue_trigger2016_SF),  "eff_pt1_pt2_lowEta1_veryCoarse")
-            else:
-                self.mumu_highEta   = getObjFromFile(os.path.expandvars(mumu_trigger2016_SF_with_backup), "eff_pt1_pt2_highEta1_veryCoarse")
-                self.mumu_lowEta    = getObjFromFile(os.path.expandvars(mumu_trigger2016_SF_with_backup), "eff_pt1_pt2_lowEta1_veryCoarse")
-                self.ee_highEta     = getObjFromFile(os.path.expandvars(ee_trigger2016_SF_with_backup),   "eff_pt1_pt2_highEta1_veryCoarse")
-                self.ee_lowEta      = getObjFromFile(os.path.expandvars(ee_trigger2016_SF_with_backup),   "eff_pt1_pt2_lowEta1_veryCoarse")
-                self.mue_highEta    = getObjFromFile(os.path.expandvars(mue_trigger2016_SF_with_backup),  "eff_pt1_pt2_highEta1_veryCoarse")
-                self.mue_lowEta     = getObjFromFile(os.path.expandvars(mue_trigger2016_SF_with_backup),  "eff_pt1_pt2_lowEta1_veryCoarse")
+            self.mu_SF = getObjFromFile(os.path.expandvars(mu_trigger2018_SF), "abseta_pt_ratio")
+            self.e_SF  = getObjFromFile(os.path.expandvars(e_trigger2018_SF),  "EGamma_SF2D")
+            for effMap in [self.mu_SF,self.e_SF]: assert effMap
 
-        h_ = [self.mumu_highEta, self.mumu_lowEta, self.ee_highEta, self.ee_lowEta, self.mue_highEta, self.mue_lowEta]
-        assert False not in [bool(x) for x in h_], "Could not load trigger SF: %r"%h_
+        self.e_ptMax       = self.e_SF.GetYaxis().GetXmax()
+        self.e_ptMin       = self.e_SF.GetYaxis().GetXmin()
+        self.e_etaMax      = self.e_SF.GetXaxis().GetXmax()
+        self.e_etaMin      = self.e_SF.GetXaxis().GetXmin()
 
-        self.ptMax = self.mumu_highEta.GetXaxis().GetXmax()
+        self.mu_ptMax       = self.mu_SF.GetYaxis().GetXmax()
+        self.mu_ptMin       = self.mu_SF.GetYaxis().GetXmin()
+        self.mu_etaMax      = self.mu_SF.GetXaxis().GetXmax()
+        self.mu_etaMin      = self.mu_SF.GetXaxis().GetXmin()
 
-    def __getSF(self, map_, pt1, pt2):
-        if pt1 > self.ptMax: pt1 = self.ptMax - 1 
-        if pt2 > self.ptMax: pt2 = self.ptMax - 1 
-        val    = map_.GetBinContent( map_.FindBin(pt1, pt2) )
-        valErr = map_.GetBinError(   map_.FindBin(pt1, pt2) )
-        return (val, valErr)
+        print self.e_ptMax, self.e_ptMin, self.e_etaMax, self.e_etaMin, self.mu_ptMax, self.mu_ptMin, self.mu_etaMax, self.mu_etaMin
 
-    def getSF(self, p1, p2):
+    def __getSF(self, map_, pt, eta):
+        val    = map_.GetBinContent( map_.FindBin(eta, pt) )
+        valErr = map_.GetBinError(   map_.FindBin(eta, pt) )
+        return u_float(val, valErr)
 
-        if p1["pt"] < p2["pt"]:
-            raise ValueError ( "Sort leptons wrt pt." )
+    def getSF(self, pdgId, pt, eta, sigma=0):
 
-        #Split in low/high eta of leading lepton for both, ee and mumu channel 
-        if abs(p1["pdgId"]) == abs(p2["pdgId"]) == 13:
-            if abs(p1["eta"]) < 1.5:
-                return self.__getSF( self.mumu_lowEta, p1["pt"], p2["pt"] )
-            else:
-                return self.__getSF( self.mumu_highEta, p1["pt"], p2["pt"] )
+        pdgId = abs(pdgId)
+        if pdgId not in [11,13]: raise Exception("Trigger SF for pdgId %i not known"%pdgId)
 
-        elif abs(p1["pdgId"]) == abs(p2["pdgId"]) == 11:
-            if abs(p1["eta"]) < 1.5:
-                return self.__getSF( self.ee_lowEta, p1["pt"], p2["pt"] )
-            else:
-                return self.__getSF( self.ee_highEta, p1["pt"], p2["pt"] )
+        if pdgId == 11:
+            if pt  > self.e_ptMax:   pt  = self.e_ptMax  - 1 
+            if pt  < self.e_ptMin:   pt  = self.e_ptMin  + 1 
+            if eta > self.e_etaMax:  eta = self.e_etaMax - 0.1
+            if eta < self.e_etaMin:  eta = self.e_etaMin + 0.1
 
-        #Split in low/high eta of muon for emu channel 
-        elif abs(p1["pdgId"]) == 13 and abs(p2["pdgId"]) == 11:
-            if abs(p1["eta"]) < 1.5: 
-                return self.__getSF( self.mue_lowEta, p1["pt"], p2["pt"] )
-            else:
-                return self.__getSF( self.mue_highEta, p1["pt"], p2["pt"] )
+        if pdgId == 13:
+            eta = abs(eta)
+            if pt  > self.mu_ptMax:  pt  = self.mu_ptMax  - 1 
+            if pt  < self.mu_ptMin:  pt  = self.mu_ptMin  + 1 
+            if eta > self.mu_etaMax: eta = self.mu_etaMax - 0.1
+            if eta < self.mu_etaMin: eta = self.mu_etaMin + 0.1
 
-        elif abs(p1["pdgId"]) == 11 and abs(p2["pdgId"]) == 13:
-            if abs(p2["eta"]) < 1.5: 
-                return self.__getSF( self.mue_lowEta, p1["pt"], p2["pt"] )
-            else:
-                return self.__getSF( self.mue_highEta, p1["pt"], p2["pt"] )
+        if self.year == 2016 and pdgId == 13:
+            sf_BCDEF = self.__getSF( self.mu_SF,   pt, eta )
+            sf_GH    = self.__getSF( self.muGH_SF, pt, eta )
+            sf       = sf_BCDEF*lumiRatio2016_BCDEF + sf_GH*lumiRatio2016_GH
+            return sf.val + sigma*sf.sigma
 
-        raise ValueError( "Did not find trigger SF for pt1 %3.2f eta %3.2f pdgId1 %i pt2 %3.2f eta2 %3.2f pdgId2 %i"%( p1["pt"], p1["eta"], p1["pdgId"], p2["pt"], p2["eta"], p2["pdgId"] ) )
-        
+        elif pdgId == 13:
+            sf = self.__getSF( self.mu_SF, pt, eta )
+            return sf.val + sigma*sf.sigma
+
+        elif pdgId == 11:
+            sf = self.__getSF( self.e_SF, pt, eta )
+            return sf.val + sigma*sf.sigma
+
+        raise ValueError( "Did not find trigger SF for pt %3.2f eta %3.2f pdgId %i"%( p["pt"], p["eta"], p["pdgId"] ) )
+
+
+if __name__ == "__main__":
+
+    sigma = 0
+    print "2016"
+    LSF = TriggerEfficiency(year=2016)
+    print LSF.getSF(13, 56.047538, -0.020153, sigma=sigma)
+    exit()
+
+
+    print LSF.getSF(11, 10, 1, sigma=sigma)
+    print LSF.getSF(11, 10, -1, sigma=sigma)
+    print LSF.getSF(13, 10, 1, sigma=sigma)
+    print LSF.getSF(13, 10, -1, sigma=sigma)
+
+    print LSF.getSF(11, 200, 1, sigma=sigma)
+    print LSF.getSF(11, 200, -1, sigma=sigma)
+    print LSF.getSF(13, 200, 1, sigma=sigma)
+    print LSF.getSF(13, 200, -1, sigma=sigma)
+
+    print LSF.getSF(11, 600, 1, sigma=sigma)
+    print LSF.getSF(11, 600, -1, sigma=sigma)
+    print LSF.getSF(13, 600, 1, sigma=sigma)
+    print LSF.getSF(13, 600, -1, sigma=sigma)
+
+    print LSF.getSF(11, 10, 2.0, sigma=sigma)
+    print LSF.getSF(11, 10, -2.0, sigma=sigma)
+    print LSF.getSF(13, 10, 2.0, sigma=sigma)
+    print LSF.getSF(13, 10, -2.0, sigma=sigma)
+
+    print LSF.getSF(11, 200, 2.0, sigma=sigma)
+    print LSF.getSF(11, 200, -2.0, sigma=sigma)
+    print LSF.getSF(13, 200, 2.0, sigma=sigma)
+    print LSF.getSF(13, 200, -2.0, sigma=sigma)
+
+    print LSF.getSF(11, 600, 2.0, sigma=sigma)
+    print LSF.getSF(11, 600, -2.0, sigma=sigma)
+    print LSF.getSF(13, 600, 2.0, sigma=sigma)
+    print LSF.getSF(13, 600, -2.0, sigma=sigma)
+
+    print "2017"
+    LSF = TriggerEfficiency(year=2017)
+    print LSF.getSF(11, 10, 1, sigma=sigma)
+    print LSF.getSF(11, 10, -1, sigma=sigma)
+    print LSF.getSF(13, 10, 1, sigma=sigma)
+    print LSF.getSF(13, 10, -1, sigma=sigma)
+
+    print LSF.getSF(11, 200, 1, sigma=sigma)
+    print LSF.getSF(11, 200, -1, sigma=sigma)
+    print LSF.getSF(13, 200, 1, sigma=sigma)
+    print LSF.getSF(13, 200, -1, sigma=sigma)
+
+    print LSF.getSF(11, 10, 2.0, sigma=sigma)
+    print LSF.getSF(11, 10, -2.0, sigma=sigma)
+    print LSF.getSF(13, 10, 2.0, sigma=sigma)
+    print LSF.getSF(13, 10, -2.0, sigma=sigma)
+
+    print LSF.getSF(11, 200, 2.0, sigma=sigma)
+    print LSF.getSF(11, 200, -2.0, sigma=sigma)
+    print LSF.getSF(13, 200, 2.0, sigma=sigma)
+    print LSF.getSF(13, 200, -2.0, sigma=sigma)
+
+    print "2018"
+    LSF = TriggerEfficiency(year=2018)
+    print LSF.getSF(11, 10, 1, sigma=sigma)
+    print LSF.getSF(11, 10, -1, sigma=sigma)
+    print LSF.getSF(13, 10, 1, sigma=sigma)
+    print LSF.getSF(13, 10, -1, sigma=sigma)
+
+    print LSF.getSF(11, 200, 1, sigma=sigma)
+    print LSF.getSF(11, 200, -1, sigma=sigma)
+    print LSF.getSF(13, 200, 1, sigma=sigma)
+    print LSF.getSF(13, 200, -1, sigma=sigma)
+
+    print LSF.getSF(11, 10, 2.0, sigma=sigma)
+    print LSF.getSF(11, 10, -2.0, sigma=sigma)
+    print LSF.getSF(13, 10, 2.0, sigma=sigma)
+    print LSF.getSF(13, 10, -2.0, sigma=sigma)
+
+    print LSF.getSF(11, 200, 2.0, sigma=sigma)
+    print LSF.getSF(11, 200, -2.0, sigma=sigma)
+    print LSF.getSF(13, 200, 2.0, sigma=sigma)
+    print LSF.getSF(13, 200, -2.0, sigma=sigma)

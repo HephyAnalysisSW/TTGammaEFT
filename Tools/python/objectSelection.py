@@ -1,5 +1,6 @@
 # Standard Imports
 import textwrap
+from Analysis.Tools.helpers import getVarValue, getObjDict
 
 photonIdCutBasedBitmap = {                     'loose':1, 'medium':2, 'tight':4 }  # NanoAOD Version ID bitmap, 2^(0:loose, 1:medium, 2:tight)
 photonIdCutBased       = { 'fail':0,           'loose':1, 'medium':2, 'tight':3 }  # NanoAOD Version
@@ -17,7 +18,9 @@ vidNestedWPBitMap           = { 'fail':0, 'veto':1, 'loose':2, 'medium':3, 'tigh
 
 # the PhoAnyPFIsoWithEACut is used twice in the root info, thus I call one PhoAnyPFIsoWithEACut2 (they don't have the same cuts)
 # seems like the list is implemented reversed, thus the [::-1] at the end (values make more sense in that way)
-vidNestedWPBitMapNamingListPhoton = [ 'MinPtCut', 'PhoSCEtaMultiRangeCut', 'PhoSingleTowerHadOverEmCut', 'PhoFull5x5SigmaIEtaIEtaCut', 'PhoAnyPFIsoWithEACut', 'PhoAnyPFIsoWithEAAndQuadScalingCut', 'PhoAnyPFIsoWithEACut2' ][::-1]
+vidNestedWPBitMapNamingListPhoton = [ 'MinPtCut', 'PhoSCEtaMultiRangeCut', 'PhoSingleTowerHadOverEmCut', 'PhoFull5x5SigmaIEtaIEtaCut', 'PhoAnyPFIsoWithEACut', 'PhoAnyPFIsoWithEAAndQuadScalingCut', 'PhoAnyPFIsoWithEACut2' ][::-1] # HoverE (2), SIEIE (3), chgIso (4), NeuIso (5), PhoIso (6) cuts
+
+
 
 # Attention: only for nanoAOD v94x or higher (in 80x, only 2 bits are used)
 def jetIdBitMapToDict( val ):
@@ -91,10 +94,10 @@ def isBJet( j, tagger='DeepCSV', year=2016 ):
         else:
             raise (NotImplementedError, "Don't know what cut to use for year %s"%year)
 
-def vertexSelector( l ):
-#    if abs(l['pdgId']) == 11: absEta = abs(l["eta"] + l["deltaEtaSC"])   # eta supercluster
-#    else:                     absEta = abs(l["eta"])                     # eta
-    EC = 0 #absEta > 1.479 # only if difference for EndCaps
+def vertexSelector( l, barrelECdiff=False ):
+    if abs(l['pdgId']) == 11: absEta = abs(l["eta"] + l["deltaEtaSC"])   # eta supercluster
+    else:                     absEta = abs(l["eta"])                     # eta
+    EC = absEta > 1.479 and barrelECdiff # only if difference for EndCaps
     if abs(l["dxy"]) > 0.05 + 0.05*EC: return False
     if abs(l["dz"])  > 0.1  + 0.1*EC:  return False
     return True
@@ -127,8 +130,8 @@ def photonVIDSelector( p, idVal, removedCuts=[] ):
     # PhoAnyPFIsoWithEACut2 seems to be very close to all-iso cut, but not everywhere, sometimes it's the neutral-iso cut
     # no clue what PhoAnyPFIsoWithEAAndQuadScalingCut is, I think its the all-iso cut with additional pt**2 dependence, hard to check
     if ("pfRelIso03_all" in removedCuts):
-        vidDict = removekey( vidDict, "PhoAnyPFIsoWithEACut2" )
         vidDict = removekey( vidDict, "PhoAnyPFIsoWithEAAndQuadScalingCut" )
+        vidDict = removekey( vidDict, "PhoAnyPFIsoWithEACut2" )
     # no clue what the scEtaMultiRange cut really is, probably out of scope for this analysis as we only use SC barrel photons
     if ("scEtaMultiRange" in removedCuts):
         vidDict = removekey( vidDict, "PhoSCEtaMultiRangeCut" )
@@ -196,7 +199,7 @@ def jetSelector( year ):
         def func(j, removedCuts=[], ptVar="pt"):
 #            if not j["cleanmask"]:                           return False # too much cleaning
             if not "pt" in removedCuts:
-                if j[ptVar]      <= 30:                      return False
+                if j[ptVar]      < 30:                      return False
             if not "eta" in removedCuts:
                 if abs(j["eta"]) >= 2.4:                     return False
             if not jetIdBitMapToDict( j["jetId"] )["loose"]: return False
@@ -208,7 +211,7 @@ def jetSelector( year ):
         def func(j, removedCuts=[], ptVar="pt"):
 #            if not j["cleanmask"]:                           return False
             if not "pt" in removedCuts:
-                if j[ptVar]      <= 30:                      return False
+                if j[ptVar]      < 30:                      return False
             if not "eta" in removedCuts:
                 if abs(j["eta"]) >= 2.4:                     return False
             if not jetIdBitMapToDict( j["jetId"] )["tight"]: return False
@@ -218,40 +221,43 @@ def jetSelector( year ):
     else:
         raise (NotImplementedError, "Don't know what cut to use for year %s"%year)
 
-muonRelIsoCut = 0.12
+#muonRelIsoCut = 0.12
+muonRelIsoCut      = 0.15
+muonRelIsoCutLoose = 0.20
+muonRelIsoCutVeto  = 0.25
 def muonSelector( lepton_selection ):
     # According to AN-2017/197
     if lepton_selection == 'tight':
-        def func(l, removedCuts=[]):
+        def func(l, removedCuts=[], ptVar="pt"):
             if not "pt" in removedCuts:
-                if l["pt"]          <  30:                        return False
+                if l[ptVar]          <  30:                        return False
             if not "eta" in removedCuts:
                 if abs(l["eta"])    > 2.4:                        return False
             if not l["tightId"]:                                  return False
-            if not "vertex" in removedCuts:
-                if not vertexSelector(l):                         return False
-            if not "pfRelIso03_all" in removedCuts:
-                if l['pfRelIso03_all']  > muonRelIsoCut:          return False
-            if not "sip3d" in removedCuts:
-                if l["sip3d"]           > 4:                      return False
+#            if not "vertex" in removedCuts:
+#                if not vertexSelector(l):                         return False #sync with FNAL
+            if not "pfRelIso04_all" in removedCuts:
+                if l['pfRelIso04_all']  > muonRelIsoCut:          return False
+#            if not "sip3d" in removedCuts:
+#                if l["sip3d"]           > 4:                      return False #sync with FNAL
 #            if l['pfIsoId']        <  muonPfIsoId['PFIsoMedium']: return False
             return True
         return func
 
     elif lepton_selection == 'medium':
-        def func(l, leading=False, removedCuts=[]):
+        def func(l, leading=False, removedCuts=[], ptVar="pt"):
             if not "pt" in removedCuts:
                 if leading:
-                    if l["pt"]         <= 25:            return False
+                    if l[ptVar]         <= 25:            return False
                 else:
-                    if l["pt"]         <= 15:            return False
+                    if l[ptVar]         <= 15:            return False
             if not "eta" in removedCuts:
                 if abs(l["eta"])    > 2.4:               return False
             if not l["mediumId"]:                        return False
             if not "vertex" in removedCuts:
                 if not vertexSelector(l):                return False
-            if not "pfRelIso03_all" in removedCuts:
-                if l['pfRelIso03_all']  > muonRelIsoCut: return False
+            if not "pfRelIso04_all" in removedCuts:
+                if l['pfRelIso04_all']  > muonRelIsoCut: return False
             if not "sip3d" in removedCuts:
                 if l["sip3d"]           > 4:             return False
 #            if l['pfIsoId']        <  muonPfIsoId['PFIsoMedium']: return False
@@ -260,9 +266,9 @@ def muonSelector( lepton_selection ):
 
     elif lepton_selection == 'veto2l':
         # muon loose requirement
-        def func(l, removedCuts=[]):
+        def func(l, removedCuts=[], ptVar="pt"):
             if not "pt" in removedCuts:
-                if l["pt"]          < 15:                            return False
+                if l[ptVar]          < 15:                            return False
             if not "eta" in removedCuts:
                 if abs(l["eta"])    > 2.4:                           return False
             if not "ID" in removedCuts:
@@ -270,8 +276,8 @@ def muonSelector( lepton_selection ):
                 if not ( l["isGlobal"] or l["isTracker"] ):          return False
             if not "vertex" in removedCuts:
                 if not vertexSelector(l):                            return False
-            if not "pfRelIso03_all" in removedCuts:
-                if l['pfRelIso03_all']  > 0.4:                       return False
+            if not "pfRelIso04_all" in removedCuts:
+                if l['pfRelIso04_all']  > 0.4:                       return False
             if not "sip3d" in removedCuts:
                 if l["sip3d"]           > 4:                         return False
 #            if l['pfIsoId']        <  muonPfIsoId['PFIsoVeryLoose']: return False
@@ -280,20 +286,20 @@ def muonSelector( lepton_selection ):
 
     elif lepton_selection == 'veto':
         # muon loose requirement
-        def func(l, removedCuts=[]):
+        def func(l, removedCuts=[], ptVar="pt"):
             if not "pt" in removedCuts:
-                if l["pt"]          < 15:                            return False
+                if l[ptVar]          < 15:                            return False
             if not "eta" in removedCuts:
                 if abs(l["eta"])    > 2.4:                           return False
             if not "ID" in removedCuts:
                 if not l["isPFcand"]:                                return False
                 if not ( l["isGlobal"] or l["isTracker"] ):          return False
-            if not "vertex" in removedCuts:
-                if not vertexSelector(l):                            return False
-            if not "pfRelIso03_all" in removedCuts:
-                if l['pfRelIso03_all']  > 0.25:                      return False
-            if not "sip3d" in removedCuts:
-                if l["sip3d"]           > 4:                         return False
+#            if not "vertex" in removedCuts:
+#                if not vertexSelector(l):                            return False #sync with FNAL
+            if not "pfRelIso04_all" in removedCuts:
+                if l['pfRelIso04_all']  > muonRelIsoCutVeto:                      return False
+#            if not "sip3d" in removedCuts:
+#                if l["sip3d"]           > 4:                         return False #sync with FNAL
 #            if l['pfIsoId']        <  muonPfIsoId['PFIsoVeryLoose']: return False
             return True
         return func
@@ -303,17 +309,17 @@ def muonSelector( lepton_selection ):
 
 def getElectronIsoCutV2( pt, eta, id ):
     if id == "tight":
-        if eta <= 1.479: return 0.0287+0.506/pt
-        else:            return 0.0445+0.963/pt
+        if abs(eta) <= 1.479: return 0.0287+0.506/pt
+        else:                 return 0.0445+0.963/pt
     elif id == "medium":
-        if eta <= 1.479: return 0.0478+0.506/pt
-        else:            return 0.0658+0.963/pt
+        if abs(eta) <= 1.479: return 0.0478+0.506/pt
+        else:                 return 0.0658+0.963/pt
     elif id == "loose":
-        if eta <= 1.479: return 0.112+0.506/pt
-        else:            return 0.108+0.963/pt
+        if abs(eta) <= 1.479: return 0.112+0.506/pt
+        else:                 return 0.108+0.963/pt
     elif id == "veto":
-        if eta <= 1.479: return 0.198+0.506/pt
-        else:            return 0.203+0.963/pt
+        if abs(eta) <= 1.479: return 0.198+0.506/pt
+        else:                 return 0.203+0.963/pt
     else:
         raise (NotImplementedError, "Don't know what cut to use for electrons")
 
@@ -323,19 +329,19 @@ def eleSelector( lepton_selection ):
     idVar = "cutBased"
     # According to AN-2017/197
     if lepton_selection == 'tight':
-        def func(l, removedCuts=[]):
+        def func(l, removedCuts=[], ptVar="pt"):
             if not barrelEndcapVeto(l):                      return False
             if not "pt" in removedCuts:
-                if l["pt"]          < 35:                    return False
+                if l[ptVar]          < 35:                    return False
             if not "eta" in removedCuts:
-                if abs(l["eta"])    > 2.1:                   return False
+                if abs(l["eta"])    > 2.4:                   return False
             if not electronVIDSelector( l, vidNestedWPBitMap["tight"], removedCuts=removedCuts ): return False
-            if not "pfRelIso03_all" in removedCuts:
-                if l['pfRelIso03_all']  > 0.12:              return False
-            if not "sip3d" in removedCuts:
-                if l["sip3d"]           > 4:                 return False
+#            if not "pfRelIso03_all" in removedCuts:
+#                if l['pfRelIso03_all']  > 0.12:              return False
+#            if not "sip3d" in removedCuts:
+#                if l["sip3d"]           > 4:                 return False
             if not "vertex" in removedCuts:
-                if not vertexSelector(l):                    return False
+                if not vertexSelector(l, barrelECdiff=True):                    return False
 #            if l[idVar] < electronIdCutBased['tight']:       return False
 #            if int(l["lostHits"])  != 0:                 return False # in the cutbased id? Ghent!
 #            if not l["convVeto"]:                        return False # in the cutbased id? Ghent!
@@ -343,13 +349,13 @@ def eleSelector( lepton_selection ):
         return func
 
     elif lepton_selection == 'tight2l':
-        def func(l, leading=False, removedCuts=[]):
+        def func(l, leading=False, removedCuts=[], ptVar="pt"):
             if not barrelEndcapVeto(l):                  return False
             if not "pt" in removedCuts:
                 if leading:
-                    if l["pt"]         <= 25:            return False
+                    if l[ptVar]         <= 25:            return False
                 else:
-                    if l["pt"]         <= 15:            return False
+                    if l[ptVar]         <= 15:            return False
             if not "eta" in removedCuts:
                 if abs(l["eta"])   >= 2.4:               return False
             if not electronVIDSelector( l, vidNestedWPBitMap["tight"], removedCuts=removedCuts ): return False
@@ -366,42 +372,42 @@ def eleSelector( lepton_selection ):
         return func
 
     elif lepton_selection == 'medium':
-        def func(l, leading=False, removedCuts=[]):
+        def func(l, leading=False, removedCuts=[], ptVar="pt"):
             if not barrelEndcapVeto(l):                  return False
             if not "pt" in removedCuts:
                 if leading:
-                    if l["pt"]         <= 25:            return False
+                    if l[ptVar]         <= 25:            return False
                 else:
-                    if l["pt"]         <= 15:            return False
+                    if l[ptVar]         <= 15:            return False
             if not "eta" in removedCuts:
                 if abs(l["eta"])   >= 2.4:               return False
-            if not electronVIDSelector( l, vidNestedWPBitMap["medium"], removedCuts=removedCuts ): return False
+#            if not electronVIDSelector( l, vidNestedWPBitMap["medium"], removedCuts=removedCuts ): return False
             if not "pfRelIso03_all" in removedCuts:
                 if l['pfRelIso03_all']  > 0.12:          return False
             if not "sip3d" in removedCuts:
                 if l["sip3d"]           > 4:             return False
             if not "vertex" in removedCuts:
                 if not vertexSelector(l):                return False
-#            if l[idVar] < electronIdCutBased['medium']:  return False
+            if l[idVar] < electronIdCutBased['medium']:  return False
 #            if int(l["lostHits"])  != 0:                 return False # in the cutbased id? Ghent!
 #            if not l["convVeto"]:                        return False # in the cutbased id? Ghent!
             return True
         return func
 
     elif lepton_selection == 'veto':
-        def func(l, removedCuts=[]):
+        def func(l, removedCuts=[], ptVar="pt"):
             if not barrelEndcapVeto(l):                return False
             if not "pt" in removedCuts:
-                if l["pt"]          < 15:              return False
+                if l[ptVar]          < 15:              return False
             if not "eta" in removedCuts:
                 if abs(l["eta"])    > 2.4:             return False
             if not electronVIDSelector( l, vidNestedWPBitMap["veto"], removedCuts=removedCuts ): return False
-            if not "pfRelIso03_all" in removedCuts:
-                if l['pfRelIso03_all']  > 0.4:         return False
-            if not "sip3d" in removedCuts:
-                if l["sip3d"]           > 4:           return False
+#            if not "pfRelIso03_all" in removedCuts:
+#                if l['pfRelIso03_all']  > 0.4:         return False
+#            if not "sip3d" in removedCuts:
+#                if l["sip3d"]           > 4:           return False
             if not "vertex" in removedCuts:
-                if not vertexSelector(l):              return False
+                if not vertexSelector(l, barrelECdiff=True):              return False
 #            if l[idVar] < electronIdCutBased['veto']:  return False
             return True
         return func
@@ -421,32 +427,32 @@ def photonSelector( selection, year=None ):
     photonId = photonIdCutBased if year==2016 else photonIdCutBasedBitmap
 
     if selection == "mva":
-        def func(g, removedCuts=[]):
+        def func(g, removedCuts=[], ptVar="pt"):
             if not "pt" in removedCuts:
-                if g["pt"]       <= 20:        return False
+                if g[ptVar]       <= 20:        return False
 #                if not g["isScEtaEB"]:        return False # Supercluster Barrel only
             if not "eta" in removedCuts:
                 if abs(g["eta"]) >= 1.4442:    return False # Barrel only
             if not "pixelSeed" in removedCuts:
                 if g["pixelSeed"]:             return False
-            if not "electronVeto" in removedCuts:
-                if not g["electronVeto"]:      return False
+#            if not "electronVeto" in removedCuts:
+#                if not g["electronVeto"]:      return False
             if not "ID" in removedCuts:
                 if not g["mvaID_WP90"]:        return False
             return True
         return func
 
     if selection == "medium":
-        def func(g, removedCuts=[]):
+        def func(g, removedCuts=[], ptVar="pt"):
             if not "pt" in removedCuts:
-                if g["pt"]       <= 20:                                                  return False
+                if g[ptVar]       <= 20:                                                  return False
 #                if not g["isScEtaEB"]:                                                   return False # Supercluster Barrel only
             if not "eta" in removedCuts:
                 if abs(g["eta"]) >= 1.4442:                                              return False # Barrel only
             if not "pixelSeed" in removedCuts:
                 if g["pixelSeed"]:                                                       return False
-            if not "electronVeto" in removedCuts:
-                if not g["electronVeto"]:                                                return False
+#            if not "electronVeto" in removedCuts:
+#                if not g["electronVeto"]:                                                return False
 #            if g[idVar]          <  photonId[selection]:                                 return False
             if not "ID" in removedCuts:
                 if not photonVIDSelector( g, photonId[selection], removedCuts=removedCuts ): return False
@@ -454,16 +460,16 @@ def photonSelector( selection, year=None ):
         return func
 
     elif selection == "loose":
-        def func(g, removedCuts=[]):
+        def func(g, removedCuts=[], ptVar="pt"):
             if not "pt" in removedCuts:
-                if g["pt"]       <= 20:                                             return False
+                if g[ptVar]       <= 20:                                             return False
 #                if not g["isScEtaEB"]:                                                   return False # Supercluster Barrel only
             if not "eta" in removedCuts:
                 if abs(g["eta"]) >= 1.479:                                          return False # Barrel only
             if not "pixelSeed" in removedCuts:
                 if g["pixelSeed"]:                                                  return False
-            if not "electronVeto" in removedCuts:
-                if not g["electronVeto"]:                                           return False
+#            if not "electronVeto" in removedCuts:
+#                if not g["electronVeto"]:                                           return False
 #            if g[idVar]          <  photonId[selection]:                            return False
             if not "ID" in removedCuts:
                 if not photonVIDSelector( g, photonId[selection], removedCuts=removedCuts ): return False
@@ -475,20 +481,58 @@ def photonSelector( selection, year=None ):
 
 
 # Gen Selectors
-def genJetSelector():
-    # According to AN-2017/197
-    def func(j):
-        if j["pt"]       <= 30:  return False
-        if abs(j["eta"]) >= 2.4: return False
-        return True
+def genJetSelector( selection=None ):
+
+    if selection == 'ATLASUnfolding':
+        def func(j):
+            if j["pt"]       < 25:  return False
+            if abs(j["eta"]) > 2.5: return False
+            return True
+        return func
+
+    elif selection == 'CMSUnfolding':
+        def func(j):
+            if j["pt"]       < 30:  return False
+            if abs(j["eta"]) > 2.4: return False
+            return True
+        return func
+
+    else:
+        # According to AN-2017/197
+        def func(j):
+            if j["pt"]       <= 25:  return False
+            if abs(j["eta"]) >= 2.5: return False
+            return True
     return func
 
-def genLeptonSelector():
-    # According to AN-2017/197
-    def func(l):
-        if l["pt"]       <= 15:  return False
-        if abs(l["eta"]) >= 2.4: return False
-        return True
+def genLeptonSelector( selection=None ):
+
+    if selection == 'ATLASUnfolding':
+        def func(l):
+            if abs(l["pdgId"]) not in [11,13]: return False
+            if l["pt"]       < 25:  return False
+            if abs(l["eta"]) > 2.5: return False
+            return True
+        return func
+
+    elif selection == 'CMSUnfolding':
+        def func(l):
+            if abs(l["pdgId"]) not in [11,13]: return False
+            if abs(l["pdgId"]) == 11:
+                if l["pt"]       < 35:         return False
+                if abs(l["eta"]) > 2.4:        return False
+            elif abs(l["pdgId"]) == 13:
+                if l["pt"]       < 30:         return False
+                if abs(l["eta"]) > 2.4:        return False
+            return True
+        return func
+
+    else:
+        # According to AN-2017/197
+        def func(l):
+            if l["pt"]       <= 25:  return False
+            if abs(l["eta"]) >= 2.5: return False
+            return True
     return func
 
 def genPhotonSelector( photon_selection=None ):
@@ -525,11 +569,25 @@ def genPhotonSelector( photon_selection=None ):
             return True
         return func
 
+    elif photon_selection == 'ATLASUnfolding':
+        def func(g):
+            if g["pt"]       < 20:   return False
+            if abs(g["eta"]) > 2.37: return False
+            return True
+        return func
+
+    elif photon_selection == 'CMSUnfolding':
+        def func(g):
+            if g["pt"]       < 20:     return False
+            if abs(g["eta"]) > 1.4442: return False
+            return True
+        return func
+
     else:
         # general gen-photon selection
         def func(g):
-            if g["pt"]       < 13:    return False
-            if abs(g["eta"]) > 1.479: return False
+            if g["pt"]       < 13:  return False
+            if abs(g["eta"]) > 5.0: return False
             return True
         return func
 
@@ -556,7 +614,12 @@ def filterGenTaus( genParts, status=None ):
     return taus
 
 def filterGenPhotons( genParts, status=None ):
-    photons = list( filter( lambda l: abs(l['pdgId']) == 22 and l['status'] >= 0, genParts ) )
+    if   status == 'first': stat = [23]
+    elif status == 'last':  stat = [1]
+    if status == "all":
+        photons = list( filter( lambda l: abs(l['pdgId']) == 22 and l['status'] >= 0, genParts ) )
+    else:
+        photons = list( filter( lambda l: abs(l['pdgId']) == 22 and l['status'] in stat, genParts ) )
     return photons
 
 def filterGenTops( genParts ):
@@ -564,7 +627,7 @@ def filterGenTops( genParts ):
     return tops
 
 def filterGenBJets( genJets ):
-    bjets = list( filter( lambda j: abs(j['hadronFlavour']) == 5, genJets ) )
+    bjets = list( filter( lambda j: abs(j['partonFlavour']) == 5, genJets ) )
     return bjets
 
 # Pythia status flags:
@@ -580,4 +643,30 @@ def filterGenBJets( genJets ):
 #  1: stage of event generation inside PYTHIA
 # 22: intermediate (intended to have preserved mass) (tops)
 
+
+# for 4 muon default plot script
+
+muonVars_data = ['pt','eta','phi','pdgId','mediumId','miniPFRelIso_all','pfRelIso03_all','sip3d','dxy','dz','charge']
+muonVars = muonVars_data + []
+
+electronVars_data = ['pt','eta','phi','pdgId','cutBased','miniPFRelIso_all','pfRelIso03_all','sip3d','lostHits','convVeto','dxy','dz','charge','deltaEtaSC','mvaFall17V2noIso_WP80', 'vidNestedWPBitmap']
+electronVars = electronVars_data + []
+
+def alwaysTrue(*args, **kwargs):
+  return True
+
+def alwaysFalse(*args, **kwargs):
+  return False
+
+def getMuons(c, collVars=muonVars):
+    return [getObjDict(c, 'Muon_', collVars, i) for i in range(int(getVarValue(c, 'nMuon')))]
+
+def getElectrons(c, collVars=electronVars):
+    return [getObjDict(c, 'Electron_', collVars, i) for i in range(int(getVarValue(c, 'nElectron')))]
+
+def getGoodMuons(c, collVars=muonVars, mu_selector = alwaysFalse):
+    return [l for l in getMuons(c, collVars) if mu_selector(l)]
+
+def getGoodElectrons(c, collVars=electronVars, ele_selector = alwaysFalse):
+    return [l for l in getElectrons(c, collVars) if ele_selector(l)]
 

@@ -1,10 +1,12 @@
-#cardfile="test"
-#cardfile="TTG_DiLept_1L_EFT_COMBINED_1l_ctZ_0_ctZI_0_nLepTight1-nLepVeto1-nJet4p-nBTag1p-pTG20-nPhoton1p_full"
-#cardfile="TTG_DiLept_1L_EFT_TTG_DiLept_1L_EFT_COMBINED_2l_ctZ_0_ctZI_0_nLepTight1-nLepVeto1-nJet4p-nBTag1p-pTG20-nPhoton1p_dilepOS-nLepVeto2-pTG20-nPhoton1p-offZSFllg-offZSFll-mll40-nJet2p-nBTag1p_full"
-cardfile="TTG_DiLept_1L_EFT_TTG_DiLept_1L_EFT_COMBINED_2l_ctZ_0_ctZI_0_nLepTight1-nLepVeto1-nJet4p-nBTag1p-pTG20-nPhoton1p_dilepOS-nLepVeto2-pTG20-nPhoton1p-offZSFllg-offZSFll-mll40-nJet2p-nBTag1p_full_low"
-#cardfile="TTG_DiLept_1L_EFT_TTG_DiLept_1L_EFT_COMBINED_2l_ctZ_0_ctZI_0_nLepTight1-nLepVeto1-nJet4p-nBTag1p-pTG20-nPhoton1p_dilepOS-nLepVeto2-pTG20-nPhoton1p-offZSFllg-offZSFll-mll40-nJet2p-nBTag1p_full_high"
-#TTG_DiLept_1L_EFT_2016_ctZ_0_ctZI_0_dilepOS-nLepVeto2-pTG20-nPhoton1p-offZSFllg-offZSFll-mll40-nJet2p-nBTag1p_small"
-#cardfile=""
-#cardfile="TTG_DiLept_1L_EFT_2016_ctZ_0_ctZI_0_dilepOS-nLepVeto2-pTG20-nPhoton1p-offZSFllg-offZSFll-mll40_full"
+year="2016"
+carddir="limits/cardFiles/defaultSetup/observed"
+cachedir="/afs/hephy.at/data/llechner01/TTGammaEFT/cache/analysis/"
 
-python impactPlot.py --removeDir --cardfile ${cardfile} --cores 6 --year combined
+cardpath=${cachedir}/${year}/${carddir}
+for FILE in ${cardpath}/*.txt; do
+    if [[ $FILE == *"shape"* ]]; then continue; fi
+    card="$(basename -- $FILE)"
+    card=${card%.txt}
+
+    python impactPlot.py $@ --carddir ${carddir} --cardfile ${card} --year ${year} --cores 6 #--bkgOnly
+done

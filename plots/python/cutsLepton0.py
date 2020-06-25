@@ -52,10 +52,53 @@ cutsLepton0.append( Plot(
 ))
 
 cutsLepton0.append( Plot(
+    name      = 'lepton0_pfRelIso03_all_narrow',
+    texX      = 'relIso_{0.3}(l_{0})',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.Lepton_pfRelIso03_all[0] if event.Lepton_pt[0]>30 else -999,
+    binning   = [ 40, 0, 0.12 ],
+))
+
+
+cutsLepton0.append( Plot(
+    name      = 'lepton0_pfRelIso03_all_wide',
+    texX      = 'relIso_{0.3}(l_{0})',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.Lepton_pfRelIso03_all[0] if event.Lepton_pt[0]>30 else -999,
+    binning   = [ 40, 0, 1 ],
+))
+
+cutsLepton0.append( Plot(
     name      = 'lepton0_pfRelIso03_all',
     texX      = 'relIso_{0.3}(l_{0})',
     texY      = 'Number of Events',
-    attribute = lambda event, sample: event.Lepton_pfRelIso03_all[0],
+    attribute = lambda event, sample: event.Lepton_pfRelIso03_all[0] if event.Lepton_pt[0]>30 else -999,
+    binning   = [ 40, 0, 0.5 ],
+))
+
+
+cutsLepton0.append( Plot(
+    name      = 'lepton0_pfRelIso03_all_narrow_coarse',
+    texX      = 'relIso_{0.3}(l_{0})',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.Lepton_pfRelIso03_all[0] if event.Lepton_pt[0]>30 else -999,
     binning   = [ 20, 0, 0.12 ],
+))
+
+
+cutsLepton0.append( Plot(
+    name      = 'lepton0_pfRelIso03_all_wide_coarse',
+    texX      = 'relIso_{0.3}(l_{0})',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.Lepton_pfRelIso03_all[0] if event.Lepton_pt[0]>30 else -999,
+    binning   = [ 20, 0, 1 ],
+))
+
+cutsLepton0.append( Plot(
+    name      = 'lepton0_pfRelIso03_all_coarse',
+    texX      = 'relIso_{0.3}(l_{0})',
+    texY      = 'Number of Events',
+    attribute = lambda event, sample: event.Lepton_pfRelIso03_all[0] if event.Lepton_pt[0]>30 else -999,
+    binning   = [ 20, 0, 0.5 ],
 ))
 

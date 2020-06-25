@@ -16,7 +16,7 @@ genBJet1.append( Plot(
     texX      = 'p_{T}(gen b_{1}) (GeV)',
     texY      = 'Number of Events',
     attribute = TreeVariable.fromString( "GenBj1_pt/F" ),
-    binning   = [ 40, 0, 200 ],
+    binning   = [ 20, 0, 200 ],
 ))
 
 genBJet1.append( Plot(
@@ -24,7 +24,7 @@ genBJet1.append( Plot(
     texX      = '#eta(gen b_{1})',
     texY      = 'Number of Events',
     attribute = TreeVariable.fromString( "GenBj1_eta/F" ),
-    binning   = [ 40, -6, 6 ],
+    binning   = [ 20, -6, 6 ],
 ))
 
 genBJet1.append( Plot(
@@ -32,5 +32,5 @@ genBJet1.append( Plot(
     texX      = '#phi(gen b_{1})',
     texY      = 'Number of Events',
     attribute = TreeVariable.fromString( "GenBj1_phi/F" ),
-    binning   = [ 20, -pi, pi ],
+    binning   = [ 10, -pi, pi ],
 ))

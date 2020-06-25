@@ -143,7 +143,7 @@ for regions, minval, maxval in allRegions:
 
         # Define 2l selections
         leptonSelection = cutInterpreter.cutString( mode )
-        totalSelection  = [ getFilterCut( 2017, isData=True ),  leptonSelection, selection, addSelection ]
+        totalSelection  = [ getFilterCut( 2017, isData=True, skipBadChargedCandidate=True ),  leptonSelection, selection, addSelection ]
     
         Run2017_noPreFiring.setSelectionString( totalSelection + [ "unPreFirableEvent==1"] )
         Run2017.setSelectionString( totalSelection )

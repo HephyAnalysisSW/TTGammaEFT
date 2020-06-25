@@ -1,0 +1,45 @@
+#runNotifier.sh "python impactPlot.py --bkgOnly --cardfile DY3_DY4p_TT3_TT4p_VG3_VG4p_misDY3_misDY4p_misTT2"
+#runNotifier.sh "python impactPlot.py --bkgOnly --cardfile DY3_DY4p_VG3_VG4p_misDY3_misDY4p_misTT2"
+#runNotifier.sh "python impactPlot.py --bkgOnly --cardfile DY4p_TT4p_VG4p_misDY4p_misTT2"
+#runNotifier.sh "python impactPlot.py --bkgOnly --cardfile DY3_TT3_VG3_misDY3_misTT2"
+#runNotifier.sh "python impactPlot.py --bkgOnly --cardfile VG4p_misDY4p_addDYSF"
+#runNotifier.sh "python impactPlot.py --bkgOnly --cardfile VG3_misDY3_addDYSF"
+
+#runNotifier.sh "python impactPlot.py --bkgOnly --cardfile VG4p_misDY4p_misTT2_addDYSF"
+#runNotifier.sh "python impactPlot.py --bkgOnly --cardfile VG3_misDY3_misTT2_addDYSF"
+#runNotifier.sh "python impactPlot.py --bkgOnly --cardfile TT3_TT4p_misTT2_addDYSF"
+
+#runNotifier.sh "python impactPlot.py --bkgOnly --cardfile VG3_misDY3_misTT2_addDYSF_addMisIDSF"
+#runNotifier.sh "python impactPlot.py --bkgOnly --cardfile VG4p_misDY4p_misTT2_addDYSF_addMisIDSF"
+#runNotifier.sh "python impactPlot.py --bkgOnly --cardfile VG3_misDY3_misTT2"
+#runNotifier.sh "python impactPlot.py --bkgOnly --cardfile VG4p_misDY4p_misTT2"
+
+#runNotifier.sh "python impactPlot.py --cores 1 --cardfile DY3_DY4p_SR3highIso_SR3lowIso_SR3offM3_SR3onM3_SR4phighIso_SR4plowIso_SR4poffM3_SR4ponM3_TT3_TT4p_VG3_VG4p_WJets3_WJets4p_misDY3_misDY4p_misTT2"
+#runNotifier.sh "python impactPlot.py --cores 1 --cardfile DY3_DY4p_SR3highIso_SR3lowIso_SR3offM3_SR3onM3_SR4phighIso_SR4plowIso_SR4poffM3_SR4ponM3_TT3_TT4p_VG3_VG4p_WJets3_WJets4p_misDY3_misDY4p_misTT2_addDYSF_addMisIDSF"
+
+#runNotifier.sh "python impactPlot.py --cores 1 --cardfile DY3_VG3_misDY3_misIDPOI"
+#runNotifier.sh "python impactPlot.py --cores 1 --cardfile DY3_VG3_misDY3_addDYSF_misIDPOI"
+
+#runNotifier.sh "python impactPlot.py --cores 1 --cardfile VG2_misDY2_addDYSF_misIDPOI"
+#runNotifier.sh "python impactPlot.py --cores 1 --cardfile VG3_misDY3_addDYSF_misIDPOI"
+#runNotifier.sh "python impactPlot.py --cores 1 --cardfile VG4_misDY4_addDYSF_misIDPOI"
+#runNotifier.sh "python impactPlot.py --cores 1 --cardfile VG5_misDY5_addDYSF_misIDPOI"
+#runNotifier.sh "python impactPlot.py --cores 1 --cardfile VG4p_misDY4p_addDYSF_misIDPOI"
+
+#runNotifier.sh "python impactPlot.py --cores 1 --cardfile DY2_VG2_misDY2_misIDPOI"
+#runNotifier.sh "python impactPlot.py --cores 1 --cardfile DY3_VG3_misDY3_misIDPOI"
+#runNotifier.sh "python impactPlot.py --cores 1 --cardfile DY4_VG4_misDY4_misIDPOI"
+#runNotifier.sh "python impactPlot.py --cores 1 --cardfile DY5_VG5_misDY5_misIDPOI"
+#runNotifier.sh "python impactPlot.py --cores 1 --cardfile DY4p_VG4p_misDY4p_misIDPOI"
+
+runNotifier.sh "python impactPlot.py --cores 1 --cardfile DY2_VG2_misDY2_incl_misIDPOI"
+runNotifier.sh "python impactPlot.py --cores 1 --cardfile DY3_VG3_misDY3_incl_misIDPOI"
+runNotifier.sh "python impactPlot.py --cores 1 --cardfile DY4_VG4_misDY4_incl_misIDPOI"
+runNotifier.sh "python impactPlot.py --cores 1 --cardfile DY5_VG5_misDY5_incl_misIDPOI"
+runNotifier.sh "python impactPlot.py --cores 1 --cardfile DY4p_VG4p_misDY4p_incl_misIDPOI"
+
+runNotifier.sh "python impactPlot.py --cores 1 --cardfile DY2_VG2_misDY2_addDYSF_incl_misIDPOI"
+runNotifier.sh "python impactPlot.py --cores 1 --cardfile DY3_VG3_misDY3_addDYSF_incl_misIDPOI"
+runNotifier.sh "python impactPlot.py --cores 1 --cardfile DY4_VG4_misDY4_addDYSF_incl_misIDPOI"
+runNotifier.sh "python impactPlot.py --cores 1 --cardfile DY5_VG5_misDY5_addDYSF_incl_misIDPOI"
+runNotifier.sh "python impactPlot.py --cores 1 --cardfile DY4p_VG4p_misDY4p_addDYSF_incl_misIDPOI"

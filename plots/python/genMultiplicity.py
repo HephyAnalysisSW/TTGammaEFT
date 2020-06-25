@@ -19,13 +19,13 @@ genMultiplicity.append( Plot(
     binning   = [ 4, 0, 4 ],
 ))
 
-genMultiplicity.append( Plot(
-    name      = 'nGenMGPhoton',
-    texX      = 'N_{#gamma}',
-    texY      = 'Number of Events',
-    attribute = TreeVariable.fromString( "nGenMGPhoton/I" ),
-    binning   = [ 4, 0, 4 ],
-))
+#genMultiplicity.append( Plot(
+#    name      = 'nGenMGPhoton',
+#    texX      = 'N_{#gamma}',
+#    texY      = 'Number of Events',
+#    attribute = TreeVariable.fromString( "nGenMGPhoton/I" ),
+#    binning   = [ 4, 0, 4 ],
+#))
 
 genMultiplicity.append( Plot(
     name      = 'nGenLepton',

@@ -36,7 +36,7 @@ argParser.add_argument('--selection',          action='store',      default='dil
 argParser.add_argument('--small',              action='store_true',                                                                       help='Run only on a small subset of the data?', )
 argParser.add_argument('--noData',             action='store_true', default=False,                                                        help='also plot data?')
 argParser.add_argument('--signal',             action='store',      default=None,   nargs='?', choices=[None],                            help="Add signal to plot")
-argParser.add_argument('--year',               action='store',      default=None,   type=int,  choices=[2016,2017,2018],                  help="Which year to plot?")
+argParser.add_argument('--year',               action='store',      default="2016",   type=str,  choices=["2016","2017","2018","RunII"],                  help="Which year to plot?")
 argParser.add_argument('--onlyTTG',            action='store_true', default=False,                                                        help="Plot only ttG")
 argParser.add_argument('--normalize',          action='store_true', default=False,                                                        help="Normalize yields" )
 argParser.add_argument('--addOtherBg',         action='store_true', default=False,                                                        help="add others background" )
@@ -45,6 +45,8 @@ argParser.add_argument('--mode',               action='store',      default="Non
 argParser.add_argument('--nJobs',              action='store',      default=1,      type=int, choices=[1,2,3,4,5],                        help="Maximum number of simultaneous jobs.")
 argParser.add_argument('--job',                action='store',      default=0,      type=int, choices=[0,1,2,3,4],                        help="Run only job i")
 args = argParser.parse_args()
+
+if args.year != "RunII": args.year = int(args.year)
 
 # Logger
 import Analysis.Tools.logger as logger
@@ -64,19 +66,21 @@ if args.normalize:       args.plot_directory += "_normalize"
 #os.environ["gammaSkim"]="True" if "hoton" in args.selection or "pTG" in args.selection else "False"
 os.environ["gammaSkim"]="False"
 if args.year == 2016:
-    from TTGammaEFT.Samples.nanoTuples_Summer16_private_postProcessed      import *
+    import TTGammaEFT.Samples.nanoTuples_Summer16_private_postProcessed as mc_samples
     if not args.noData:
-        from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_postProcessed import *
-
+        from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_postProcessed import Run2016 as data_sample
 elif args.year == 2017:
-    from TTGammaEFT.Samples.nanoTuples_Fall17_private_postProcessed        import *
+    import TTGammaEFT.Samples.nanoTuples_Fall17_private_postProcessed as mc_samples
     if not args.noData:
-        from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_postProcessed import *
-
+        from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_postProcessed import Run2017 as data_sample
 elif args.year == 2018:
-    from TTGammaEFT.Samples.nanoTuples_Autumn18_private_postProcessed      import *
+    import TTGammaEFT.Samples.nanoTuples_Autumn18_private_postProcessed as mc_samples
     if not args.noData:
-        from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_postProcessed import *
+        from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_postProcessed import Run2018 as data_sample
+elif args.year == "RunII":
+    import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
+    if not args.noData:
+        from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
 # Text on the plots
 def drawObjects( plotData, dataMCScale, lumi_scale ):
@@ -198,8 +202,8 @@ read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval
                      "reweightPU/F", "reweightPUDown/F", "reweightPUUp/F", "reweightPUVDown/F", "reweightPUVUp/F",
                      "reweightLepton2lSF/F", "reweightLepton2lSFUp/F", "reweightLepton2lSFDown/F",
                      "reweightLeptonTracking2lSF/F",
-                     "reweightDilepTrigger/F", "reweightDilepTriggerUp/F", "reweightDilepTriggerDown/F",
-                     "reweightDilepTriggerBackup/F", "reweightDilepTriggerBackupUp/F", "reweightDilepTriggerBackupDown/F",
+                     "reweightTrigger/F", "reweightTriggerUp/F", "reweightTriggerDown/F",
+                     "reweightInvTrigger/F", "reweightInvTriggerUp/F", "reweightInvTriggerDown/F",
                      "reweightPhotonSF/F", "reweightPhotonSFUp/F", "reweightPhotonSFDown/F",
                      "reweightPhotonElectronVetoSF/F",
                      "reweightBTag_SF/F", "reweightBTag_SF_b_Down/F", "reweightBTag_SF_b_Up/F", "reweightBTag_SF_l_Down/F", "reweightBTag_SF_l_Up/F",
@@ -290,45 +294,30 @@ sequence = [ ]#\
 #           ]
 
 # Sample definition
-if args.year == 2016:
-    if args.onlyTTG and not categoryPlot: mc = [ TTG_priv_16 ]
-    elif not categoryPlot:
-        mc = [ TTG_priv_16, DY_LO_16, TT_pow_16, singleTop_16, ZG_16 ]
-        if args.addOtherBg: mc += [ other_16 ]
-    elif categoryPlot:
-        all = all_16 if args.addOtherBg else all_noOther_16
-elif args.year == 2017:
-    if args.onlyTTG and not categoryPlot: mc = [ TTG_priv_17 ]
-    elif not categoryPlot:
-        mc = [ TTG_priv_17, DY_LO_17, TT_pow_17, singleTop_17, ZG_17 ]
-        if args.addOtherBg: mc += [ other_17 ]
-    elif categoryPlot:
-        all = all_17 if args.addOtherBg else all_noOther_17
-elif args.year == 2018:
-    if args.onlyTTG and not categoryPlot: mc = [ TTG_priv_18 ]
-    elif not categoryPlot:
-        mc = [ TTG_priv_18, DY_LO_18, TT_pow_18, singleTop_18, ZG_18 ]
-        if args.addOtherBg: mc += [ other_18 ]
-    elif categoryPlot:
-        all = all_18 if args.addOtherBg else all_noOther_18
+if args.onlyTTG and not categoryPlot: mc = [ TTG ]
+elif not categoryPlot:
+    mc = [ TTG, DY_LO, Top, singleTop, ZG ]
+    if args.addOtherBg: mc += [ other ]
+elif categoryPlot:
+    all_mc = all_mc if args.addOtherBg else all_noOther
 
 if categoryPlot:
-    all_cat0 = all
+    all_cat0 = all_mc
     all_cat0.name = "cat0"
     all_cat0.texName = "Genuine Photons"
     all_cat0.color   = ROOT.kOrange
 
-    all_cat1 = copy.deepcopy(all)
+    all_cat1 = copy.deepcopy(all_mc)
     all_cat1.name    = "cat1"
     all_cat1.texName = "Hadronic Photons"
     all_cat1.color   = ROOT.kBlue+2
 
-    all_cat2 = copy.deepcopy(all)
+    all_cat2 = copy.deepcopy(all_mc)
     all_cat2.name    = "cat2"
     all_cat2.texName = "MisId Electrons"
     all_cat2.color   = ROOT.kCyan+2
 
-    all_cat3 = copy.deepcopy(all)
+    all_cat3 = copy.deepcopy(all_mc)
     all_cat3.name    = "cat3"
     all_cat3.texName = "Hadronic Fakes"
     all_cat3.color   = ROOT.kRed+1
@@ -336,13 +325,11 @@ if categoryPlot:
 
 if args.noData:
     if args.year == 2016:   lumi_scale = 35.92
-    elif args.year == 2017: lumi_scale = 41.86
-    elif args.year == 2018: lumi_scale = 58.83
+    elif args.year == 2017: lumi_scale = 41.53
+    elif args.year == 2018: lumi_scale = 59.74
+    elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
     stack = Stack( mc )
 else:
-    if args.year == 2016:   data_sample = Run2016
-    elif args.year == 2017: data_sample = Run2017
-    elif args.year == 2018: data_sample = Run2018
     data_sample.texName        = "data (legacy)"
     data_sample.name           = "data"
     data_sample.read_variables = [ "event/I", "run/I" ]
@@ -356,7 +343,7 @@ for sample in mc + signals:
     sample.read_variables = read_variables_MC
     sample.scale          = lumi_scale
     sample.style          = styles.fillStyle( sample.color )
-    sample.weight         = lambda event, sample: event.reweightL1Prefire*event.reweightPU*event.reweightLepton2lSF*event.reweightLeptonTracking2lSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
+    sample.weight         = lambda event, sample: event.reweightTrigger*event.reweightL1Prefire*event.reweightPU*event.reweightLepton2lSF*event.reweightLeptonTracking2lSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
 
 if args.small:
     for sample in stack.samples:
@@ -451,9 +438,9 @@ elif args.nJobs != 1:
 else:
     allModes = [ 'mumu', 'mue', 'ee' ]
 
-filterCutData = getFilterCut( args.year, isData=True )
-filterCutMc   = getFilterCut( args.year, isData=False )
-tr            = TriggerSelector( args.year )
+filterCutData = getFilterCut( args.year, isData=True, skipBadChargedCandidate=True )
+filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )
+tr            = TriggerSelector( args.year, singleLepton="nLepTight1" in args.selection )
 triggerCutMc  = tr.getSelection( "MC" )
 
 cat_sel0 = [ "%s_photonCat==0"%args.categoryPhoton ]
@@ -485,9 +472,9 @@ for index, mode in enumerate( allModes ):
         for sample in mc + signals: sample.setSelectionString( [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] )
 
     # Overlap removal
-#    if any( x.name == "TTG" for x in mc ) and any( x.name == "TT_pow" for x in mc ):
-#        eval('TTG_priv_'    + str(args.year)[-2:]).addSelectionString( "isTTGamma==1" )
-#        eval('TT_pow_' + str(args.year)[-2:]).addSelectionString( "isTTGamma==0" )
+#    if any( x.name == "TTG" for x in mc ) and any( x.name == "Top" for x in mc ):
+#        eval('TTG_'    + str(args.year)[-2:]).addSelectionString( "isTTGamma==1" )
+#        eval('Top_' + str(args.year)[-2:]).addSelectionString( "isTTGamma==0" )
 
 #    if any( x.name == "ZG" for x in mc ) and any( x.name == "DY_LO" for x in mc ):
 #        eval('ZG_'    + str(args.year)[-2:]).addSelectionString( "isZWGamma==1" )

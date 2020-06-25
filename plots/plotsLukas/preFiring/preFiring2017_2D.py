@@ -110,7 +110,7 @@ allModes = [ 'all', 'mumu', 'mue', 'ee', 'SF' ]
 
 selection    = cutInterpreter.cutString( args.selection )
 addSelection = "Jet_pt<500&&Jet_pt>30&&Jet_cleanmask&&abs(Jet_eta)<3.5"
-metFilter    = getFilterCut( 2017, isData=True )
+metFilter    = getFilterCut( 2017, isData=True, skipBadChargedCandidate=True )
 
 ptMinVal  = 30
 ptMaxVal  = 1000

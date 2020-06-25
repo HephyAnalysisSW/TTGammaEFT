@@ -6,7 +6,33 @@ import ROOT
 from RootTools.core.Sample import Sample
 
 # TTGammaEFT Imports
-from TTGammaEFT.Samples.helpers import getDPMSample, merge
+from TTGammaEFT.Samples.helpers import getDataSample, merge
+
+# Data directory
+try:
+    data_directory_ = sys.modules['__main__'].data_directory
+except:
+    from TTGammaEFT.Tools.user import dpm_directory as data_directory_
+    data_directory_ += "postprocessed/"
+try:
+    postprocessing_directory_ = sys.modules['__main__'].postprocessing_directory
+except:
+    from TTGammaEFT.Samples.default_locations import postprocessing_locations
+    postprocessing_directory_ = postprocessing_locations.Run2016_semilep
+
+try:
+    fromDPM = sys.modules['__main__'].fromEOS != "True"
+except:
+    fromDPM = not "clip" in os.getenv("HOSTNAME").lower()
+
+#if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
+#    postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
+
+# Redirector
+try:
+    redirector = sys.modules['__main__'].redirector
+except:
+    from TTGammaEFT.Tools.user import redirector as redirector
 
 # Logging
 if __name__=="__main__":
@@ -18,28 +44,14 @@ else:
     import logging
     logger = logging.getLogger(__name__)
 
-# Data directory
-from TTGammaEFT.Tools.user import dpm_directory as data_directory
-data_directory += "postprocessed/"
-from TTGammaEFT.Samples.default_locations import postprocessing_locations
-postprocessing_directory = postprocessing_locations.Run2016_semilep
-if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True": postprocessing_directory = postprocessing_directory.replace("/semilep/", "/semilepGamma/")
-
-# Redirector
-try:
-    redirector = sys.modules['__main__'].redirector
-except:
-    from TTGammaEFT.Tools.user import redirector as redirector
-
-logger.info( "Loading data samples from directory %s", os.path.join(data_directory, postprocessing_directory ) )
+logger.info( "Loading data samples from directory %s", os.path.join(data_directory_, postprocessing_directory_ ) )
 
 allSamples = [ 'SingleMuon', 'SingleElectron' ]
 lumi       = 35.92
 
 dirs = {}
 for ( run, version ) in [ ( 'B', '_ver2' ), ( 'C', '' ), ( 'D', '' ), ( 'E', '' ), ( 'F', '' ), ( 'G', '' ), ( 'H', '' ) ]:
-#    runTag = 'Run2016' + run + '_14Dec2018' + version
-    runTag = 'Run2016' + run + '_17Jul2018' + version
+    runTag = 'Run2016' + run + '_25Oct2019' + version
     for pd in allSamples:
         dirs[ pd + "_Run2016" + run + version ] = [ pd + "_" + runTag ]
 
@@ -49,11 +61,11 @@ for pd in allSamples:
     merge( pd, 'Run2016',       [ 'Run2016BCDEFG', 'Run2016H' ], dirs )
 
 for key in dirs:
-    dirs[key] = [ os.path.join( data_directory, postprocessing_directory, dir ) for dir in dirs[key] ]
+    dirs[key] = [ os.path.join( data_directory_, postprocessing_directory_, dir ) for dir in dirs[key] ]
 
 allSamples_Data25ns  = []
 for pd in allSamples:
-    vars()[ pd + '_Run2016' ] = getDPMSample( pd, 'Run2016', lumi*1000, dirs, redirector )
+    vars()[ pd + '_Run2016' ] = getDataSample( pd, 'Run2016', lumi*1000, dirs, redirector=redirector, fromDPM=fromDPM )
     allSamples_Data25ns += [ vars()[ pd + '_Run2016' ] ]
 
 Run2016      = Sample.combine( "Run2016", allSamples_Data25ns, texName = "Data" )

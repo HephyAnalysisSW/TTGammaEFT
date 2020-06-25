@@ -195,6 +195,7 @@ new_variables += [ "GenAllLepton[%s]"   %genLeptonVarStringWrite ]
 new_variables += [ "GenAllPhoton[%s]"   %genPhotonVarStringWrite ]
 new_variables += [ "GenMGAllPhoton[%s]"   %genPhotonVarStringWrite ]
 new_variables += [ "GenAllJet[%s]"      %genJetVarStringWrite ]
+new_variables += [ "GenAllBJet[%s]"     %genJetVarStringWrite ]
 
 if options.addReweights:
     new_variables += [ "rw_nominal/F" ]
@@ -305,7 +306,8 @@ def filler( event ):
     fill_vector_collection( event, "GenTop", genTopVars, GenTops ) 
 
     # genLeptons: prompt gen-leptons 
-    GenLeptonsAll = [ (search.ascend(l), l) for l in filter( lambda p: abs( p.pdgId() ) in [11,13] and search.isLast(p) and p.status() == 1, genPart ) ]
+#    GenLeptonsAll = [ (search.ascend(l), l) for l in filter( lambda p: abs( p.pdgId() ) in [11,13] and search.isLast(p) and p.status() == 1, genPart ) ]
+    GenLeptonsAll = [ (search.ascend(l), l) for l in filter( lambda p: abs( p.pdgId() ) in [11,13] and search.isLast(p), genPart ) ]
     GenPromptLeptons = []
     GenAllLeptons    = []
 
@@ -335,11 +337,11 @@ def filler( event ):
 
     GenPromptLeptons.sort( key = lambda p:-p['pt'] )
 
-#    if GenPromptLeptons:
-#        GenPromptLeptons[0]["clean"] = 1 #dont clean the high pT photons
-#        for i, GenPromptLepton in enumerate(GenPromptLeptons[::-1][:-1]):
-#            GenPromptLepton['clean'] = min( [999] + [ deltaR2( GenPromptLepton, p ) for p in GenPromptLeptons[::-1][i+1:] ] ) > 0.16
-#        GenPromptLeptons = list( filter( lambda j: j["clean"], GenPromptLeptons ) )
+    if GenPromptLeptons:
+        GenPromptLeptons[0]["clean"] = 1 #dont clean the high pT photons
+        for i, GenPromptLepton in enumerate(GenPromptLeptons[::-1][:-1]):
+            GenPromptLepton['clean'] = min( [999] + [ deltaR2( GenPromptLepton, p ) for p in GenPromptLeptons[::-1][i+1:] ] ) > 0.16
+        GenPromptLeptons = list( filter( lambda j: j["clean"], GenPromptLeptons ) )
 
     GenPromptElectrons =  list( filter( lambda l: abs(l['pdgId'])==11, GenPromptLeptons ) )
     GenPromptMuons     =  list( filter( lambda l: abs(l['pdgId'])==13, GenPromptLeptons ) )
@@ -397,9 +399,7 @@ def filler( event ):
     GenJetsAll.sort( key = lambda p: -p.pt() )
     # Filter genJets
     GenAllJets = map( lambda t: {var: getattr(t, var)() for var in genJetVarsRead}, GenJetsAll )
-
-    # find b's from tops:
-    bPartons = [ b for b in filter( lambda p: abs(p.pdgId()) == 5 and p.numberOfMothers() == 1 and abs(p.mother(0).pdgId()) == 6,  genPart ) ]
+    bPartons = [ b for b in filter( lambda p: abs(p.pdgId()) == 5,  genPart ) ]
 
     for GenJet in GenAllJets:
         GenJet['matchBParton'] = min( [999] + [ deltaR2( GenJet, {'eta':b.eta(), 'phi':b.phi() } ) for b in bPartons ] ) < 0.04
@@ -407,17 +407,16 @@ def filler( event ):
     # store if gen-jet is DR matched to a B parton in cone of 0.2
     GenJets    = list( filter( lambda j: isGoodGenJet(j), GenAllJets ) )
 
-    trueCleanBjets    = list( filter( lambda j: j['matchBParton'], GenJets ) )
-    trueBjets    = list( filter( lambda j: j['matchBParton'], GenJets ) )
-    trueAllNonBjets = list( filter( lambda j: not j['matchBParton'], GenAllJets ) )
-    trueAllBjets    = list( filter( lambda j: j['matchBParton'], GenAllJets ) )
+    trueAllNonBjets   = list( filter( lambda j: not j['matchBParton'], GenAllJets ) )
+    trueAllBjets      = list( filter( lambda j: j['matchBParton'], GenAllJets ) )
+    fill_vector_collection( event, "GenAllJet",    genJetVars,    GenAllJets )
+    fill_vector_collection( event, "GenAllBJet",   genJetVars,    trueAllBjets )
 
     if not options.noCleaning: 
-        GenJets    = list( filter( lambda j: min( [999] + [ deltaR2( j, p ) for p in GenMGPhotons ] ) > 0.04, GenJets ) )
+        GenJets    = list( filter( lambda j: min( [999] + [ deltaR2( j, p ) for p in GenPhotons ] ) > 0.04, GenJets ) )
 
-    fill_vector_collection( event, "GenAllJet",    genJetVars,    GenAllJets )
     # gen b jets
-
+    trueBjets    = list( filter( lambda j: j['matchBParton'], GenJets ) )
     trueNonBjets = list( filter( lambda j: not j['matchBParton'], GenJets ) )
 
     # Mimick b reconstruction ( if the trailing b fails acceptance, we supplement with the leading non-b jet ) 
@@ -437,9 +436,9 @@ def filler( event ):
     event.nGenBJet = len( trueBjets )
 
 
-    event.m3          = m3( GenJets )[0]
+    event.m3 = m3( GenJets )[0]
     if len(GenPhotons) > 0:
-        event.m3gamma     = m3( GenJets, photon=GenPhotons[0] )[0]
+        event.m3gamma = m3( GenJets, photon=GenPhotons[0] )[0]
 
     # Ovservables
     if len( GenPromptLeptons ) > 1:
