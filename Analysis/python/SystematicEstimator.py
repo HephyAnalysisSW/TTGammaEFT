@@ -255,6 +255,18 @@ class SystematicEstimator:
         down = self.cachedEstimate(region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFDown"]}))
         return abs(0.5*(up-down)/ref) if ref > 0 else max(up, down)
 
+    def leptonSFStatSystematic(self, region, channel, setup):
+        ref  = self.cachedEstimate(region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFUp"]}))
+        up   = self.cachedEstimate(region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFStatUp"]}))
+        down = self.cachedEstimate(region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFStatDown"]}))
+        return abs(0.5*(up-down)/ref) if ref > 0 else max(up, down)
+
+    def leptonSFSystSystematic(self, region, channel, setup):
+        ref  = self.cachedEstimate(region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFSyst"]}))
+        up   = self.cachedEstimate(region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFSystUp"]}))
+        down = self.cachedEstimate(region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFSystDown"]}))
+        return abs(0.5*(up-down)/ref) if ref > 0 else max(up, down)
+
     def leptonTrackingSFSystematic(self, region, channel, setup):
         ref  = self.cachedEstimate(region, channel, setup)
         up   = self.cachedEstimate(region, channel, setup.sysClone({"reweight":["reweightLeptonTrackingTightSFUp"]}))
@@ -287,8 +299,8 @@ class SystematicEstimator:
 #            (region, channel, setup.sysClone({"selectionModifier":"eTotalUp"}), None),
 #            (region, channel, setup.sysClone({"selectionModifier":"eTotalDown"}), None),
 
-            (region, channel, setup.sysClone({"selectionModifier":"muTotalUp"}), None),
-            (region, channel, setup.sysClone({"selectionModifier":"muTotalDown"}), None),
+#            (region, channel, setup.sysClone({"selectionModifier":"muTotalUp"}), None),
+#            (region, channel, setup.sysClone({"selectionModifier":"muTotalDown"}), None),
 
             (region, channel, setup.sysClone({"selectionModifier":"jerUp"}), None),
             (region, channel, setup.sysClone({"selectionModifier":"jerDown"}), None),
@@ -309,6 +321,14 @@ class SystematicEstimator:
 
             (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFUp"]}), None),
             (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFDown"]}), None),
+
+#            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFStat"]}), None),
+#            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFStatUp"]}), None),
+#            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFStatDown"]}), None),
+
+#            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFSyst"]}), None),
+#            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFSystUp"]}), None),
+#            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFSystDown"]}), None),
 
             (region, channel, setup.sysClone({"reweight":["reweightLeptonTrackingTightSFUp"]}), None),
             (region, channel, setup.sysClone({"reweight":["reweightLeptonTrackingTightSFDown"]}), None),

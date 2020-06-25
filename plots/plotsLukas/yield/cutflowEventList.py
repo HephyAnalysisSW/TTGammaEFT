@@ -30,8 +30,10 @@ argParser.add_argument('--selection',           action='store',      default='nL
 argParser.add_argument('--sample',              action='store',      default='ttg')
 argParser.add_argument('--small',               action='store_true',                                                                    help='Run only on a small subset of the data?', )
 argParser.add_argument('--noOverlap',           action='store_true',                                                                    help='Run only on a small subset of the data?', )
-argParser.add_argument('--year',                action='store',      default=2016,   type=int,  choices=[2016,2017,2018],               help="which year?")
+argParser.add_argument('--year',                action='store',      default="2016",   type=str,  choices=["2016","2017","2018","RunII"],               help="which year?")
 args = argParser.parse_args()
+
+if args.year != "RunII": args.year = int(args.year)
 
 # Logger
 import Analysis.Tools.logger as logger

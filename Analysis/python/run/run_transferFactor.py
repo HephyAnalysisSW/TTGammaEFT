@@ -21,7 +21,7 @@ import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",          action="store",  default="INFO",           choices=loggerChoices,      help="Log level for logging")
 argParser.add_argument("--runOnLxPlus",       action="store_true",                                                   help="Change the global redirector of samples")
-argParser.add_argument("--year",              action="store",  default=2016,   type=int,                             help="Which year?")
+argParser.add_argument("--year",              action="store",  default="2016",   type=str,                             help="Which year?")
 #argParser.add_argument("--cores",             action="store",  default=1,      type=int,                             help="How many threads?")
 argParser.add_argument("--mode",              action="store",  default="all",  type=str, choices=["e", "mu", "all"], help="How many threads?")
 argParser.add_argument("--controlRegion",     action="store",  default=None,   type=str, choices=CRChoices,          help="For CR region?")
@@ -31,6 +31,8 @@ argParser.add_argument("--checkOnly",         action="store_true",              
 #argParser.add_argument('--nJobs',             action='store',  default=1,      type=int,                             help="Maximum number of simultaneous jobs.")
 #argParser.add_argument('--job',               action='store',  default=0,      type=int,                             help="Run only job i")
 args = argParser.parse_args()
+
+if args.year != "RunII": args.year = int(args.year)
 
 # Logging
 import Analysis.Tools.logger as logger

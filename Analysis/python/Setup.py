@@ -70,20 +70,9 @@ class Setup:
         elif year == 2018 and not checkOnly:
             import TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed as mc_samples
             from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import Run2018 as data
-
-        # not really needed I think:
-        ttg          = mc_samples.TTG
-        ttg_TuneUp   = mc_samples.TTG_TuneUp
-        ttg_TuneDown = mc_samples.TTG_TuneDown
-        ttg_erdOn    = mc_samples.TTG_erdOn
-        tt           = mc_samples.Top
-        DY           = mc_samples.DY_LO
-        zg           = mc_samples.ZG
-        wg           = mc_samples.WG
-        wjets        = mc_samples.WJets
-        other        = mc_samples.rest #other
-        qcd          = mc_samples.QCD
-        gjets        = mc_samples.GJets
+        elif year == "RunII" and not checkOnly:
+            import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
+            from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data
 
         if checkOnly:
             self.processes = {}
@@ -95,7 +84,7 @@ class Setup:
             self.processes.update( { sample+"_fake":  None for sample in default_sampleList + default_systematicList } )
             self.processes.update( { sample+"_PU":    None for sample in default_sampleList + default_systematicList } )
             self.processes.update( { sample+"_np":    None for sample in default_sampleList + default_systematicList } )
-            self.processes["Data"] = "Run%i"%self.year
+            self.processes["Data"] = "Run%i"%self.year if self.year != "RunII" else "RunII"
 
             if year == 2016:
                 self.lumi     = 35.92*1000
@@ -106,8 +95,25 @@ class Setup:
             elif year == 2018:
                 self.lumi     = 59.74*1000
                 self.dataLumi = 59.74*1000
+            elif year == "RunII":
+                self.lumi     = (35.92+41.53+59.74)*1000
+                self.dataLumi = (35.92+41.53+59.74)*1000
 
         else:
+            # not really needed I think:
+            ttg          = mc_samples.TTG
+            ttg_TuneUp   = mc_samples.TTG_TuneUp
+            ttg_TuneDown = mc_samples.TTG_TuneDown
+            ttg_erdOn    = mc_samples.TTG_erdOn
+            tt           = mc_samples.Top
+            DY           = mc_samples.DY_LO
+            zg           = mc_samples.ZG
+            wg           = mc_samples.WG
+            wjets        = mc_samples.WJets
+            other        = mc_samples.rest #other
+            qcd          = mc_samples.QCD
+            gjets        = mc_samples.GJets
+
             mc           = [ ttg, tt, DY, zg, wjets, wg, other, qcd, gjets ]
             mc          += [ ttg_TuneUp, ttg_TuneDown, ttg_erdOn ]
             self.processes = {}
@@ -149,11 +155,15 @@ class Setup:
                 elif k=="reweight":
                     res.sys[k] = list(set(res.sys[k]+sys[k])) #Add with unique elements
                     
+                    if "reweightLeptonTightSFSyst"     in res.sys[k]: res.sys[k].remove("reweightLeptonTightSF")
+                    if "reweightLeptonTightSFStat"     in res.sys[k]: res.sys[k].remove("reweightLeptonTightSF")
                     for upOrDown in ["Up","Down"]:
                         if "reweightL1Prefire"+upOrDown             in res.sys[k]: res.sys[k].remove("reweightL1Prefire")
                         if "reweightTrigger"+upOrDown               in res.sys[k]: res.sys[k].remove("reweightTrigger")
                         if "reweightPU"+upOrDown                    in res.sys[k]: res.sys[k].remove("reweightPU")
                         if "reweightLeptonTightSF"+upOrDown         in res.sys[k]: res.sys[k].remove("reweightLeptonTightSF")
+                        if "reweightLeptonTightSFSyst"+upOrDown     in res.sys[k]: res.sys[k].remove("reweightLeptonTightSF")
+                        if "reweightLeptonTightSFStat"+upOrDown     in res.sys[k]: res.sys[k].remove("reweightLeptonTightSF")
                         if "reweightLeptonTrackingTightSF"+upOrDown in res.sys[k]: res.sys[k].remove("reweightLeptonTrackingTightSF")
                         if "reweightPhotonSF"+upOrDown              in res.sys[k]: res.sys[k].remove("reweightPhotonSF")
                         if "reweightPhotonElectronVetoSF"+upOrDown  in res.sys[k]: res.sys[k].remove("reweightPhotonElectronVetoSF")
@@ -179,9 +189,12 @@ class Setup:
         return res
 
     def weightString(self, dataMC, photon="PhotonGood0", addMisIDSF=False):
+        lumiString = "(35.92*(year==2016)+41.53*(year==2017)+59.74*(year==2018))"
         _weightString = {}
         _weightString["Data"] = "weight" 
         _weightString["MC"] = "*".join([self.sys["weight"]] + (self.sys["reweight"] if self.sys["reweight"] else []))
+        _weightString["MC"] += "*%s"%lumiString
+
 
         if addMisIDSF and photon:
             if self.nJet == "2p": misIDSF_val   = misID2pSF_val
@@ -192,7 +205,14 @@ class Setup:
             elif self.nJet == "4": misIDSF_val  = misID4SF_val
             elif self.nJet == "5": misIDSF_val  = misID5SF_val
 
-            _weightString["MC"] += "+%s*(%s0_photonCatMagic==2)*(%f-1)" %(_weightString["MC"], photon, misIDSF_val[self.year].val)
+            if self.year == "RunII":
+                ws   = "(%s)"%_weightString["MC"]
+                ws16 = "+(%s*(%s0_photonCatMagic==2)*(%f-1)*(year==2016))" %(_weightString["MC"], photon, misIDSF_val[2016].val)
+                ws17 = "+(%s*(%s0_photonCatMagic==2)*(%f-1)*(year==2017))" %(_weightString["MC"], photon, misIDSF_val[2017].val)
+                ws18 = "+(%s*(%s0_photonCatMagic==2)*(%f-1)*(year==2018))" %(_weightString["MC"], photon, misIDSF_val[2018].val)
+                _weightString["MC"] = ws + ws16 + ws17 + ws18
+            else:
+                _weightString["MC"] += "+%s*(%s0_photonCatMagic==2)*(%f-1)" %(_weightString["MC"], photon, misIDSF_val[self.year].val)
 
         if   dataMC == "DataMC": return _weightString
 
@@ -220,7 +240,7 @@ class Setup:
         """Define full selection
            dataMC: "Data" or "MC"
            channel: all, e or mu, eetight, mumutight, SFtight
-           zWindow: offZeg, onZeg, onZSFllTight, onZSFllgTight or all
+           zWindow: offZeg, onZeg, onZSFllTight, onZSFllgTight, onZSFlloffZSFllg or all
            m3Window: offM3, onM3 or all
            photonIso: highSieie, highChgIso, highChgIsohighSieie
         """
@@ -240,7 +260,7 @@ class Setup:
         #Consistency checks
         assert dataMC in ["Data","MC","DataMC"], "dataMC = Data or MC or DataMC, got %r."%dataMC
         assert channel in allChannels, "channel must be one of "+",".join(allChannels)+". Got %r."%channel
-        assert zWindow in ["offZeg", "onZeg", "onZSFllTight", "onZSFllgTight", "all"], "zWindow must be one of onZeg, offZeg, onZSFllTight, onZSFllgTight, all. Got %r"%zWindow
+        assert zWindow in ["offZeg", "onZeg", "onZSFllTight", "onZSFllgTight", "onZSFlloffZSFllg", "all"], "zWindow must be one of onZeg, offZeg, onZSFllTight, onZSFllgTight, all. Got %r"%zWindow
         assert m3Window in ["offM3", "onM3", "all"], "m3Window must be one of onM3, offM3, all. Got %r"%m3Window
         assert photonIso in [None, "highSieieNoChgIso", "lowSieieNoChgIso", "noSieie", "highSieie", "lowChgIsoNoSieie", "highChgIsoNoSieie", "noChgIso", "highChgIso", "noChgIsoNoSieie", "highChgIsohighSieie"], "PhotonIso must be one of highSieie, highChgIso, highChgIsohighSieie. Got %r"%photonIso
         assert processCut in [None, "cat0","cat1","cat2","cat3","cat13","cat134", "cat4"], "Process specific cut must be one of cat0, cat2, cat13, cat4. Got %r"%processCut
@@ -665,7 +685,7 @@ class Setup:
 
 
 if __name__ == "__main__":
-    setup = Setup( year=2016 )
+    setup = Setup( year="RunII" )
     for name, dict in allRegions.items():
 #        if not "wjetsec3" in name.lower() and not "wjetsbarrel3" in name.lower(): continue
         if not "sr3" in name.lower(): continue

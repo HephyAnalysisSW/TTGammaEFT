@@ -79,6 +79,7 @@ def get_parser():
     argParser.add_argument('--skipNanoTools',               action='store_true',                                                                                        help="Skip nanoTools")
     argParser.add_argument('--skipSystematicVariations',    action='store_true',                                                                                        help="Skip syst var")
     argParser.add_argument('--reuseNanoAOD',                action='store_true',                                                                                        help="Keep nanoAOD output?")
+    argParser.add_argument('--noTopPtReweighting',          action='store_true',                                                                                        help="Skip top pt reweighting?")
     argParser.add_argument('--reduceSizeBy',                action='store',                     type=int,                           default=1,                          help="Reduce the size of the sample by a factor of...")
     return argParser
 
@@ -86,6 +87,16 @@ options = get_parser().parse_args()
 
 if "clip" in hostname.lower():
     options.writeToDPM = False
+
+stitching = None
+# combine ttg samples is they are nominal
+if "TTG" in options.samples[0] and not "Tune" in options.samples[0] and not "erd" in options.samples[0]:
+    if "ptG" in options.samples[0]:
+        stitching = "high"
+    else:
+        stitching = "low"
+
+print stitching
 
 # B-Tagger
 tagger = 'DeepCSV'
@@ -204,6 +215,10 @@ if isData and options.triggerSelection:
     logger.info("Sample will have the following trigger skim: %s"%triggerCond)
     print triggerCond
     skimConds.append( triggerCond )
+
+# MET Filter
+from Analysis.Tools.metFilters         import getFilterCut
+skimConds += [ getFilterCut(options.year, isData=isData, ignoreJSON=True, skipWeight=True) ]
 
 #Samples: combine if more than one
 if len(samples)>1:
@@ -342,6 +357,32 @@ else:
 
 if options.checkOnly: sys.exit(0)
 
+# top pt reweighting
+from Analysis.Tools.topPtReweighting import getUnscaledTopPairPtReweightungFunction, getTopPtDrawString, getTopPtsForReweighting
+# Decision based on sample name -> whether sample is ttbar
+isTT = options.samples[0].startswith("TTSingleLep") or options.samples[0].startswith("TTLep") or options.samples[0].startswith("TTHad")
+doTopPtReweighting = isTT and not options.noTopPtReweighting and not options.skipSF
+
+if doTopPtReweighting:
+    logger.info( "Sample will have top pt reweighting." )
+    topPtReweightingFunc = getUnscaledTopPairPtReweightungFunction()
+    # Compute x-sec scale factor on unweighted events
+    selectionString = "&&".join(skimConds)
+    if hasattr(sample, "topScaleF"):
+        # If you don't want to get the SF for each subjob run the script and add the topScaleF to the sample
+        topScaleF = sample.topScaleF
+    else:
+        reweighted  = sample.getYieldFromDraw( selectionString = selectionString, weightString = getTopPtDrawString() + '*genWeight')
+        central     = sample.getYieldFromDraw( selectionString = selectionString, weightString = 'genWeight')
+
+        topScaleF = central['val']/reweighted['val']
+
+    logger.info( "Found topScaleF %f", topScaleF )
+else:
+    topScaleF = 1
+    logger.info( "Sample will NOT have top pt reweighting. topScaleF=%f",topScaleF )
+
+
 # Cross section for postprocessed sample
 xSection = samples[0].xSection if isMC else None
 
@@ -363,7 +404,6 @@ if not options.skipSF:
 
     # Reweighting, Scalefactors, Efficiencies
     from Analysis.Tools.LeptonSF import LeptonSF
-    LeptonSFMedium = LeptonSF( year=options.year, ID="medium" )
     LeptonSFTight = LeptonSF( year=options.year, ID="tight" )
 
     from Analysis.Tools.LeptonTrackingEfficiency import LeptonTrackingEfficiency
@@ -447,10 +487,13 @@ if sample.isData:
     from FWCore.PythonUtilities.LumiList import LumiList
     lumiList = LumiList( os.path.expandvars( json ) )
     logger.info( "Loaded json %s", json )
+    lumi = 1
 else:
     lumiScaleFactor = xSection * targetLumi / float( sample.normalization ) if xSection is not None else None
     branchKeepStrings = branchKeepStrings_DATAMC + branchKeepStrings_MC
-
+    if   options.year == 2016: lumi = 35.92
+    elif options.year == 2017: lumi = 41.53
+    elif options.year == 2018: lumi = 59.74
 
 # get nano variable lists
 NanoVars = NanoVariables( options.year )
@@ -526,7 +569,7 @@ if isMC:
 
 # Write Variables
 new_variables  = []
-new_variables += [ 'weight/F', 'year/I' ]
+new_variables += [ 'weight/F', 'year/I', 'lumi/F' ]
 new_variables += [ 'triggered/I', 'triggeredInvIso/I', 'triggeredNoIso/I', 'triggeredNoSieie/I', 'triggeredInvIsoNoSieie/I', 'isData/I']
 new_variables += [ 'WPt/F', 'WinvPt/F' ]
 
@@ -689,7 +732,7 @@ mt2Calculator = mt2Calculator()
 
 if options.addPreFiringFlag: new_variables += [ 'unPreFirableEvent/I' ]
 
-new_variables += [ "reweightHEM/F" ]
+new_variables += [ "reweightHEM/F", "reweightTopPt/F" ]
 if isMC:
     new_variables += [ 'GenPhotonATLASUnfold0_' + var for var in writeGenVariables ]
     new_variables += [ 'nGenElectronATLASUnfold/I', 'nGenMuonATLASUnfold/I', 'nGenLeptonATLASUnfold/I', 'nGenPhotonATLASUnfold/I', 'nGenBJetATLASUnfold/I', 'nGenJetsATLASUnfold/I' ]
@@ -703,7 +746,7 @@ if isMC:
     new_variables += [ 'GenJets[%s]'      %writeGenJetVarString ]
     new_variables += [ 'GenBJet[%s]'     %writeGenJetVarString ]
     new_variables += [ 'GenTop[%s]'      %writeGenVarString ]
-    new_variables += [ 'isTTGamma/I', 'isZWGamma/I', 'isTGamma/I', 'isGJets/I', 'overlapRemoval/I', 'pTStitching/I' ]
+    new_variables += [ 'isTTGamma/I', 'isZWGamma/I', 'isTGamma/I', 'isGJets/I', 'overlapRemoval/I', 'pTStitching/I', "stitchedPt/F" ]
 
     new_variables += [ 'nGenZ/I', 'nGenW/I', 'nGenWFromTop/I', 'nGenWJets/I', 'nGenWElectron/I', 'nGenWMuon/I','nGenWTau/I', 'nGenWTauJets/I', 'nGenWTauElectron/I', 'nGenWTauMuon/I' ]
     new_variables += [ 'GenW0_' + var for var in writeGenVariables ]
@@ -714,10 +757,16 @@ if isMC:
 
     if not options.skipSF:
         new_variables += [ 'reweightLeptonTightSF/F', 'reweightLeptonTightSFUp/F', 'reweightLeptonTightSFDown/F' ]
+        new_variables += [ 'reweightLeptonTightSFStat/F', 'reweightLeptonTightSFStatUp/F', 'reweightLeptonTightSFStatDown/F' ]
+        new_variables += [ 'reweightLeptonTightSFSyst/F', 'reweightLeptonTightSFSystUp/F', 'reweightLeptonTightSFSystDown/F' ]
         new_variables += [ 'reweightLeptonTrackingTightSF/F', 'reweightLeptonTrackingTightSFUp/F', 'reweightLeptonTrackingTightSFDown/F' ]
         new_variables += [ 'reweightLeptonTightSFInvIso/F', 'reweightLeptonTightSFInvIsoUp/F', 'reweightLeptonTightSFInvIsoDown/F' ]
+        new_variables += [ 'reweightLeptonTightSFStatInvIso/F', 'reweightLeptonTightSFStatInvIsoUp/F', 'reweightLeptonTightSFStatInvIsoDown/F' ]
+        new_variables += [ 'reweightLeptonTightSFSystInvIso/F', 'reweightLeptonTightSFSystInvIsoUp/F', 'reweightLeptonTightSFSystInvIsoDown/F' ]
         new_variables += [ 'reweightLeptonTrackingTightSFInvIso/F', 'reweightLeptonTrackingTightSFInvIsoUp/F', 'reweightLeptonTrackingTightSFInvIsoDown/F' ]
         new_variables += [ 'reweightLeptonTightSFNoIso/F', 'reweightLeptonTightSFNoIsoUp/F', 'reweightLeptonTightSFNoIsoDown/F' ]
+        new_variables += [ 'reweightLeptonTightSFStatNoIso/F', 'reweightLeptonTightSFStatNoIsoUp/F', 'reweightLeptonTightSFStatNoIsoDown/F' ]
+        new_variables += [ 'reweightLeptonTightSFSystNoIso/F', 'reweightLeptonTightSFSystNoIsoUp/F', 'reweightLeptonTightSFSystNoIsoDown/F' ]
         new_variables += [ 'reweightLeptonTrackingTightSFNoIso/F', 'reweightLeptonTrackingTightSFNoIsoUp/F', 'reweightLeptonTrackingTightSFNoIsoDown/F' ]
 
         new_variables += [ 'reweightTrigger/F', 'reweightTriggerUp/F', 'reweightTriggerDown/F' ]
@@ -725,7 +774,9 @@ if isMC:
         new_variables += [ 'reweightNoIsoTrigger/F', 'reweightNoIsoTriggerUp/F', 'reweightNoIsoTriggerDown/F' ]
 
         new_variables += [ 'reweightPhotonSF/F', 'reweightPhotonSFUp/F', 'reweightPhotonSFDown/F' ]
+        new_variables += [ 'reweightPhotonSFInvIso/F', 'reweightPhotonSFInvIsoUp/F', 'reweightPhotonSFInvIsoDown/F' ]
         new_variables += [ 'reweightPhotonElectronVetoSF/F', 'reweightPhotonElectronVetoSFUp/F', 'reweightPhotonElectronVetoSFDown/F' ]
+        new_variables += [ 'reweightPhotonElectronVetoSFInvIso/F', 'reweightPhotonElectronVetoSFInvIsoUp/F', 'reweightPhotonElectronVetoSFInvIsoDown/F' ]
 #        new_variables += [ 'reweightPhotonReconstructionSF/F' ]
 
         new_variables += [ 'reweightL1Prefire/F', 'reweightL1PrefireUp/F', 'reweightL1PrefireDown/F' ]
@@ -916,6 +967,7 @@ def filler( event ):
 
     event.isData = isData
     event.year   = options.year
+    event.lumi   = lumi
 
     if options.addPreFiringFlag:
         event.unPreFirableEvent = ( int(r.event), int(r.run) ) in unPreFirableEvents
@@ -977,6 +1029,18 @@ def filler( event ):
         GenIsoPhotonGJets          = filter( lambda g: isIsolatedPhoton( g, gPart, coneSize=0.4,  ptCut=5, excludedPdgIds=[12,-12,14,-14,16,-16] ), GenPhoton    )
         GenIsoPhotonNoMesonGJets   = filter( lambda g: not hasMesonMother( getParentIds( g, gPart ) ), GenIsoPhotonGJets )
 
+        ttgGenPhoton = filter( lambda g: not hasMesonMother( getParentIds( g, gPart ) ), GenPhoton )
+        ttgGenPhoton = filter( lambda g: genPhotonSel_TTG_OR(g), ttgGenPhoton )
+        ttgGenPhoton.sort( key = lambda p: -p['pt'] )
+        ttgGenPhoton = (ttgGenPhoton[:1] + [None])[0]
+
+        event.stitchedPt = -1
+        if ttgGenPhoton:
+            while 22 in getParentIds(ttgGenPhoton, gPart):
+                ttgGenPhoton = [ g for g in gPart if g["index"] == ttgGenPhoton["genPartIdxMother"] ][0]
+            event.stitchedPt = ttgGenPhoton["pt"]
+    
+
         event.isTTGamma = len( filter( lambda g: genPhotonSel_TTG_OR(g), GenIsoPhotonNoMesonTTG     ) ) > 0
         event.isZWGamma = len( filter( lambda g: genPhotonSel_ZG_OR(g),  GenIsoPhotonNoMeson        ) ) > 0
         event.isTGamma  = len( filter( lambda g: genPhotonSel_T_OR(g),   GenIsoPhotonNoMesonTG      ) ) > 0 
@@ -1002,7 +1066,25 @@ def filler( event ):
         else:
             event.overlapRemoval = 1 # all other events
 
-        event.pTStitching = 1 # all other events
+        if stitching:
+            if stitching == "low" and ttgGenPhoton:
+                # take the nominal sample for low pt
+                event.pTStitching = ttgGenPhoton["pt"] < 120
+            elif stitching == "low" and not ttgGenPhoton:
+                # take the nominal sample in case there is no gen-photon
+                event.pTStitching = 1
+            elif stitching == "high" and ttgGenPhoton:
+                event.pTStitching = ttgGenPhoton["pt"] >= 120
+            elif stitching == "high" and not ttgGenPhoton:
+                # take the nominal sample in case there is no gen-photon
+                event.pTStitching = 0
+            else:
+                event.pTStitching = 1
+        else:
+            # all other events
+            event.pTStitching = 1
+
+        print ttgGenPhoton["pt"] if ttgGenPhoton else "none", event.pTStitching
 
         GenMuon                                    = filterGenMuons( gPart, status='last' )
         GenElectron                                = filterGenElectrons( gPart, status='last' )
@@ -1776,7 +1858,6 @@ def filler( event ):
 
     if tightLeptons:
         event.lpTight = lp( tightLeptons[0]["pt"], tightLeptons[0]["phi"], met["pt"], met["phi"] )
-        print tightLeptons[0]["pt"], tightLeptons[0]["pt_totalUp"], tightLeptons[0]["pt_totalDown"]
         event.mT      = mT( tightLeptons[0], met )
         event.WPt     = ( get2DVec(tightLeptons[0]) + get2DVec(met) ).Mod()
 
@@ -1877,6 +1958,9 @@ def filler( event ):
     # Reweighting
     if isMC and not options.skipSF:
 
+        # top pt reweighting
+        event.reweightTopPt     = topPtReweightingFunc(getTopPtsForReweighting(r)) * topScaleF if doTopPtReweighting else 1.
+        print "weight", event.reweightTopPt
         # W pt reweighting for W+Jets samples in 2017/18
         event.reweightWPt    = 1.
         event.reweightWinvPt = 1.
@@ -1898,13 +1982,69 @@ def filler( event ):
         event.reweightLeptonTightSFUp   = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = +1 ) for l in tightLeptons ], 1 )
         event.reweightLeptonTightSFDown = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = -1 ) for l in tightLeptons ], 1 )
 
+        event.reweightLeptonTightSFStat     = 1
+        event.reweightLeptonTightSFStatUp   = 1
+        event.reweightLeptonTightSFStatDown = 1
+        if all( [ abs(l["pdgId"])==13 for l in tightLeptons ] ):
+            event.reweightLeptonTightSFStat     = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=l['eta'], unc="stat"             ) for l in tightLeptons ], 1 )
+            event.reweightLeptonTightSFStatUp   = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=l['eta'], sigma = +1, unc="stat" ) for l in tightLeptons ], 1 )
+            event.reweightLeptonTightSFStatDown = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=l['eta'], sigma = -1, unc="stat" ) for l in tightLeptons ], 1 )
+
+        event.reweightLeptonTightSFSyst     = 1
+        event.reweightLeptonTightSFSystUp   = 1
+        event.reweightLeptonTightSFSystDown = 1
+        if all( [ abs(l["pdgId"])==13 for l in tightLeptons ] ):
+            event.reweightLeptonTightSFSyst     = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=l['eta'], unc="syst"             ) for l in tightLeptons ], 1 )
+            event.reweightLeptonTightSFSystUp   = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=l['eta'], sigma = +1, unc="syst" ) for l in tightLeptons ], 1 )
+            event.reweightLeptonTightSFSystDown = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=l['eta'], sigma = -1, unc="syst" ) for l in tightLeptons ], 1 )
+
+
+
         event.reweightLeptonTightSFInvIso     = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta'])             ) for l in tightInvIsoLeptons ], 1 )
         event.reweightLeptonTightSFInvIsoUp   = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = +1 ) for l in tightInvIsoLeptons ], 1 )
         event.reweightLeptonTightSFInvIsoDown = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = -1 ) for l in tightInvIsoLeptons ], 1 )
 
+        event.reweightLeptonTightSFStatInvIso     = 1
+        event.reweightLeptonTightSFStatInvIsoUp   = 1
+        event.reweightLeptonTightSFStatInvIsoDown = 1
+        if all( [ abs(l["pdgId"])==13 for l in tightInvIsoLeptons ] ):
+            event.reweightLeptonTightSFStatInvIso     = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=l['eta'], unc="stat"             ) for l in tightInvIsoLeptons ], 1 )
+            event.reweightLeptonTightSFStatInvIsoUp   = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=l['eta'], sigma = +1, unc="stat" ) for l in tightInvIsoLeptons ], 1 )
+            event.reweightLeptonTightSFStatInvIsoDown = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=l['eta'], sigma = -1, unc="stat" ) for l in tightInvIsoLeptons ], 1 )
+
+        event.reweightLeptonTightSFSystInvIso     = 1
+        event.reweightLeptonTightSFSystInvIsoUp   = 1
+        event.reweightLeptonTightSFSystInvIsoDown = 1
+        if all( [ abs(l["pdgId"])==13 for l in tightInvIsoLeptons ] ):
+            event.reweightLeptonTightSFSystInvIso     = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=l['eta'], unc="syst"             ) for l in tightInvIsoLeptons ], 1 )
+            event.reweightLeptonTightSFSystInvIsoUp   = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=l['eta'], sigma = +1, unc="syst" ) for l in tightInvIsoLeptons ], 1 )
+            event.reweightLeptonTightSFSystInvIsoDown = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=l['eta'], sigma = -1, unc="syst" ) for l in tightInvIsoLeptons ], 1 )
+
+
+
+
         event.reweightLeptonTightSFNoIso     = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta'])             ) for l in tightNoIsoLeptons ], 1 )
         event.reweightLeptonTightSFNoIsoUp   = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = +1 ) for l in tightNoIsoLeptons ], 1 )
         event.reweightLeptonTightSFNoIsoDown = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = -1 ) for l in tightNoIsoLeptons ], 1 )
+
+        event.reweightLeptonTightSFStatNoIso     = 1
+        event.reweightLeptonTightSFStatNoIsoUp   = 1
+        event.reweightLeptonTightSFStatNoIsoDown = 1
+        if all( [ abs(l["pdgId"])==13 for l in tightNoIsoLeptons ] ):
+            event.reweightLeptonTightSFStatNoIso     = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=l['eta'], unc="stat"             ) for l in tightNoIsoLeptons ], 1 )
+            event.reweightLeptonTightSFStatNoIsoUp   = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=l['eta'], sigma = +1, unc="stat" ) for l in tightNoIsoLeptons ], 1 )
+            event.reweightLeptonTightSFStatNoIsoDown = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=l['eta'], sigma = -1, unc="stat" ) for l in tightNoIsoLeptons ], 1 )
+
+        event.reweightLeptonTightSFSystNoIso     = 1
+        event.reweightLeptonTightSFSystNoIsoUp   = 1
+        event.reweightLeptonTightSFSystNoIsoDown = 1
+        if all( [ abs(l["pdgId"])==13 for l in tightNoIsoLeptons ] ):
+            event.reweightLeptonTightSFSystNoIso     = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=l['eta'], unc="syst"             ) for l in tightNoIsoLeptons ], 1 )
+            event.reweightLeptonTightSFSystNoIsoUp   = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=l['eta'], sigma = +1, unc="syst" ) for l in tightNoIsoLeptons ], 1 )
+            event.reweightLeptonTightSFSystNoIsoDown = reduce( mul, [ LeptonSFTight.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=l['eta'], sigma = -1, unc="syst" ) for l in tightNoIsoLeptons ], 1 )
+
+
+
 
         event.reweightLeptonTrackingTightSF     = reduce( mul, [ LeptonTrackingSF.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta'])             ) for l in tightLeptons ], 1 )
         event.reweightLeptonTrackingTightSFUp   = reduce( mul, [ LeptonTrackingSF.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = +1 ) for l in tightLeptons ], 1 )
@@ -1919,14 +2059,23 @@ def filler( event ):
         event.reweightLeptonTrackingTightSFNoIsoDown = reduce( mul, [ LeptonTrackingSF.getSF( pdgId=l['pdgId'], pt=l['pt'], eta=((l['eta']+l['deltaEtaSC']) if abs(l['pdgId'])==11 else l['eta']), sigma = -1 ) for l in tightNoIsoLeptons ], 1 )
 
         # Photon reweighting
-        event.reweightPhotonSF     = reduce( mul, [ PhotonSF.getSF( pt=p['pt'], eta=p['eta']             ) for p in mediumPhotons ], 1 )
-        event.reweightPhotonSFUp   = reduce( mul, [ PhotonSF.getSF( pt=p['pt'], eta=p['eta'], sigma = +1 ) for p in mediumPhotons ], 1 )
-        event.reweightPhotonSFDown = reduce( mul, [ PhotonSF.getSF( pt=p['pt'], eta=p['eta'], sigma = -1 ) for p in mediumPhotons ], 1 )
+        event.reweightPhotonSF     = reduce( mul, [ PhotonSF.getSF( pt=p['pt'], eta=p['eta']             ) for p in mediumPhotonsNoChgIsoNoSieie ], 1 )
+        event.reweightPhotonSFUp   = reduce( mul, [ PhotonSF.getSF( pt=p['pt'], eta=p['eta'], sigma = +1 ) for p in mediumPhotonsNoChgIsoNoSieie ], 1 )
+        event.reweightPhotonSFDown = reduce( mul, [ PhotonSF.getSF( pt=p['pt'], eta=p['eta'], sigma = -1 ) for p in mediumPhotonsNoChgIsoNoSieie ], 1 )
 
-        event.reweightPhotonElectronVetoSF     = reduce( mul, [ PhotonElectronVetoSF.getSF( pt=p['pt'], eta=p['eta']             ) for p in mediumPhotons ], 1 )
-        event.reweightPhotonElectronVetoSFUp   = reduce( mul, [ PhotonElectronVetoSF.getSF( pt=p['pt'], eta=p['eta'], sigma = +1 ) for p in mediumPhotons ], 1 )
-        event.reweightPhotonElectronVetoSFDown = reduce( mul, [ PhotonElectronVetoSF.getSF( pt=p['pt'], eta=p['eta'], sigma = -1 ) for p in mediumPhotons ], 1 )
-#        event.reweightPhotonReconstructionSF = reduce( mul, [ PhotonRecEff.getSF( pt=p['pt'], eta=p['eta'] )         for p in mediumPhotons ], 1 )
+        event.reweightPhotonSFInvIso     = reduce( mul, [ PhotonSF.getSF( pt=p['pt'], eta=p['eta']             ) for p in mediumPhotonsNoChgIsoNoSieieInvLepIso ], 1 )
+        event.reweightPhotonSFInvIsoUp   = reduce( mul, [ PhotonSF.getSF( pt=p['pt'], eta=p['eta'], sigma = +1 ) for p in mediumPhotonsNoChgIsoNoSieieInvLepIso ], 1 )
+        event.reweightPhotonSFInvIsoDown = reduce( mul, [ PhotonSF.getSF( pt=p['pt'], eta=p['eta'], sigma = -1 ) for p in mediumPhotonsNoChgIsoNoSieieInvLepIso ], 1 )
+
+        event.reweightPhotonElectronVetoSF     = reduce( mul, [ PhotonElectronVetoSF.getSF( pt=p['pt'], eta=p['eta']             ) for p in mediumPhotonsNoChgIsoNoSieie ], 1 )
+        event.reweightPhotonElectronVetoSFUp   = reduce( mul, [ PhotonElectronVetoSF.getSF( pt=p['pt'], eta=p['eta'], sigma = +1 ) for p in mediumPhotonsNoChgIsoNoSieie ], 1 )
+        event.reweightPhotonElectronVetoSFDown = reduce( mul, [ PhotonElectronVetoSF.getSF( pt=p['pt'], eta=p['eta'], sigma = -1 ) for p in mediumPhotonsNoChgIsoNoSieie ], 1 )
+
+        event.reweightPhotonElectronVetoSFInvIso     = reduce( mul, [ PhotonElectronVetoSF.getSF( pt=p['pt'], eta=p['eta']             ) for p in mediumPhotonsNoChgIsoNoSieieInvLepIso ], 1 )
+        event.reweightPhotonElectronVetoSFInvIsoUp   = reduce( mul, [ PhotonElectronVetoSF.getSF( pt=p['pt'], eta=p['eta'], sigma = +1 ) for p in mediumPhotonsNoChgIsoNoSieieInvLepIso ], 1 )
+        event.reweightPhotonElectronVetoSFInvIsoDown = reduce( mul, [ PhotonElectronVetoSF.getSF( pt=p['pt'], eta=p['eta'], sigma = -1 ) for p in mediumPhotonsNoChgIsoNoSieieInvLepIso ], 1 )
+
+#        event.reweightPhotonReconstructionSF = reduce( mul, [ PhotonRecEff.getSF( pt=p['pt'], eta=p['eta'] )         for p in mediumPhotonsNoChgIsoNoSieie ], 1 )
 
         # B-Tagging efficiency method 1a
         for var in BTagEff.btagWeightNames:

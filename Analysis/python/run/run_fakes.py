@@ -15,7 +15,7 @@ import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",         action="store",  default="INFO",           choices=loggerChoices, help="Log level for logging")
 #argParser.add_argument("--selectEstimator",  action="store",  default=None,   type=str,                        help="select estimator?")
-argParser.add_argument("--year",             action="store",  default=2016,   type=int,                        help="Which year?")
+argParser.add_argument("--year",             action="store",  default="2016",   type=str,                        help="Which year?")
 argParser.add_argument("--cores",            action="store",  default=1,      type=int,                        help="How many threads?")
 argParser.add_argument("--controlRegion",    action="store",  default="SR4pM3",   type=str, choices=CRChoices,     help="For CR region?")
 argParser.add_argument("--overwrite",        action="store_true",                                              help="overwrite existing results?")
@@ -25,6 +25,7 @@ argParser.add_argument('--job',               action='store',  default=0,       
 args = argParser.parse_args()
 
 args.selectEstimator = "TT_pow_had"
+if args.year != "RunII": args.year = int(args.year)
 
 # Logging
 import Analysis.Tools.logger as logger

@@ -24,7 +24,7 @@ import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",          action="store",  default="INFO",           choices=loggerChoices,      help="Log level for logging")
 argParser.add_argument("--runOnLxPlus",       action="store_true",                                                   help="Change the global redirector of samples")
-argParser.add_argument("--year",              action="store",  default=2016,     type=int,                             help="Which year?")
+argParser.add_argument("--year",              action="store",  default="2016",     type=str,                             help="Which year?")
 argParser.add_argument("--mode",              action="store",  default="all",    type=str, choices=["e", "mu", "all"], help="How many threads?")
 argParser.add_argument("--controlRegion",     action="store",  default="WJets2", type=str, choices=CRChoices,          help="For CR region?")
 argParser.add_argument("--overwrite",         action="store_true",                                                   help="overwrite existing results?")
@@ -32,6 +32,8 @@ argParser.add_argument("--checkOnly",         action="store_true",              
 argParser.add_argument('--nJobs',             action='store',  default=1,        type=int,                             help="Maximum number of simultaneous jobs.")
 argParser.add_argument('--job',               action='store',  default=0,        type=int,                             help="Run only job i")
 args = argParser.parse_args()
+
+if args.year != "RunII": args.year = int(args.year)
 
 # Logging
 import Analysis.Tools.logger as logger
@@ -58,10 +60,18 @@ estimate.initCache(setup.defaultCacheDir())
 
 def wrapper(arg):
 #        r,channel,set = arg
-        setup, channel, nJetLow, nJetHigh, etaLow, etaHigh, ptLow, ptHigh = arg
+        setup, channel, nP, nJetLow, nJetHigh, etaLow, etaHigh, ptLow, ptHigh = arg
         logger.debug("Running transfer factor, channel %s in setup %s for QCD-DD"%(channel, args.controlRegion))
 
         QCDTF = copy.deepcopy(QCDTF_updates)
+        QCDTF["CR"]["nPhoton"] = ( nP, nP )
+        QCDTF["SR"]["nPhoton"] = ( nP, nP )
+        if nP > 0:
+            QCDTF["CR"]["zWindow"] = "offZeg"
+            QCDTF["SR"]["zWindow"] = "offZeg"
+            QCDTF["CR"]["addMisIDSF"] = True
+            QCDTF["SR"]["addMisIDSF"] = True
+
         QCDTF["CR"]["nJet"] = ( nJetLow, nJetHigh )
         QCDTF["SR"]["nJet"] = ( nJetLow, nJetHigh )
 
@@ -81,14 +91,27 @@ def wrapper(arg):
 
 jobs=[]
 for channel in channels:
+  for nP in [0,1]:
     for nJet in [(2,2), (3,3), (4,-1), (3,-1), (2,-1)]:
+        # inclusive tf
+        nJetLow, nJetHigh = nJet
+        etaLow, etaHigh   = 0, -1
+        ptLow, ptHigh     = 0, -1
+        jobs.append( (setup, channel, nP, nJetLow, nJetHigh, etaLow, etaHigh, ptLow, ptHigh) )
+        # pt inclusive tf
+        for i_eta, eta in enumerate(etaBins[:-1]):
+            etaLow, etaHigh   = eta, etaBins[i_eta+1]
+            ptLow, ptHigh     = 0, -1
+            jobs.append( (setup, channel, nP, nJetLow, nJetHigh, etaLow, etaHigh, ptLow, ptHigh) )
         for i_pt, pt in enumerate(ptBins[:-1]):
+            # eta inclusive tf
+            etaLow, etaHigh   = 0, -1
+            ptLow, ptHigh     = pt,  ptBins[i_pt+1]
+            jobs.append( (setup, channel, nP, nJetLow, nJetHigh, etaLow, etaHigh, ptLow, ptHigh) )
             for i_eta, eta in enumerate(etaBins[:-1]):
-                nJetLow, nJetHigh = nJet
                 etaLow, etaHigh   = eta, etaBins[i_eta+1]
                 ptLow, ptHigh     = pt,  ptBins[i_pt+1]
-
-                jobs.append( (setup, channel, nJetLow, nJetHigh, etaLow, etaHigh, ptLow, ptHigh) )
+                jobs.append( (setup, channel, nP, nJetLow, nJetHigh, etaLow, etaHigh, ptLow, ptHigh) )
 
 if args.nJobs != 1:
     jobs = splitList( jobs, args.nJobs)[args.job]

@@ -87,9 +87,6 @@ lumi_scale   = data_sample.lumi * 0.001
 
 filterCutData = getFilterCut( args.year, isData=True,  skipBadChargedCandidate=True )
 
-print dataB.name
-print dataF.name
-
 setup = Setup( year=args.year, photonSelection=False, checkOnly=False, runOnLxPlus=False ) #photonselection always false for qcd estimate
 setup = setup.sysClone( parameters=allRegions[args.selection]["parameters"] )
 
@@ -119,14 +116,14 @@ key = (dataB.name, "B", args.variable, "_".join(map(str,args.binning)), dataB.we
 if dirDB.contains(key) and not args.overwrite:
     dataHistB = dirDB.get(key).Clone("B")
 else:
-    dataHistB = dataD.get1DHistoFromDraw( args.variable, binning=args.binning )
+    dataHistB = dataB.get1DHistoFromDraw( args.variable, binning=args.binning )
     dirDB.add(key, dataHistB.Clone("B"), overwrite=True)
 
 key = (dataC.name, "C", args.variable, "_".join(map(str,args.binning)), dataC.weightString, dataC.selectionString, selection)
 if dirDB.contains(key) and not args.overwrite:
     dataHistC = dirDB.get(key).Clone("C")
 else:
-    dataHistC = dataD.get1DHistoFromDraw( args.variable, binning=args.binning )
+    dataHistC = dataC.get1DHistoFromDraw( args.variable, binning=args.binning )
     dirDB.add(key, dataHistC.Clone("C"), overwrite=True)
 
 key = (dataD.name, "D", args.variable, "_".join(map(str,args.binning)), dataD.weightString, dataD.selectionString, selection)
@@ -140,32 +137,32 @@ key = (dataE.name, "E", args.variable, "_".join(map(str,args.binning)), dataE.we
 if dirDB.contains(key) and not args.overwrite:
     dataHistE = dirDB.get(key).Clone("E")
 else:
-    dataHistE = dataD.get1DHistoFromDraw( args.variable, binning=args.binning )
+    dataHistE = dataE.get1DHistoFromDraw( args.variable, binning=args.binning )
     dirDB.add(key, dataHistE.Clone("E"), overwrite=True)
 
 key = (dataF.name, "F", args.variable, "_".join(map(str,args.binning)), dataF.weightString, dataF.selectionString, selection)
 if dirDB.contains(key) and not args.overwrite:
     dataHistF = dirDB.get(key).Clone("F")
 else:
-    dataHistF = dataD.get1DHistoFromDraw( args.variable, binning=args.binning )
+    dataHistF = dataF.get1DHistoFromDraw( args.variable, binning=args.binning )
     dirDB.add(key, dataHistF.Clone("F"), overwrite=True)
 
-dataHistB.style         = styles.errorStyle( ROOT.kBlack )
+dataHistB.style         = styles.lineStyle( ROOT.kBlack, width=2, errors=True )
 dataHistB.legendText    = "data (era B)"
 
-dataHistC.style         = styles.errorStyle( ROOT.kRed )
+dataHistC.style         = styles.lineStyle( ROOT.kRed, width=2, errors=True )
 dataHistC.legendText    = "data (era C)"
 
-dataHistD.style         = styles.errorStyle( ROOT.kBlue )
+dataHistD.style         = styles.lineStyle( ROOT.kBlue, width=2, errors=True )
 dataHistD.legendText    = "data (era D)"
 
-dataHistE.style         = styles.errorStyle( ROOT.kOrange )
+dataHistE.style         = styles.lineStyle( ROOT.kOrange, width=2, errors=True )
 dataHistE.legendText    = "data (era E)"
 
-dataHistF.style         = styles.errorStyle( ROOT.kGreen )
+dataHistF.style         = styles.lineStyle( ROOT.kGreen+2, width=2, errors=True )
 dataHistF.legendText    = "data (era F)"
 
-histos     = [[dataHistF], [dataHistC], [dataHistD], [dataHistE], [dataHistB]]
+histos     = [[dataHistB], [dataHistC], [dataHistD], [dataHistE], [dataHistF]]
 
 Plot.setDefaults()
 replaceLabel = {
@@ -182,18 +179,18 @@ for plot in plots:
 
     for log in [True, False]:
 
-        ratio = {'yRange':(0.1,1.9), 'histos':[(1,0),(2,0),(3,0),(4,0)], 'texY': 'era/eraB'}
+        ratio = {'yRange':(0.1,1.9), 'histos':[(0,4),(1,4),(2,4),(3,4)], 'texY': 'era / era F'}
 
         selDir = args.selection
         if args.addCut and not args.survey: selDir += "-" + args.addCut
         plot_directory_ = os.path.join( plot_directory, "fakeEraHistos", str(args.year), args.plot_directory, selDir, args.mode, "log" if log else "lin" )
         plotting.draw( plot,
                        plot_directory = plot_directory_,
-                       logX = False, logY = log, #sorting = True,#plot.name != "mT_fit",
+                       logX = False, logY = log, sorting = False,#plot.name != "mT_fit",
                        yRange = (0.3, "auto"),
                        ratio = ratio,
                        drawObjects = drawObjects( lumi_scale ),
-                       scaling = { 1:0, 2:0, 3:0, 4:0 },
+                       scaling = { 0:4, 1:4, 2:4, 3:4 },
                        legend = legend,
                        copyIndexPHP = True,
                        )

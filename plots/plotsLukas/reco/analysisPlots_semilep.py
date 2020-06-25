@@ -49,7 +49,7 @@ argParser.add_argument('--selection',          action='store',      default='nLe
 argParser.add_argument('--small',              action='store_true',                                                                    help='Run only on a small subset of the data?', )
 argParser.add_argument('--noData',             action='store_true', default=False,                                                     help='also plot data?')
 argParser.add_argument('--signal',             action='store',      default=None,   nargs='?', choices=[None],                         help="Add signal to plot")
-argParser.add_argument('--year',               action='store',      default=None,   type=int,  choices=[2016,2017,2018],               help="Which year to plot?")
+argParser.add_argument('--year',               action='store',      default="2016",   type=str,  choices=["2016","2017","2018","RunII"],               help="Which year to plot?")
 argParser.add_argument('--onlyTTG',            action='store_true', default=False,                                                     help="Plot only ttG")
 argParser.add_argument('--normalize',          action='store_true', default=False,                                                     help="Normalize yields" )
 argParser.add_argument('--addOtherBg',         action='store_true', default=False,                                                     help="add others background" )
@@ -62,8 +62,9 @@ argParser.add_argument('--nJobs',              action='store',      default=1,  
 argParser.add_argument('--job',                action='store',      default=0,      type=int, choices=[0,1,2,3,4],                     help="Run only job i")
 argParser.add_argument('--addBadEEJetVeto',    action='store_true', default=False,                                                     help="remove BadEEJetVeto" )
 argParser.add_argument('--noQCDDD',            action='store_true', default=False,                                                     help="no data driven QCD" )
-argParser.add_argument('--useEOS',             action='store_true', default=False,                                                     help="use lxplus with EOS space" )
 args = argParser.parse_args()
+
+if args.year != "RunII": args.year = int(args.year)
 
 # Logger
 import Analysis.Tools.logger as logger
@@ -111,35 +112,26 @@ if args.signal:          args.plot_directory += "_signal_"+args.signal
 if args.onlyTTG:         args.plot_directory += "_onlyTTG"
 if args.normalize:       args.plot_directory += "_normalize"
 
-if args.useEOS:
-    from TTGammaEFT.Tools.user import eos_directory
-    data_directory = os.path.join( eos_directory, "nanoTuples" )
-    fromEOS = "True"
-    prepareTokens()
-    useToken("hephy")
-
 # Samples
 os.environ["gammaSkim"]="True" if photonSel and not args.invLeptonIso and not "NoIso" in args.mode else "False"
 if args.year == 2016:
-    if args.useEOS: postprocessing_directory = "2016/MC_v20/semilep/"
     import TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed as mc_samples
     if not args.noData:
-        if args.useEOS: postprocessing_directory = "2016/Data_v20/semilep/"
         from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import Run2016 as data_sample
 
 elif args.year == 2017:
-    if args.useEOS: postprocessing_directory = "2017/MC_v20/semilep/"
     import TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed as mc_samples
     if not args.noData:
-        if args.useEOS: postprocessing_directory = "2017/Data_v20/semilep/"
         from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import Run2017 as data_sample
 
 elif args.year == 2018:
-    if args.useEOS: postprocessing_directory = "2018/MC_v20/semilep/"
     import TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed as mc_samples
     if not args.noData:
-        if args.useEOS: postprocessing_directory = "2018/Data_v20/semilep/"
         from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import Run2018 as data_sample
+elif args.year == "RunII":
+    import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
+    if not args.noData:
+        from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
 cache_dir = os.path.join(cache_directory, "qcdHistos", str(args.year))
 dirDB     = MergingDirDB(cache_dir)
@@ -777,6 +769,7 @@ if args.noData:
     if args.year == 2016:   lumi_scale = 35.92
     elif args.year == 2017: lumi_scale = 41.53
     elif args.year == 2018: lumi_scale = 59.74
+    elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
     stack = Stack( mc )
 else:
     data_sample.texName        = "data" # (legacy)"
@@ -788,6 +781,7 @@ else:
 
 stack.extend( [ [s] for s in signals ] )
 
+# huge fix needed!
 if addMisIDSF and addDYSF and not args.invLeptonIso:
     sampleWeight = lambda event, sample: (misIDSF_val[args.year].val if event.nPhotonGood>0 and event.PhotonGood0_photonCatMagic==2 else 1.)*(DYSF_val[args.year].val if "DY" in sample.name else 1.)*event.reweightL1Prefire*event.reweightHEM*event.reweightPU*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
 elif addDYSF and not args.invLeptonIso:
@@ -805,12 +799,16 @@ elif args.invLeptonIso:
 else:
     sampleWeight = lambda event, sample: event.reweightL1Prefire*event.reweightPU*event.reweightHEM*event.reweightTrigger*event.reweightLeptonTightSF*event.reweightLeptonTrackingTightSF*event.reweightPhotonSF*event.reweightPhotonElectronVetoSF*event.reweightBTag_SF
 
-# no misIDSF included in weightString!!
-weightString = "reweightL1Prefire*reweightHEM*reweightPU*reweightTrigger*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"
+lumiString = "(35.92*(year==2016)+41.53*(year==2017)+59.74*(year==2018))"
+ws   = "(%s*weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF)"%lumiString
+ws16 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2016))" %(ws, misIDSF_val[2016].val)
+ws17 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2017))" %(ws, misIDSF_val[2017].val)
+ws18 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2018))" %(ws, misIDSF_val[2018].val)
+weightString = ws + ws16 + ws17 + ws18
 
 for sample in mc + signals:
     sample.read_variables = read_variables_MC
-    sample.scale          = lumi_scale
+#    sample.scale          = lumi_scale
     if "qcd" in sample.name.lower() and photonSel and not args.noQCDDD: sample.scale = 0.
     sample.style          = styles.fillStyle( sample.color )
     sample.weight         = sampleWeight

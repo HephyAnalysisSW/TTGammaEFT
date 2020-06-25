@@ -33,10 +33,12 @@ argParser.add_argument("--logLevel",           action="store",      default="INF
 argParser.add_argument("--plot_directory",     action="store",      default="102X_TTG_ppv26_v1",                                             help="plot sub-directory")
 argParser.add_argument("--selection",          action="store",      default="WJets2", type=str,                                              help="reco region")
 argParser.add_argument("--addCut",             action="store",      default=None, type=str,                                                  help="additional cuts")
-argParser.add_argument("--year",               action="store",      default=2016,   type=int,  choices=[2016,2017,2018],                     help="Which year to plot?")
+argParser.add_argument("--year",               action="store",      default="2016",   type=str,  choices=["2016","2017","2018","RunII"],                     help="Which year to plot?")
 argParser.add_argument("--mode",               action="store",      default="e",  type=str,  choices=["mu", "e"],                            help="lepton selection")
 argParser.add_argument("--overwrite",          action="store_true",                                                                          help="overwrite cache?")
 args = argParser.parse_args()
+
+if args.year != "RunII": args.year = int(args.year)
 
 # Logger
 import Analysis.Tools.logger as logger
@@ -64,18 +66,17 @@ if not dirDB: raise
 # Sample definition
 os.environ["gammaSkim"]="False" #always false for QCD estimate
 if args.year == 2016:
-    from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
-    data_sample = Run2016
+    from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import Run2016 as data_sample
 elif args.year == 2017:
-    from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
-    data_sample = Run2017
+    from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import Run2017 as data_sample
 elif args.year == 2018:
-    from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
-    data_sample = Run2018
+    from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import Run2018 as data_sample
+elif args.year == "RunII":
+    from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
 filterCutData = getFilterCut( args.year, isData=True,  skipBadChargedCandidate=True )
-data_sample.setSelectionString( filterCutData )
-data_sample.setWeightString( "weight*reweightHEM" )
+data_sample.setSelectionString( [filterCutData,"reweightHEM>0"] )
+data_sample.setWeightString( "weight" )
 lumi_scale   = data_sample.lumi * 0.001
 
 replaceSelection = {

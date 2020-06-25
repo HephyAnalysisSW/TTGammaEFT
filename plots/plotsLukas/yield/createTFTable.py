@@ -32,11 +32,12 @@ argParser.add_argument("--logLevel",           action="store",      default="INF
 argParser.add_argument("--regions",            action="store",      default=defaultRegions,   nargs="*",                               help="For CR region?")
 #argParser.add_argument("--removeNegative",     action="store_true",                                                                    help="Set negative values to 0?", )
 argParser.add_argument("--noPhoton",           action="store_true",                                                                    help="no photon regions")
-argParser.add_argument("--year",               action="store",      default=None,   type=int,  choices=[2016,2017,2018],               help="which year?")
+argParser.add_argument("--year",               action="store",      default="2016",   type=str,  choices=["2016","2017","2018","RunII"],               help="which year?")
 #argParser.add_argument("--mode",               action="store",      default="all",  type=str,                                          help="which lepton selection?")
 #argParser.add_argument("--label",              action="store",      default="Region",  type=str,                                          help="which region label?")
 args = argParser.parse_args()
 
+if args.year != "RunII": args.year = int(args.year)
 args.label = "Transfer Factors QCD"
 #args.label.replace("geq", "$\\geq$")
 
@@ -54,6 +55,7 @@ logger_rt = logger_rt.get_logger(args.logLevel, logFile = None)
 if args.year == 2016:   lumi_scale = 35.92
 elif args.year == 2017: lumi_scale = 41.53
 elif args.year == 2018: lumi_scale = 59.74
+elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
 
 sieieSel  = ["all" ]
 chgSel    = ["all" ]

@@ -66,12 +66,16 @@ dirs["TT_pow"]           = ["TTLep_pow_CP5", "TTSingleLep_pow_CP5", "TTHad_pow_C
 dirs["TT_SemiLep"]       = ["TTSingleLep_pow_CP5" ]
 dirs["TT_Lep"]           = ["TTLep_pow_CP5" ]
 
+dirs["TTG_NLO"]          = ["TTGJets_comb"]
 dirs["TTGLep"]           = ["TTGLep_LO"]
 dirs["TTGSemiLep"]       = ["TTGSingleLep_LO"]
 dirs["TTG"]              = ["TTGLep_LO", "TTGSingleLep_LO", "TTGHad_LO"]
 dirs["TTG_TuneUp"]       = ["TTGLep_TuneUp_LO", "TTGSingleLep_TuneUp_LO"]
 dirs["TTG_TuneDown"]     = ["TTGLep_TuneDown_LO", "TTGSingleLep_TuneDown_LO"]
 dirs["TTG_erdOn"]        = ["TTGLep_erdOn_LO", "TTGSingleLep_erdOn_LO"]
+dirs["TTG_stitched"]     = ["TTGLep_LO", "TTGLep_ptG100To200_LO", "TTGLep_ptG200_LO", "TTGSingleLep_LO", "TTGSingleLep_ptG100To200_LO", "TTGSingleLep_ptG200_LO", "TTGHad_LO", "TTGHad_ptG100To200_LO", "TTGHad_ptG200_LO"]
+dirs["TTG_med"]          = ["TTGLep_ptG100To200_LO", "TTGSingleLep_ptG100To200_LO", "TTGHad_ptG100To200_LO"]
+dirs["TTG_high"]         = ["TTGLep_ptG200_LO", "TTGSingleLep_ptG200_LO","TTGHad_ptG200_LO"]
 
 dirs["singleTop"]        = ["TBar_tWch_incl", "T_tWch_incl", "T_tch_pow", "TBar_tch_pow", "TToLeptons_sch_amcatnlo" ] #"TBar_tWch_ext", "T_tWch_ext"
 
@@ -157,7 +161,11 @@ TT_Lep          = getMCSample(name="TT_pow",           redirector=redirector, co
 TT_SemiLep      = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_SemiLep"], noCheckProxy=True, fromDPM=fromDPM)
 singleTop       = getMCSample(name="singleTop",        redirector=redirector, color=color.T,               texName="single-t",          directory=directories["singleTop"], noCheckProxy=True, fromDPM=fromDPM)
 
+TTG_NLO         = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_NLO"], noCheckProxy=True, fromDPM=fromDPM)
 TTG             = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG"], noCheckProxy=True, fromDPM=fromDPM)
+TTG_med    = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_med"], noCheckProxy=True, fromDPM=fromDPM)
+TTG_high    = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_high"], noCheckProxy=True, fromDPM=fromDPM)
+TTG_stitched    = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_stitched"], noCheckProxy=True, fromDPM=fromDPM)
 TTG_TuneUp      = getMCSample(name="TTG_TuneUp",       redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_TuneUp"], noCheckProxy=True, fromDPM=fromDPM)
 TTG_TuneDown    = getMCSample(name="TTG_TuneDown",     redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_TuneDown"], noCheckProxy=True, fromDPM=fromDPM)
 TTG_erdOn       = getMCSample(name="TTG_erdOn",        redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_erdOn"], noCheckProxy=True, fromDPM=fromDPM)
@@ -186,6 +194,10 @@ all_noTT        = getMCSample(name="all_noTT",         redirector=redirector, co
 all_noOther_noTT = getMCSample(name="all_noOther_noTT", redirector=redirector, color=color.TT,              texName="all_noOther_noTT", directory=directories["all_noOther_noTT"], noCheckProxy=True, fromDPM=fromDPM)
 
 signals = []
+
+#selection="nLeptonTight==1&&nLeptonVetoIsoCorr==1&&nJetGood>=3&&nBTagGood>=1&&nPhotonGood==1&&nPhotonNoChgIsoNoSieie==1&&triggered==1"
+#print "no cut:", TT_pow.getYieldFromDraw(selectionString=selection)
+#print "OR:", TT_pow.getYieldFromDraw(selectionString=selection+"&&overlapRemoval==1")
 
 if __name__ == "__main__":
 

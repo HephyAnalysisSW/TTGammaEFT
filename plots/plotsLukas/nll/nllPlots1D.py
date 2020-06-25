@@ -28,7 +28,7 @@ import argparse
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument('--logLevel',            action='store',      default='INFO', nargs='?', choices=loggerChoices,                                help="Log level for logging")
-argParser.add_argument( "--year",               action="store",      default=2016,   type=int,                              help="Which year?" )
+argParser.add_argument( "--year",               action="store",      default="2016",   type=str,                              help="Which year?" )
 argParser.add_argument('--xRange',             action='store',      default=[None, None],  type=float, nargs=2,                          help="argument parameters")
 argParser.add_argument('--plotData',            action='store_true',                                                                                  help='Plot data points?')
 argParser.add_argument('--addDYSF',             action='store_true',                                                                                  help='Plot data points taken with --addDYSF?')
@@ -38,6 +38,8 @@ argParser.add_argument( "--expected",           action="store_true",            
 argParser.add_argument( "--inclRegion",         action="store_true",                                                        help="use inclusive photon pt region" )
 argParser.add_argument( "--useRegions",         action="store",      nargs='*',       type=str, choices=allRegions.keys(),  help="Which regions to use?" )
 args = argParser.parse_args()
+
+if args.year != "RunII": args.year = int(args.year)
 
 # Logging
 import Analysis.Tools.logger as logger
@@ -79,6 +81,7 @@ if not os.path.isdir( plot_directory_ ):
 if args.year == 2016:   lumi_scale = 35.92
 elif args.year == 2017: lumi_scale = 41.53
 elif args.year == 2018: lumi_scale = 59.74
+elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
 
 #binning range
 xRange = eftParameterRange[args.variables] 

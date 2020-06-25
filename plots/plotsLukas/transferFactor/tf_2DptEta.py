@@ -26,11 +26,13 @@ import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",          action="store",  default="INFO",             choices=loggerChoices,      help="Log level for logging")
 argParser.add_argument("--plot_directory",    action="store",  default="102X_TTG_ppv29_v2")
-argParser.add_argument("--year",              action="store",  default=2016,     type=int, choices=[2016, 2017, 2018], help="Which year?")
+argParser.add_argument("--year",              action="store",  default="2016",     type=str, choices=["2016", "2017", "2018", "RunII"], help="Which year?")
 argParser.add_argument("--mode",              action="store",  default="e",      type=str, choices=["e", "mu"],        help="Which lepton selection?")
 argParser.add_argument("--cores",             action="store",  default=1,        type=int,                             help="run multicore?")
 argParser.add_argument("--overwrite",         action="store_true",                                                     help="overwrite?")
 args = argParser.parse_args()
+
+if args.year != "RunII": args.year = int(args.year)
 
 # Logging
 import Analysis.Tools.logger as logger
@@ -47,6 +49,7 @@ plot_directory_ = os.path.join( plot_directory, 'transferFactor', str(args.year)
 if args.year == 2016:   lumi_scale = 35.92
 elif args.year == 2017: lumi_scale = 41.53
 elif args.year == 2018: lumi_scale = 59.74
+elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
 print "hist2D"
 
 parameters   = allRegions["WJets2"]["parameters"]
@@ -119,7 +122,7 @@ def drawObjects( lumi_scale ):
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
     lines = [
-      (0.15, 0.95, 'CMS #bf{#it{Preliminary}}'),
+      (0.15, 0.95, 'CMS #bf{#it{Preliminary}} (%s)'%args.selection),
       (0.65, 0.95, '%3.1f fb{}^{-1} (13 TeV)' % lumi_scale),
     ]
     return [tex.DrawLatex(*l) for l in lines]

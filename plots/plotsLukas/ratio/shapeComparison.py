@@ -33,7 +33,7 @@ argParser.add_argument('--logLevel',           action='store',      default='INF
 argParser.add_argument('--plot_directory',     action='store',      default='102X_TTG_ppv28_v1')
 argParser.add_argument('--selection',          action='store',      default='dilepOS-nLepVeto2-pTG20-nPhoton1p-offZSFllg-offZSFll-mll40')
 argParser.add_argument('--small',              action='store_true',                                                                       help='Run only on a small subset of the data?', )
-argParser.add_argument('--year',               action='store',      default=None,      type=int,  choices=[2016,2017,2018],                  help="Which year to plot?")
+argParser.add_argument('--year',               action='store',      default="2016",      type=str,  choices=["2016","2017","2018","RunII"],                  help="Which year to plot?")
 argParser.add_argument('--onlyTT',             action='store_true', default=False,                                                        help="Plot only tt sample")
 argParser.add_argument('--onlyTTLep',          action='store_true', default=False,                                                        help="Plot only tt 2l sample")
 argParser.add_argument('--onlyTTSemiLep',      action='store_true', default=False,                                                        help="Plot only tt 1l sample")
@@ -42,6 +42,8 @@ argParser.add_argument('--nJobs',              action='store',      default=1,  
 argParser.add_argument('--job',                action='store',      default=0,         type=int, choices=[0,1,2,3,4],                        help="Run only job i")
 argParser.add_argument('--sideband',           action='store',      default="sieie",   type=str, choices=["chgIso", "sieie"],                help="which sideband to plot?")
 args = argParser.parse_args()
+
+if args.year != "RunII": args.year = int(args.year)
 
 # Logger
 import Analysis.Tools.logger as logger
@@ -55,14 +57,17 @@ photonVariable = "PhotonNoChgIsoNoSieie0"
 # Samples
 os.environ["gammaSkim"]="True"
 if args.year == 2016:
-    from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed  import *
-    from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
+    import TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed  as mc_samples
+    from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import Run2016 as data_sample
 elif args.year == 2017:
-    from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed    import *
-    from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
+    import TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed    as mc_samples
+    from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import Run2017 as data_sample
 elif args.year == 2018:
-    from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed  import *
-    from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
+    import TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed  as mc_samples
+    from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import Run2018 as data_sample
+elif args.year == "RunII":
+    import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
+    from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
 # Text on the plots
 def drawObjects( plotData, lumi_scale ):
@@ -192,24 +197,10 @@ def checkParentList( event, sample ):
 sequence = []
 
 # Sample definition
-if args.year == 2016:
-    if args.onlyTT: all = TT_pow_16
-    elif args.onlyTTLep: all = TT_Lep_16
-    elif args.onlyTTSemiLep: all = TT_SemiLep_16
-    else: all = all_noQCD_16
-    data_sample = Run2016
-elif args.year == 2017:
-    if args.onlyTT: all = TT_pow_17
-    elif args.onlyTTLep: all = TT_Lep_17
-    elif args.onlyTTSemiLep: all = TT_SemiLep_17
-    else: all = all_noQCD_17
-    data_sample = Run2017
-elif args.year == 2018:
-    if args.onlyTT: all = TT_pow_18
-    elif args.onlyTTLep: all = TT_Lep_18
-    elif args.onlyTTSemiLep: all = TT_SemiLep_18
-    else: all = all_noQCD_18
-    data_sample = Run2018
+if args.onlyTT: all = mc_samples.TT_pow
+elif args.onlyTTLep: all = mc_samples.TT_Lep
+elif args.onlyTTSemiLep: all = mc_samples.TT_SemiLep
+else: all = mc_samples.all_noQCD
 
 data_sample.scale = 1.
 
