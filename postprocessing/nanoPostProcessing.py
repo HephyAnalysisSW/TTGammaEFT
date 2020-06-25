@@ -28,8 +28,8 @@ from TTGammaEFT.Tools.objectSelection            import *
 from TTGammaEFT.Tools.Variables                  import NanoVariables
 from TTGammaEFT.Tools.cutInterpreter             import highSieieThresh, lowSieieThresh, chgIsoThresh
 
-from TTGammaEFT.Tools.overlapRemovalTTG            import *
-from Analysis.Tools.puProfileCache               import puProfile
+from TTGammaEFT.Tools.overlapRemovalTTG          import *
+from TTGammaEFT.Tools.puProfileCache             import puProfile
 from Analysis.Tools.L1PrefireWeight              import L1PrefireWeight
 from Analysis.Tools.mt2Calculator                import mt2Calculator
 
@@ -160,7 +160,7 @@ runOnUL = False
 if options.year == 2016:
 #    from Samples.nanoAOD.Summer16_private_legacy_v1 import *
 #    from Samples.nanoAOD.Run2016_17Jul2018_private  import *
-    from TTGammaEFT.Samples.Summer16_nanoAODv5      import *
+#    from TTGammaEFT.Samples.Summer16_nanoAODv5      import *
     from TTGammaEFT.Samples.Summer16_nanoAODv6      import *
     from Samples.nanoAOD.Run2016_nanoAODv6          import *
 elif options.year == 2017:
