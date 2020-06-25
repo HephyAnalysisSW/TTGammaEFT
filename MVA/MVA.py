@@ -19,7 +19,7 @@ defaultObs = { "F":p_c_float(0.), "D":p_c_double(0.), "I":ctypes.c_int(0) }
 # Logging
 if __name__=="__main__":
     import Analysis.Tools.logger as logger
-    logger = logger.get_logger("INFO", logFile = None )
+    logger = logger.get_logger("DEBUG", logFile = None )
 else:
     import logging
     logger = logging.getLogger(__name__)
@@ -626,7 +626,7 @@ if __name__ == "__main__":
     from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed      import *
 
     signal      = TTG_16
-    backgrounds = [ WJets_HT_16 ]
+    backgrounds = [ WJets_16 ]
 
     weightString = "weight"
 

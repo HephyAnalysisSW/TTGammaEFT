@@ -13,7 +13,7 @@ if os.environ['USER'] in ['schoef', 'rschoefbeck', 'schoefbeck']:
 
     cache_directory                     = "/afs/hephy.at/data/rschoefbeck01/TTGammaEFT/cache/"
 
-    mva_directory                       = "/afs/hephy.at/data/llechner01/TTGammaEFT/mva/"
+    mva_directory                       = "/afs/hephy.at/data/rschoefbeck01/TTGammaEFT/mva/"
     dpm_directory                       = '/dpm/oeaw.ac.at/home/cms/store/user/llechner/'
 
 if os.environ['USER'] in ['llechner']:
