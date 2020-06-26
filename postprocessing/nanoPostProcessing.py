@@ -20,7 +20,8 @@ from Analysis.Tools.helpers                      import checkRootFile, deepCheck
 
 # Tools for systematics
 from Analysis.Tools.helpers                      import checkRootFile, bestDRMatchInCollection, deltaR, deltaPhi, mT, mTg, lp
-from Analysis.Tools.MetSignificance              import MetSignificance
+#from Analysis.Tools.MetSignificance              import MetSignificance
+from TTGammaEFT.Tools.JMECorrector               import JMECorrector
 from TTGammaEFT.Tools.helpers                    import m3
 from TTGammaEFT.Tools.user                       import cache_directory
 
@@ -29,7 +30,7 @@ from TTGammaEFT.Tools.Variables                  import NanoVariables
 from TTGammaEFT.Tools.cutInterpreter             import highSieieThresh, lowSieieThresh, chgIsoThresh
 
 from TTGammaEFT.Tools.overlapRemovalTTG            import *
-from Analysis.Tools.puProfileCache               import puProfile
+from TTGammaEFT.Tools.puProfileCache               import puProfile
 from Analysis.Tools.L1PrefireWeight              import L1PrefireWeight
 from Analysis.Tools.mt2Calculator                import mt2Calculator
 
@@ -88,15 +89,10 @@ options = get_parser().parse_args()
 if "clip" in hostname.lower():
     options.writeToDPM = False
 
-stitching = None
+stitching = False
 # combine ttg samples is they are nominal
-if "TTG" in options.samples[0] and not "Tune" in options.samples[0] and not "erd" in options.samples[0]:
-    if "ptG" in options.samples[0]:
-        stitching = "high"
-    else:
-        stitching = "low"
-
-print stitching
+if "TTG" in options.samples[0] and not "Tune" in options.samples[0] and not "erd" in options.samples[0] and not "ptG" in options.samples[0]:
+    stitching = True
 
 # B-Tagger
 tagger = 'DeepCSV'
@@ -213,7 +209,6 @@ Ts = TriggerSelector( options.year )
 if isData and options.triggerSelection:
     triggerCond = Ts.getDataTrigger( options.samples[0] )
     logger.info("Sample will have the following trigger skim: %s"%triggerCond)
-    print triggerCond
     skimConds.append( triggerCond )
 
 # MET Filter
@@ -564,6 +559,8 @@ if isMC:
     read_variables += [ TreeVariable.fromString('Pileup_nTrueInt/F') ]
     read_variables += [ TreeVariable.fromString('nGenPart/I'),
                         VectorTreeVariable.fromString('GenPart[%s]'%readGenVarString, nMax = 1000) ] # all needed for genMatching
+    read_variables += [ TreeVariable.fromString('nLHEPart/I'),
+                        VectorTreeVariable.fromString('LHEPart[%s]'%'phi/F,pt/F,pdgId/I,eta/F', nMax = 1000) ]
     read_variables += [ TreeVariable.fromString('nGenJet/I'),
                         VectorTreeVariable.fromString('GenJet[%s]'%readGenJetVarString) ]
 
@@ -850,16 +847,16 @@ if options.addPreFiringFlag:
     del PreFire
 
 if not options.skipNanoTools:
-    # prepare metsignificance and jes/jer
-    MetSig = MetSignificance( sample, options.year, output_directory, runOnUL=runOnUL )
-    MetSig( "&&".join(skimConds) )
-    newfiles = MetSig.getNewSampleFilenames()
+    # prepare jes/jer
+    JMECorr = JMECorrector( sample, options.year, output_directory, runOnUL=runOnUL )
+    JMECorr( "&&".join(skimConds) )
+    newfiles = JMECorr.getNewSampleFilenames()
     sample.clear()
     sample.files = copy.copy(newfiles)
-    sample.name  = MetSig.name
+    sample.name  = JMECorr.name
     if isMC: sample.normalization = sample.getYieldFromDraw(weightString="genWeight")['val']
     sample.isData = isData
-    del MetSig
+    del JMECorr
 
 # Define a reader
 #sel = "&&".join(skimConds) if options.skipNanoTools else "(1)"
@@ -1029,18 +1026,6 @@ def filler( event ):
         GenIsoPhotonGJets          = filter( lambda g: isIsolatedPhoton( g, gPart, coneSize=0.4,  ptCut=5, excludedPdgIds=[12,-12,14,-14,16,-16] ), GenPhoton    )
         GenIsoPhotonNoMesonGJets   = filter( lambda g: not hasMesonMother( getParentIds( g, gPart ) ), GenIsoPhotonGJets )
 
-        ttgGenPhoton = filter( lambda g: not hasMesonMother( getParentIds( g, gPart ) ), GenPhoton )
-        ttgGenPhoton = filter( lambda g: genPhotonSel_TTG_OR(g), ttgGenPhoton )
-        ttgGenPhoton.sort( key = lambda p: -p['pt'] )
-        ttgGenPhoton = (ttgGenPhoton[:1] + [None])[0]
-
-        event.stitchedPt = -1
-        if ttgGenPhoton:
-            while 22 in getParentIds(ttgGenPhoton, gPart):
-                ttgGenPhoton = [ g for g in gPart if g["index"] == ttgGenPhoton["genPartIdxMother"] ][0]
-            event.stitchedPt = ttgGenPhoton["pt"]
-    
-
         event.isTTGamma = len( filter( lambda g: genPhotonSel_TTG_OR(g), GenIsoPhotonNoMesonTTG     ) ) > 0
         event.isZWGamma = len( filter( lambda g: genPhotonSel_ZG_OR(g),  GenIsoPhotonNoMeson        ) ) > 0
         event.isTGamma  = len( filter( lambda g: genPhotonSel_T_OR(g),   GenIsoPhotonNoMesonTG      ) ) > 0 
@@ -1066,25 +1051,19 @@ def filler( event ):
         else:
             event.overlapRemoval = 1 # all other events
 
-        if stitching:
-            if stitching == "low" and ttgGenPhoton:
-                # take the nominal sample for low pt
-                event.pTStitching = ttgGenPhoton["pt"] < 120
-            elif stitching == "low" and not ttgGenPhoton:
-                # take the nominal sample in case there is no gen-photon
-                event.pTStitching = 1
-            elif stitching == "high" and ttgGenPhoton:
-                event.pTStitching = ttgGenPhoton["pt"] >= 120
-            elif stitching == "high" and not ttgGenPhoton:
-                # take the nominal sample in case there is no gen-photon
-                event.pTStitching = 0
-            else:
-                event.pTStitching = 1
-        else:
-            # all other events
-            event.pTStitching = 1
 
-        print ttgGenPhoton["pt"] if ttgGenPhoton else "none", event.pTStitching
+        ttgLHEPhoton = getParticles( r, collVars=['phi','pt','pdgId','eta'],    coll="LHEPart" )
+        ttgLHEPhoton = filter( lambda g: g["pdgId"]==22, ttgLHEPhoton )
+        ttgLHEPhoton.sort( key = lambda p: -p['pt'] ) #there is anyway only one
+        ttgLHEPhoton = (ttgLHEPhoton[:1] + [None])[0]
+
+        event.stitchedPt  = -1
+        event.pTStitching = 1
+        if ttgLHEPhoton:
+            event.stitchedPt = ttgLHEPhoton["pt"]
+            # take the nominal sample for low pt
+            if stitching:
+                event.pTStitching = ttgLHEPhoton["pt"] < 100
 
         GenMuon                                    = filterGenMuons( gPart, status='last' )
         GenElectron                                = filterGenElectrons( gPart, status='last' )
@@ -1960,7 +1939,6 @@ def filler( event ):
 
         # top pt reweighting
         event.reweightTopPt     = topPtReweightingFunc(getTopPtsForReweighting(r)) * topScaleF if doTopPtReweighting else 1.
-        print "weight", event.reweightTopPt
         # W pt reweighting for W+Jets samples in 2017/18
         event.reweightWPt    = 1.
         event.reweightWinvPt = 1.
