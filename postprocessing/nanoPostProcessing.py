@@ -740,6 +740,17 @@ new_variables += [ 'mT/F', 'mTinv/F']
 
 if options.addPreFiringFlag: new_variables += [ 'unPreFirableEvent/I' ]
 
+
+top_reco_strategies = ["BsPlusHardestTwo", "BsPlusHardestThree", "onlyBs", "allJets",  "twoBestBs"]
+for top_reco_strategy in top_reco_strategies:
+    new_variables += [  "topReco_%s_neuPt/F" % top_reco_strategy, 
+                        "topReco_%s_neuPz/F" % top_reco_strategy,  
+                        "topReco_%s_topMass/F" % top_reco_strategy, 
+                        "topReco_%s_Jet_index/I" % top_reco_strategy, 
+                        "topReco_%s_topPt/F" % top_reco_strategy, 
+                        "topReco_%s_WMass/F" % top_reco_strategy, 
+                        "topReco_%s_WPt/F" % top_reco_strategy ]
+
 new_variables += [ "reweightHEM/F", "reweightTopPt/F" ]
 if isMC:
     new_variables += [ 'GenPhotonATLASUnfold0_' + var for var in writeGenVariables ]
@@ -1595,9 +1606,18 @@ def filler( event ):
 
     # l+jets topreco
     if lt0:
-        #print ",",[{'pt':event.MET_pt, 'phi':event.MET_phi},  lt0, bJets, nonBJets]
-        topReco = TopRecoLeptonJets( met = {'pt':event.MET_pt, 'phi':event.MET_phi},
-                           lepton = lt0, bJets = bJets, nonBJets = nonBJets )
+        for top_reco_strategy in top_reco_strategies:
+            #print ",",[{'pt':event.MET_pt, 'phi':event.MET_phi},  lt0, bJets, nonBJets]
+            topReco = TopRecoLeptonJets( met = {'pt':event.MET_pt, 'phi':event.MET_phi},
+                               lepton = lt0, bJets = bJets, nonBJets = nonBJets, strategy = top_reco_strategy)
+            if topReco.solution:
+                setattr( event, "topReco_%s_neuPt" % top_reco_strategy,      topReco.solution['neuPt'])
+                setattr( event, "topReco_%s_neuPz" % top_reco_strategy,      topReco.solution['neuPz'])
+                setattr( event, "topReco_%s_topMass" % top_reco_strategy,    topReco.solution['topMass'])
+                setattr( event, "topReco_%s_Jet_index" % top_reco_strategy,  topReco.solution['Jet_index'])
+                setattr( event, "topReco_%s_topPt" % top_reco_strategy,      topReco.solution['topPt'])
+                setattr( event, "topReco_%s_WMass" % top_reco_strategy,      topReco.solution['WMass'])
+                setattr( event, "topReco_%s_WPt" % top_reco_strategy,        topReco.solution['WPt'])
 
     # variables w/ photons
     if len(mediumPhotons) > 0:
