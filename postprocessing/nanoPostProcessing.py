@@ -21,7 +21,7 @@ from Analysis.Tools.helpers                      import checkRootFile, deepCheck
 # Tools for systematics
 from Analysis.Tools.helpers                      import checkRootFile, bestDRMatchInCollection, deltaR, deltaPhi, mT
 #from Analysis.Tools.MetSignificance              import MetSignificance
-from TTGammaEFT.Tools.JMECorrector               import JMECorrector
+from TTGammaEFT.Tools.NanoAODTools               import NanoAODTools
 from TTGammaEFT.Tools.helpers                    import m3
 from TTGammaEFT.Tools.user                       import cache_directory
 
@@ -31,6 +31,7 @@ from TTGammaEFT.Tools.cutInterpreter             import highSieieThresh, lowSiei
 
 from TTGammaEFT.Tools.overlapRemovalTTG          import *
 from TTGammaEFT.Tools.puProfileCache             import puProfile
+from TTGammaEFT.Tools.TopRecoLeptonJets          import TopRecoLeptonJets
 
 from Analysis.Tools.L1PrefireWeight              import L1PrefireWeight
 
@@ -555,6 +556,9 @@ if not options.skipNanoTools:
         for kin in ["pt", "phi"]:
             met_read_branches.append("{metBranchName}_{kin}{ext}/F".format(metBranchName=metBranchName,kin=kin,ext=ext))
     read_variables.extend( map( TreeVariable.fromString, met_read_branches ) )
+else:
+    read_variables.extend( map( TreeVariable.fromString, ["MET_pt/F", "MET_phi/F"] ) )
+    options.skipSyst = True # JME variations are obtained from nanoAOD 
 
 read_variables += [ TreeVariable.fromString('nElectron/I'),
                     VectorTreeVariable.fromString('Electron[%s]'%readElectronVarString) ]
@@ -835,16 +839,16 @@ if options.addPreFiringFlag:
     del PreFire
 
 if not options.skipNanoTools:
-    # prepare jes/jer
-    JMECorr = JMECorrector( sample, options.year, output_directory, runOnUL=runOnUL )
-    JMECorr( "&&".join(skimConds) )
-    newfiles = JMECorr.getNewSampleFilenames()
+    # re-apply jes/jer, etc.
+    nanoAODTools = NanoAODTools( sample, options.year, output_directory, runOnUL=runOnUL )
+    nanoAODTools( "&&".join(skimConds) )
+    newfiles = nanoAODTools.getNewSampleFilenames()
     sample.clear()
     sample.files = copy.copy(newfiles)
-    sample.name  = JMECorr.name
+    sample.name  = nanoAODTools.name
     if isMC: sample.normalization = sample.getYieldFromDraw(weightString="genWeight")['val']
     sample.isData = isData
-    del JMECorr
+    del nanoAODTools
 
 # Define a reader
 #sel = "&&".join(skimConds) if options.skipNanoTools else "(1)"
@@ -1588,6 +1592,12 @@ def filler( event ):
 
     event.ht = sum( [ j['pt'] for j in goodJets ] )
     event.htinv = sum( [ j['pt'] for j in goodJetsInvLepIso ] )
+
+    # l+jets topreco
+    if lt0:
+        #print ",",[{'pt':event.MET_pt, 'phi':event.MET_phi},  lt0, bJets, nonBJets]
+        topReco = TopRecoLeptonJets( met = {'pt':event.MET_pt, 'phi':event.MET_phi},
+                           lepton = lt0, bJets = bJets, nonBJets = nonBJets )
 
     # variables w/ photons
     if len(mediumPhotons) > 0:

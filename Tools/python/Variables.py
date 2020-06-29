@@ -136,8 +136,8 @@ class NanoVariables:
                              Variable( "pt_jesTotalDown",  "F", read=True,  write=True,  inData=False, inPlot=True, isSyst=True ),
                              Variable( "pt_jerUp",         "F", read=True,  write=True,  inData=False, inPlot=True, isSyst=True ),
                              Variable( "pt_jerDown",       "F", read=True,  write=True,  inData=False, inPlot=True, isSyst=True ),
-                             Variable( "pt_unclustEnUp",   "F", read=True,  write=True,  inData=False, inPlot=True, isSyst=True ),
-                             Variable( "pt_unclustEnDown", "F", read=True,  write=True,  inData=False, inPlot=True, isSyst=True ),
+#                             Variable( "pt_unclustEnUp",   "F", read=True,  write=True,  inData=False, inPlot=True, isSyst=True ), # unclustered energy uncertainty is for MET only
+#                             Variable( "pt_unclustEnDown", "F", read=True,  write=True,  inData=False, inPlot=True, isSyst=True ),
                              Variable( "eta",              "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                              Variable( "phi",              "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                              Variable( "neEmEF",           "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
