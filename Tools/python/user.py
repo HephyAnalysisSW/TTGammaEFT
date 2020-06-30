@@ -9,12 +9,13 @@ if os.environ["USER"] in ["schoef", "rschoefbeck", "schoefbeck"]:
     plot_directory                  = "/afs/hephy.at/user/r/rschoefbeck/www/TTGammaEFT/"
     postprocessing_directory        = "TTGammaEFT_PP_2016_TTG_v5/inclusive/"
     postprocessing_output_directory = "/afs/hephy.at/data/rschoefbeck02/cmgTuples/"
+    gridpack_directory              = "/afs/hephy.at/data/llechner01/TTGammaEFT/gridpacks/"
     analysis_results                = results_directory
 
     cache_directory                     = "/afs/hephy.at/data/rschoefbeck01/TTGammaEFT/cache/"
 
-    mva_directory                       = "/afs/hephy.at/data/llechner01/TTGammaEFT/mva/"
-    dpm_directory                       = "/dpm/oeaw.ac.at/home/cms/store/user/llechner/"
+    mva_directory                       = "/afs/hephy.at/data/rschoefbeck01/TTGammaEFT/mva/"
+    dpm_directory                       = '/dpm/oeaw.ac.at/home/cms/store/user/llechner/'
     eos_directory                       = "/eos/cms/store/group/phys_susy/hephy/"
 
 if os.environ["USER"] in ["llechner"]: #Heplx, Lxplus
