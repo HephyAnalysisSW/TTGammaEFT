@@ -56,10 +56,9 @@ def get_parser():
     argParser.add_argument('--nJobs',                       action='store',         nargs='?',  type=int,                           default=1,                          help="Maximum number of simultaneous jobs.")
     argParser.add_argument('--job',                         action='store',                     type=int,                           default=0,                          help="Run only job i")
     argParser.add_argument('--minNJobs',                    action='store',         nargs='?',  type=int,                           default=1,                          help="Minimum number of simultaneous jobs.")
-    argParser.add_argument('--writeToDPM',                  action='store_true',                                                                                        help="Write output to DPM?")
     argParser.add_argument('--fileBasedSplitting',          action='store_true',                                                                                        help="Split njobs according to files")
     argParser.add_argument('--processingEra',               action='store',         nargs='?',  type=str,                           default='TTGammaEFT_PP_v1',         help="Name of the processing era")
-    argParser.add_argument('--skim',                        action='store',         nargs='?',  type=str,                           default='semilep',                    help="Skim conditions to be applied for post-processing")
+    argParser.add_argument('--skim',                        action='store',         nargs='?',  type=str, choices=['inclusive','semilep','semilepGamma','dilep'],       default='semilep',                    help="Skim conditions to be applied for post-processing")
     argParser.add_argument('--small',                       action='store_true',                                                                                        help="Run the file on a small sample (for test purpose), bool flag set to True if used")
     argParser.add_argument('--year',                        action='store',                     type=int,   choices=[2016,2017,2018],  required = True,                    help="Which year?")
     argParser.add_argument('--interpolationOrder',          action='store',         nargs='?',  type=int,                           default=2,                          help="Interpolation order for EFT weights.")
@@ -84,9 +83,6 @@ def get_parser():
     return argParser
 
 options = get_parser().parse_args()
-
-if "clip" in hostname.lower():
-    options.writeToDPM = False
 
 stitching = False
 # combine ttg samples is they are nominal
@@ -148,8 +144,8 @@ else:
 #Samples: Load samples
 maxNFiles = None
 if options.small:
-    maxNFiles = 1
-    maxNEvents = 10000
+    maxNFiles = 2
+    maxNEvents = -1#10000
     options.job = 0
     options.nJobs = 1 # set high to just run over 1 input file
 
@@ -210,9 +206,11 @@ if isData and options.triggerSelection:
     logger.info("Sample will have the following trigger skim: %s"%triggerCond)
     skimConds.append( triggerCond )
 
-# MET Filter
+# MET filter as cut
 from Analysis.Tools.metFilters         import getFilterCut
-skimConds += [ getFilterCut(options.year, isData=isData, ignoreJSON=True, skipWeight=True) ]
+MET_Filters_cut = getFilterCut(options.year, isData=isData, ignoreJSON=True, skipWeight=True)
+if not options.skim.startswith('inclusive'):
+    skimConds.append( MET_Filters_cut )
 
 #Samples: combine if more than one
 if len(samples)>1:
@@ -243,26 +241,18 @@ if options.reduceSizeBy > 1:
 postfix       = '_small' if options.small else ''
 sampleDir     = sample.name #sample name changes after split
 
-# output directory (store temporarily when running on dpm)
-if options.writeToDPM:
-    from TTGammaEFT.Tools.user import dpm_directory as user_directory
-    from Samples.Tools.config  import redirector    as redirector_hephy
-    # Allow parallel processing of N threads on one worker
-    output_directory = os.path.join( '/tmp/%s'%os.environ['USER'], str(uuid.uuid4()) )
-    targetPath       = redirector_hephy + os.path.join( user_directory, 'postprocessed',  options.processingEra, options.skim + postfix, sampleDir )
-else:
-    # User specific
-    from TTGammaEFT.Tools.user import postprocessing_output_directory as user_directory
-    directory        = os.path.join( user_directory, options.processingEra ) 
-    output_directory = os.path.join( '/tmp/%s'%os.environ['USER'], str(uuid.uuid4()) )
-    targetPath       = os.path.join( directory, options.skim+postfix, sampleDir )
-    if not os.path.exists( targetPath ):
-        try:    os.makedirs( targetPath )
-        except: pass
-    nExistingFiles    = len(os.listdir(targetPath))
-    if nExistingFiles > options.nJobs:
-        raise Exception("Error: More files exist in target directory as should be processed! Check your nJobs input! Got nJobs %i, existing files: %i"%(options.nJobs, nExistingFiles))
-    logger.info("%i files exist in target directory! Processing %i files."%(nExistingFiles, options.nJobs))
+# User specific
+from TTGammaEFT.Tools.user import postprocessing_output_directory as user_directory
+directory        = os.path.join( user_directory, options.processingEra ) 
+output_directory = os.path.join( '/tmp/%s'%os.environ['USER'], str(uuid.uuid4()) )
+targetPath       = os.path.join( directory, options.skim+postfix, sampleDir )
+if not os.path.exists( targetPath ):
+    try:    os.makedirs( targetPath )
+    except: pass
+nExistingFiles    = len(os.listdir(targetPath))
+if nExistingFiles > options.nJobs:
+    raise Exception("Error: More files exist in target directory as should be processed! Check your nJobs input! Got nJobs %i, existing files: %i"%(options.nJobs, nExistingFiles))
+logger.info("%i files exist in target directory! Processing %i files."%(nExistingFiles, options.nJobs))
 
 # Single file post processing
 if options.fileBasedSplitting or options.nJobs > 1:
@@ -297,35 +287,7 @@ if not os.path.exists( output_directory ):
 # checking overwrite or file exists
 sel = "&&".join(skimConds)
 nEvents = sample.getYieldFromDraw(weightString="1", selectionString=sel)['val']
-if not options.overwrite and options.writeToDPM:
-    try:
-        # ls the directory on DPM
-        checkFile = "/cms" + targetPath.split("/cms")[1] + "/"
-        cmd = [ "xrdfs", redirector_hephy, "ls", checkFile ]
-        fileList = subprocess.check_output( cmd ).split("\n")[:-1]
-        fileList = [ line.split(checkFile)[1].split(".root")[0] for line in fileList ]
-    except:
-        # Not even the directory exists on dpm
-        fileList = []
-
-    if sample.name in fileList:
-        # Sample found on dpm, check if it is ok
-        target  = os.path.join( targetPath, sample.name+".root" )
-        if checkRootFile( target, checkForObjects=["Events"] ) and deepCheckRootFile( target ) and deepCheckWeight( target ):
-            logger.info( "File already processed. Source: File check ok! Skipping!" ) # Everything is fine, no overwriting
-            sys.exit(0)
-        else:
-            logger.info( "File corrupt. Removing file from target." )
-            cmd = [ "xrdfs", redirector_hephy, "rm", "/cms" + target.split("/cms")[1] ]
-            subprocess.call( cmd )
-            if options.checkOnly: sys.exit(0)
-            logger.info( "Reprocessing." )
-    else:
-        logger.info( "Sample not processed yet." )
-        if options.checkOnly: sys.exit(0)
-        logger.info( "Processing." )
-
-elif not options.overwrite and not options.writeToDPM:
+if not options.overwrite:
     if os.path.isfile(targetFilePath):
         logger.info( "Output file %s found.", targetFilePath)
         if checkRootFile( targetFilePath, checkForObjects=["Events"] ) and deepCheckRootFile( targetFilePath ) and deepCheckWeight( targetFilePath ):
@@ -678,7 +640,7 @@ new_variables += [ 'ht/F', 'htinv/F' ]
 new_variables += [ 'photonJetdR/F', 'photonLepdR/F', 'leptonJetdR/F', 'tightLeptonJetdR/F' ] 
 new_variables += [ 'photonJetInvLepIsodR/F', 'photonNoSieieNoChgIsoJetdR/F', 'photonNoSieieNoChgIsoJetInvLepIsodR/F' ] 
 new_variables += [ 'invtightLeptonJetdR/F' ] 
-new_variables += [ 'MET_pt/F', 'MET_phi/F' ]
+new_variables += [ 'MET_pt/F', 'MET_phi/F'] #, 'MET_filters/I']
 if addSystematicVariations:
     for var in ['jesTotalUp', 'jesTotalDown', 'jerUp', 'jerDown']:
         new_variables.extend( ['nJetGoodNoChgIsoNoSieie_'+var+'/I', 'nBTagGoodNoChgIsoNoSieie_'+var+'/I'] )
@@ -860,6 +822,10 @@ if not options.skipNanoTools:
     if isMC: sample.normalization = sample.getYieldFromDraw(weightString="genWeight")['val']
     sample.isData = isData
     del nanoAODTools
+
+# MET Filter: TTreeFormula::Notify must be called from the chain of the actual sample, i.e. don't change the sample.chain between here and the loop.
+#MET_Filters_TTF = ROOT.TTreeFormula( "MET_Filters_TTF", MET_Filters_cut, sample.chain)
+#sample.chain.SetNotify( MET_Filters_TTF )
 
 # Define a reader
 #sel = "&&".join(skimConds) if options.skipNanoTools else "(1)"
@@ -1579,6 +1545,8 @@ def filler( event ):
     event.nBTagGoodNoChgIsoNoSieieNoLepIso = len( filter( lambda x: x["isBJet"], goodNoChgIsoNoSieieJetsNoLepIso ) )
     event.nBTagGoodNoChgIsoNoSieieInvLepIso = len( filter( lambda x: x["isBJet"], goodNoChgIsoNoSieieJetsInvLepIso ) )
 
+    # MET_filter cut from Tree
+    # event.MET_Filters = MET_Filters_TTF.EvalInstance()
     # store the correct MET (EE Fix for 2017, MET_min as backup in 2017)
     if options.year == 2017 and not options.skipNanoTools and not runOnUL:
         # 'nom' is the re-corrected value in nanoAODTools.
@@ -2115,99 +2083,51 @@ else:
     os.remove( logFile )
     logger.info( "Removed temporary log file" )
 
-# Copying output to DPM or AFS and check the files
-if options.writeToDPM:
+for dirname, subdirs, files in os.walk( output_directory ):
+    logger.debug( 'Found directory: %s',  dirname )
 
-    for dirname, subdirs, files in os.walk( output_directory ):
-        logger.debug( 'Found directory: %s',  dirname )
+    for fname in files:
+        if not fname.endswith(".root") or fname.startswith("nanoAOD_") or "_for_" in fname: continue # remove that for copying log files
 
-        for fname in files:
+        source  = os.path.abspath( os.path.join( dirname, fname ) )
+        target  = os.path.join( targetPath, fname )
 
-            if not fname.endswith(".root") or fname.startswith("nanoAOD_") or "_for_" in fname: continue # remove that for copying log files
+        if checkRootFile( source, checkForObjects=["Events"] ) and deepCheckRootFile( source ) and deepCheckWeight( source ):
+            logger.info( "Source: File check ok!" )
+        else:
+            raise Exception("Corrupt rootfile at source! File not copied: %s"%source )
 
-            source  = os.path.abspath( os.path.join( dirname, fname ) )
-            target  = os.path.join( targetPath, fname )
+        cmd = [ 'cp', source, target ]
+        logger.info( "Issue copy command: %s", " ".join( cmd ) )
+        subprocess.call( cmd )
 
-            if fname.endswith(".root"):
-                if checkRootFile( source, checkForObjects=["Events"] ) and deepCheckRootFile( source ) and deepCheckWeight( source ):
-                    logger.info( "Source: File check ok!" )
-                else:
-                    raise Exception("Corrupt rootfile at source! File not copied: %s"%source )
-
-            cmd = [ 'xrdcp', '-f',  source, target ]
-            logger.info( "Issue copy command: %s", " ".join( cmd ) )
+        if checkRootFile( target, checkForObjects=["Events"] ) and deepCheckRootFile( target ) and deepCheckWeight( target ):
+            logger.info( "Target: File check ok!" )
+        else:
+            logger.info( "Corrupt rootfile at target! Trying again: %s"%target )
+            logger.info( "2nd try: Issue copy command: %s", " ".join( cmd ) )
             subprocess.call( cmd )
 
-            if fname.endswith(".root"):
-                if checkRootFile( target, checkForObjects=["Events"] ) and deepCheckRootFile( target ) and deepCheckWeight( target ):
-                    logger.info( "Target: File check ok!" )
-                else:
-                    logger.info( "Corrupt rootfile at target! Trying again: %s"%target )
-                    logger.info( "2nd try: Issue copy command: %s", " ".join( cmd ) )
-                    subprocess.call( cmd )
-
-                    # Many files are corrupt after copying, a 2nd try fixes that
-                    if checkRootFile( target, checkForObjects=["Events"] ) and deepCheckRootFile( target ) and deepCheckWeight( target ):
-                        logger.info( "2nd try successfull!" )
-                    else:
-                        # if not successful, the corrupt root file needs to be deleted from DPM
-                        logger.info( "2nd try: No success, removing file: %s"%target )
-                        logger.info( "Issue rm command: %s", " ".join( cmd ) )
-                        cmd = [ "xrdfs", redirector_hephy, "rm", "/cms" + target.split("/cms")[1] ]
-                        subprocess.call( cmd )
-                        raise Exception("Corrupt rootfile at target! File not copied: %s"%source )
-
-    # Clean up.
-    if "heplx" in hostname:
-        # not needed on condor, container will be removed automatically
-        subprocess.call( [ 'rm', '-rf', output_directory ] ) # Let's risk it.
-
-else:
-    for dirname, subdirs, files in os.walk( output_directory ):
-        logger.debug( 'Found directory: %s',  dirname )
-
-        for fname in files:
-            if not fname.endswith(".root") or fname.startswith("nanoAOD_") or "_for_" in fname: continue # remove that for copying log files
-
-            source  = os.path.abspath( os.path.join( dirname, fname ) )
-            target  = os.path.join( targetPath, fname )
-
-            if checkRootFile( source, checkForObjects=["Events"] ) and deepCheckRootFile( source ) and deepCheckWeight( source ):
-                logger.info( "Source: File check ok!" )
-            else:
-                raise Exception("Corrupt rootfile at source! File not copied: %s"%source )
-
-            cmd = [ 'cp', source, target ]
-            logger.info( "Issue copy command: %s", " ".join( cmd ) )
-            subprocess.call( cmd )
-
+            # Many files are corrupt after copying, a 2nd try fixes that
             if checkRootFile( target, checkForObjects=["Events"] ) and deepCheckRootFile( target ) and deepCheckWeight( target ):
-                logger.info( "Target: File check ok!" )
+                logger.info( "2nd try successfull!" )
             else:
-                logger.info( "Corrupt rootfile at target! Trying again: %s"%target )
-                logger.info( "2nd try: Issue copy command: %s", " ".join( cmd ) )
-                subprocess.call( cmd )
-
-                # Many files are corrupt after copying, a 2nd try fixes that
-                if checkRootFile( target, checkForObjects=["Events"] ) and deepCheckRootFile( target ) and deepCheckWeight( target ):
-                    logger.info( "2nd try successfull!" )
-                else:
-                    # if not successful, the corrupt root file needs to be deleted from DPM
-                    cmd = [ 'rm', target ]
-                    logger.info( "2nd try: No success, removing file: %s"%target )
-                    logger.info( "Issue rm command: %s", " ".join( cmd ) )
+                # if not successful, the corrupt root file needs to be deleted from DPM
+                cmd = [ 'rm', target ]
+                logger.info( "2nd try: No success, removing file: %s"%target )
+                logger.info( "Issue rm command: %s", " ".join( cmd ) )
 #                    subprocess.call( cmd )
-                    raise Exception("Corrupt rootfile at target! File not copied: %s"%source )
+                raise Exception("Corrupt rootfile at target! File not copied: %s"%source )
 
-    existingSample = Sample.fromFiles( "existing", targetFilePath, treeName = "Events" )
-    nEventsExist = existingSample.getYieldFromDraw(weightString="1")['val']
-    if nEvents == nEventsExist:
-        logger.info( "All events processed!")
-    elif not options.small:
-        logger.info( "Error: Target events not equal to processing sample events! Is: %s, should be: %s!"%(nEventsExist, nEvents) )
-        logger.info( "Removing file from target." )
-        os.remove( targetFilePath )
-        logger.info( "Sorry." )
+existingSample = Sample.fromFiles( "existing", targetFilePath, treeName = "Events" )
+nEventsExist = existingSample.getYieldFromDraw(weightString="1")['val']
+if nEvents == nEventsExist:
+    logger.info( "All events processed!")
+elif not options.small:
+    logger.info( "Error: Target events not equal to processing sample events! Is: %s, should be: %s!"%(nEventsExist, nEvents) )
+    logger.info( "Removing file from target." )
+    os.remove( targetFilePath )
+    logger.info( "Sorry." )
 
 # There is a double free corruption due to stupid ROOT memory management which leads to a non-zero exit code
 # Thus the job is resubmitted on condor even if the output is ok
