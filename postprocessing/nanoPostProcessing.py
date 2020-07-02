@@ -19,9 +19,9 @@ from RootTools.core.standard                     import *
 from Analysis.Tools.helpers                      import checkRootFile, deepCheckRootFile, deepCheckWeight
 
 # Tools for systematics
-from Analysis.Tools.helpers                      import checkRootFile, bestDRMatchInCollection, deltaR, deltaPhi, mT, mTg, lp
+from Analysis.Tools.helpers                      import checkRootFile, bestDRMatchInCollection, deltaR, deltaPhi, mT
 #from Analysis.Tools.MetSignificance              import MetSignificance
-from TTGammaEFT.Tools.JMECorrector               import JMECorrector
+from TTGammaEFT.Tools.NanoAODTools               import NanoAODTools
 from TTGammaEFT.Tools.helpers                    import m3
 from TTGammaEFT.Tools.user                       import cache_directory
 
@@ -29,10 +29,11 @@ from TTGammaEFT.Tools.objectSelection            import *
 from TTGammaEFT.Tools.Variables                  import NanoVariables
 from TTGammaEFT.Tools.cutInterpreter             import highSieieThresh, lowSieieThresh, chgIsoThresh
 
-from TTGammaEFT.Tools.overlapRemovalTTG            import *
-from TTGammaEFT.Tools.puProfileCache               import puProfile
+from TTGammaEFT.Tools.overlapRemovalTTG          import *
+from TTGammaEFT.Tools.puProfileCache             import puProfile
+from TTGammaEFT.Tools.TopRecoLeptonJets          import TopRecoLeptonJets
+
 from Analysis.Tools.L1PrefireWeight              import L1PrefireWeight
-from Analysis.Tools.mt2Calculator                import mt2Calculator
 
 # environment
 hostname   = os.getenv("HOSTNAME").lower()
@@ -55,16 +56,14 @@ def get_parser():
     argParser.add_argument('--nJobs',                       action='store',         nargs='?',  type=int,                           default=1,                          help="Maximum number of simultaneous jobs.")
     argParser.add_argument('--job',                         action='store',                     type=int,                           default=0,                          help="Run only job i")
     argParser.add_argument('--minNJobs',                    action='store',         nargs='?',  type=int,                           default=1,                          help="Minimum number of simultaneous jobs.")
-    argParser.add_argument('--writeToDPM',                  action='store_true',                                                                                        help="Write output to DPM?")
     argParser.add_argument('--fileBasedSplitting',          action='store_true',                                                                                        help="Split njobs according to files")
     argParser.add_argument('--processingEra',               action='store',         nargs='?',  type=str,                           default='TTGammaEFT_PP_v1',         help="Name of the processing era")
-    argParser.add_argument('--skim',                        action='store',         nargs='?',  type=str,                           default='semilep',                    help="Skim conditions to be applied for post-processing")
+    argParser.add_argument('--skim',                        action='store',         nargs='?',  type=str, choices=['inclusive','semilep','semilepGamma','dilep'],       default='semilep',                    help="Skim conditions to be applied for post-processing")
     argParser.add_argument('--small',                       action='store_true',                                                                                        help="Run the file on a small sample (for test purpose), bool flag set to True if used")
     argParser.add_argument('--year',                        action='store',                     type=int,   choices=[2016,2017,2018],  required = True,                    help="Which year?")
     argParser.add_argument('--interpolationOrder',          action='store',         nargs='?',  type=int,                           default=2,                          help="Interpolation order for EFT weights.")
     argParser.add_argument('--triggerSelection',            action='store_true',                                                                                        help="Trigger selection?" )
     argParser.add_argument('--addPreFiringFlag',            action='store_true',                                                                                        help="Add flag for events w/o prefiring?" )
-    argParser.add_argument('--topReco',                     action='store_true',                                                                                        help="Run Top Reco?")
     argParser.add_argument('--checkOnly',                   action='store_true',                                                                                        help="Check files at target and remove corrupt ones without reprocessing? Not possible with overwrite!")
     argParser.add_argument('--isTopSample',                 action='store_true',                                                                                        help="use top efficiencies in btagging?")
     argParser.add_argument('--addWPtWeight',                action='store_true',                                                                                        help="add weight for Wpt reweighting")
@@ -79,15 +78,11 @@ def get_parser():
     argParser.add_argument('--skipSF',                      action='store_true',                                                                                        help="Skip scale factors")
     argParser.add_argument('--skipNanoTools',               action='store_true',                                                                                        help="Skip nanoTools")
     argParser.add_argument('--skipSystematicVariations',    action='store_true',                                                                                        help="Skip syst var")
-    argParser.add_argument('--reuseNanoAOD',                action='store_true',                                                                                        help="Keep nanoAOD output?")
     argParser.add_argument('--noTopPtReweighting',          action='store_true',                                                                                        help="Skip top pt reweighting?")
     argParser.add_argument('--reduceSizeBy',                action='store',                     type=int,                           default=1,                          help="Reduce the size of the sample by a factor of...")
     return argParser
 
 options = get_parser().parse_args()
-
-if "clip" in hostname.lower():
-    options.writeToDPM = False
 
 stitching = False
 # combine ttg samples is they are nominal
@@ -149,8 +144,8 @@ else:
 #Samples: Load samples
 maxNFiles = None
 if options.small:
-    maxNFiles = 1
-    maxNEvents = 10000
+    maxNFiles = 2
+    maxNEvents = -1#10000
     options.job = 0
     options.nJobs = 1 # set high to just run over 1 input file
 
@@ -167,7 +162,7 @@ runOnUL = False
 if options.year == 2016:
 #    from Samples.nanoAOD.Summer16_private_legacy_v1 import *
 #    from Samples.nanoAOD.Run2016_17Jul2018_private  import *
-    from TTGammaEFT.Samples.Summer16_nanoAODv5      import *
+#    from TTGammaEFT.Samples.Summer16_nanoAODv5      import *
     from TTGammaEFT.Samples.Summer16_nanoAODv6      import *
     from Samples.nanoAOD.Run2016_nanoAODv6          import *
 elif options.year == 2017:
@@ -211,9 +206,11 @@ if isData and options.triggerSelection:
     logger.info("Sample will have the following trigger skim: %s"%triggerCond)
     skimConds.append( triggerCond )
 
-# MET Filter
+# MET filter as cut
 from Analysis.Tools.metFilters         import getFilterCut
-skimConds += [ getFilterCut(options.year, isData=isData, ignoreJSON=True, skipWeight=True) ]
+MET_Filters_cut = getFilterCut(options.year, isData=isData, ignoreJSON=True, skipWeight=True)
+if not options.skim.startswith('inclusive'):
+    skimConds.append( MET_Filters_cut )
 
 #Samples: combine if more than one
 if len(samples)>1:
@@ -224,6 +221,9 @@ if len(samples)>1:
 elif len(samples)==1:
     sample      = samples[0]
     sampleForPU = samples[0]
+
+    if options.small:
+        sample.files = sample.files[:maxNFiles]
 
 if options.reduceSizeBy > 1:
     if isData:
@@ -241,26 +241,18 @@ if options.reduceSizeBy > 1:
 postfix       = '_small' if options.small else ''
 sampleDir     = sample.name #sample name changes after split
 
-# output directory (store temporarily when running on dpm)
-if options.writeToDPM:
-    from TTGammaEFT.Tools.user import dpm_directory as user_directory
-    from Samples.Tools.config  import redirector    as redirector_hephy
-    # Allow parallel processing of N threads on one worker
-    output_directory = os.path.join( '/tmp/%s'%os.environ['USER'], str(uuid.uuid4()) )
-    targetPath       = redirector_hephy + os.path.join( user_directory, 'postprocessed',  options.processingEra, options.skim + postfix, sampleDir )
-else:
-    # User specific
-    from TTGammaEFT.Tools.user import postprocessing_output_directory as user_directory
-    directory        = os.path.join( user_directory, options.processingEra ) 
-    output_directory = os.path.join( '/tmp/%s'%os.environ['USER'], str(uuid.uuid4()) )
-    targetPath       = os.path.join( directory, options.skim+postfix, sampleDir )
-    if not os.path.exists( targetPath ):
-        try:    os.makedirs( targetPath )
-        except: pass
-    nExistingFiles    = len(os.listdir(targetPath))
-    if nExistingFiles > options.nJobs:
-        raise Exception("Error: More files exist in target directory as should be processed! Check your nJobs input! Got nJobs %i, existing files: %i"%(options.nJobs, nExistingFiles))
-    logger.info("%i files exist in target directory! Processing %i files."%(nExistingFiles, options.nJobs))
+# User specific
+from TTGammaEFT.Tools.user import postprocessing_output_directory as user_directory
+directory        = os.path.join( user_directory, options.processingEra ) 
+output_directory = os.path.join( '/tmp/%s'%os.environ['USER'], str(uuid.uuid4()) )
+targetPath       = os.path.join( directory, options.skim+postfix, sampleDir )
+if not os.path.exists( targetPath ):
+    try:    os.makedirs( targetPath )
+    except: pass
+nExistingFiles    = len(os.listdir(targetPath))
+if nExistingFiles > options.nJobs:
+    raise Exception("Error: More files exist in target directory as should be processed! Check your nJobs input! Got nJobs %i, existing files: %i"%(options.nJobs, nExistingFiles))
+logger.info("%i files exist in target directory! Processing %i files."%(nExistingFiles, options.nJobs))
 
 # Single file post processing
 if options.fileBasedSplitting or options.nJobs > 1:
@@ -295,35 +287,7 @@ if not os.path.exists( output_directory ):
 # checking overwrite or file exists
 sel = "&&".join(skimConds)
 nEvents = sample.getYieldFromDraw(weightString="1", selectionString=sel)['val']
-if not options.overwrite and options.writeToDPM:
-    try:
-        # ls the directory on DPM
-        checkFile = "/cms" + targetPath.split("/cms")[1] + "/"
-        cmd = [ "xrdfs", redirector_hephy, "ls", checkFile ]
-        fileList = subprocess.check_output( cmd ).split("\n")[:-1]
-        fileList = [ line.split(checkFile)[1].split(".root")[0] for line in fileList ]
-    except:
-        # Not even the directory exists on dpm
-        fileList = []
-
-    if sample.name in fileList:
-        # Sample found on dpm, check if it is ok
-        target  = os.path.join( targetPath, sample.name+".root" )
-        if checkRootFile( target, checkForObjects=["Events"] ) and deepCheckRootFile( target ) and deepCheckWeight( target ):
-            logger.info( "File already processed. Source: File check ok! Skipping!" ) # Everything is fine, no overwriting
-            sys.exit(0)
-        else:
-            logger.info( "File corrupt. Removing file from target." )
-            cmd = [ "xrdfs", redirector_hephy, "rm", "/cms" + target.split("/cms")[1] ]
-            subprocess.call( cmd )
-            if options.checkOnly: sys.exit(0)
-            logger.info( "Reprocessing." )
-    else:
-        logger.info( "Sample not processed yet." )
-        if options.checkOnly: sys.exit(0)
-        logger.info( "Processing." )
-
-elif not options.overwrite and not options.writeToDPM:
+if not options.overwrite:
     if os.path.isfile(targetFilePath):
         logger.info( "Output file %s found.", targetFilePath)
         if checkRootFile( targetFilePath, checkForObjects=["Events"] ) and deepCheckRootFile( targetFilePath ) and deepCheckWeight( targetFilePath ):
@@ -534,17 +498,29 @@ writePhotonVariables  = NanoVars.getVariables( "Photon",   postprocessed=True,  
 
 # Read Variables
 read_variables  = map( TreeVariable.fromString, ['run/I', 'luminosityBlock/I', 'event/l'] + Ts.getTriggerVariableList() )
-read_variables += map( TreeVariable.fromString, ['MET_pt/F', 'MET_phi/F'] )
 
 if not options.skipNanoTools:
     if options.year == 2017 and not runOnUL:
-        read_variables += map(TreeVariable.fromString, [ 'METFixEE2017_pt/F', 'METFixEE2017_phi/F', 'METFixEE2017_pt_nom/F', 'METFixEE2017_phi_nom/F', 'MET_pt_min/F'])
-        if isMC:
-            read_variables += map(TreeVariable.fromString, [ 'METFixEE2017_pt_jesTotalUp/F', 'METFixEE2017_pt_jesTotalDown/F', 'METFixEE2017_pt_jerUp/F', 'METFixEE2017_pt_jerDown/F', 'METFixEE2017_pt_unclustEnDown/F', 'METFixEE2017_phi_unclustEnUp/F'])
-    read_variables += map(TreeVariable.fromString, [ 'MET_pt_nom/F', 'MET_phi_nom/F' ])
-    if isMC:
-        read_variables += map(TreeVariable.fromString, [ 'MET_pt_jesTotalUp/F', 'MET_pt_jesTotalDown/F', 'MET_pt_jerUp/F', 'MET_pt_jerDown/F', 'MET_pt_unclustEnDown/F', 'MET_pt_unclustEnUp/F'])
-        read_variables += map(TreeVariable.fromString, [ 'MET_phi_jesTotalUp/F', 'MET_phi_jesTotalDown/F', 'MET_phi_jerUp/F', 'MET_phi_jerDown/F', 'MET_phi_unclustEnDown/F', 'MET_phi_unclustEnUp/F'])
+        metBranchName = "METFixEE2017"
+    else: 
+        metBranchName = "MET"
+
+    #read_variables += map(TreeVariable.fromString, [ 'METFixEE2017_pt/F', 'METFixEE2017_phi/F', 'METFixEE2017_pt_nom/F', 'METFixEE2017_phi_nom/F'])
+    #if isMC:
+    #    read_variables += map(TreeVariable.fromString, [ 'METFixEE2017_pt_jesTotalUp/F', 'METFixEE2017_pt_jesTotalDown/F', 'METFixEE2017_pt_jerUp/F', 'METFixEE2017_pt_jerDown/F', 'METFixEE2017_pt_unclustEnDown/F', 'METFixEE2017_phi_unclustEnUp/F'])
+
+    #read_variables += map(TreeVariable.fromString, [ 'MET_pt_nom/F', 'MET_phi_nom/F', 'MET_pt/F', 'MET_phi/F'] )
+    #if isMC:
+    #    read_variables += map(TreeVariable.fromString, [ 'MET_pt_jesTotalUp/F', 'MET_pt_jesTotalDown/F', 'MET_pt_jerUp/F', 'MET_pt_jerDown/F', 'MET_pt_unclustEnDown/F', 'MET_pt_unclustEnUp/F'])
+    #    read_variables += map(TreeVariable.fromString, [ 'MET_phi_jesTotalUp/F', 'MET_phi_jesTotalDown/F', 'MET_phi_jerUp/F', 'MET_phi_jerDown/F', 'MET_phi_unclustEnDown/F', 'MET_phi_unclustEnUp/F'])
+    met_read_branches = ["%s_pt_nom/F"%metBranchName, "%s_phi_nom/F"%metBranchName] 
+    for ext in ["", "_jesTotalUp", "_jesTotalDown", "_jerUp", "_jerDown", "_unclustEnDown", "_unclustEnUp"]:
+        for kin in ["pt", "phi"]:
+            met_read_branches.append("{metBranchName}_{kin}{ext}/F".format(metBranchName=metBranchName,kin=kin,ext=ext))
+    read_variables.extend( map( TreeVariable.fromString, met_read_branches ) )
+else:
+    read_variables.extend( map( TreeVariable.fromString, ["MET_pt/F", "MET_phi/F"] ) )
+    options.skipSyst = True # JME variations are obtained from nanoAOD 
 
 read_variables += [ TreeVariable.fromString('nElectron/I'),
                     VectorTreeVariable.fromString('Electron[%s]'%readElectronVarString) ]
@@ -664,14 +640,15 @@ new_variables += [ 'ht/F', 'htinv/F' ]
 new_variables += [ 'photonJetdR/F', 'photonLepdR/F', 'leptonJetdR/F', 'tightLeptonJetdR/F' ] 
 new_variables += [ 'photonJetInvLepIsodR/F', 'photonNoSieieNoChgIsoJetdR/F', 'photonNoSieieNoChgIsoJetInvLepIsodR/F' ] 
 new_variables += [ 'invtightLeptonJetdR/F' ] 
-new_variables += [ 'MET_pt_photonEstimated/F', 'MET_phi_photonEstimated/F', 'METSig_photonEstimated/F' ]
-new_variables += [ 'MET_pt/F', 'MET_phi/F', 'MET_pt_min/F', 'METSig/F', 'METSiginv/F' ]
+new_variables += [ 'MET_pt/F', 'MET_phi/F'] #, 'MET_filters/I']
 if addSystematicVariations:
-    for var in ['jesTotalUp', 'jesTotalDown', 'jerUp', 'jerDown', 'unclustEnUp', 'unclustEnDown']:
+    for var in ['jesTotalUp', 'jesTotalDown', 'jerUp', 'jerDown']:
         new_variables.extend( ['nJetGoodNoChgIsoNoSieie_'+var+'/I', 'nBTagGoodNoChgIsoNoSieie_'+var+'/I'] )
         new_variables.extend( ['nJetGood_'+var+'/I', 'nBTagGood_'+var+'/I','ht_'+var+'/F'] )
-        new_variables.extend( ['MET_pt_'+var+'/F', 'MET_phi_'+var+'/F', 'METSig_'+var+'/F'] )
         new_variables.extend( ['ht_'+var+'/F', 'm3_'+var+'/F', 'mT_'+var+'/F'] )
+        new_variables.extend( ['MET_pt_'+var+'/F', 'MET_phi_'+var+'/F'] )
+    for var in ['unclustEnUp', 'unclustEnDown']:
+        new_variables.extend( ['MET_pt_'+var+'/F', 'MET_phi_'+var+'/F', 'mT_'+var+'/F'] )
 
     for var in ['eTotalUp', 'eTotalDown']:
         new_variables += [ "nPhotonGood_"+var+"/I" ] 
@@ -712,8 +689,6 @@ new_variables += [ 'lldR/F', 'lldPhi/F' ]
 new_variables += [ 'bbdR/F', 'bbdPhi/F' ] 
 new_variables += [ 'mLtight0GammaNoSieieNoChgIso/F', 'mLtight0Gamma/F',  'mL0Gamma/F',  'mL1Gamma/F' ] 
 new_variables += [ 'mLinvtight0GammaNoSieieNoChgIso/F', 'mLinvtight0Gamma/F' ] 
-new_variables += [ 'lpTight/F' ] 
-new_variables += [ 'lpInvTight/F' ] 
 new_variables += [ 'l0GammadR/F',  'l0GammadPhi/F' ] 
 new_variables += [ 'ltight0GammadR/F', 'ltight0GammadPhi/F' ] 
 new_variables += [ 'linvtight0GammadR/F', 'linvtight0GammadPhi/F' ] 
@@ -723,11 +698,20 @@ new_variables += [ 'l1GammadR/F',  'l1GammadPhi/F' ]
 new_variables += [ 'j0GammadR/F',  'j0GammadPhi/F' ] 
 new_variables += [ 'j1GammadR/F',  'j1GammadPhi/F' ] 
 
-new_variables += [ 'mT/F', 'mTg/F', 'mT2ll/F', 'mT2lg/F', 'mT2bb/F', 'mT2blbl/F']
-new_variables += [ 'mTinv/F', 'mTginv/F', 'mT2linvg/F']
-mt2Calculator = mt2Calculator()
+new_variables += [ 'mT/F', 'mTinv/F']
 
 if options.addPreFiringFlag: new_variables += [ 'unPreFirableEvent/I' ]
+
+
+top_reco_strategies = ["BsPlusHardestTwo", "BsPlusHardestThree", "onlyBs", "allJets",  "twoBestBs"]
+for top_reco_strategy in top_reco_strategies:
+    new_variables += [  "topReco_%s_neuPt/F" % top_reco_strategy, 
+                        "topReco_%s_neuPz/F" % top_reco_strategy,  
+                        "topReco_%s_topMass/F" % top_reco_strategy, 
+                        "topReco_%s_Jet_index/I" % top_reco_strategy, 
+                        "topReco_%s_topPt/F" % top_reco_strategy, 
+                        "topReco_%s_WMass/F" % top_reco_strategy, 
+                        "topReco_%s_WPt/F" % top_reco_strategy ]
 
 new_variables += [ "reweightHEM/F", "reweightTopPt/F" ]
 if isMC:
@@ -783,27 +767,8 @@ if isMC:
             if var!='MC':
                 new_variables += [ 'reweightBTag_'+var+'/F' ]
 
-# TopReco
-if options.topReco:
-    # Import the main top reco class
-    from Analysis.TopReco.TopReco import topReco
-    # Variables
-    for name in [ "lp", "lm", "jetB", "jetBbar", "Wp", "Wm", "neutrino", "neutrinoBar", "top", "topBar" ]:
-        for var in ["pt", "eta", "phi", "mass"]:
-            new_variables.append( "topReco_"+name+"_"+var+'/F' )
-    # Simple setter for top reco candidates
-    def setParticle( event, name, particle ):
-        setattr( event, "topReco_"+name+"_pt", particle.Pt() )
-        setattr( event, "topReco_"+name+"_eta", particle.Eta() )
-        setattr( event, "topReco_"+name+"_phi", particle.Phi() )
-        setattr( event, "topReco_"+name+"_mass", particle.M() )
-
 if isData:
     new_variables += ['jsonPassed/I']
-
-#ptVar="pt_nom" if not options.skipNanoTools else "pt"
-# with the latest change, getAllJets calculates the correct jet pt (removing JER) and stores it as Jet_pt again. No need for Jet_pt_nom anymore
-ptVar="pt"
 
 # Overlap removal Selection
 genPhotonSel_TTG_OR = genPhotonSelector( 'overlapTTGamma' )
@@ -847,16 +812,20 @@ if options.addPreFiringFlag:
     del PreFire
 
 if not options.skipNanoTools:
-    # prepare jes/jer
-    JMECorr = JMECorrector( sample, options.year, output_directory, runOnUL=runOnUL )
-    JMECorr( "&&".join(skimConds) )
-    newfiles = JMECorr.getNewSampleFilenames()
+    # re-apply jes/jer, etc.
+    nanoAODTools = NanoAODTools( sample, options.year, output_directory, runOnUL=runOnUL )
+    nanoAODTools( "&&".join(skimConds) )
+    newfiles = nanoAODTools.getNewSampleFilenames()
     sample.clear()
     sample.files = copy.copy(newfiles)
-    sample.name  = JMECorr.name
+    sample.name  = nanoAODTools.name
     if isMC: sample.normalization = sample.getYieldFromDraw(weightString="genWeight")['val']
     sample.isData = isData
-    del JMECorr
+    del nanoAODTools
+
+# MET Filter: TTreeFormula::Notify must be called from the chain of the actual sample, i.e. don't change the sample.chain between here and the loop.
+#MET_Filters_TTF = ROOT.TTreeFormula( "MET_Filters_TTF", MET_Filters_cut, sample.chain)
+#sample.chain.SetNotify( MET_Filters_TTF )
 
 # Define a reader
 #sel = "&&".join(skimConds) if options.skipNanoTools else "(1)"
@@ -873,31 +842,6 @@ def getMetPhotonEstimated( met_pt, met_phi, photon ):
   gamma.SetPtEtaPhiM(photon['pt'], photon['eta'], photon['phi'], photon['mass'] )
   metGamma = met + gamma
   return (metGamma.Pt(), metGamma.Phi())
-
-## Calculate corrected met pt/phi using systematics for jets
-def getMetJetCorrected(met_pt, met_phi, jets, var, ptVar='pt'):
-    met_corr_px  = met_pt*cos(met_phi) + sum([(j[ptVar]-j['pt_'+var])*cos(j['phi']) if j[ptVar]>15 else 0 for j in jets])
-    met_corr_py  = met_pt*sin(met_phi) + sum([(j[ptVar]-j['pt_'+var])*sin(j['phi']) if j[ptVar]>15 else 0 for j in jets])
-    met_corr_pt  = sqrt(met_corr_px**2 + met_corr_py**2)
-    met_corr_phi = atan2(met_corr_py, met_corr_px)
-    return (met_corr_pt, met_corr_phi)
-
-def getMetCorrected( r, var, addPhoton=None ):
-    if not var: # why is this here??
-#        if addPhoton: return getMetPhotonEstimated(r.MET_pt_nom, r.MET_phi_nom, addPhoton)
-#        else:         return (r.MET_pt_nom, r.MET_phi_nom)
-        if addPhoton: return getMetPhotonEstimated(r.MET_pt, r.MET_phi, addPhoton)
-        else:         return (r.MET_pt, r.MET_phi)
-
-    elif var in [ "unclustEnUp", "unclustEnDown" ]:
-        var_ = var
-        MET_pt  = getattr(r, "MET_pt_"+var_)
-        MET_phi = getattr(r, "MET_phi_"+var_)
-        if addPhoton: return getMetPhotonEstimated(MET_pt, MET_phi, addPhoton)
-        else:         return (MET_pt, MET_phi)
-
-    else:
-        raise ValueError
 
 def addCorrRelIso( ele, mu, photons ):
     for e in ele:
@@ -921,7 +865,7 @@ def addJetFlags( jets, cleaningLeptons, cleaningPhotons ):
         minDRLep    = min( [ deltaR( l, j ) for l in cleaningLeptons ] + [999] )
         minDRPhoton = min( [ deltaR( g, j ) for g in cleaningPhotons ] + [999] )
         j["clean"]  = minDRLep > 0.4 and minDRPhoton > 0.1
-        j["isGood"] = recoJetSel( j, ptVar=ptVar ) and j["clean"]
+        j["isGood"] = recoJetSel( j ) and j["clean"]
         j["isBJet"] = isBJet( j, tagger=tagger, year=options.year )
 
 # Replace unsign. char type with integer (only necessary for output electrons)
@@ -1524,7 +1468,7 @@ def filler( event ):
         for j in allJets: BTagEff.addBTagEffToJet( j )
 
     # Loose jets w/o pt/eta requirement
-    allGoodJets = list( filter( lambda j: recoJetSel(j, ptVar=ptVar, removedCuts=["pt", "eta"]), allJets ) )
+    allGoodJets = list( filter( lambda j: recoJetSel(j, removedCuts=["pt", "eta"]), allJets ) )
     addJetFlags( allGoodJets, tightLeptons, mediumPhotons )
     # Loose jets w/ pt/eta requirement (analysis jets)
     jets    = list( filter( lambda x: x["isGood"], allGoodJets ) )
@@ -1535,7 +1479,7 @@ def filler( event ):
 #    event.nJet      = len(allGoodJets)
 
     # get nJet for jets cleaned against photons with relaxed cuts
-    goodJets                    = list( filter( lambda j: recoJetSel(j, ptVar=ptVar), allGoodJets ) )
+    goodJets                    = list( filter( lambda j: recoJetSel(j), allGoodJets ) )
     goodJetsInvLepIso           = deltaRCleaning( goodJets, tightInvIsoLeptons, dRCut=0.4 )
     goodJetsNoLepIso            = deltaRCleaning( goodJets, tightNoIsoLeptons, dRCut=0.4 )
     goodJetsInvLepIsoNoLepSieie = deltaRCleaning( goodJets, tightInvIsoNoSieieLeptons, dRCut=0.4 )
@@ -1601,22 +1545,19 @@ def filler( event ):
     event.nBTagGoodNoChgIsoNoSieieNoLepIso = len( filter( lambda x: x["isBJet"], goodNoChgIsoNoSieieJetsNoLepIso ) )
     event.nBTagGoodNoChgIsoNoSieieInvLepIso = len( filter( lambda x: x["isBJet"], goodNoChgIsoNoSieieJetsInvLepIso ) )
 
+    # MET_filter cut from Tree
+    # event.MET_Filters = MET_Filters_TTF.EvalInstance()
     # store the correct MET (EE Fix for 2017, MET_min as backup in 2017)
     if options.year == 2017 and not options.skipNanoTools and not runOnUL:
-        # v2 recipe. Could also use our own recipe
-        event.MET_pt     = r.METFixEE2017_pt
-        event.MET_phi    = r.METFixEE2017_phi
-        event.MET_pt_min = r.MET_pt_min
+        # 'nom' is the re-corrected value in nanoAODTools.
+        event.MET_pt     = r.METFixEE2017_pt_nom
+        event.MET_phi    = r.METFixEE2017_phi_nom
     elif not options.skipNanoTools:
-#        event.MET_pt     = r.MET_pt_nom
-#        event.MET_phi    = r.MET_phi_nom
-        event.MET_pt     = r.MET_pt
-        event.MET_phi    = r.MET_phi
-        event.MET_pt_min = 0
+        event.MET_pt     = r.MET_pt_nom
+        event.MET_phi    = r.MET_phi_nom
     else:
         event.MET_pt     = r.MET_pt
         event.MET_phi    = r.MET_phi
-        event.MET_pt_min = 0
 
     # Additional observables
     event.m3          = m3( goodJets )[0]
@@ -1628,12 +1569,23 @@ def filler( event ):
     if len(mediumPhotonsInvLepIso) > 0:
         event.m3gammainv = m3( goodJetsInvLepIso, photon=mediumPhotonsInvLepIso[0] )[0]
 
-    event.ht = sum( [ j[ptVar] for j in goodJets ] )
-    event.htinv = sum( [ j[ptVar] for j in goodJetsInvLepIso ] )
-    if event.ht > 0:
-        event.METSig = event.MET_pt / sqrt( event.ht )
-    if event.htinv > 0:
-        event.METSiginv = event.MET_pt / sqrt( event.htinv )
+    event.ht = sum( [ j['pt'] for j in goodJets ] )
+    event.htinv = sum( [ j['pt'] for j in goodJetsInvLepIso ] )
+
+    # l+jets topreco
+    if lt0:
+        for top_reco_strategy in top_reco_strategies:
+            #print ",",[{'pt':event.MET_pt, 'phi':event.MET_phi},  lt0, bJets, nonBJets]
+            topReco = TopRecoLeptonJets( met = {'pt':event.MET_pt, 'phi':event.MET_phi},
+                               lepton = lt0, bJets = bJets, nonBJets = nonBJets, strategy = top_reco_strategy)
+            if topReco.solution:
+                setattr( event, "topReco_%s_neuPt" % top_reco_strategy,      topReco.solution['neuPt'])
+                setattr( event, "topReco_%s_neuPz" % top_reco_strategy,      topReco.solution['neuPz'])
+                setattr( event, "topReco_%s_topMass" % top_reco_strategy,    topReco.solution['topMass'])
+                setattr( event, "topReco_%s_Jet_index" % top_reco_strategy,  topReco.solution['Jet_index'])
+                setattr( event, "topReco_%s_topPt" % top_reco_strategy,      topReco.solution['topPt'])
+                setattr( event, "topReco_%s_WMass" % top_reco_strategy,      topReco.solution['WMass'])
+                setattr( event, "topReco_%s_WPt" % top_reco_strategy,        topReco.solution['WPt'])
 
     # variables w/ photons
     if len(mediumPhotons) > 0:
@@ -1645,10 +1597,6 @@ def filler( event ):
 #                g['photonCat'] = getPhotonCategory( genMatch, gPart )
 
         # additional observables
-        event.MET_pt_photonEstimated, event.MET_phi_photonEstimated = getMetPhotonEstimated( event.MET_pt, event.MET_phi, mediumPhotons[0] )
-
-        if event.ht > 0:
-            event.METSig_photonEstimated = event.MET_pt_photonEstimated / sqrt( event.ht )
 
         if goodJets:
             event.photonJetdR = min( deltaR( mediumPhotons[0], j ) for j in goodJets )
@@ -1836,36 +1784,12 @@ def filler( event ):
         event.leptonJetdR = min( deltaR( l, j ) for j in jets for l in tightLeptons )
 
     if tightLeptons:
-        event.lpTight = lp( tightLeptons[0]["pt"], tightLeptons[0]["phi"], met["pt"], met["phi"] )
         event.mT      = mT( tightLeptons[0], met )
         event.WPt     = ( get2DVec(tightLeptons[0]) + get2DVec(met) ).Mod()
 
     if tightInvIsoLeptons:
-        event.lpInvTight = lp(  tightInvIsoLeptons[0]["pt"], tightInvIsoLeptons[0]["phi"], met["pt"], met["phi"] )
         event.mTinv      = mT(  tightInvIsoLeptons[0], met )
         event.WinvPt     = ( get2DVec(tightInvIsoLeptons[0]) + get2DVec(met) ).Mod()
-
-    mt2Calculator.reset()
-    mt2Calculator.setMet( met["pt"], met["phi"] )
-    if len(tightInvIsoLeptons) > 0 and len(mediumPhotonsInvLepIso) > 0:
-        mt2Calculator.setLepton1( tightInvIsoLeptons[0]["pt"], tightInvIsoLeptons[0]["eta"], tightInvIsoLeptons[0]["phi"] )
-        mt2Calculator.setLepton2( mediumPhotonsInvLepIso[0]["pt"], mediumPhotonsInvLepIso[0]["eta"], mediumPhotonsInvLepIso[0]["phi"] )
-        event.mT2linvg   = mt2Calculator.mt2ll()
-        event.mTginv     = mTg( tightInvIsoLeptons[0], mediumPhotonsInvLepIso[0], met )
-    if len(tightLeptons) > 0 and len(mediumPhotons) > 0:
-        mt2Calculator.setLepton1( tightLeptons[0]["pt"], tightLeptons[0]["eta"], tightLeptons[0]["phi"] )
-        mt2Calculator.setLepton2( mediumPhotons[0]["pt"], mediumPhotons[0]["eta"], mediumPhotons[0]["phi"] )
-        event.mT2lg   = mt2Calculator.mt2ll()
-        event.mTg     = mTg( tightLeptons[0], mediumPhotons[0], met )
-    if len(tightLeptons) > 1:
-        mt2Calculator.setLepton1( tightLeptons[0]["pt"], tightLeptons[0]["eta"], tightLeptons[0]["phi"] )
-        mt2Calculator.setLepton2( tightLeptons[1]["pt"], tightLeptons[1]["eta"], tightLeptons[1]["phi"] )
-        event.mT2ll   = mt2Calculator.mt2ll()
-        if bj1:
-            mt2Calculator.setBJet1( bj0["pt"], bj0["eta"], bj0["phi"] )
-            mt2Calculator.setBJet2( bj1["pt"], bj1["eta"], bj1["phi"] )
-            event.mT2bb   = mt2Calculator.mt2bb()
-            event.mT2blbl = mt2Calculator.mt2blbl()
 
     jets_sys                   = {}
     bjets_sys                  = {}
@@ -1873,12 +1797,12 @@ def filler( event ):
     bjetsNoChgIsoNoSieie_sys   = {}
 
     if addSystematicVariations and not options.skipNanoTools and not options.skipSF:
+
         for var in ['jesTotalUp', 'jesTotalDown', 'jerUp', 'jerDown']: #, 'unclustEnUp', 'unclustEnDown']:
 
             jets_sys[var] = filter(lambda j: recoJetSel(j, ptVar="pt_"+var), allGoodJets)
             bjets_sys[var]    = filter(lambda j: j["isBJet"], jets_sys[var])
 
-            setattr(event, 'MET_pt_'+var, getattr(r, 'METFixEE2017_pt_'+var if options.year == 2017 and not runOnUL else 'MET_pt_'+var) )
             setattr(event, "nJetGood_"+var,  len(jets_sys[var]))
             setattr(event, "nBTagGood_"+var, len(bjets_sys[var]))
             setattr(event, "ht_"+var,        sum([j['pt_'+var] for j in jets_sys[var]]))
@@ -1890,43 +1814,10 @@ def filler( event ):
             setattr(event, "nBTagGoodNoChgIsoNoSieie_"+var, len(bjetsNoChgIsoNoSieie_sys[var]))
 
         for var in ['jesTotalUp', 'jesTotalDown', 'jerUp', 'jerDown', 'unclustEnUp', 'unclustEnDown']:
-            for i in ["", "_photonEstimated"]:
-                # use cmg MET correction values ecept for JER where it is zero. There, propagate jet variations.
-                if 'jer' in var or 'jes' in var:
-                  (MET_corr_pt, MET_corr_phi) = getMetJetCorrected(getattr(event, "MET_pt" + i), getattr(event,"MET_phi" + i), allJets, var, ptVar=ptVar)
-                else:
-                  (MET_corr_pt, MET_corr_phi) = getMetCorrected(r, var, mediumPhotons[0] if i.count("photonEstimated") and len(mediumPhotons) else None)
-
-                if len(tightLeptons) > 0:
-                    setattr(event, "lpTight"+i+"_"+var, lp( tightLeptons[0]["pt"], tightLeptons[0]["phi"], MET_corr_pt, MET_corr_phi ) )
-                    setattr(event, "mT"+i+"_"+var, mT( tightLeptons[0], {"pt":MET_corr_pt, "phi":MET_corr_phi} ) )
-
-                setattr(event, "MET_pt" +i+"_"+var, MET_corr_pt)
-                setattr(event, "MET_phi"+i+"_"+var, MET_corr_phi)
-                ht = getattr(event, "ht_"+var) if 'unclust' not in var else event.ht
-                setattr(event, "METSig" +i+"_"+var, getattr(event, "MET_pt"+i+"_"+var)/sqrt( ht ) if ht>0 else float('nan') )
-
-    # Topreco
-    if options.topReco:
-        #topReco = TopReco( ROOT.Era.run2_13tev_2016_25ns, 2, 1, 0, 'btagDeepB', 0.6321 )
-        solution = topReco.evaluate( tightLeptons, jets, met = met)
-        if solution:
-            event.topReco_nBTag   = solution.ntags
-            event.topReco_weight  = solution.weight
-            event.topReco_recMtop = solution.recMtop
-            event.topReco_met_pt  = solution.met.Pt()
-            event.topReco_met_phi = solution.met.Phi()
-            
-            setParticle(event, "lp",             solution.lp) 
-            setParticle(event, "lm",             solution.lm) 
-            setParticle(event, "jetB",           solution.jetB) 
-            setParticle(event, "jetBbar",        solution.jetBbar) 
-            setParticle(event, "Wp",             solution.Wplus) 
-            setParticle(event, "Wm",             solution.Wminus) 
-            setParticle(event, "neutrino",       solution.neutrino) 
-            setParticle(event, "neutrinoBar",    solution.neutrinoBar) 
-            setParticle(event, "top",            solution.top) 
-            setParticle(event, "topBar",         solution.topBar) 
+            setattr(event, 'MET_pt_'+var,  getattr(r, metBranchName+'_pt_'+var) )
+            setattr(event, 'MET_phi_'+var, getattr(r, metBranchName+'_phi_'+var) )
+            if len(tightLeptons) > 0:
+                setattr(event, "mT_"+var, mT( tightLeptons[0], {"pt":getattr( event, 'MET_pt_'+var ), "phi":getattr(event, 'MET_phi_'+var)} ) )
 
     nHEMObjects = nHEMJets + nHEMElectrons + nHEMPhotons
     if isData:
@@ -2192,99 +2083,51 @@ else:
     os.remove( logFile )
     logger.info( "Removed temporary log file" )
 
-# Copying output to DPM or AFS and check the files
-if options.writeToDPM:
+for dirname, subdirs, files in os.walk( output_directory ):
+    logger.debug( 'Found directory: %s',  dirname )
 
-    for dirname, subdirs, files in os.walk( output_directory ):
-        logger.debug( 'Found directory: %s',  dirname )
+    for fname in files:
+        if not fname.endswith(".root") or fname.startswith("nanoAOD_") or "_for_" in fname: continue # remove that for copying log files
 
-        for fname in files:
+        source  = os.path.abspath( os.path.join( dirname, fname ) )
+        target  = os.path.join( targetPath, fname )
 
-            if not fname.endswith(".root") or fname.startswith("nanoAOD_") or "_for_" in fname: continue # remove that for copying log files
+        if checkRootFile( source, checkForObjects=["Events"] ) and deepCheckRootFile( source ) and deepCheckWeight( source ):
+            logger.info( "Source: File check ok!" )
+        else:
+            raise Exception("Corrupt rootfile at source! File not copied: %s"%source )
 
-            source  = os.path.abspath( os.path.join( dirname, fname ) )
-            target  = os.path.join( targetPath, fname )
+        cmd = [ 'cp', source, target ]
+        logger.info( "Issue copy command: %s", " ".join( cmd ) )
+        subprocess.call( cmd )
 
-            if fname.endswith(".root"):
-                if checkRootFile( source, checkForObjects=["Events"] ) and deepCheckRootFile( source ) and deepCheckWeight( source ):
-                    logger.info( "Source: File check ok!" )
-                else:
-                    raise Exception("Corrupt rootfile at source! File not copied: %s"%source )
-
-            cmd = [ 'xrdcp', '-f',  source, target ]
-            logger.info( "Issue copy command: %s", " ".join( cmd ) )
+        if checkRootFile( target, checkForObjects=["Events"] ) and deepCheckRootFile( target ) and deepCheckWeight( target ):
+            logger.info( "Target: File check ok!" )
+        else:
+            logger.info( "Corrupt rootfile at target! Trying again: %s"%target )
+            logger.info( "2nd try: Issue copy command: %s", " ".join( cmd ) )
             subprocess.call( cmd )
 
-            if fname.endswith(".root"):
-                if checkRootFile( target, checkForObjects=["Events"] ) and deepCheckRootFile( target ) and deepCheckWeight( target ):
-                    logger.info( "Target: File check ok!" )
-                else:
-                    logger.info( "Corrupt rootfile at target! Trying again: %s"%target )
-                    logger.info( "2nd try: Issue copy command: %s", " ".join( cmd ) )
-                    subprocess.call( cmd )
-
-                    # Many files are corrupt after copying, a 2nd try fixes that
-                    if checkRootFile( target, checkForObjects=["Events"] ) and deepCheckRootFile( target ) and deepCheckWeight( target ):
-                        logger.info( "2nd try successfull!" )
-                    else:
-                        # if not successful, the corrupt root file needs to be deleted from DPM
-                        logger.info( "2nd try: No success, removing file: %s"%target )
-                        logger.info( "Issue rm command: %s", " ".join( cmd ) )
-                        cmd = [ "xrdfs", redirector_hephy, "rm", "/cms" + target.split("/cms")[1] ]
-                        subprocess.call( cmd )
-                        raise Exception("Corrupt rootfile at target! File not copied: %s"%source )
-
-    # Clean up.
-    if "heplx" in hostname:
-        # not needed on condor, container will be removed automatically
-        subprocess.call( [ 'rm', '-rf', output_directory ] ) # Let's risk it.
-
-else:
-    for dirname, subdirs, files in os.walk( output_directory ):
-        logger.debug( 'Found directory: %s',  dirname )
-
-        for fname in files:
-            if not fname.endswith(".root") or fname.startswith("nanoAOD_") or "_for_" in fname: continue # remove that for copying log files
-
-            source  = os.path.abspath( os.path.join( dirname, fname ) )
-            target  = os.path.join( targetPath, fname )
-
-            if checkRootFile( source, checkForObjects=["Events"] ) and deepCheckRootFile( source ) and deepCheckWeight( source ):
-                logger.info( "Source: File check ok!" )
-            else:
-                raise Exception("Corrupt rootfile at source! File not copied: %s"%source )
-
-            cmd = [ 'cp', source, target ]
-            logger.info( "Issue copy command: %s", " ".join( cmd ) )
-            subprocess.call( cmd )
-
+            # Many files are corrupt after copying, a 2nd try fixes that
             if checkRootFile( target, checkForObjects=["Events"] ) and deepCheckRootFile( target ) and deepCheckWeight( target ):
-                logger.info( "Target: File check ok!" )
+                logger.info( "2nd try successfull!" )
             else:
-                logger.info( "Corrupt rootfile at target! Trying again: %s"%target )
-                logger.info( "2nd try: Issue copy command: %s", " ".join( cmd ) )
-                subprocess.call( cmd )
-
-                # Many files are corrupt after copying, a 2nd try fixes that
-                if checkRootFile( target, checkForObjects=["Events"] ) and deepCheckRootFile( target ) and deepCheckWeight( target ):
-                    logger.info( "2nd try successfull!" )
-                else:
-                    # if not successful, the corrupt root file needs to be deleted from DPM
-                    cmd = [ 'rm', target ]
-                    logger.info( "2nd try: No success, removing file: %s"%target )
-                    logger.info( "Issue rm command: %s", " ".join( cmd ) )
+                # if not successful, the corrupt root file needs to be deleted from DPM
+                cmd = [ 'rm', target ]
+                logger.info( "2nd try: No success, removing file: %s"%target )
+                logger.info( "Issue rm command: %s", " ".join( cmd ) )
 #                    subprocess.call( cmd )
-                    raise Exception("Corrupt rootfile at target! File not copied: %s"%source )
+                raise Exception("Corrupt rootfile at target! File not copied: %s"%source )
 
-    existingSample = Sample.fromFiles( "existing", targetFilePath, treeName = "Events" )
-    nEventsExist = existingSample.getYieldFromDraw(weightString="1")['val']
-    if nEvents == nEventsExist:
-        logger.info( "All events processed!")
-    elif not options.small:
-        logger.info( "Error: Target events not equal to processing sample events! Is: %s, should be: %s!"%(nEventsExist, nEvents) )
-        logger.info( "Removing file from target." )
-        os.remove( targetFilePath )
-        logger.info( "Sorry." )
+existingSample = Sample.fromFiles( "existing", targetFilePath, treeName = "Events" )
+nEventsExist = existingSample.getYieldFromDraw(weightString="1")['val']
+if nEvents == nEventsExist:
+    logger.info( "All events processed!")
+elif not options.small:
+    logger.info( "Error: Target events not equal to processing sample events! Is: %s, should be: %s!"%(nEventsExist, nEvents) )
+    logger.info( "Removing file from target." )
+    os.remove( targetFilePath )
+    logger.info( "Sorry." )
 
 # There is a double free corruption due to stupid ROOT memory management which leads to a non-zero exit code
 # Thus the job is resubmitted on condor even if the output is ok
