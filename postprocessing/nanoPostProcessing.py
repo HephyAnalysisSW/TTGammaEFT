@@ -144,8 +144,8 @@ else:
 #Samples: Load samples
 maxNFiles = None
 if options.small:
-    maxNFiles = 2
-    maxNEvents = -1#10000
+    maxNFiles = 1
+    maxNEvents = 10000
     options.job = 0
     options.nJobs = 1 # set high to just run over 1 input file
 
@@ -819,9 +819,11 @@ if not options.skipNanoTools:
     sample.clear()
     sample.files = copy.copy(newfiles)
     sample.name  = nanoAODTools.name
-    if isMC: sample.normalization = sample.getYieldFromDraw(weightString="genWeight")['val']
+    #if isMC: sample.normalization = sample.getYieldFromDraw(weightString="genWeight")['val']
     sample.isData = isData
     del nanoAODTools
+
+print "sample.normalization", sample.normalization, "xSection", xSection, "targetLumi", targetLumi, "lumiScaleFactor", lumiScaleFactor 
 
 # MET Filter: TTreeFormula::Notify must be called from the chain of the actual sample, i.e. don't change the sample.chain between here and the loop.
 #MET_Filters_TTF = ROOT.TTreeFormula( "MET_Filters_TTF", MET_Filters_cut, sample.chain)
