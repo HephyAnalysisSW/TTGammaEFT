@@ -29,12 +29,14 @@ gen_match_photon_cut = "sqrt(acos(cos(GenPhotonCMSUnfold0_phi-PhotonGood0_phi))*
 weightString = "weight*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPU*reweightTrigger*reweightHEM*reweightL1Prefire*reweightBTag_SF"
 pt_thresholds = [20, 35, 50, 65, 80, 120, 160, 200, 260, 320, 520]
 
+ROOT.TH1.SetDefaultSumw2(0)
+
 f_out_ref = ttg.get1DHistoFromDraw("PhotonGood0_pt", selectionString = reco_cut, weightString = weightString, binning = pt_thresholds, binningIsExplicit = True)
 f_out     = ttg.get1DHistoFromDraw("PhotonGood0_pt", selectionString = reco_cut+"&&"+gen_match_photon_cut+"&&"+fiducial_cut, weightString = weightString, binning = pt_thresholds, binningIsExplicit = True)
 f_out.Divide( f_out_ref )
 
-eff_ref = ttg.get1DHistoFromDraw("PhotonGood0_pt", selectionString = fiducial_cut, weightString = weightString, binning = pt_thresholds, binningIsExplicit = True)
-eff = ttg.get1DHistoFromDraw(    "PhotonGood0_pt", selectionString = fiducial_cut+"&&"+gen_match_photon_cut+"&&"+reco_cut, weightString = weightString, binning = pt_thresholds, binningIsExplicit = True)
+eff_ref = ttg.get1DHistoFromDraw("GenPhotonCMSUnfold0_pt", selectionString = fiducial_cut, weightString = weightString, binning = pt_thresholds, binningIsExplicit = True)
+eff = ttg.get1DHistoFromDraw(    "GenPhotonCMSUnfold0_pt", selectionString = fiducial_cut+"&&"+gen_match_photon_cut+"&&"+reco_cut, weightString = weightString, binning = pt_thresholds, binningIsExplicit = True)
 eff.Divide( eff_ref )
 
 f_out_ref.Scale(1./f_out_ref.Integral())
@@ -46,7 +48,7 @@ f_out.style = styles.lineStyle( ROOT.kBlue, errors = True)
 f_out.legendText = "1-f_{out}"
 eff.style = styles.lineStyle( ROOT.kRed, errors = True)
 eff.legendText = "efficiency"
-histos = [ [f_out], [eff], [f_out_ref]]
+histos = [ [f_out_ref], [f_out], [eff]]
 
-plot = Plot.fromHisto(name = "correction", histos = histos, texX = "p_{T} (GeV) reco", texY = "Correction" )
-plotting.draw(plot, plot_directory = plot_directory+'/unfolding', ratio = None, logY = False, logX = False, yRange=(0,1), legend = (0.45,0.4-0.05*len(histos),0.95,0.40))
+plot = Plot.fromHisto(name = "correction", histos = histos, texX = "p_{T} (GeV)", texY = "Correction" )
+plotting.draw(plot, plot_directory = plot_directory+'/unfolding', ratio = None, logY = False, logX = False, yRange=(0,1), legend = (0.45,0.7-0.05*len(histos),0.95,0.70))

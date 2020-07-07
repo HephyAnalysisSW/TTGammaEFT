@@ -3,19 +3,21 @@ from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import *
 from TTGammaEFT.Tools.TriggerSelector import TriggerSelector
 from TTGammaEFT.Tools.user            import plot_directory
 
-tt0l = Sample.fromDirectory("tt0l", directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_2016_TTG_private_v46/inclusive/TTHad_pow_CP5/"])
-tt1l = Sample.fromDirectory("tt1l", directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_2016_TTG_private_v46/inclusive/TTSingleLep_pow_CP5/"])
-tt2l = Sample.fromDirectory("tt2l", directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_2016_TTG_private_v46/inclusive/TTLep_pow_CP5/"])
+tt0l = Sample.fromDirectory("tt0l", directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_2016_TTG_private_v47/inclusive/TTHad_pow_CP5/"])
+tt1l = Sample.fromDirectory("tt1l", directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_2016_TTG_private_v47/inclusive/TTSingleLep_pow_CP5/"])
+tt2l = Sample.fromDirectory("tt2l", directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_2016_TTG_private_v47/inclusive/TTLep_pow_CP5/"])
 
-ttg0l = Sample.fromDirectory("ttg0l", directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_2016_TTG_private_v46/inclusive/TTGHad_LO/"])
-ttg1l = Sample.fromDirectory("ttg1l", directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_2016_TTG_private_v46/inclusive/TTGSingleLep_LO/"])
-ttg2l = Sample.fromDirectory("ttg2l", directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_2016_TTG_private_v46/inclusive/TTGLep_LO/"])
+ttg0l = Sample.fromDirectory("ttg0l", directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_2016_TTG_private_v47/inclusive/TTGHad_LO/"])
+ttg1l = Sample.fromDirectory("ttg1l", directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_2016_TTG_private_v47/inclusive/TTGSingleLep_LO/"])
+ttg2l = Sample.fromDirectory("ttg2l", directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_2016_TTG_private_v47/inclusive/TTGLep_LO/"])
 ttg   = Sample.combine( "ttg", [ttg0l, ttg1l, ttg2l] )
 
 ## Missing: Add TT contribution + 'overlapremoval'
 ## Missing: Add years
 
 assert False, ""
+
+corr_factor = 1.#5.125*1.994/10121.543999096495
 
 triggerSelector = TriggerSelector(2016)
 
@@ -29,23 +31,6 @@ MET_filter_cut   = "(year==2016&&Flag_goodVertices&&Flag_globalSuperTightHalo201
 gen_match_photon_cut = "sqrt(acos(cos(GenPhotonCMSUnfold0_phi-PhotonGood0_phi))**2+(GenPhotonCMSUnfold0_eta-PhotonGood0_eta)**2)<0.1"
 weightString = "weight*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPU*reweightTrigger*reweightHEM*reweightL1Prefire*reweightBTag_SF"
 pt_thresholds = [20, 35, 50, 65, 80, 120, 160, 200, 260, 320, 520]
-
-#f_out_ref = ttg.get1DHistoFromDraw("PhotonGood0_pt", selectionString = reco_cut, weightString = weightString, binning = pt_thresholds, binningIsExplicit = True)
-#f_out     = ttg.get1DHistoFromDraw("PhotonGood0_pt", selectionString = reco_cut+"&&"+gen_match_photon_cut+"&&"+fiducial_cut, weightString = weightString, binning = pt_thresholds, binningIsExplicit = True)
-#f_out.Divide( f_out_ref )
-#
-#eff_ref = ttg.get1DHistoFromDraw("PhotonGood0_pt", selectionString = fiducial_cut, weightString = weightString, binning = pt_thresholds, binningIsExplicit = True)
-#eff = ttg.get1DHistoFromDraw(    "PhotonGood0_pt", selectionString = fiducial_cut+"&&"+gen_match_photon_cut+"&&"+reco_cut, weightString = weightString, binning = pt_thresholds, binningIsExplicit = True)
-#eff.Divide( eff_ref )
-#
-#f_out.style = styles.lineStyle( ROOT.kBlue, errors = True)
-#f_out.legendText = "1-f_{out}"
-#eff.style = styles.lineStyle( ROOT.kRed, errors = True)
-#eff.legendText = "efficiency"
-#histos = [ [f_out], [eff] ]
-#
-#plot = Plot.fromHisto(name = "correction", histos = histos, texX = "p_{T} (GeV) reco", texY = "Correction" )
-#plotting.draw(plot, plot_directory = plot_directory+'/unfolding', ratio = None, logY = False, logX = False, yRange=(0,1), legend = (0.45,0.4-0.05*len(histos),0.95,0.40))
 
 # completely inclusive xsec in fb:
 # weight = w(gen) * sigma(pb) * 1000 pb^-1/fb^-1 / Sum(w(gen))
@@ -81,7 +66,8 @@ entries += [
     { 'name':"reco photon veto",           'selectionString':fiducial_cut+"&&"+MET_filter_cut+"&&nLeptonTight==1&&triggered&&nLeptonVetoIsoCorr==1&&nPhotonGood==1&&nPhotonNoChgIsoNoSieie==1", "weightString":"weight*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPU*reweightTrigger*reweightHEM*reweightL1Prefire"},
     { 'name':"reco >=3 Jets",              'selectionString':fiducial_cut+"&&"+MET_filter_cut+"&&nLeptonTight==1&&triggered&&nLeptonVetoIsoCorr==1&&nPhotonGood==1&&nPhotonNoChgIsoNoSieie==1&&nJetGood>=3", "weightString":"weight*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPU*reweightTrigger*reweightHEM*reweightL1Prefire"},
     { 'name':"reco >=1 b-Jets",            'selectionString':fiducial_cut+"&&"+MET_filter_cut+"&&nLeptonTight==1&&triggered&&nLeptonVetoIsoCorr==1&&nPhotonGood==1&&nPhotonNoChgIsoNoSieie==1&&nJetGood>=3&&nBTagGood>=1", "weightString":"weight*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPU*reweightTrigger*reweightHEM*reweightL1Prefire*reweightBTag_SF"},
-    { 'name':"reco >=4 Jets",              'selectionString':fiducial_cut+"&&"+MET_filter_cut+"&&nLeptonTight==1&&triggered&&nLeptonVetoIsoCorr==1&&nPhotonGood==1&&nPhotonNoChgIsoNoSieie==1&&nJetGood>=4&&nBTagGood>=1", "weightString":"weight*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPU*reweightTrigger*reweightHEM*reweightL1Prefire*reweightBTag_SF"},
+    { 'name':"gamma gen-matched",           'selectionString':fiducial_cut+"&&"+MET_filter_cut+"&&nLeptonTight==1&&triggered&&nLeptonVetoIsoCorr==1&&nPhotonGood==1&&nPhotonNoChgIsoNoSieie==1&&nJetGood>=3&&nBTagGood>=1&&sqrt(acos(cos(GenPhotonCMSUnfold0_phi-PhotonGood0_phi))**2+(GenPhotonCMSUnfold0_eta-PhotonGood0_eta)**2)<0.1", "weightString":"weight*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPU*reweightTrigger*reweightHEM*reweightL1Prefire*reweightBTag_SF", "prefix":"  "},
+    { 'name':"reco >=4 Jets",              'selectionString':fiducial_cut+"&&"+MET_filter_cut+"&&nLeptonTight==1&&triggered&&nLeptonVetoIsoCorr==1&&nPhotonGood==1&&nPhotonNoChgIsoNoSieie==1&&nJetGood>=4&&nBTagGood>=1", "weightString":"weight*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPU*reweightTrigger*reweightHEM*reweightL1Prefire*reweightBTag_SF", 'prefix':"  "},
 ]
 entries += [
     { 'name':"(no fid.) reco trigger 1e||1mu",       'selectionString':"("+triggerSelector.SingleMuon+"||"+triggerSelector.SingleElectron+")", "weightString":"weight*reweightPU*reweightTrigger"},
@@ -109,6 +95,7 @@ print " "*39 +"".join( ["{:9s}".format(s.name) for s in samples ] )
 
 for i_entry, entry in enumerate(entries):
     result.append( [ s.getYieldFromDraw( selectionString = entry['selectionString'], weightString = entry['weightString'] ) for s in samples] )
+    result[-1][2]['val']*=corr_factor
 
     p_string = "{i_entry:02d} {name:31s}" + "".join( [" {r[%i][val]:8.2f}"%i for i in range(len(samples)) ] )
 
