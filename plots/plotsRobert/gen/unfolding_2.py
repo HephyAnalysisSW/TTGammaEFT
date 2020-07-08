@@ -31,7 +31,6 @@ argParser.add_argument("--variable",           action="store",      default="ptG
 argParser.add_argument("--fiducialSelection",       action="store",      default="nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1",         help="define fiducial phase space")
 #argParser.add_argument("--genBinning",         action="store",      default=[10,20,220], type=int, nargs=3,                                  help="binning gen: nBins, lowPt, highPt")
 #argParser.add_argument("--recoBinning",        action="store",      default=[30,20,220], type=int, nargs=3,                                  help="binning reco: nBins, lowPt, highPt")
-argParser.add_argument("--year",               action="store",      default="2016",   type=str,  choices=["2016","2017","2018","RunII"],                     help="Which year to plot?")
 argParser.add_argument("--mode",               action="store",      default="all",  type=str,  choices=["mu", "e", "all"],                   help="lepton selection")
 argParser.add_argument("--small",              action="store_true",                                                                          help="Run only on a small subset of the data?")
 argParser.add_argument("--overwrite",          action="store_true",                                                                          help="overwrite cache?")
@@ -42,20 +41,20 @@ args = argParser.parse_args()
 if "RunII" in args.years: args.years = ["2016", "2017", "2018"] 
 
 # Logger
-import Analysis.Tools.logger as logger
+import Analysis.Tools.logger as logger_an
 import RootTools.core.logger as logger_rt
 logger    = logger.get_logger(    args.logLevel, logFile=None )
 logger_rt = logger_rt.get_logger( args.logLevel, logFile=None )
 
 # Text on the plots
-def drawObjects( plotData, lumi_scale ):
+def drawObjects( ):
     tex = ROOT.TLatex()
     tex.SetNDC()
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
-    line = (0.65, 0.95, "%3.1f fb{}^{-1} (13 TeV)" % lumi_scale)
+    line = (0.65, 0.95, "(13 TeV)") 
     lines = [
-      (0.15, 0.95, "CMS #bf{#it{Preliminary}}" if plotData else "CMS #bf{#it{Simulation Preliminary}}"), 
+      (0.15, 0.95, "CMS #bf{#it{Preliminary}}"), 
       line
     ]
     return [tex.DrawLatex(*l) for l in lines]
@@ -65,23 +64,23 @@ if args.small:        args.plot_directory += "_small"
 
 # observable
 if args.variable == "ptG":
-    fiducial_variable = "GenPhotonCMSUnfold0_pt"
-    reco_variable     = "PhotonGood0_pt"
-    reco_thresholds  = range(20, 520, 10)
-
+    reco_variable           = "PhotonGood0_pt"
+    reco_thresholds         = range(20, 520, 10)
+    reco_variable_underflow = -1
     # appending reco thresholds for multiple years
     max_reco_val         = reco_thresholds[-1]
     max_reco_bincenter   = 0.5*sum(reco_thresholds[-2:])
 
-    reco_threshold_years = copy.deepcopy(reco_thresholds)
+    reco_thresholds_years = copy.deepcopy(reco_thresholds)
     for i_year in range(1, len(args.years)):
-        reco_threshold_years += [t + i_year*max_reco_val for t in reco_thresholds]
+        reco_thresholds_years += [t + i_year*max_reco_val for t in reco_thresholds]
 
     #pt_reco_thresholds  = range(20, 50,5)+range(50,100,10)+range(100,200,20)+range(200,500,50) 
+    fiducial_variable = "GenPhotonCMSUnfold0_pt"
     fiducial_thresholds     = reco_thresholds[::3]
     max_fiducial_val        = fiducial_thresholds[-1]
     max_fiducial_bincenter  = 0.5*sum(fiducial_thresholds[-2:])
-
+    underflow_fiducial_val  = -1
     #gen_match_photon = "sqrt(acos(cos(GenPhotonCMSUnfold0_phi-PhotonGood0_phi))**2+(GenPhotonCMSUnfold0_eta-PhotonGood0_eta)**2)<0.1"
     tex_reco = "p^{reco}_{T}(#gamma) (GeV)"
     tex_gen  = "p^{gen}_{T}(#gamma) (GeV)"
@@ -89,35 +88,39 @@ else:
     raise RuntimeError("Can't unfold without variable. Don't know '%s'." % args.variable) 
 
 # database
-cache_dir = os.path.join(cache_directory, "unfolding", str(args.year), "matrix")
+year_str        = "_".join(args.years)
+cache_dir = os.path.join(cache_directory, "unfolding", year_str, "matrix")
 dirDB     = MergingDirDB(cache_dir)
 
 # specifics from the arguments
-year_str        = "_".join(args.years)
 plot_directory_ = os.path.join( plot_directory, "unfolding", year_str, args.plot_directory, args.fiducialSelection, args.recoSelection, args.mode )
 cfg_key         = ( args.small, year_str, args.fiducialSelection, args.recoSelection, args.mode, args.variable)
 
 read_variables = [ "weight/F", "year/I",
-                   "nPhotonGood/I", "nJetGood/I", "nBTagGood/I", "nLeptonTight/I", "nLeptonVetoIsoCorr/I",
+                   "nPhotonGood/I", "nJetGood/I", "nBTagGood/I", "nLeptonTight/I", "nLeptonVetoIsoCorr/I", "nPhotonNoChgIsoNoSieie/I",
                    "PhotonGood0_pt/F",
                    "GenPhotonATLASUnfold0_pt/F", "GenPhotonCMSUnfold0_pt/F",
                    "nGenLeptonATLASUnfold/I", "nGenPhotonATLASUnfold/I", "nGenBJetATLASUnfold/I", "nGenJetsATLASUnfold/I",
                    "nGenLeptonCMSUnfold/I", "nGenPhotonCMSUnfold/I", "nGenBJetCMSUnfold/I", "nGenJetsCMSUnfold/I",
-                   "reweightHEM/F", "reweightTrigger/F", "reweightL1Prefire/F", "reweightPU/F", "reweightLeptonTightSF/F", "reweightLeptonTrackingTightSF/F", "reweightPhotonSF/F", "reweightPhotonElectronVetoSF/F", "reweightBTag_SF/F"]
+                   "reweightHEM/F", "reweightTrigger/F", "reweightL1Prefire/F", "reweightPU/F", "reweightLeptonTightSF/F", "reweightLeptonTrackingTightSF/F", "reweightPhotonSF/F", "reweightPhotonElectronVetoSF/F", "reweightBTag_SF/F",
+                    "Flag_goodVertices/I", "Flag_globalSuperTightHalo2016Filter/I", "Flag_HBHENoiseFilter/I", "Flag_HBHENoiseIsoFilter/I", "Flag_EcalDeadCellTriggerPrimitiveFilter/I", "Flag_BadPFMuonFilter/I", "PV_ndof/F", "PV_x/F", "PV_y/F", "PV_z/F"
+                ]
 
-loop_key = ( cfg_key, "resul")
-if dirDB.contains( loop_key ):
+MET_filter_cut   = "(year==2016&&Flag_goodVertices&&Flag_globalSuperTightHalo2016Filter&&Flag_HBHENoiseFilter&&Flag_HBHENoiseIsoFilter&&Flag_EcalDeadCellTriggerPrimitiveFilter&&Flag_BadPFMuonFilter&&PV_ndof>4&&sqrt(PV_x*PV_x+PV_y*PV_y)<=2&&abs(PV_z)<=24)"
+
+loop_key = ( cfg_key, "result")
+if dirDB.contains( loop_key ) and not args.overwrite:
     matrix, fiducial_spectrum, reco_spectrum = dirDB.get( loop_key )
 else:
 
     # Define stuff 
-    fiducial_spectrum = ROOT.TH2D("fiducial_spectrum", "fiducial_spectrum", len(fiducial_thresholds)-1, array.array('d', fiducial_thresholds) )
-    fiducial_spectrum.GetXaxis.SetTitle(tex_gen)
+    fiducial_spectrum = ROOT.TH1D("fiducial_spectrum", "fiducial_spectrum", len(fiducial_thresholds)-1, array.array('d', fiducial_thresholds) )
+    fiducial_spectrum.GetXaxis().SetTitle(tex_gen)
 
-    reco_spectrum = ROOT.TH2D("reco_spectrum", "reco_spectrum", len(reco_thresholds_years)-1, array.array('d', reco_thresholds_years) )
-    reco_spectrum.GetXaxis.SetTitle(tex_gen)
+    reco_spectrum = ROOT.TH1D("reco_spectrum", "reco_spectrum", len(reco_thresholds_years)-1, array.array('d', reco_thresholds_years) )
+    reco_spectrum.GetXaxis().SetTitle(tex_gen)
 
-    matrix = ROOT.TH2D("unfolding_matrix", "unfolding_matrix", len(reco_threshold_years)-1, array.array('d', reco_threshold_years), len(fiducial_thresholds)-1, array.array('d', fiducial_thresholds) )
+    matrix = ROOT.TH2D("unfolding_matrix", "unfolding_matrix", len(reco_thresholds_years)-1, array.array('d', reco_thresholds_years), len(fiducial_thresholds)-1, array.array('d', fiducial_thresholds) )
 
     matrix.GetXaxis().SetTitle(tex_reco)
     matrix.GetYaxis().SetTitle(tex_gen)
@@ -127,7 +130,7 @@ else:
         setup         = setup.sysClone( parameters=allRegions[args.recoSelection]["parameters"] )
         # reco selection
         recoSelection = setup.selection( "MC", channel="all", **setup.defaultParameters() )
-        reco_selection_str = cutInterpreter.cutString(recoSelection['prefix'])
+        reco_selection_str = MET_filter_cut+"&&"+cutInterpreter.cutString(recoSelection['prefix'])
 
         # fiducial seletion
         fiducial_selection_str = cutInterpreter.cutString(args.fiducialSelection)
@@ -135,15 +138,18 @@ else:
         ttreeFormulas = {
                     'is_fiducial': fiducial_selection_str, 
                     'is_reco':     reco_selection_str, 
-                    'full_weight': recoSelection['weightStr'], 
+                    'gen_weight'    : 'weight*(35.92*(year==2016)+41.53*(year==2017)+59.74*(year==2018))', 
+                    'reco_reweight' : 'reweightHEM*reweightTrigger*reweightPU*reweightL1Prefire*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF', 
                 }
 
         # Sample for this year (fix)
-        ttg0l = Sample.fromDirectory("ttg0l", directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v47/inclusive/TTGHad_LO/".format(year=year)])
-        ttg1l = Sample.fromDirectory("ttg1l", directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v47/inclusive/TTGSingleLep_LO/".format(year=year)])
-        ttg2l = Sample.fromDirectory("ttg2l", directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v47/inclusive/TTGLep_LO/".format(year=year)])
+        ttg0l = Sample.fromDirectory("ttg0l_%s"%year, directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v47/inclusive/TTGHad_LO/".format(year=year)])
+        ttg1l = Sample.fromDirectory("ttg1l_%s"%year, directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v47/inclusive/TTGSingleLep_LO/".format(year=year)])
+        ttg2l = Sample.fromDirectory("ttg2l_%s"%year, directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v47/inclusive/TTGLep_LO/".format(year=year)])
 
-        sample = Sample.combine( "ttg", [ttg1l, ttg2l, ttg0l] )
+        # FIXME
+        # sample = Sample.combine( "ttg_%s"%year, [ttg1l, ttg2l, ttg0l] )
+        sample = ttg1l 
 
         # Apply 'small'
         norm = 1.
@@ -151,45 +157,102 @@ else:
             sample.normalization=1.
             sample.reduceFiles( to=2 )
             norm = 1./sample.normalization
-        
-        # Event weight (possibly normalisation 'norm')
-        weight_  = lambda event, sample: norm*event.full_weight
-
+       
+        counter_tot      = 0
+        counter_reco     = 0
+        counter_fid      = 0
+        counter_fid_reco = 0
+        yield_tot        = 0
+        yield_reco       = 0
+        yield_fid        = 0
+        yield_fid_reco   = 0
+         
         r = sample.treeReader( 
             variables = map(TreeVariable.fromString, read_variables), 
             ttreeFormulas=ttreeFormulas, 
-            selectionString= "(({reco})||({fiducial}))".format(reco=reco_selection_str,fiducial=fiducial_selection_str)i,
+            selectionString= "(({reco})||({fiducial}))".format(reco=reco_selection_str,fiducial=fiducial_selection_str),
             )
 
         logger.info( "Processing year %s", year)
         r.start()
         while r.run():
 
-            weight_val        = weight_( r.event, sample )
+            # weights
+            gen_weight_val    = r.event.gen_weight 
+            reco_reweight_val = r.event.reco_reweight 
+
+            # counter
+            counter_tot += 1
+            yield_tot   += gen_weight_val*reco_reweight_val 
 
             # shift the reco variable to the correct block
             shift_year =  (int(year)-2016)*max_reco_val
 
             # reco observable 
             reco_variable_val       = getattr( r.event, reco_variable )
-            if reco_variable > max_reco_val:
-                reco_variable = max_reco_bincenter 
+
+            # put reco overflow in the last bin
+            if reco_variable_val >= max_reco_val:
+                reco_variable_val = max_reco_bincenter 
 
             # fiducial observable 
             fiducial_variable_val   = getattr( r.event, fiducial_variable ) 
-            if fiducial_variable > max_fiducial_val:
-                fiducial_variable = max_fiducial_bincenter 
+
+            # put fiducial overflow in the last bin
+            if fiducial_variable_val >= max_fiducial_val:
+                fiducial_variable_val = max_fiducial_bincenter 
+
+            # Sanity check: A fiducial event should have a fiducial_variable_val that is within the fiducial thresholds
+            val_in_fiducial = ( fiducial_variable_val>=fiducial_thresholds[0] and fiducial_variable_val<fiducial_thresholds[-1] )
+            assert val_in_fiducial or not r.event.is_fiducial, "Fiducial variable %s=%f not in fiducial regions %r"%( fiducial_variable, fiducial_variable_val, fiducial_thresholds )
                  
-            if event.is_reco:    
-                matrix.Fill(reco_variable_val+shift_year, fiducial_variable_val, weight_val)
-                reco_spectrum.Fill( reco_variable_val+shift_year, weight_val )
-            if event.is_fiducial:
-                fiducial_spectrum.Fill( gen_variable_val, weight_val ) 
+            if r.event.is_reco:
+                # counter
+                counter_reco += 1
+                yield_reco   += gen_weight_val*reco_reweight_val 
+
+                reco_spectrum.Fill( reco_variable_val+shift_year, gen_weight_val*reco_reweight_val )
+                # signal 
+                if  r.event.is_fiducial:
+                    # counter
+                    counter_fid_reco += 1
+                    yield_fid_reco   += gen_weight_val*reco_reweight_val 
+
+                    matrix.Fill(reco_variable_val+shift_year, fiducial_variable_val, gen_weight_val*reco_reweight_val)
+                    # inefficiency according to reco_reweight
+                    matrix.Fill(reco_variable_underflow, fiducial_variable_val, gen_weight_val*(1-reco_reweight_val))
+
+                # backgrounds (signal events generated outside the fiducial region but reconstructed in the reco phase space)
+                else:
+                    matrix.Fill(reco_variable_val+shift_year, underflow_fiducial_val, gen_weight_val*reco_reweight_val)
+                    # inefficiency of the background according to reco_reweight -> should not be needed 
+                    # matrix.Fill(reco_variable_underflow, underflow_fiducial_val, gen_weight_val*(1-reco_reweight_val))
+            else:
+                # inefficiency according to the selection
+                if  r.event.is_fiducial:
+                    matrix.Fill(reco_variable_underflow, fiducial_variable_val, gen_weight_val*reco_reweight_val)
+
+            if r.event.is_fiducial: # note: there is no reco_reweight_val because we construct the gen spectrum
+                # counter
+                counter_fid += 1
+                yield_fid   += gen_weight_val*reco_reweight_val 
+
+                fiducial_spectrum.Fill( fiducial_variable_val, gen_weight_val ) 
+
+        logger.info("total: %6.2f (%6.2f) fiducial: %6.2f (%6.2f) fiducial+reco %6.2f (%6.2f) reco-total: %6.2f (%6.2f)", yield_tot, counter_tot, yield_fid, counter_fid, yield_fid_reco, counter_fid_reco, yield_reco, counter_reco)
 
     dirDB.add( loop_key, (matrix, fiducial_spectrum, reco_spectrum), overwrite=True )
 
-assert False, ""
+# Unfolding matrix
+plot_matrix = Plot2D.fromHisto( "unfolding_matrix", [[matrix]], texY = "p^{gen}_{T}(#gamma) [GeV]", texX = "p^{reco}_{T}(#gamma) [GeV]" )
+plotting.draw2D( plot_matrix,
+                 plot_directory = plot_directory_,
+                 logX = False, logY = False, logZ = True,
+                 drawObjects = drawObjects(),
+                 copyIndexPHP = True,
+                )
 
+assert False, ""
 
 #matrix_norm = matrix.Clone()
 #for n_gen in range( matrix_norm.GetNbinsX()):
