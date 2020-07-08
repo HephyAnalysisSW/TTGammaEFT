@@ -67,18 +67,21 @@ if args.small:        args.plot_directory += "_small"
 if args.variable == "ptG":
     fiducial_variable = "GenPhotonCMSUnfold0_pt"
     reco_variable     = "PhotonGood0_pt"
-    reco_thresholds  = range( 20, 520, 10)
+    reco_thresholds  = range(20, 520, 10)
 
     # appending reco thresholds for multiple years
     max_reco_val         = reco_thresholds[-1]
-    reco_eps = 0.1
+    max_reco_bincenter   = 0.5*sum(reco_thresholds[-2:])
+
     reco_threshold_years = copy.deepcopy(reco_thresholds)
     for i_year in range(1, len(args.years)):
         reco_threshold_years += [t + i_year*max_reco_val for t in reco_thresholds]
-    
 
     #pt_reco_thresholds  = range(20, 50,5)+range(50,100,10)+range(100,200,20)+range(200,500,50) 
-    gen_thresholds   = reco_thresholds[::3]
+    fiducial_thresholds     = reco_thresholds[::3]
+    max_fiducial_val        = fiducial_thresholds[-1]
+    max_fiducial_bincenter  = 0.5*sum(fiducial_thresholds[-2:])
+
     #gen_match_photon = "sqrt(acos(cos(GenPhotonCMSUnfold0_phi-PhotonGood0_phi))**2+(GenPhotonCMSUnfold0_eta-PhotonGood0_eta)**2)<0.1"
     tex_reco = "p^{reco}_{T}(#gamma) (GeV)"
     tex_gen  = "p^{gen}_{T}(#gamma) (GeV)"
@@ -102,11 +105,19 @@ read_variables = [ "weight/F", "year/I",
                    "nGenLeptonCMSUnfold/I", "nGenPhotonCMSUnfold/I", "nGenBJetCMSUnfold/I", "nGenJetsCMSUnfold/I",
                    "reweightHEM/F", "reweightTrigger/F", "reweightL1Prefire/F", "reweightPU/F", "reweightLeptonTightSF/F", "reweightLeptonTrackingTightSF/F", "reweightPhotonSF/F", "reweightPhotonElectronVetoSF/F", "reweightBTag_SF/F"]
 
-loop_key = ( cfg_key, "matrix")
+loop_key = ( cfg_key, "resul")
 if dirDB.contains( loop_key ):
-    matrix = dirDB.get( loop_key )
+    matrix, fiducial_spectrum, reco_spectrum = dirDB.get( loop_key )
 else:
-    matrix = ROOT.TH2D("unfolding_matrix", "unfolding_matrix", len(reco_threshold_years)-1, array.array('d', reco_threshold_years), len(gen_thresholds)-1, array.array('d', gen_thresholds) )
+
+    # Define stuff 
+    fiducial_spectrum = ROOT.TH2D("fiducial_spectrum", "fiducial_spectrum", len(fiducial_thresholds)-1, array.array('d', fiducial_thresholds) )
+    fiducial_spectrum.GetXaxis.SetTitle(tex_gen)
+
+    reco_spectrum = ROOT.TH2D("reco_spectrum", "reco_spectrum", len(reco_thresholds_years)-1, array.array('d', reco_thresholds_years) )
+    reco_spectrum.GetXaxis.SetTitle(tex_gen)
+
+    matrix = ROOT.TH2D("unfolding_matrix", "unfolding_matrix", len(reco_threshold_years)-1, array.array('d', reco_threshold_years), len(fiducial_thresholds)-1, array.array('d', fiducial_thresholds) )
 
     matrix.GetXaxis().SetTitle(tex_reco)
     matrix.GetYaxis().SetTitle(tex_gen)
@@ -114,14 +125,20 @@ else:
     for year in args.years:
         setup         = Setup( year=int(year), photonSelection=False, checkOnly=True, runOnLxPlus=False ) 
         setup         = setup.sysClone( parameters=allRegions[args.recoSelection]["parameters"] )
+        # reco selection
         recoSelection = setup.selection( "MC", channel="all", **setup.defaultParameters() )
+        reco_selection_str = cutInterpreter.cutString(recoSelection['prefix'])
+
+        # fiducial seletion
+        fiducial_selection_str = cutInterpreter.cutString(args.fiducialSelection)
 
         ttreeFormulas = {
-                    'is_fiducial': cutInterpreter.cutString(args.fiducialSelection), 
+                    'is_fiducial': fiducial_selection_str, 
+                    'is_reco':     reco_selection_str, 
                     'full_weight': recoSelection['weightStr'], 
                 }
 
-        # Sample for this year
+        # Sample for this year (fix)
         ttg0l = Sample.fromDirectory("ttg0l", directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v47/inclusive/TTGHad_LO/".format(year=year)])
         ttg1l = Sample.fromDirectory("ttg1l", directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v47/inclusive/TTGSingleLep_LO/".format(year=year)])
         ttg2l = Sample.fromDirectory("ttg2l", directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v47/inclusive/TTGLep_LO/".format(year=year)])
@@ -138,29 +155,38 @@ else:
         # Event weight (possibly normalisation 'norm')
         weight_  = lambda event, sample: norm*event.full_weight
 
-        # reco selection
-        selectionString = cutInterpreter.cutString(recoSelection['prefix'])
+        r = sample.treeReader( 
+            variables = map(TreeVariable.fromString, read_variables), 
+            ttreeFormulas=ttreeFormulas, 
+            selectionString= "(({reco})||({fiducial}))".format(reco=reco_selection_str,fiducial=fiducial_selection_str)i,
+            )
 
-        r = sample.treeReader( variables = map(TreeVariable.fromString, read_variables), ttreeFormulas=ttreeFormulas, selectionString=selectionString)
-
-        logger.info( "Processing year %s in selection %s", year, selectionString)
+        logger.info( "Processing year %s", year)
         r.start()
         while r.run():
 
             weight_val        = weight_( r.event, sample )
-            reco_variable_val = getattr( r.event, reco_variable )
 
-            # deal with reco overflow
-            if reco_variable>max_reco_val:
-                reco_variable = max_reco_val-reco_eps
-
+            # shift the reco variable to the correct block
             shift_year =  (int(year)-2016)*max_reco_val
 
-            gen_variable_val  = getattr( r.event, fiducial_variable ) 
-            
-            matrix.Fill(reco_variable_val+shift_year, gen_variable_val, weight_val)
+            # reco observable 
+            reco_variable_val       = getattr( r.event, reco_variable )
+            if reco_variable > max_reco_val:
+                reco_variable = max_reco_bincenter 
 
-    dirDB.add( loop_key, matrix, overwrite=True )
+            # fiducial observable 
+            fiducial_variable_val   = getattr( r.event, fiducial_variable ) 
+            if fiducial_variable > max_fiducial_val:
+                fiducial_variable = max_fiducial_bincenter 
+                 
+            if event.is_reco:    
+                matrix.Fill(reco_variable_val+shift_year, fiducial_variable_val, weight_val)
+                reco_spectrum.Fill( reco_variable_val+shift_year, weight_val )
+            if event.is_fiducial:
+                fiducial_spectrum.Fill( gen_variable_val, weight_val ) 
+
+    dirDB.add( loop_key, (matrix, fiducial_spectrum, reco_spectrum), overwrite=True )
 
 assert False, ""
 
@@ -176,13 +202,13 @@ assert False, ""
 
 #histos               = {}
 #histos["gen"]        = matrix.ProjectionX("gen")
-#histos["efficiency"] = ROOT.TH1D( "efficiency", "efficiency", len(pt_gen_thresholds)-1, array.array('d', pt_gen_thresholds))
+#histos["efficiency"] = ROOT.TH1D( "efficiency", "efficiency", len(pt_fiducial_thresholds)-1, array.array('d', pt_fiducial_thresholds))
 #histos["purity"]     = ROOT.TH1D( "purity",     "purity",     len(pt_reco_thresholds)-1, array.array('d', pt_reco_thresholds))
 #histos["recoMC"]     = matrix.ProjectionY("reco")
 #if args.noData: histos["reco"] = histos["recoMC"]
 #else:           histos["reco"] = dataHisto
 #
-#for i in range( len(pt_gen_thresholds)+1 ):
+#for i in range( len(pt_fiducial_thresholds)+1 ):
 #    genPt   = histos["gen"].GetBinCenter( i+1 )
 #    recoBin = histos["recoMC"].FindBin( genPt )
 #    gen     = histos["gen"].GetBinContent( i+1 )
