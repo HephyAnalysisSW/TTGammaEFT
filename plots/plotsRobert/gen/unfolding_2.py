@@ -8,6 +8,7 @@ from RootTools.core.standard          import *
 
 # Analysis
 from Analysis.Tools.MergingDirDB      import MergingDirDB
+from Analysis.Tools.metFilters        import getFilterCut
 
 # Internal Imports
 from TTGammaEFT.Tools.user            import plot_directory, cache_directory
@@ -32,6 +33,7 @@ argParser.add_argument("--fiducialSelection",       action="store",      default
 #argParser.add_argument("--genBinning",         action="store",      default=[10,20,220], type=int, nargs=3,                                  help="binning gen: nBins, lowPt, highPt")
 #argParser.add_argument("--recoBinning",        action="store",      default=[30,20,220], type=int, nargs=3,                                  help="binning reco: nBins, lowPt, highPt")
 argParser.add_argument("--mode",               action="store",      default="all",  type=str,  choices=["mu", "e", "all"],                   help="lepton selection")
+argParser.add_argument("--prefix",             action="store",      default=None,  type=str,                                                 help="for debugging")
 argParser.add_argument("--small",              action="store_true",                                                                          help="Run only on a small subset of the data?")
 argParser.add_argument("--overwrite",          action="store_true",                                                                          help="overwrite cache?")
 argParser.add_argument('--years',              action='store',      nargs='*',  type=str, default=['RunII'],                                 help="List of years to be unfolded.")
@@ -65,6 +67,7 @@ if args.small:        args.plot_directory += "_small"
 # observable
 if args.variable == "ptG":
     reco_variable           = "PhotonGood0_pt"
+    #pt_reco_thresholds  = range(20, 50,5)+range(50,100,10)+range(100,200,20)+range(200,500,50) 
     reco_thresholds         = range(20, 520, 10)
     reco_variable_underflow = -1
     # appending reco thresholds for multiple years
@@ -75,7 +78,6 @@ if args.variable == "ptG":
     for i_year in range(1, len(args.years)):
         reco_thresholds_years += [t + i_year*max_reco_val for t in reco_thresholds]
 
-    #pt_reco_thresholds  = range(20, 50,5)+range(50,100,10)+range(100,200,20)+range(200,500,50) 
     fiducial_variable = "GenPhotonCMSUnfold0_pt"
     fiducial_thresholds     = reco_thresholds[::3]
     max_fiducial_val        = fiducial_thresholds[-1]
@@ -88,7 +90,7 @@ else:
     raise RuntimeError("Can't unfold without variable. Don't know '%s'." % args.variable) 
 
 # database
-year_str        = "_".join(args.years)
+year_str        = "_".join(args.years) + ('_'+args.prefix if args.prefix is not None else '')
 cache_dir = os.path.join(cache_directory, "unfolding", year_str, "matrix")
 dirDB     = MergingDirDB(cache_dir)
 
@@ -106,7 +108,11 @@ read_variables = [ "weight/F", "year/I",
                     "Flag_goodVertices/I", "Flag_globalSuperTightHalo2016Filter/I", "Flag_HBHENoiseFilter/I", "Flag_HBHENoiseIsoFilter/I", "Flag_EcalDeadCellTriggerPrimitiveFilter/I", "Flag_BadPFMuonFilter/I", "PV_ndof/F", "PV_x/F", "PV_y/F", "PV_z/F"
                 ]
 
-MET_filter_cut   = "(year==2016&&Flag_goodVertices&&Flag_globalSuperTightHalo2016Filter&&Flag_HBHENoiseFilter&&Flag_HBHENoiseIsoFilter&&Flag_EcalDeadCellTriggerPrimitiveFilter&&Flag_BadPFMuonFilter&&PV_ndof>4&&sqrt(PV_x*PV_x+PV_y*PV_y)<=2&&abs(PV_z)<=24)"
+extra_read_variables = {
+    "2016":[],
+    "2017":["Flag_ecalBadCalibFilter/I", "Flag_ecalBadCalibFilterV2/I"],
+    "2018":["Flag_ecalBadCalibFilter/I", "Flag_ecalBadCalibFilterV2/I"],
+}
 
 loop_key = ( cfg_key, "result")
 if dirDB.contains( loop_key ) and not args.overwrite:
@@ -125,11 +131,22 @@ else:
     matrix.GetXaxis().SetTitle(tex_reco)
     matrix.GetYaxis().SetTitle(tex_gen)
 
-    for year in args.years:
+    counter_tot      = 0
+    counter_reco     = 0
+    counter_fid      = 0
+    counter_fid_reco = 0
+    yield_tot        = 0
+    yield_reco       = 0
+    yield_fid        = 0
+    yield_fid_reco   = 0
+
+    for i_year, year in enumerate(args.years):
         setup         = Setup( year=int(year), photonSelection=False, checkOnly=True, runOnLxPlus=False ) 
         setup         = setup.sysClone( parameters=allRegions[args.recoSelection]["parameters"] )
         # reco selection
         recoSelection = setup.selection( "MC", channel="all", **setup.defaultParameters() )
+
+        MET_filter_cut   = "(year==%s&&"%year+getFilterCut(isData=False, year=int(year), skipBadChargedCandidate=True)+")"
         reco_selection_str = MET_filter_cut+"&&triggered&&overlapRemoval==1&&"+cutInterpreter.cutString(recoSelection['prefix'])
 
         # fiducial seletion
@@ -147,28 +164,16 @@ else:
         ttg1l = Sample.fromDirectory("ttg1l_%s"%year, directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v47/inclusive/TTGSingleLep_LO/".format(year=year)])
         ttg2l = Sample.fromDirectory("ttg2l_%s"%year, directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v47/inclusive/TTGLep_LO/".format(year=year)])
 
-        # FIXME
-        # sample = Sample.combine( "ttg_%s"%year, [ttg1l, ttg2l, ttg0l] )
-        sample = ttg1l 
+        sample = Sample.combine( "ttg_%s"%year, [ttg1l, ttg2l, ttg0l] )
+        #sample = ttg1l #FIXME 
 
         # Apply 'small'
-        norm = 1.
         if args.small:           
             sample.normalization=1.
             sample.reduceFiles( to=2 )
-            norm = 1./sample.normalization
        
-        counter_tot      = 0
-        counter_reco     = 0
-        counter_fid      = 0
-        counter_fid_reco = 0
-        yield_tot        = 0
-        yield_reco       = 0
-        yield_fid        = 0
-        yield_fid_reco   = 0
-         
         r = sample.treeReader( 
-            variables = map(TreeVariable.fromString, read_variables), 
+            variables = map(TreeVariable.fromString, read_variables+extra_read_variables[year]), 
             ttreeFormulas=ttreeFormulas, 
             selectionString= "(({reco})||({fiducial}))".format(reco=reco_selection_str,fiducial=fiducial_selection_str),
             )
@@ -186,7 +191,7 @@ else:
             yield_tot   += gen_weight_val*reco_reweight_val 
 
             # shift the reco variable to the correct block
-            shift_year =  (int(year)-2016)*max_reco_val
+            shift_year =  i_year*max_reco_val
 
             # reco observable 
             reco_variable_val       = getattr( r.event, reco_variable )
@@ -220,13 +225,13 @@ else:
 
                     matrix.Fill(reco_variable_val+shift_year, fiducial_variable_val, gen_weight_val*reco_reweight_val)
                     # inefficiency according to reco_reweight
-                    matrix.Fill(reco_variable_underflow, fiducial_variable_val, gen_weight_val*(1-reco_reweight_val))
+                    #matrix.Fill(reco_variable_underflow, fiducial_variable_val, gen_weight_val*(1-reco_reweight_val))
 
                 # backgrounds (signal events generated outside the fiducial region but reconstructed in the reco phase space)
                 else:
                     matrix.Fill(reco_variable_val+shift_year, underflow_fiducial_val, gen_weight_val*reco_reweight_val)
                     # inefficiency of the background according to reco_reweight -> should not be needed 
-                    # matrix.Fill(reco_variable_underflow, underflow_fiducial_val, gen_weight_val*(1-reco_reweight_val))
+                    matrix.Fill(reco_variable_underflow, underflow_fiducial_val, gen_weight_val*(1-reco_reweight_val))
             else:
                 # inefficiency according to the selection
                 if  r.event.is_fiducial:
@@ -244,11 +249,12 @@ else:
     dirDB.add( loop_key, (matrix, fiducial_spectrum, reco_spectrum), overwrite=True )
 
     # Unfolding matrix
-    plot_matrix = Plot2D.fromHisto( "unfolding_matrix", [[matrix]], texY = "p^{gen}_{T}(#gamma) [GeV]", texX = "p^{reco}_{T}(#gamma) [GeV]" )
+    plot_matrix = Plot2D.fromHisto("unfolding_matrix", [[matrix]], texY = tex_gen, texX = tex_reco + " +%i*(year-2016)"%max_reco_val )
     plotting.draw2D( plot_matrix,
                      plot_directory = plot_directory_,
                      logX = False, logY = False, logZ = True,
                      drawObjects = drawObjects(),
+                     widths = {'x_width':500*len(args.years)},
                      copyIndexPHP = True,
                     )
 
@@ -331,162 +337,91 @@ mapping = ROOT.TUnfold.kHistMapOutputVert
 densityFlags = ROOT.TUnfoldDensity.kDensityModeBinWidth
 #densityFlags = ROOT.TUnfoldDensity.kDensityModeBinWidthAndUser
 
-unfold = ROOT.TUnfoldDensity( matrix, mapping, regMode, constraintMode, densityFlags )
-unfold.SetInput( reco_spectrum )
+for regMode in [ ROOT.TUnfold.kRegModeNone, ROOT.TUnfold.kRegModeSize, ROOT.TUnfold.kRegModeDerivative, ROOT.TUnfold.kRegModeCurvature ]:
+    for constraintMode in [ROOT.TUnfold.kEConstraintNone, ROOT.TUnfold.kEConstraintArea] :
+        for densityFlags in [ROOT.TUnfoldDensity.kDensityModeNone, ROOT.TUnfoldDensity.kDensityModeUser, ROOT.TUnfoldDensity.kDensityModeBinWidth, ROOT.TUnfoldDensity.kDensityModeBinWidthAndUser ]:
+            postfix = "_".join(map(str, [ regMode, constraintMode, densityFlags]))
 
-nScan       = 200
-rhoLogTau   = ROOT.TSpline3()
-#iBest = unfold.ScanTau(nScan, 10**-6, 0.5, rhoLogTau, ROOT.TUnfoldDensity.kEScanTauRhoMax, "signal", SCAN_AXISSTEERING, lCurve);
-iBest = unfold.ScanTau(nScan, 10**-6, 2, rhoLogTau, ROOT.TUnfoldDensity.kEScanTauRhoSquareAvg)
-#iBest = unfold.ScanTau(nScan, 10**-6, 2, rhoLogTau, ROOT.TUnfoldDensity.kEScanTauRhoMax)
-# create graphs with one point to visualize best choice of tau
-t   = ROOT.Double()
-rho = ROOT.Double()
-rhoLogTau.GetKnot(iBest,t,rho)
-bestRhoLogTau = ROOT.TGraph(1,array.array('d',[t]),array.array('d',[rho]))
-tAll   = []
-rhoAll = []
-for i in range(nScan):
-    rhoLogTau.GetKnot(i,t,rho)
-    tAll.append( t )
-    rhoAll.append( rho )
+            unfold = ROOT.TUnfoldDensity( matrix, mapping, regMode, constraintMode, densityFlags )
+            unfold.SetInput( reco_spectrum )
 
-knots = ROOT.TGraph(nScan,array.array('d',tAll), array.array('d',rhoAll))
-print "chi**2=", unfold.GetChi2A(), "+", unfold.GetChi2L(), " / ",unfold.GetNdf()
-c = ROOT.TCanvas("ScanTau","ScanTau")
-knots.SetTitle("#rho ( log(#tau) )")
-rhoLogTau.SetTitle("#rho ( log(#tau) )")
-bestRhoLogTau.SetTitle("#rho ( log(#tau) )")
-knots.Draw("*")
+            nScan       = 200
+            rhoLogTau   = ROOT.TSpline3()
+            #iBest = unfold.ScanTau(nScan, 10**-6, 0.5, rhoLogTau, ROOT.TUnfoldDensity.kEScanTauRhoMax, "signal", SCAN_AXISSTEERING, lCurve);
+            iBest = unfold.ScanTau(nScan, 10**-6, 2, rhoLogTau, ROOT.TUnfoldDensity.kEScanTauRhoSquareAvg)
+            #iBest = unfold.ScanTau(nScan, 10**-6, 2, rhoLogTau, ROOT.TUnfoldDensity.kEScanTauRhoMax)
+            # create graphs with one point to visualize best choice of tau
+            t   = ROOT.Double()
+            rho = ROOT.Double()
+            rhoLogTau.GetKnot(iBest,t,rho)
+            bestRhoLogTau = ROOT.TGraph(1,array.array('d',[t]),array.array('d',[rho]))
+            tAll   = []
+            rhoAll = []
+            for i in range(nScan):
+                rhoLogTau.GetKnot(i,t,rho)
+                tAll.append( t )
+                rhoAll.append( rho )
 
-rhoLogTau.Draw()
-bestRhoLogTau.SetMarkerColor(ROOT.kRed)
-bestRhoLogTau.Draw("*")
-for s in [ knots, bestRhoLogTau ]:
-    s.GetXaxis().SetTitle("log(#tau)")
-    s.GetYaxis().SetTitle("#rho")
+            knots = ROOT.TGraph(nScan,array.array('d',tAll), array.array('d',rhoAll))
+            print "chi**2=", unfold.GetChi2A(), "+", unfold.GetChi2L(), " / ",unfold.GetNdf()
+            c = ROOT.TCanvas("ScanTau","ScanTau")
+            knots.SetTitle("#rho ( log(#tau) )")
+            rhoLogTau.SetTitle("#rho ( log(#tau) )")
+            bestRhoLogTau.SetTitle("#rho ( log(#tau) )")
+            knots.Draw("*")
 
-c.RedrawAxis()
-c.Print(os.path.join(plot_directory_, "ScanTau.png"))
-c.Print(os.path.join(plot_directory_, "ScanTau.pdf"))
+            rhoLogTau.Draw()
+            bestRhoLogTau.SetMarkerColor(ROOT.kRed)
+            bestRhoLogTau.Draw("*")
+            for s in [ knots, bestRhoLogTau ]:
+                s.GetXaxis().SetTitle("log(#tau)")
+                s.GetYaxis().SetTitle("#rho")
 
-best_logtau = bestRhoLogTau.GetX()[0]
-print "Found best tau at",  best_logtau
+            c.RedrawAxis()
+            c.Print(os.path.join(plot_directory_, "ScanTau.png"))
+            c.Print(os.path.join(plot_directory_, "ScanTau.pdf"))
 
-hs = []
-for i_factor, factor in enumerate( reversed([ 0, 0.01, 0.1, 0.5, 1, 1.5, 10, 100 ]) ):
-    unfold.DoUnfold(10**(best_logtau)*factor)
-    h = unfold.GetOutput("unfoldedMC")
-    h.legendText = ( "log(#tau) = %6.4f" % (best_logtau + log(factor,10)) + ("(best)" if factor==1 else "") if factor > 0 else  "log(#tau) = -#infty" )
-    h.style = styles.lineStyle( 1+ i_factor)
-    hs.append( h )
+            best_logtau = bestRhoLogTau.GetX()[0]
+            print "Found best tau at",  best_logtau
 
-for logY in [True, False]:
-    plot = Plot.fromHisto( name = 'unfolding_comparison' + ('_log' if logY else ''),  histos = [[ h ] for h in hs], texX = "p_{T}", texY = "Events" )
-    plot.stack = None
-    plotting.draw(plot,
-        plot_directory = plot_directory_,
-        #ratio          = {'yRange':(0.6,1.4)} if len(plot.stack)>=2 else None,
-        logX = False, logY = logY, sorting = False,
-        #yRange         = (0.5, 1.5) ,
-        #scaling        = {0:1} if len(plot.stack)==2 else {},
-        legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
-      )
+            hs = []
+            for i_factor, factor in enumerate( reversed([ 0, 0.01, 0.1, 0.5, 1, 1.5, 10, 100 ]) ):
+                unfold.DoUnfold(10**(best_logtau)*factor)
+                h = unfold.GetOutput("unfoldedMC")
+                h.legendText = ( "log(#tau) = %6.4f" % (best_logtau + log(factor,10)) + ("(best)" if factor==1 else "") if factor > 0 else  "log(#tau) = -#infty" )
+                h.style = styles.lineStyle( 1+ i_factor)
+                hs.append( h )
 
-# PLOT 
+            for logY in [True, False]:
+                plot = Plot.fromHisto( name = 'unfolding_comparison' + '_'+postfix + ('_log' if logY else ''),  histos = [[ h ] for h in hs], texX = "p_{T}", texY = "Events" )
+                plot.stack = None
+                plotting.draw(plot,
+                    plot_directory = plot_directory_,
+                    #ratio          = {'yRange':(0.6,1.4)} if len(plot.stack)>=2 else None,
+                    logX = False, logY = logY, sorting = False,
+                    #yRange         = (0.5, 1.5) ,
+                    #scaling        = {0:1} if len(plot.stack)==2 else {},
+                    legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
+                  )
 
-unfold.DoUnfold(0)
-unfolded_reco_spectrum = unfold.GetOutput("unfolded_reco_spectrum")
-
-for logY in [True, False]:
-    unfolded_reco_spectrum  .style =  styles.lineStyle( ROOT.kRed, width = 1 )
-    fiducial_spectrum       .style =  styles.lineStyle( ROOT.kBlack, width = 2 )
-    unfolded_reco_spectrum  .legendText = "unfolded (%6.2f)" % unfolded_reco_spectrum.Integral()
-    fiducial_spectrum       .legendText = "fiducial (%6.2f)" % fiducial_spectrum.Integral()
-    
-    plot = Plot.fromHisto( name = 'unfolding_closure' + ('_log' if logY else ''),  histos = [[ h ] for h in [unfolded_reco_spectrum, fiducial_spectrum]], texX = "p_{T}", texY = "Events" )
-    plot.stack = None
-    plotting.draw(plot,
-        plot_directory = plot_directory_,
-        #ratio          = {'yRange':(0.6,1.4)} if len(plot.stack)>=2 else None,
-        logX = False, logY = logY, sorting = False,
-        #yRange         = (0.5, 1.5) ,
-        #scaling        = {0:1} if len(plot.stack)==2 else {},
-        legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
-      )
-
-#histos["gen"].style        = styles.lineStyle( ROOT.kBlack, width = 2 )
-#histos["efficiency"].style = styles.lineStyle( ROOT.kBlue, width = 2 )
-#histos["purity"].style     = styles.lineStyle( ROOT.kRed, width = 2 )
-#histos["reco"].style       = styles.errorStyle( ROOT.kBlack, width = 2 )
-#histos["recoMC"].style     = styles.errorStyle( ROOT.kBlack, width = 2 )
-##histos["unfolded"].style   = styles.errorStyle( ROOT.kBlack, width = 2 )
-#histos["unfoldedMC"].style = styles.errorStyle( ROOT.kBlack, width = 2 )
+#            # closure 
+#            unfold.DoUnfold(0)
+#            unfolded_reco_spectrum = unfold.GetOutput("unfolded_reco_spectrum")
 #
-#addons = []
-#if args.noData:        addons.append("MC")
-#else:                  addons.append("Data")
-#if args.mode != "all": addons.append(args.mode.replace("mu","#mu"))
-#
-#histos["gen"].legendText        = "Generated Events (%s)"%", ".join(addons).replace(", Data",", MC")
-##histos["unfolded"].legendText   = "Particle Level (%s)"%", ".join(addons)
-#histos["unfoldedMC"].legendText = "Particle Level (%s)"%", ".join(addons).replace(", Data",", MC")
-#histos["efficiency"].legendText = "Efficiency"
-#histos["purity"].legendText     = "Purity"
-#histos["reco"].legendText       = "Detector Level (%s)"%", ".join(addons)
-#histos["recoMC"].legendText     = "Detector Level (%s)"%", ".join(addons).replace(", Data",", MC")
-#
-## remove the defaults again
-#Plot.setDefaults()
-#Plot2D.setDefaults()
-#
-## Unfolding matrix
-#unfold2D = Plot2D.fromHisto( "unfoldingMatrix", [[matrix]], texX = "p^{gen}_{T}(#gamma) [GeV]", texY = "p^{reco}_{T}(#gamma) [GeV]" )
-#plotting.draw2D( unfold2D,
-#                 plot_directory = plot_directory_,
-#                 logX = False, logY = False, logZ = True,
-#                 drawObjects = drawObjects( not args.noData, lumi_scale ),
-#                 copyIndexPHP = True,
-#                )
-#unfold2D_norm = Plot2D.fromHisto( "unfoldingMatrix_norm", [[matrix_norm]], texX = "p^{gen}_{T}(#gamma) [GeV]", texY = "p^{reco}_{T}(#gamma) [GeV]")
-#unfold2D_norm.drawOption = "COLZTEXT"
-#unfold2D_norm.histModifications = [ lambda h: ROOT.gStyle.SetPaintTextFormat("4.2f") ]
-#plotting.draw2D( unfold2D_norm,
-#                 plot_directory = plot_directory_,
-#                 logX = True, logY = True, logZ = True,
-#                 drawObjects = drawObjects( not args.noData, lumi_scale ),
-#                 copyIndexPHP = True,
-#                )
-#
-#plots = []
-## gen pt
-#plots.append( Plot.fromHisto( args.fiducialVariable, [[histos["gen"]]], texX = "p^{gen}_{T}(#gamma) [GeV]", texY = "Number of Events" ) )
-## reco pt
-#plots.append( Plot.fromHisto( "PhotonGood0_pt", [[histos["reco"]]], texX = "p^{reco}_{T}(#gamma) [GeV]", texY = "Number of Events" ) )
-## reco MC pt
-#plots.append( Plot.fromHisto( "PhotonGood0_pt_MC", [[histos["recoMC"]]], texX = "p^{reco}_{T}(#gamma) [GeV]", texY = "Number of Events" ) )
-## unfolded pt
-##plots.append( Plot.fromHisto( "unfolded_pt", [[histos["unfolded"]]], texX = "p^{unfolded}_{T}(#gamma) [GeV]", texY = "Number of Events" ) )
-## unfolded MC pt
-#plots.append( Plot.fromHisto( "unfolded_pt_MC", [[histos["unfoldedMC"]]], texX = "p^{unfolded}_{T}(#gamma) [GeV]", texY = "Number of Events" ) )
-## unfolded pt + gen
-#plots.append( Plot.fromHisto( "closure", [[histos["unfoldedMC"]],[histos["gen"]]], texX = "p^{gen,unfolded}_{T}(#gamma) [GeV]", texY = "Number of Events" ) )
-## efficiency
-#plots.append( Plot.fromHisto( "efficiency", [[histos["efficiency"]]], texX = "p^{reco}_{T}(#gamma) [GeV]", texY = "Efficiency" ) )
-## purity
-#plots.append( Plot.fromHisto( "purity", [[histos["purity"]]], texX = "p^{gen}_{T}(#gamma) [GeV]", texY = "Purity" ) )
-## purity and efficiency
-#plots.append( Plot.fromHisto( "purity_efficiency", [[histos["purity"]],[histos["efficiency"]]], texX = "p^{gen,reco}_{T}(#gamma) [GeV]", texY = "Purity, Efficiency" ) )
-#
-#for plot in plots:
-#    xShift = plot.name in ["efficiency","purity","purity_efficiency"]
-#    plotting.draw( plot,
-#                   plot_directory = plot_directory_,
-#                   logX = False, logY = False, sorting = False,
-#                   yRange = (0.01, "auto"),
-#                   drawObjects = drawObjects( not args.noData, lumi_scale ),
-#                   legend = [ (0.3+0.3*xShift,0.88-0.04*len(plot.histos),0.88,0.88), 1 ],
-#                   copyIndexPHP = True,
-#                   )
-#
-#
+#            for logY in [True, False]:
+#                unfolded_reco_spectrum  .style =  styles.lineStyle( ROOT.kRed, width = 1 )
+#                fiducial_spectrum       .style =  styles.lineStyle( ROOT.kBlack, width = 2 )
+#                unfolded_reco_spectrum  .legendText = "unfolded (%6.2f)" % unfolded_reco_spectrum.Integral()
+#                fiducial_spectrum       .legendText = "fiducial (%6.2f)" % fiducial_spectrum.Integral()
+#                
+#                plot = Plot.fromHisto( name = 'unfolding_closure' + ('_log' if logY else ''),  histos = [[ h ] for h in [unfolded_reco_spectrum, fiducial_spectrum]], texX = "p_{T}", texY = "Events" )
+#                plot.stack = None
+#                plotting.draw(plot,
+#                    plot_directory = plot_directory_,
+#                    #ratio          = {'yRange':(0.6,1.4)} if len(plot.stack)>=2 else None,
+#                    logX = False, logY = logY, sorting = False,
+#                    #yRange         = (0.5, 1.5) ,
+#                    #scaling        = {0:1} if len(plot.stack)==2 else {},
+#                    legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
+#                  )
+
