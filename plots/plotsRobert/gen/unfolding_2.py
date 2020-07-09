@@ -68,7 +68,8 @@ if args.small:        args.plot_directory += "_small"
 if args.variable == "ptG":
     reco_variable           = "PhotonGood0_pt"
     #pt_reco_thresholds  = range(20, 50,5)+range(50,100,10)+range(100,200,20)+range(200,500,50) 
-    reco_thresholds         = range(20, 520, 10)
+    reco_thresholds         = range(20, 430, 15) #range(20, 430, 10)
+
     reco_variable_underflow = -1
     # appending reco thresholds for multiple years
     max_reco_val         = reco_thresholds[-1]
@@ -165,7 +166,6 @@ else:
         ttg2l = Sample.fromDirectory("ttg2l_%s"%year, directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v47/inclusive/TTGLep_LO/".format(year=year)])
 
         sample = Sample.combine( "ttg_%s"%year, [ttg1l, ttg2l, ttg0l] )
-        #sample = ttg1l #FIXME 
 
         # Apply 'small'
         if args.small:           
@@ -225,13 +225,13 @@ else:
 
                     matrix.Fill(reco_variable_val+shift_year, fiducial_variable_val, gen_weight_val*reco_reweight_val)
                     # inefficiency according to reco_reweight
-                    #matrix.Fill(reco_variable_underflow, fiducial_variable_val, gen_weight_val*(1-reco_reweight_val))
+                    matrix.Fill(reco_variable_underflow, fiducial_variable_val, gen_weight_val*(1-reco_reweight_val))
 
                 # backgrounds (signal events generated outside the fiducial region but reconstructed in the reco phase space)
                 else:
                     matrix.Fill(reco_variable_val+shift_year, underflow_fiducial_val, gen_weight_val*reco_reweight_val)
                     # inefficiency of the background according to reco_reweight -> should not be needed 
-                    matrix.Fill(reco_variable_underflow, underflow_fiducial_val, gen_weight_val*(1-reco_reweight_val))
+                    #matrix.Fill(reco_variable_underflow, underflow_fiducial_val, gen_weight_val*(1-reco_reweight_val))
             else:
                 # inefficiency according to the selection
                 if  r.event.is_fiducial:
@@ -337,91 +337,91 @@ mapping = ROOT.TUnfold.kHistMapOutputVert
 densityFlags = ROOT.TUnfoldDensity.kDensityModeBinWidth
 #densityFlags = ROOT.TUnfoldDensity.kDensityModeBinWidthAndUser
 
-for regMode in [ ROOT.TUnfold.kRegModeNone, ROOT.TUnfold.kRegModeSize, ROOT.TUnfold.kRegModeDerivative, ROOT.TUnfold.kRegModeCurvature ]:
-    for constraintMode in [ROOT.TUnfold.kEConstraintNone, ROOT.TUnfold.kEConstraintArea] :
-        for densityFlags in [ROOT.TUnfoldDensity.kDensityModeNone, ROOT.TUnfoldDensity.kDensityModeUser, ROOT.TUnfoldDensity.kDensityModeBinWidth, ROOT.TUnfoldDensity.kDensityModeBinWidthAndUser ]:
-            postfix = "_".join(map(str, [ regMode, constraintMode, densityFlags]))
+#for regMode in [ ROOT.TUnfold.kRegModeNone, ROOT.TUnfold.kRegModeSize, ROOT.TUnfold.kRegModeDerivative, ROOT.TUnfold.kRegModeCurvature ]:
+#    for constraintMode in [ROOT.TUnfold.kEConstraintNone, ROOT.TUnfold.kEConstraintArea] :
+#        for densityFlags in [ROOT.TUnfoldDensity.kDensityModeNone, ROOT.TUnfoldDensity.kDensityModeUser, ROOT.TUnfoldDensity.kDensityModeBinWidth, ROOT.TUnfoldDensity.kDensityModeBinWidthAndUser ]:
+postfix = "_".join(map(str, [ regMode, constraintMode, densityFlags]))
 
-            unfold = ROOT.TUnfoldDensity( matrix, mapping, regMode, constraintMode, densityFlags )
-            unfold.SetInput( reco_spectrum )
+unfold = ROOT.TUnfoldDensity( matrix, mapping, regMode, constraintMode, densityFlags )
+unfold.SetInput( reco_spectrum )
 
-            nScan       = 200
-            rhoLogTau   = ROOT.TSpline3()
-            #iBest = unfold.ScanTau(nScan, 10**-6, 0.5, rhoLogTau, ROOT.TUnfoldDensity.kEScanTauRhoMax, "signal", SCAN_AXISSTEERING, lCurve);
-            iBest = unfold.ScanTau(nScan, 10**-6, 2, rhoLogTau, ROOT.TUnfoldDensity.kEScanTauRhoSquareAvg)
-            #iBest = unfold.ScanTau(nScan, 10**-6, 2, rhoLogTau, ROOT.TUnfoldDensity.kEScanTauRhoMax)
-            # create graphs with one point to visualize best choice of tau
-            t   = ROOT.Double()
-            rho = ROOT.Double()
-            rhoLogTau.GetKnot(iBest,t,rho)
-            bestRhoLogTau = ROOT.TGraph(1,array.array('d',[t]),array.array('d',[rho]))
-            tAll   = []
-            rhoAll = []
-            for i in range(nScan):
-                rhoLogTau.GetKnot(i,t,rho)
-                tAll.append( t )
-                rhoAll.append( rho )
+nScan       = 200
+rhoLogTau   = ROOT.TSpline3()
+#iBest = unfold.ScanTau(nScan, 10**-6, 0.5, rhoLogTau, ROOT.TUnfoldDensity.kEScanTauRhoMax, "signal", SCAN_AXISSTEERING, lCurve);
+iBest = unfold.ScanTau(nScan, 10**-6, 2, rhoLogTau, ROOT.TUnfoldDensity.kEScanTauRhoSquareAvg)
+#iBest = unfold.ScanTau(nScan, 10**-6, 2, rhoLogTau, ROOT.TUnfoldDensity.kEScanTauRhoMax)
+# create graphs with one point to visualize best choice of tau
+t   = ROOT.Double()
+rho = ROOT.Double()
+rhoLogTau.GetKnot(iBest,t,rho)
+bestRhoLogTau = ROOT.TGraph(1,array.array('d',[t]),array.array('d',[rho]))
+tAll   = []
+rhoAll = []
+for i in range(nScan):
+    rhoLogTau.GetKnot(i,t,rho)
+    tAll.append( t )
+    rhoAll.append( rho )
 
-            knots = ROOT.TGraph(nScan,array.array('d',tAll), array.array('d',rhoAll))
-            print "chi**2=", unfold.GetChi2A(), "+", unfold.GetChi2L(), " / ",unfold.GetNdf()
-            c = ROOT.TCanvas("ScanTau","ScanTau")
-            knots.SetTitle("#rho ( log(#tau) )")
-            rhoLogTau.SetTitle("#rho ( log(#tau) )")
-            bestRhoLogTau.SetTitle("#rho ( log(#tau) )")
-            knots.Draw("*")
+knots = ROOT.TGraph(nScan,array.array('d',tAll), array.array('d',rhoAll))
+print "chi**2=", unfold.GetChi2A(), "+", unfold.GetChi2L(), " / ",unfold.GetNdf()
+c = ROOT.TCanvas("ScanTau","ScanTau")
+knots.SetTitle("#rho ( log(#tau) )")
+rhoLogTau.SetTitle("#rho ( log(#tau) )")
+bestRhoLogTau.SetTitle("#rho ( log(#tau) )")
+knots.Draw("*")
 
-            rhoLogTau.Draw()
-            bestRhoLogTau.SetMarkerColor(ROOT.kRed)
-            bestRhoLogTau.Draw("*")
-            for s in [ knots, bestRhoLogTau ]:
-                s.GetXaxis().SetTitle("log(#tau)")
-                s.GetYaxis().SetTitle("#rho")
+rhoLogTau.Draw()
+bestRhoLogTau.SetMarkerColor(ROOT.kRed)
+bestRhoLogTau.Draw("*")
+for s in [ knots, bestRhoLogTau ]:
+    s.GetXaxis().SetTitle("log(#tau)")
+    s.GetYaxis().SetTitle("#rho")
 
-            c.RedrawAxis()
-            c.Print(os.path.join(plot_directory_, "ScanTau.png"))
-            c.Print(os.path.join(plot_directory_, "ScanTau.pdf"))
+c.RedrawAxis()
+c.Print(os.path.join(plot_directory_, "ScanTau.png"))
+c.Print(os.path.join(plot_directory_, "ScanTau.pdf"))
 
-            best_logtau = bestRhoLogTau.GetX()[0]
-            print "Found best tau at",  best_logtau
+best_logtau = bestRhoLogTau.GetX()[0]
+print "Found best tau at",  best_logtau
 
-            hs = []
-            for i_factor, factor in enumerate( reversed([ 0, 0.01, 0.1, 0.5, 1, 1.5, 10, 100 ]) ):
-                unfold.DoUnfold(10**(best_logtau)*factor)
-                h = unfold.GetOutput("unfoldedMC")
-                h.legendText = ( "log(#tau) = %6.4f" % (best_logtau + log(factor,10)) + ("(best)" if factor==1 else "") if factor > 0 else  "log(#tau) = -#infty" )
-                h.style = styles.lineStyle( 1+ i_factor)
-                hs.append( h )
+hs = []
+for i_factor, factor in enumerate( reversed([ 0, 0.01, 0.1, 0.5, 1, 1.5, 10, 100 ]) ):
+    unfold.DoUnfold(10**(best_logtau)*factor)
+    h = unfold.GetOutput("unfoldedMC")
+    h.legendText = ( "log(#tau) = %6.4f" % (best_logtau + log(factor,10)) + ("(best)" if factor==1 else "") if factor > 0 else  "log(#tau) = -#infty" )
+    h.style = styles.lineStyle( 1+ i_factor)
+    hs.append( h )
 
-            for logY in [True, False]:
-                plot = Plot.fromHisto( name = 'unfolding_comparison' + '_'+postfix + ('_log' if logY else ''),  histos = [[ h ] for h in hs], texX = "p_{T}", texY = "Events" )
-                plot.stack = None
-                plotting.draw(plot,
-                    plot_directory = plot_directory_,
-                    #ratio          = {'yRange':(0.6,1.4)} if len(plot.stack)>=2 else None,
-                    logX = False, logY = logY, sorting = False,
-                    #yRange         = (0.5, 1.5) ,
-                    #scaling        = {0:1} if len(plot.stack)==2 else {},
-                    legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
-                  )
+for logY in [True, False]:
+    plot = Plot.fromHisto( name = 'unfolding_comparison' + '_'+postfix + ('_log' if logY else ''),  histos = [[ h ] for h in hs], texX = "p_{T}", texY = "Events" )
+    plot.stack = None
+    plotting.draw(plot,
+        plot_directory = plot_directory_,
+        #ratio          = {'yRange':(0.6,1.4)} if len(plot.stack)>=2 else None,
+        logX = False, logY = logY, sorting = False,
+        #yRange         = (0.5, 1.5) ,
+        #scaling        = {0:1} if len(plot.stack)==2 else {},
+        legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
+      )
 
-#            # closure 
-#            unfold.DoUnfold(0)
-#            unfolded_reco_spectrum = unfold.GetOutput("unfolded_reco_spectrum")
-#
-#            for logY in [True, False]:
-#                unfolded_reco_spectrum  .style =  styles.lineStyle( ROOT.kRed, width = 1 )
-#                fiducial_spectrum       .style =  styles.lineStyle( ROOT.kBlack, width = 2 )
-#                unfolded_reco_spectrum  .legendText = "unfolded (%6.2f)" % unfolded_reco_spectrum.Integral()
-#                fiducial_spectrum       .legendText = "fiducial (%6.2f)" % fiducial_spectrum.Integral()
-#                
-#                plot = Plot.fromHisto( name = 'unfolding_closure' + ('_log' if logY else ''),  histos = [[ h ] for h in [unfolded_reco_spectrum, fiducial_spectrum]], texX = "p_{T}", texY = "Events" )
-#                plot.stack = None
-#                plotting.draw(plot,
-#                    plot_directory = plot_directory_,
-#                    #ratio          = {'yRange':(0.6,1.4)} if len(plot.stack)>=2 else None,
-#                    logX = False, logY = logY, sorting = False,
-#                    #yRange         = (0.5, 1.5) ,
-#                    #scaling        = {0:1} if len(plot.stack)==2 else {},
-#                    legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
-#                  )
+# closure 
+unfold.DoUnfold(0)
+unfolded_reco_spectrum = unfold.GetOutput("unfolded_reco_spectrum")
+
+for logY in [True, False]:
+    unfolded_reco_spectrum  .style =  styles.lineStyle( ROOT.kRed, width = 1 )
+    fiducial_spectrum       .style =  styles.lineStyle( ROOT.kBlack, width = 2 )
+    unfolded_reco_spectrum  .legendText = "unfolded (%6.2f)" % unfolded_reco_spectrum.Integral()
+    fiducial_spectrum       .legendText = "fiducial (%6.2f)" % fiducial_spectrum.Integral()
+    
+    plot = Plot.fromHisto( name = 'unfolding_closure' + ('_log' if logY else ''),  histos = [[ h ] for h in [unfolded_reco_spectrum, fiducial_spectrum]], texX = "p_{T}", texY = "Events" )
+    plot.stack = None
+    plotting.draw(plot,
+        plot_directory = plot_directory_,
+        #ratio          = {'yRange':(0.6,1.4)} if len(plot.stack)>=2 else None,
+        logX = False, logY = logY, sorting = False,
+        #yRange         = (0.5, 1.5) ,
+        #scaling        = {0:1} if len(plot.stack)==2 else {},
+        legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
+      )
 
