@@ -19,6 +19,8 @@ git cms-init
 
 # This repository
 git clone https://github.com/HephyAnalysisSW/TTGammaEFT
+cd $CMSSW_BASE/src/TTGammaEFT/Tools/external/TUnfold
+make lib
 cd $CMSSW_BASE/src
 ```
 

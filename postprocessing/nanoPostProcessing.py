@@ -901,6 +901,7 @@ def fill_vector( event, collection_name, collection_varnames, obj):
     for var in collection_varnames:
         setattr(event, collection_name+"_"+var, obj[var] )
 
+
 def filler( event ):
     # shortcut
     r = reader.event
@@ -916,6 +917,7 @@ def filler( event ):
 
         # weight
         event.weight = lumiScaleFactor*r.genWeight if lumiScaleFactor is not None else 0
+        #print event.weight, lumiScaleFactor*r.genWeight, sample.xSection, sample.normalization
 
         # GEN Particles
         gPart = getParticles( r, collVars=readGenVarList,    coll="GenPart" )
