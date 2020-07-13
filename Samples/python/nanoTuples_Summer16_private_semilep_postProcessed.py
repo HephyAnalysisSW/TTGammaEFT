@@ -66,7 +66,7 @@ dirs["TT_pow"]           = ["TTLep_pow_CP5", "TTSingleLep_pow_CP5", "TTHad_pow_C
 dirs["TT_SemiLep"]       = ["TTSingleLep_pow_CP5" ]
 dirs["TT_Lep"]           = ["TTLep_pow_CP5" ]
 
-dirs["TTG_NLO"]          = ["TTGJets_comb"]
+#dirs["TTG_NLO"]          = ["TTGJets_comb"]
 dirs["TTGLep"]           = ["TTGLep_LO"]
 dirs["TTGSemiLep"]       = ["TTGSingleLep_LO"]
 dirs["TTG"]              = ["TTGLep_LO", "TTGSingleLep_LO", "TTGHad_LO"]
@@ -161,7 +161,7 @@ TT_Lep          = getMCSample(name="TT_pow",           redirector=redirector, co
 TT_SemiLep      = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_SemiLep"], noCheckProxy=True, fromDPM=fromDPM)
 singleTop       = getMCSample(name="singleTop",        redirector=redirector, color=color.T,               texName="single-t",          directory=directories["singleTop"], noCheckProxy=True, fromDPM=fromDPM)
 
-TTG_NLO         = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_NLO"], noCheckProxy=True, fromDPM=fromDPM)
+#TTG_NLO         = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_NLO"], noCheckProxy=True, fromDPM=fromDPM)
 TTG             = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG"], noCheckProxy=True, fromDPM=fromDPM)
 TTG_med    = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_med"], noCheckProxy=True, fromDPM=fromDPM)
 TTG_high    = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_high"], noCheckProxy=True, fromDPM=fromDPM)

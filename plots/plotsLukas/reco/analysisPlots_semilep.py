@@ -48,7 +48,7 @@ argParser.add_argument('--plotFile',           action='store',      default='all
 argParser.add_argument('--selection',          action='store',      default='nLepTight1-nLepVeto1-nJet4p-nBTag1p-nPhoton1p')
 argParser.add_argument('--small',              action='store_true',                                                                    help='Run only on a small subset of the data?', )
 argParser.add_argument('--noData',             action='store_true', default=False,                                                     help='also plot data?')
-argParser.add_argument('--signal',             action='store',      default=None,   nargs='?', choices=[None],                         help="Add signal to plot")
+#argParser.add_argument('--signal',             action='store',      default=None,   nargs='?', choices=[None],                         help="Add signal to plot")
 argParser.add_argument('--year',               action='store',      default="2016",   type=str,  choices=["2016","2017","2018","RunII"],               help="Which year to plot?")
 argParser.add_argument('--onlyTTG',            action='store_true', default=False,                                                     help="Plot only ttG")
 argParser.add_argument('--normalize',          action='store_true', default=False,                                                     help="Normalize yields" )
@@ -108,7 +108,7 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
 
 if args.small:           args.plot_directory += "_small"
 if args.noData:          args.plot_directory += "_noData"
-if args.signal:          args.plot_directory += "_signal_"+args.signal
+#if args.signal:          args.plot_directory += "_signal_"+args.signal
 if args.onlyTTG:         args.plot_directory += "_onlyTTG"
 if args.normalize:       args.plot_directory += "_normalize"
 
@@ -369,7 +369,7 @@ read_variables += [ VectorTreeVariable.fromString('Photon[%s]'%photonVarString, 
 #read_variables += [ VectorTreeVariable.fromString('Jet[%s]'%jetVarString, nMax=10) ]
 #read_variables += [ VectorTreeVariable.fromString('JetGood[%s]'%jetVarString, nMax=10) ]
 
-read_variables += map( lambda var: "PhotonMVA0_"              + var, photonVariables )
+#read_variables += map( lambda var: "PhotonMVA0_"              + var, photonVariables )
 read_variables += map( lambda var: "PhotonGood0_"             + var, photonVariables )
 read_variables += map( lambda var: "PhotonGoodInvLepIso0_"    + var, photonVariables )
 read_variables += map( lambda var: "PhotonNoChgIso0_"         + var, photonVariables )
@@ -779,7 +779,7 @@ else:
     lumi_scale                 = data_sample.lumi * 0.001
     stack                      = Stack( mc, data_sample )
 
-stack.extend( [ [s] for s in signals ] )
+#stack.extend( [ [s] for s in signals ] )
 
 # huge fix needed!
 if addMisIDSF and addDYSF and not args.invLeptonIso:
@@ -806,9 +806,9 @@ ws17 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2017))" %(
 ws18 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2018))" %(ws, misIDSF_val[2018].val)
 weightString = ws + ws16 + ws17 + ws18
 
-for sample in mc + signals:
+for sample in mc:# + signals:
     sample.read_variables = read_variables_MC
-#    sample.scale          = lumi_scale
+    sample.scale          = lumi_scale
     if "qcd" in sample.name.lower() and photonSel and not args.noQCDDD: sample.scale = 0.
     sample.style          = styles.fillStyle( sample.color )
     sample.weight         = sampleWeight
@@ -1418,7 +1418,7 @@ for index, mode in enumerate( allModes ):
 
         all_noTT.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] )
     else:
-        for sample in mc + signals:
+        for sample in mc:# + signals:
             if (sample.name.startswith("DY") and args.replaceZG): #no ZG sample
                 sample.setSelectionString( [ filterCutMc, leptonSelection, "triggered==1" ] )
             else:

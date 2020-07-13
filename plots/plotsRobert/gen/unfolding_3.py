@@ -70,7 +70,8 @@ if args.variable == "ptG":
     #pt_reco_thresholds  = range(20, 50,5)+range(50,100,10)+range(100,200,20)+range(200,500,50) 
     reco_thresholds         = range(20, 430, 15) #range(20, 430, 10)
 
-    reco_variable_underflow = -1
+    # reco_variable_underflow = -1 #FIXME
+
     # appending reco thresholds for multiple years
     max_reco_val         = reco_thresholds[-1]
     max_reco_bincenter   = 0.5*sum(reco_thresholds[-2:])
@@ -87,6 +88,14 @@ if args.variable == "ptG":
     #gen_match_photon = "sqrt(acos(cos(GenPhotonCMSUnfold0_phi-PhotonGood0_phi))**2+(GenPhotonCMSUnfold0_eta-PhotonGood0_eta)**2)<0.1"
     tex_reco = "p^{reco}_{T}(#gamma) (GeV)"
     tex_gen  = "p^{gen}_{T}(#gamma) (GeV)"
+
+    # adding an overflow bin per year for the inefficiency
+    reco_overflow_binwidth = reco_thresholds[1]-reco_thresholds[0]
+    reco_variable_overflow = {}
+    for i in range(len(args.years)):
+        max_ = reco_thresholds_years[-1]
+        reco_thresholds_years.append( max_ + (i+1)*reco_overflow_binwidth )
+        reco_variable_overflow[args.years[i]] =  max_ + (i+0.5)*reco_overflow_binwidth 
 else:
     raise RuntimeError("Can't unfold without variable. Don't know '%s'." % args.variable) 
 
@@ -196,7 +205,7 @@ else:
             # reco observable 
             reco_variable_val       = getattr( r.event, reco_variable )
 
-            # put reco overflow in the last bin
+            # if the value is too large, put it into the last bin
             if reco_variable_val >= max_reco_val:
                 reco_variable_val = max_reco_bincenter 
 
@@ -210,6 +219,9 @@ else:
             # Sanity check: A fiducial event should have a fiducial_variable_val that is within the fiducial thresholds
             val_in_fiducial = ( fiducial_variable_val>=fiducial_thresholds[0] and fiducial_variable_val<fiducial_thresholds[-1] )
             assert val_in_fiducial or not r.event.is_fiducial, "Fiducial variable %s=%f not in fiducial regions %r"%( fiducial_variable, fiducial_variable_val, fiducial_thresholds )
+            # Sanity check: A reco'd event should have a reco_variable_val that is within the reco thresholds
+            val_in_reco = ( reco_variable_val>=reco_thresholds[0] and reco_variable_val<reco_thresholds[-1] )
+            assert val_in_reco or not r.event.is_reco, "reco variable %s=%f not in reco regions %r"%( reco_variable, reco_variable_val, reco_thresholds )
                  
             if r.event.is_reco:
                 # counter
@@ -225,17 +237,17 @@ else:
 
                     matrix.Fill(reco_variable_val+shift_year, fiducial_variable_val, gen_weight_val*reco_reweight_val)
                     # inefficiency according to reco_reweight
-                    matrix.Fill(reco_variable_underflow, fiducial_variable_val, gen_weight_val*(1-reco_reweight_val))
+                    matrix.Fill(reco_variable_overflow[year], fiducial_variable_val, gen_weight_val*(1-reco_reweight_val))
 
                 # backgrounds (signal events generated outside the fiducial region but reconstructed in the reco phase space)
                 else:
                     matrix.Fill(reco_variable_val+shift_year, underflow_fiducial_val, gen_weight_val*reco_reweight_val)
-                    # inefficiency of the background according to reco_reweight -> should not be needed 
-                    #matrix.Fill(reco_variable_underflow, underflow_fiducial_val, gen_weight_val*(1-reco_reweight_val))
+                    # inefficiency of the background according to reco_reweight -> Next line is not needed!  
+                    #matrix.Fill(reco_variable_overflow[year], underflow_fiducial_val, gen_weight_val*(1-reco_reweight_val))
             else:
                 # inefficiency according to the selection
                 if  r.event.is_fiducial:
-                    matrix.Fill(reco_variable_underflow, fiducial_variable_val, gen_weight_val)
+                    matrix.Fill(reco_variable_overflow[year], fiducial_variable_val, gen_weight_val)
 
             if r.event.is_fiducial: # note: there is no reco_reweight_val because we construct the gen spectrum
                 # counter
@@ -294,10 +306,14 @@ else:
         fid_in_reco_bin = matrix.ProjectionY("y",i_reco,i_reco).Integral()
         tot_in_reco_bin = fid_in_reco_bin+fid_underflow+fid_overflow 
 
+        # the following bins contain the reco overflow:
+        ignored_bins = [matrix.GetNbinsX() - i for i in range(len(args.years))]
         if i_reco==0: 
             s_str="(underflow)"
         elif i_reco==matrix.GetNbinsX()+1:
             s_str="(overflow)"
+        elif i_reco in ignored_bins:
+            s_str="(ignored)"
         else:
             s_str=""
             tot_fid_underflow += fid_underflow 
@@ -307,7 +323,7 @@ else:
 
         logger.info( "Reco-bin %i has fid-UF %6.2f and fid-OF %6.2f in fid: %6.2f and a tot: %6.2f %s", i_reco, fid_underflow, fid_overflow, fid_in_reco_bin, tot_in_reco_bin, s_str)
 
-    logger.info("Total over all matrix reco bins (including fid overflows): %6.2f. yield in fiducial space: %6.2f <- these numbers should agree.", tot_reco, yield_reco)
+    logger.info("Total over all matrix reco bins (including fid overflows): %6.2f. yield in reco space: %6.2f <- these numbers should agree.", tot_reco, yield_reco)
 
 #matrix_norm = matrix.Clone()
 #for n_gen in range( matrix_norm.GetNbinsX()):
@@ -342,12 +358,8 @@ densityFlags = ROOT.TUnfoldDensity.kDensityModeBinWidth
 #        for densityFlags in [ROOT.TUnfoldDensity.kDensityModeNone, ROOT.TUnfoldDensity.kDensityModeUser, ROOT.TUnfoldDensity.kDensityModeBinWidth, ROOT.TUnfoldDensity.kDensityModeBinWidthAndUser ]:
 postfix = "_".join(map(str, [ regMode, constraintMode, densityFlags]))
 
-assert False, ""
-
 unfold = ROOT.TUnfoldDensity( matrix, mapping, regMode, constraintMode, densityFlags )
 unfold.SetInput( reco_spectrum )
-
-#unfold.RegularizeBins(1, 1, matrix.GetNbinsY(), ROOT.TUnfold.kRegModeCurvature)
 
 nScan       = 200
 rhoLogTau   = ROOT.TSpline3()
