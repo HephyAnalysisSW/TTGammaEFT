@@ -49,6 +49,8 @@ if os.environ["USER"] in ["lukas.lechner"]: #CBE cluster
 
     analysis_results                    = results_directory
     cache_directory                     = "/users/lukas.lechner/public/cache/"
+    unfolding_cache_directory           = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache/"
+
     combineReleaseLocation              = "/users/lukas.lechner/public/CMSSW_10_2_18/src/tmp/"
     cardfileLocation                    = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/results/cardfiles/"
 
@@ -67,6 +69,7 @@ if os.environ["USER"] in ["robert.schoefbeck"]: #CBE cluster
 
     analysis_results                    = results_directory
     cache_directory                     = "/users/robert.schoefbeck/public/cache/"
+    unfolding_cache_directory           = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache/"
     combineReleaseLocation              = "/users/robert.schoefbeck/public/CMSSW_10_2_18/src/tmp/"
     cardfileLocation                    = "/mnt/hephy/cms/robert.schoefbeck/TTGammaEFT/results/cardfiles/"
 
