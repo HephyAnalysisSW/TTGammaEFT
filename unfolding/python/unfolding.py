@@ -56,27 +56,6 @@ def drawObjects( ):
     ]
     return [tex.DrawLatex(*l) for l in lines]
 
-def draw( plot, **kwargs):
-    plotting.draw(plot,
-        plot_directory = plot_directory_,
-        #ratio          = {'yRange':(0.6,1.4)} if len(plot.stack)>=2 else None,
-        logX = False, sorting = False,
-        #yRange         = (0.5, 1.5) ,
-        #scaling        = {0:1} if len(plot.stack)==2 else {},
-        legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
-        drawObjects    = drawObjects(),
-        copyIndexPHP   = True, 
-        **kwargs
-      )
-def draw2D( plot, **kwargs):
-    plotting.draw2D( plot,
-                     plot_directory = plot_directory_,
-                     logX = False, logY = False, logZ = True,
-                     drawObjects = drawObjects(),
-                     copyIndexPHP = True,  
-                     **kwargs
-                    )
-
 if args.small: args.plot_directory += "_small"
 
 import TTGammaEFT.unfolding.settings as settings_module
@@ -107,6 +86,27 @@ extra_read_variables = {
     "2017":["Flag_ecalBadCalibFilter/I", "Flag_ecalBadCalibFilterV2/I"],
     "2018":["Flag_ecalBadCalibFilter/I", "Flag_ecalBadCalibFilterV2/I"],
 }
+
+def draw( plot, **kwargs):
+    plotting.draw(plot,
+        plot_directory = plot_directory_,
+        #ratio          = {'yRange':(0.6,1.4)} if len(plot.stack)>=2 else None,
+        logX = False, sorting = False,
+        #yRange         = (0.5, 1.5) ,
+        #scaling        = {0:1} if len(plot.stack)==2 else {},
+        legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
+        drawObjects    = drawObjects(),
+        copyIndexPHP   = True, 
+        **kwargs
+      )
+def draw2D( plot, **kwargs):
+    plotting.draw2D( plot,
+                     plot_directory = plot_directory_,
+                     logX = False, logY = False, logZ = True,
+                     copyIndexPHP = True,  
+                     drawObjects    = drawObjects(),
+                     **kwargs
+                    )
 
 loop_key = ( cfg_key, "result")
 if dirDB.contains( loop_key ) and not args.overwrite:
@@ -243,7 +243,7 @@ else:
 
 # Unfolding matrix
 plot_matrix = Plot2D.fromHisto("unfolding_matrix", [[matrix]], texY = settings.tex_gen, texX = settings.tex_reco + " +%i*(year-2016)"%settings.max_reco_val )
-plotting.draw2D( plot_matrix, widths = {'x_width':500*len(settings.years)} )
+draw2D( plot_matrix, widths = {'x_width':500*len(settings.years)} )
 
 # checking the matrix
 logger.info( "Matrix Integral: %6.2f fiducial+reco, weighted: %6.2f <- these numbers should agree.", matrix.Integral(), yield_fid_reco )
@@ -373,15 +373,66 @@ for logY in [True, False]:
     plot.stack = None
     draw(plot, logY = logY)
 
+
+# input plot
+boxes = []
+ratio_boxes = []
+for band in reversed(settings.systematic_bands):
+
+    for i in range(1, band['ref'].GetNbinsX()+1):
+        box = ROOT.TBox( band['ref'].GetXaxis().GetBinLowEdge(i),  
+                         band['down'].GetBinContent(i),
+                         band['ref'].GetXaxis().GetBinUpEdge(i),
+                         band['up'].GetBinContent(i),
+             )
+        box.SetLineColor(band['color'])
+        box.SetFillStyle(3244)
+        box.SetFillColor(band['color'])
+        boxes.append(box)
+
+        if band['ref'].GetBinContent(i)!=0: 
+            ratio_box = ROOT.TBox( band['ref'].GetXaxis().GetBinLowEdge(i),  
+                             band['down'].GetBinContent(i)/band['ref'].GetBinContent(i),
+                             band['ref'].GetXaxis().GetBinUpEdge(i),
+                             band['up'].GetBinContent(i)/band['ref'].GetBinContent(i),
+                 )
+            ratio_box.SetLineColor(band['color'])
+            ratio_box.SetFillStyle(3244)
+            ratio_box.SetFillColor(band['color'])
+            ratio_boxes.append(ratio_box)
+
+settings.unfolding_data_input.style = styles.errorStyle( ROOT.kBlack )
+settings.unfolding_mc_input.style   = styles.lineStyle( ROOT.kBlue, width = 2)
+
+settings.unfolding_data_input.legendText = settings.data_legendText 
+settings.unfolding_mc_input.legendText   = settings.mc_legendText
+
+plotting.draw(
+    Plot.fromHisto( "input_spectrum",
+                [[settings.unfolding_mc_input],[settings.unfolding_data_input]],
+                texX = settings.tex_reco,
+                texY = "Number of events",
+            ),
+    plot_directory = plot_directory_,
+    logX = False, logY = True, sorting = False,
+    #legend = None,
+    legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
+    yRange = settings.y_range,
+    ratio = {'yRange': (0.3, 1.7), 'texY':'Data / Sim.', 'histos':[(1,0)], 'drawObjects':ratio_boxes} ,
+    drawObjects = drawObjects()+boxes,
+    #drawObjects = boxes,
+    redrawHistos = True,
+)
+
 # unfolding the data
 if not hasattr(settings, "unfolding_data_input"):
     sys.exit(0)
 unfolding_data_output = getOutput(settings.unfolding_data_input, "unfolding_data_input")
-#unfolding_data_output.Scale(1./settings.lumi_factor)
+unfolding_data_output.Scale(1./settings.lumi_factor)
 
 # unfolding the mc
 unfolding_mc_output = getOutput(settings.unfolding_mc_input, "unfolding_mc_input")
-#unfolding_mc_output.Scale(1./settings.lumi_factor)
+unfolding_mc_output.Scale(1./settings.lumi_factor)
 
 # unfolding the error bands
 boxes = []
@@ -391,8 +442,8 @@ for band in reversed(settings.systematic_bands):
     band['down_unfolded'] = getOutput(band['down'], "band_%s_down_unfolded"%band['name'])
     band['ref_unfolded']  = getOutput(band['ref'], "band_%s_ref_unfolded"%band['name'])
 
-    #for h in [ band['up_unfolded'], band['down_unfolded'], band['ref_unfolded']]:
-        #h.Scale(1./settings.lumi_factor)
+    for h in [ band['up_unfolded'], band['down_unfolded'], band['ref_unfolded']]:
+       h.Scale(1./settings.lumi_factor)
 
     for i in range(1, band['ref_unfolded'].GetNbinsX()+1):
         box = ROOT.TBox( band['ref_unfolded'].GetXaxis().GetBinLowEdge(i),  
@@ -425,7 +476,7 @@ unfolding_mc_output.legendText   = settings.mc_legendText
 plotting.draw(
     Plot.fromHisto( "unfolded_spectrum",
                 [[unfolding_mc_output],[unfolding_data_output]],
-               texX = settings.tex_unf,
+                texX = settings.tex_unf,
                 texY = settings.texY,
             ),
     plot_directory = plot_directory_,
@@ -436,7 +487,6 @@ plotting.draw(
     ratio = {'yRange': settings.y_range_ratio, 'texY':'Data / Sim.', 'histos':[(1,0)], 'drawObjects':ratio_boxes} ,
     drawObjects = drawObjects()+boxes,
     #drawObjects = boxes,
-    copyIndexPHP = True,
     redrawHistos = True,
 )
 
@@ -457,7 +507,7 @@ probability_matrix.Clear()
 unfold.GetProbabilityMatrix(probability_matrix,mapping)
 probability_TMatrix = get_TMatrixD( probability_matrix )
 plot_probability_matrix = Plot2D.fromHisto("probability_matrix", [[probability_matrix]], texY = plot_matrix.texY, texX = plot_matrix.texX )
-draw2D( plot_probability_matrix)
+draw2D( plot_probability_matrix )
 
 # output covariance matrix
 output_covariance_matrix = ROOT.TH2D("output_covariance_matrix", "output_covariance_matrix", len(settings.fiducial_thresholds)-1, array.array('d', settings.fiducial_thresholds), len(settings.fiducial_thresholds)-1, array.array('d', settings.fiducial_thresholds) )
@@ -477,7 +527,7 @@ for i in range( 1, output_correlation_matrix.GetNbinsX()+1 ):
             output_correlation_matrix.SetBinContent(i, j, 0.)
 
 plot_output_correlation_matrix = Plot2D.fromHisto("output_correlation_matrix", [[output_correlation_matrix]], texY = settings.tex_gen, texX = settings.tex_gen )
-plotting.draw2D( plot_output_correlation_matrix )
+draw2D( plot_output_correlation_matrix )
 
 # input inverse covariance matrix
 input_inverse_covariance_matrix = ROOT.TH2D("input_inverse_covariance_matrix", "input_inverse_covariance_matrix", len(settings.reco_thresholds)-1, array.array('d', settings.reco_thresholds), len(settings.reco_thresholds)-1, array.array('d', settings.reco_thresholds) )
@@ -485,7 +535,7 @@ unfold.GetInputInverseEmatrix( input_inverse_covariance_matrix )
 input_inverse_covariance_TMatrix = get_TMatrixD( input_inverse_covariance_matrix )
 
 plot_input_inverse_covariance_matrix = Plot2D.fromHisto("input_inverse_covariance_matrix", [[input_inverse_covariance_matrix]], texY = settings.tex_reco, texX = settings.tex_reco )
-plotting.draw2D( plot_input_inverse_covariance_matrix )
+draw2D( plot_input_inverse_covariance_matrix )
 
 # input covariance matrix
 input_inverse_covariance_TMatrix = get_TMatrixD( input_inverse_covariance_matrix )
@@ -496,7 +546,7 @@ for i in range( input_covariance_matrix.GetNbinsX() ):
     for j in range( input_covariance_matrix.GetNbinsY() ):
         input_covariance_matrix.SetBinContent(i+1,j+1,input_covariance_TMatrix[i][j]) 
 plot_input_covariance_matrix = Plot2D.fromHisto("input_covariance_matrix", [[input_covariance_matrix]], texY = settings.tex_reco, texX = settings.tex_reco )
-plotting.draw2D( plot_input_covariance_matrix )
+draw2D( plot_input_covariance_matrix )
 
 input_correlation_matrix = input_covariance_matrix.Clone("input_correlation_matrix")
 for i in range( 1, input_correlation_matrix.GetNbinsX()+1 ): 
@@ -507,7 +557,7 @@ for i in range( 1, input_correlation_matrix.GetNbinsX()+1 ):
             input_correlation_matrix.SetBinContent(i, j, 0.)
 
 plot_input_correlation_matrix = Plot2D.fromHisto("input_correlation_matrix", [[input_correlation_matrix]], texY = settings.tex_reco, texX = settings.tex_reco )
-plotting.draw2D( plot_input_correlation_matrix )
+draw2D( plot_input_correlation_matrix )
 
 
 #Vxx_Inv = ROOT.TMatrixD( ROOT.TMatrixD(probability_TMatrix, ROOT.TMatrixD.kMult, input_inverse_covariance_TMatrix), ROOT.TMatrixD.kMult, ROOT.TMatrixD(ROOT.TMatrixD.kTransposed,probability_TMatrix) )
@@ -528,11 +578,10 @@ Vxx = ROOT.TMatrixD( ROOT.TMatrixD.kInverted, Vxx_Inv )
 #            input_correlation_matrix.SetBinContent(i, j, 0.)
 #
 #plot_input_correlation_matrix = Plot2D.fromHisto("input_correlation_matrix", [[input_correlation_matrix]], texY = settings.tex_gen, texX = settings.tex_gen )
-#plotting.draw2D( plot_input_correlation_matrix,
+#draw2D( plot_input_correlation_matrix,
 #                 plot_directory = plot_directory_,
 #                 logX = False, logY = False, logZ = False,
 #                 drawObjects = drawObjects(),
-#                 copyIndexPHP = True,
 #                )
 
 #Vxx = Dxy Vyy^-1 Dxy^T
