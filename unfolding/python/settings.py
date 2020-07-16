@@ -10,7 +10,7 @@ def add_sigmas( h, sigmas):
         res.SetBinContent( i, h.GetBinContent( i ) + sigmas*h.GetBinError( i ) )
     return res
 
-class second_try_ptG:
+class third_try_ptG:
     expected        = False
     cache_directory = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache/"
     data_key        = "bkgSubtracted_SR3pFine_addDYSF_SR3pM3_VG3p_misDY3p_addDYSF_data"
