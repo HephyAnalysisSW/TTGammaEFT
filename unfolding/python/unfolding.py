@@ -2,13 +2,14 @@
 import ROOT
 ROOT.gROOT.SetBatch(True)
 import os, sys, copy, array
-from   math import log
+from   math import log, sqrt
 # RootTools
 from RootTools.core.standard          import *
 
 # Analysis
 from Analysis.Tools.MergingDirDB      import MergingDirDB
 from Analysis.Tools.metFilters        import getFilterCut
+import Analysis.Tools.syncer
 
 # Internal Imports
 from TTGammaEFT.Tools.user            import plot_directory, cache_directory
@@ -18,6 +19,8 @@ from TTGammaEFT.Analysis.SetupHelpers import *
 from TTGammaEFT.Analysis.Setup        import Setup
 from TTGammaEFT.Analysis.EstimatorList   import EstimatorList
 from TTGammaEFT.Analysis.regions      import *
+
+import TTGammaEFT.unfolding.scanner as scanner
 
 # Default Parameter
 loggerChoices = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTSET"]
@@ -52,6 +55,27 @@ def drawObjects( ):
       line
     ]
     return [tex.DrawLatex(*l) for l in lines]
+
+def draw( plot, **kwargs):
+    plotting.draw(plot,
+        plot_directory = plot_directory_,
+        #ratio          = {'yRange':(0.6,1.4)} if len(plot.stack)>=2 else None,
+        logX = False, sorting = False,
+        #yRange         = (0.5, 1.5) ,
+        #scaling        = {0:1} if len(plot.stack)==2 else {},
+        legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
+        drawObjects    = drawObjects(),
+        copyIndexPHP   = True, 
+        **kwargs
+      )
+def draw2D( plot, **kwargs):
+    plotting.draw2D( plot,
+                     plot_directory = plot_directory_,
+                     logX = False, logY = False, logZ = True,
+                     drawObjects = drawObjects(),
+                     copyIndexPHP = True,  
+                     **kwargs
+                    )
 
 if args.small: args.plot_directory += "_small"
 
@@ -217,15 +241,9 @@ else:
 
     dirDB.add( loop_key, (matrix, fiducial_spectrum, reco_spectrum, yield_fid, yield_fid_reco, yield_reco), overwrite=True )
 
-    # Unfolding matrix
-    plot_matrix = Plot2D.fromHisto("unfolding_matrix", [[matrix]], texY = settings.tex_gen, texX = settings.tex_reco + " +%i*(year-2016)"%settings.max_reco_val )
-    plotting.draw2D( plot_matrix,
-                     plot_directory = plot_directory_,
-                     logX = False, logY = False, logZ = True,
-                     drawObjects = drawObjects(),
-                     widths = {'x_width':500*len(settings.years)},
-                     copyIndexPHP = True,
-                    )
+# Unfolding matrix
+plot_matrix = Plot2D.fromHisto("unfolding_matrix", [[matrix]], texY = settings.tex_gen, texX = settings.tex_reco + " +%i*(year-2016)"%settings.max_reco_val )
+plotting.draw2D( plot_matrix, widths = {'x_width':500*len(settings.years)} )
 
 # checking the matrix
 logger.info( "Matrix Integral: %6.2f fiducial+reco, weighted: %6.2f <- these numbers should agree.", matrix.Integral(), yield_fid_reco )
@@ -288,105 +306,24 @@ logger.info("Total over all matrix reco bins (including fid overflows): %6.2f. y
 #            matrix_norm.SetBinContent(n_gen+1,n_reco+1, matrix_norm.GetBinContent(n_gen+1,n_reco+1)/tot)
 
 # regularization
-regMode = ROOT.TUnfold.kRegModeNone
+#regMode = ROOT.TUnfold.kRegModeNone
 #regMode = ROOT.TUnfold.kRegModeSize
 #regMode = ROOT.TUnfold.kRegModeDerivative
-#regMode = ROOT.TUnfold.kRegModeCurvature
+regMode = ROOT.TUnfold.kRegModeCurvature
 #regMode = ROOT.TUnfold.kRegModeMixed
 
 # extra contrains
-#constraintMode = ROOT.TUnfold.kEConstraintNone
-constraintMode = ROOT.TUnfold.kEConstraintArea
+constraintMode = ROOT.TUnfold.kEConstraintNone
+#constraintMode = ROOT.TUnfold.kEConstraintArea
 
 mapping = ROOT.TUnfold.kHistMapOutputVert
 #mapping = ROOT.TUnfold.kHistMapOutputHoriz
-
-#densityFlags = ROOT.TUnfoldDensity.kDensityModeNone
-#densityFlags = ROOT.TUnfoldDensity.kDensityModeUser
-densityFlags = ROOT.TUnfoldDensity.kDensityModeBinWidth
-#densityFlags = ROOT.TUnfoldDensity.kDensityModeBinWidthAndUser
-
-#for regMode in [ ROOT.TUnfold.kRegModeNone, ROOT.TUnfold.kRegModeSize, ROOT.TUnfold.kRegModeDerivative, ROOT.TUnfold.kRegModeCurvature ]:
-#    for constraintMode in [ROOT.TUnfold.kEConstraintNone, ROOT.TUnfold.kEConstraintArea] :
-#        for densityFlags in [ROOT.TUnfoldDensity.kDensityModeNone, ROOT.TUnfoldDensity.kDensityModeUser, ROOT.TUnfoldDensity.kDensityModeBinWidth, ROOT.TUnfoldDensity.kDensityModeBinWidthAndUser ]:
-postfix = "_".join(map(str, [ regMode, constraintMode, densityFlags]))
 
 #unfold = ROOT.TUnfoldDensity( matrix, mapping, regMode, constraintMode, densityFlags)
 unfold = ROOT.TUnfold( matrix, mapping, regMode, constraintMode)
 unfold.SetInput( reco_spectrum )
 
-
-#unfold.RegularizeBins(1, 1, matrix.GetNbinsY(), ROOT.TUnfold.kRegModeCurvature)
-
-#nScan       = 200
-#rhoLogTau   = ROOT.TSpline3()
-##iBest = unfold.ScanTau(nScan, 10**-6, 0.5, rhoLogTau, ROOT.TUnfoldDensity.kEScanTauRhoMax, "signal", SCAN_AXISSTEERING, lCurve);
-#iBest = unfold.ScanTau(nScan, 10**-6, 2, rhoLogTau, ROOT.TUnfoldDensity.kEScanTauRhoSquareAvg)
-##iBest = unfold.ScanTau(nScan, 10**-6, 2, rhoLogTau, ROOT.TUnfoldDensity.kEScanTauRhoMax)
-## create graphs with one point to visualize best choice of tau
-#t   = ROOT.Double()
-#rho = ROOT.Double()
-#rhoLogTau.GetKnot(iBest,t,rho)
-#bestRhoLogTau = ROOT.TGraph(1,array.array('d',[t]),array.array('d',[rho]))
-#tAll   = []
-#rhoAll = []
-#for i in range(nScan):
-#    rhoLogTau.GetKnot(i,t,rho)
-#    tAll.append( t )
-#    rhoAll.append( rho )
-#
-#knots = ROOT.TGraph(nScan,array.array('d',tAll), array.array('d',rhoAll))
-#print "chi**2=", unfold.GetChi2A(), "+", unfold.GetChi2L(), " / ",unfold.GetNdf()
-#c = ROOT.TCanvas("ScanTau","ScanTau")
-#knots.SetTitle("#rho ( log(#tau) )")
-#rhoLogTau.SetTitle("#rho ( log(#tau) )")
-#bestRhoLogTau.SetTitle("#rho ( log(#tau) )")
-#knots.Draw("*")
-#
-#rhoLogTau.Draw()
-#bestRhoLogTau.SetMarkerColor(ROOT.kRed)
-#bestRhoLogTau.Draw("*")
-#for s in [ knots, bestRhoLogTau ]:
-#    s.GetXaxis().SetTitle("log(#tau)")
-#    s.GetYaxis().SetTitle("#rho")
-#
-#c.RedrawAxis()
-#c.Print(os.path.join(plot_directory_, "ScanTau.png"))
-#c.Print(os.path.join(plot_directory_, "ScanTau.pdf"))
-#
-#best_logtau = bestRhoLogTau.GetX()[0]
-#print "Found best tau at",  best_logtau
-#
-#hs = []
-#for i_factor, factor in enumerate( reversed([ 0, 0.01, 0.1, 0.5, 1, 1.5, 10, 100 ]) ):
-#    unfold.DoUnfold(10**(best_logtau)*factor)
-#    h = unfold.GetOutput("unfoldedMC")
-#    h.legendText = ( "log(#tau) = %6.4f" % (best_logtau + log(factor,10)) + ("(best)" if factor==1 else "") if factor > 0 else  "log(#tau) = -#infty" )
-#    h.style = styles.lineStyle( 1+ i_factor)
-#    hs.append( h )
-#
-#for logY in [True, False]:
-#    plot = Plot.fromHisto( name = 'unfolding_comparison' + '_'+postfix + ('_log' if logY else ''),  histos = [[ h ] for h in hs], texX = "p_{T}", texY = "Events" )
-#    plot.stack = None
-#    plotting.draw(plot,
-#        plot_directory = plot_directory_,
-#        #ratio          = {'yRange':(0.6,1.4)} if len(plot.stack)>=2 else None,
-#        logX = False, logY = logY, sorting = False,
-#        #yRange         = (0.5, 1.5) ,
-#        #scaling        = {0:1} if len(plot.stack)==2 else {},
-#        legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
-#        drawObjects    = drawObjects()
-#      )
-
-## FIXME
-#for i in range(settings.unfolding_data_input.GetNbinsX()+2):
-#    settings.unfolding_data_input.SetBinError(i, 0)
-#for i in range(settings.unfolding_data_input.GetNbinsX()+2):
-#    for j in range(settings.unfolding_data_input.GetNbinsY()+2):
-#        matrix.SetBinError(i, j, 0)
-
-# closure 
-
+stuff = []
 def getOutput( input_spectrum, name = "unfolded_spectrum", tau = 0.): #Why should TUnfold and TUnfoldDensity have the same interface???
     if isinstance( unfold, ROOT.TUnfoldDensity ):
         unfold.SetInput( input_spectrum )
@@ -394,13 +331,37 @@ def getOutput( input_spectrum, name = "unfolded_spectrum", tau = 0.): #Why shoul
         return unfold.GetOutput(name)
     elif isinstance( unfold, ROOT.TUnfold ):
         unfolded_mc_spectrum = matrix.ProjectionY(name)
+        stuff.append( unfolded_mc_spectrum )
         unfolded_mc_spectrum.Clear()
         unfold.SetInput( input_spectrum )
         unfold.DoUnfold(tau)
         unfold.GetOutput(unfolded_mc_spectrum)
         return unfolded_mc_spectrum
 
-unfolded_mc_spectrum = getOutput( reco_spectrum, "unfolded_mc_spectrum") 
+unfolded_mc_spectrum = getOutput( reco_spectrum, "unfolded_mc_spectrum", tau=0) 
+
+lCurveScanner = scanner.LCurveScanner()
+lCurveScanner.scan_L( unfold, 200, 5*10**-8, .04)
+lCurveScanner.plot_scan_L_curve(plot_directory_)
+lCurveScanner.plot_scan_L_curvature(plot_directory_)
+
+best_logtau = log(lCurveScanner.tau, 10)
+
+hs = []
+for i_factor, factor in enumerate( reversed([  0, 0.5, 1, 1.5, 2 ]) ):
+    h = getOutput(reco_spectrum, tau=10**(best_logtau)*factor)
+    h.legendText = ( "log(#tau) = %6.4f" % (best_logtau + log(factor,10)) + ("(best)" if factor==1 else "") if factor > 0 else  "log(#tau) = -#infty" )
+    h.style = styles.lineStyle( 1+ i_factor)
+    hs.append( h )
+
+
+
+for logY in [True]:
+    plot = Plot.fromHisto( name = 'unfolding_comparison' + ('_log' if logY else ''),  histos = [[ h ] for h in hs], texX = "p_{T}", texY = "Events" )
+    plot.stack = None
+    draw(plot, logY = logY)
+
+# closure 
 
 for logY in [True, False]:
     unfolded_mc_spectrum  .style =  styles.lineStyle( ROOT.kRed, width = 1, errors=True)
@@ -410,25 +371,17 @@ for logY in [True, False]:
     
     plot = Plot.fromHisto( name = 'unfolding_closure' + ('_log' if logY else ''),  histos = [[ h ] for h in [fiducial_spectrum, unfolded_mc_spectrum]], texX = "p_{T}", texY = "Events" )
     plot.stack = None
-    plotting.draw(plot,
-        plot_directory = plot_directory_,
-        #ratio          = {'yRange':(0.6,1.4)} if len(plot.stack)>=2 else None,
-        logX = False, logY = logY, sorting = False,
-        #yRange         = (0.5, 1.5) ,
-        #scaling        = {0:1} if len(plot.stack)==2 else {},
-        legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
-        drawObjects    = drawObjects()
-      )
+    draw(plot, logY = logY)
 
 # unfolding the data
 if not hasattr(settings, "unfolding_data_input"):
     sys.exit(0)
 unfolding_data_output = getOutput(settings.unfolding_data_input, "unfolding_data_input")
-unfolding_data_output.Scale(1./settings.lumi_factor)
+#unfolding_data_output.Scale(1./settings.lumi_factor)
 
 # unfolding the mc
 unfolding_mc_output = getOutput(settings.unfolding_mc_input, "unfolding_mc_input")
-unfolding_mc_output.Scale(1./settings.lumi_factor)
+#unfolding_mc_output.Scale(1./settings.lumi_factor)
 
 # unfolding the error bands
 boxes = []
@@ -438,8 +391,8 @@ for band in reversed(settings.systematic_bands):
     band['down_unfolded'] = getOutput(band['down'], "band_%s_down_unfolded"%band['name'])
     band['ref_unfolded']  = getOutput(band['ref'], "band_%s_ref_unfolded"%band['name'])
 
-    for h in [ band['up_unfolded'], band['down_unfolded'], band['ref_unfolded']]:
-        h.Scale(1./settings.lumi_factor)
+    #for h in [ band['up_unfolded'], band['down_unfolded'], band['ref_unfolded']]:
+        #h.Scale(1./settings.lumi_factor)
 
     for i in range(1, band['ref_unfolded'].GetNbinsX()+1):
         box = ROOT.TBox( band['ref_unfolded'].GetXaxis().GetBinLowEdge(i),  
@@ -472,7 +425,7 @@ unfolding_mc_output.legendText   = settings.mc_legendText
 plotting.draw(
     Plot.fromHisto( "unfolded_spectrum",
                 [[unfolding_mc_output],[unfolding_data_output]],
-                texX = settings.tex_unf,
+               texX = settings.tex_unf,
                 texY = settings.texY,
             ),
     plot_directory = plot_directory_,
@@ -486,3 +439,110 @@ plotting.draw(
     copyIndexPHP = True,
     redrawHistos = True,
 )
+
+def get_TMatrixD( histo ):
+    Tmatrix = ROOT.TMatrixD(histo.GetNbinsX(),histo.GetNbinsY())
+    for i in range( histo.GetNbinsX() ): 
+        for j in range( histo.GetNbinsY() ):
+            Tmatrix[i][j] = histo.GetBinContent(i+1,j+1)
+    return Tmatrix
+
+# probability matrix
+
+# Do it once again!
+unfolding_data_output = getOutput(settings.unfolding_data_input, "unfolding_data_input")
+
+probability_matrix = matrix.Clone()
+probability_matrix.Clear()
+unfold.GetProbabilityMatrix(probability_matrix,mapping)
+probability_TMatrix = get_TMatrixD( probability_matrix )
+plot_probability_matrix = Plot2D.fromHisto("probability_matrix", [[probability_matrix]], texY = plot_matrix.texY, texX = plot_matrix.texX )
+draw2D( plot_probability_matrix)
+
+# output covariance matrix
+output_covariance_matrix = ROOT.TH2D("output_covariance_matrix", "output_covariance_matrix", len(settings.fiducial_thresholds)-1, array.array('d', settings.fiducial_thresholds), len(settings.fiducial_thresholds)-1, array.array('d', settings.fiducial_thresholds) )
+unfold.GetEmatrix( output_covariance_matrix )
+output_covariance_TMatrix = get_TMatrixD( output_covariance_matrix )
+
+plot_output_covariance_matrix = Plot2D.fromHisto("output_covariance_matrix", [[output_covariance_matrix]], texY = settings.tex_gen, texX = settings.tex_gen )
+draw2D( plot_output_covariance_matrix )
+
+# output correlation matrix
+output_correlation_matrix = output_covariance_matrix.Clone("output_correlation_matrix")
+for i in range( 1, output_correlation_matrix.GetNbinsX()+1 ): 
+    for j in range( 1, output_correlation_matrix.GetNbinsY()+1 ): 
+        if output_correlation_matrix.GetBinContent(i,i)!=0 and output_correlation_matrix.GetBinContent(j,j)!=0:
+            output_correlation_matrix.SetBinContent(i, j, output_covariance_matrix.GetBinContent(i,j)/sqrt(output_covariance_matrix.GetBinContent(i,i)*output_covariance_matrix.GetBinContent(j,j)))
+        else:
+            output_correlation_matrix.SetBinContent(i, j, 0.)
+
+plot_output_correlation_matrix = Plot2D.fromHisto("output_correlation_matrix", [[output_correlation_matrix]], texY = settings.tex_gen, texX = settings.tex_gen )
+plotting.draw2D( plot_output_correlation_matrix )
+
+# input inverse covariance matrix
+input_inverse_covariance_matrix = ROOT.TH2D("input_inverse_covariance_matrix", "input_inverse_covariance_matrix", len(settings.reco_thresholds)-1, array.array('d', settings.reco_thresholds), len(settings.reco_thresholds)-1, array.array('d', settings.reco_thresholds) )
+unfold.GetInputInverseEmatrix( input_inverse_covariance_matrix )
+input_inverse_covariance_TMatrix = get_TMatrixD( input_inverse_covariance_matrix )
+
+plot_input_inverse_covariance_matrix = Plot2D.fromHisto("input_inverse_covariance_matrix", [[input_inverse_covariance_matrix]], texY = settings.tex_reco, texX = settings.tex_reco )
+plotting.draw2D( plot_input_inverse_covariance_matrix )
+
+# input covariance matrix
+input_inverse_covariance_TMatrix = get_TMatrixD( input_inverse_covariance_matrix )
+input_covariance_TMatrix = input_inverse_covariance_TMatrix.Clone() 
+input_covariance_TMatrix.Invert()
+input_covariance_matrix = ROOT.TH2D("input_covariance_matrix", "input_covariance_matrix", len(settings.reco_thresholds)-1, array.array('d', settings.reco_thresholds), len(settings.reco_thresholds)-1, array.array('d', settings.reco_thresholds) )
+for i in range( input_covariance_matrix.GetNbinsX() ): 
+    for j in range( input_covariance_matrix.GetNbinsY() ):
+        input_covariance_matrix.SetBinContent(i+1,j+1,input_covariance_TMatrix[i][j]) 
+plot_input_covariance_matrix = Plot2D.fromHisto("input_covariance_matrix", [[input_covariance_matrix]], texY = settings.tex_reco, texX = settings.tex_reco )
+plotting.draw2D( plot_input_covariance_matrix )
+
+input_correlation_matrix = input_covariance_matrix.Clone("input_correlation_matrix")
+for i in range( 1, input_correlation_matrix.GetNbinsX()+1 ): 
+    for j in range( 1, input_correlation_matrix.GetNbinsY()+1 ): 
+        if input_correlation_matrix.GetBinContent(i,i)!=0 and input_correlation_matrix.GetBinContent(j,j)!=0:
+            input_correlation_matrix.SetBinContent(i, j, input_covariance_matrix.GetBinContent(i,j)/sqrt(input_covariance_matrix.GetBinContent(i,i)*input_covariance_matrix.GetBinContent(j,j)))
+        else:
+            input_correlation_matrix.SetBinContent(i, j, 0.)
+
+plot_input_correlation_matrix = Plot2D.fromHisto("input_correlation_matrix", [[input_correlation_matrix]], texY = settings.tex_reco, texX = settings.tex_reco )
+plotting.draw2D( plot_input_correlation_matrix )
+
+
+#Vxx_Inv = ROOT.TMatrixD( ROOT.TMatrixD(probability_TMatrix, ROOT.TMatrixD.kMult, input_inverse_covariance_TMatrix), ROOT.TMatrixD.kMult, ROOT.TMatrixD(ROOT.TMatrixD.kTransposed,probability_TMatrix) )
+Vxx_Inv = ROOT.TMatrixD( ROOT.TMatrixD(ROOT.TMatrixD(ROOT.TMatrixD.kTransposed,probability_TMatrix), ROOT.TMatrixD.kMult, input_inverse_covariance_TMatrix), ROOT.TMatrixD.kMult, probability_TMatrix )
+
+Vxx = ROOT.TMatrixD( ROOT.TMatrixD.kInverted, Vxx_Inv )
+
+
+#unfold.IsA().Destructor( unfold ) 
+
+## input correlation matrix
+#input_correlation_matrix = input_covariance_matrix.Clone("input_correlation_matrix")
+#for i in range( 1, input_correlation_matrix.GetNbinsX()+1 ): 
+#    for j in range( 1, input_correlation_matrix.GetNbinsY()+1 ): 
+#        if input_correlation_matrix.GetBinContent(i,i)!=0 and input_correlation_matrix.GetBinContent(j,j)!=0:
+#            input_correlation_matrix.SetBinContent(i, j, input_covariance_matrix.GetBinContent(i,j)/sqrt(input_covariance_matrix.GetBinContent(i,i)*input_covariance_matrix.GetBinContent(j,j)))
+#        else:
+#            input_correlation_matrix.SetBinContent(i, j, 0.)
+#
+#plot_input_correlation_matrix = Plot2D.fromHisto("input_correlation_matrix", [[input_correlation_matrix]], texY = settings.tex_gen, texX = settings.tex_gen )
+#plotting.draw2D( plot_input_correlation_matrix,
+#                 plot_directory = plot_directory_,
+#                 logX = False, logY = False, logZ = False,
+#                 drawObjects = drawObjects(),
+#                 copyIndexPHP = True,
+#                )
+
+#Vxx = Dxy Vyy^-1 Dxy^T
+#    = (E A^T Vyy^-1) Vyy (E A^T Vyy^-1)^T
+#    = (A^T V_yy^-1 A)^-1 A^T Vyy^-1 Vyy ((A^T V_yy^-1 A)^-1 A^T Vyy^-1)^T 
+#    = (A^T V_yy^-1 A)^-1 A^T Vyy^-1 A (A^T V_yy^-1 A)^-1^T
+#    = (A^T V_yy^-1 A)^-1^T
+#    = (A^T V_yy^-1 A)^-1
+#
+#
+#
+#NR: E A^T Vyy^-1 = (A^T V_yy^-1 A)^-1 A^T Vyy^-1
+#                 (= A^-1)
