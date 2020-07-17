@@ -137,6 +137,8 @@ class TauScanner():
         leg.AddEntry(self.graph_best_scan_point, 'Chosen point: #tau = {}'.format(self.tau), 'P')
         leg.Draw()
 
+        if not os.path.exists( output_dirname ):
+            os.makedirs( output_dirname )
         for ext in ['png', 'pdf', 'root']:
             canv_tau_scan.Print(os.path.join(output_dirname, 'scan_tau.'+ext))
 
@@ -224,6 +226,8 @@ class LCurveScanner():
         leg.AddEntry(self.graph_best_scan_point, 'Chosen point: #tau = {}'.format(self.tau), 'P')
         leg.Draw()
 
+        if not os.path.exists( output_dirname ):
+            os.makedirs( output_dirname )
         for ext in ['png', 'pdf', 'root']:
             canv_L_scan.Print(os.path.join(output_dirname, 'scan_L_curve.'+ext))
 
@@ -250,6 +254,8 @@ class LCurveScanner():
         leg.AddEntry(self.graph_log_tau_curvature_best, 'Chosen point: #tau = {}'.format(self.tau), 'P')
         leg.Draw()
 
+        if not os.path.exists( output_dirname ):
+            os.makedirs( output_dirname )
         for ext in ['pdf','png','root']:
             canv_L_curvature.Print(os.path.join(output_dirname, 'scan_L_curvature.'+ext))
 
