@@ -48,8 +48,12 @@ if os.environ["USER"] in ["lukas.lechner"]: #CBE cluster
     gridpack_directory                  = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/gridpacks/"
 
     analysis_results                    = results_directory
+#    cache_directory                     = "/users/lukas.lechner/public/cache/"
 #    cache_directory                     = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache/"
     cache_directory                     = "/scratch/lukas.lechner/TTGammaEFT/cache/"
+    unfolding_cache_directory           = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache/"
+
+>>>>>>> c4cc1bee7f4e27d718872de4e171d251b868666a
     combineReleaseLocation              = "/users/lukas.lechner/public/CMSSW_10_2_18/src/tmp/"
     cardfileLocation                    = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/results/cardfiles/"
 
@@ -68,6 +72,7 @@ if os.environ["USER"] in ["robert.schoefbeck"]: #CBE cluster
 
     analysis_results                    = results_directory
     cache_directory                     = "/users/robert.schoefbeck/public/cache/"
+    unfolding_cache_directory           = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache/"
     combineReleaseLocation              = "/users/robert.schoefbeck/public/CMSSW_10_2_18/src/tmp/"
     cardfileLocation                    = "/mnt/hephy/cms/robert.schoefbeck/TTGammaEFT/results/cardfiles/"
 
