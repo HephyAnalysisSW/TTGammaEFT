@@ -160,9 +160,6 @@ weight = lambda event, sample: event.weight
 # MET Filter cut for data and MC
 filterCutData = getFilterCut( args.year, isData=True, skipBadChargedCandidate=True )
 filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )
-# Trigger cuts for MC (already applied for Data)
-tr            = TriggerSelector( args.year, singleLepton=True ) #single lepton trigger also for DY CR
-triggerCutMc  = tr.getSelection( "MC" )
 
 # Sample definition
 mc = [ mc_samples.TTG, mc_samples.TT_pow, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
@@ -183,7 +180,7 @@ else:
     # add here variables that should be read only for Data samples
     data_sample.read_variables = read_variables_Data
     # set additional cuts specific for data
-    data_sample.setSelectionString( [ filterCutData ] )
+    data_sample.setSelectionString( [ filterCutData, "triggered==1" ] )
     # change the style of the data sample (dots with error bars)
     data_sample.style = styles.errorStyle( ROOT.kBlack )
     # you can scale the histograms of each sample by defining sample.scale (don't scale data)
@@ -199,7 +196,7 @@ for sample in mc:
     sample.read_variables = read_variables_MC
     # set additional cuts specific for MC
     # overlapremoval for separating samples with and without a photon (e.g. ttbar from ttgamma)
-    sample.setSelectionString( [ filterCutMc, triggerCutMc, "overlapRemoval==1" ] )
+    sample.setSelectionString( [ filterCutMc, "triggered==1", "overlapRemoval==1" ] )
     # you can scale the histograms of each sample by defining sample.scale (don't scale data)
     # Scale the MC histograms by the luminosity taken by CMS in each year
     sample.scale          = lumi_scale
