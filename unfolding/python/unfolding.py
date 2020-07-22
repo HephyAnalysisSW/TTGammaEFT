@@ -68,14 +68,17 @@ cache_dir = os.path.join(cache_directory, "unfolding", year_str, "matrix")
 dirDB     = MergingDirDB(cache_dir)
 
 # specifics from the arguments
-plot_directory_ = os.path.join( plot_directory, "unfolding", args.settings, year_str, args.plot_directory)
+plot_directory_ = os.path.join( plot_directory, "unfolding", args.plot_directory, args.settings)
 cfg_key         = ( args.small, year_str, args.settings)
 
 read_variables = [ "weight/F", "year/I",
+                   "triggered/I", "overlapRemoval/I",
                    "nPhotonGood/I", "nJetGood/I", "nBTagGood/I", "nLeptonTight/I", "nLeptonVetoIsoCorr/I", "nPhotonNoChgIsoNoSieie/I",
-                   "PhotonGood0_pt/F", "triggered/I", "overlapRemoval/I",
-                   "GenPhotonATLASUnfold0_pt/F", "GenPhotonCMSUnfold0_pt/F",
-                   "nGenLeptonATLASUnfold/I", "nGenPhotonATLASUnfold/I", "nGenBJetATLASUnfold/I", "nGenJetsATLASUnfold/I",
+                   "PhotonGood0_pt/F", "PhotonGood0_eta/F","PhotonGood0_phi/F",
+                   "GenPhotonCMSUnfold0_pt/F", "GenPhotonCMSUnfold0_eta/F", "GenPhotonCMSUnfold0_phi/F",
+                   "genLCMStight0GammadR/F",
+                   "LeptonTight0_eta/F", "LeptonTight0_phi/F", "LeptonTight0_pt/F",
+
                    "nGenLeptonCMSUnfold/I", "nGenPhotonCMSUnfold/I", "nGenBJetCMSUnfold/I", "nGenJetsCMSUnfold/I",
                    "reweightHEM/F", "reweightTrigger/F", "reweightL1Prefire/F", "reweightPU/F", "reweightLeptonTightSF/F", "reweightLeptonTrackingTightSF/F", "reweightPhotonSF/F", "reweightPhotonElectronVetoSF/F", "reweightBTag_SF/F",
                     "Flag_goodVertices/I", "Flag_globalSuperTightHalo2016Filter/I", "Flag_HBHENoiseFilter/I", "Flag_HBHENoiseIsoFilter/I", "Flag_EcalDeadCellTriggerPrimitiveFilter/I", "Flag_BadPFMuonFilter/I", "PV_ndof/F", "PV_x/F", "PV_y/F", "PV_z/F"
@@ -159,11 +162,24 @@ else:
                 }
 
         # Sample for this year (fix)
-        ttg0l = Sample.fromDirectory("ttg0l_%s"%year, directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v47/inclusive/TTGHad_LO/".format(year=year)])
-        ttg1l = Sample.fromDirectory("ttg1l_%s"%year, directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v47/inclusive/TTGSingleLep_LO/".format(year=year)])
-        ttg2l = Sample.fromDirectory("ttg2l_%s"%year, directory = ["/scratch/robert.schoefbeck/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v47/inclusive/TTGLep_LO/".format(year=year)])
+        ttg0l = Sample.fromDirectory("ttg0l_%s"%year, directory = ["/scratch/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v48/inclusive/TTGHad_LO/".format(year=year)])
+        ttg1l = Sample.fromDirectory("ttg1l_%s"%year, directory = ["/scratch/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v48/inclusive/TTGSingleLep_LO/".format(year=year)])
+        ttg2l = Sample.fromDirectory("ttg2l_%s"%year, directory = ["/scratch/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v48/inclusive/TTGLep_LO/".format(year=year)])
 
         sample = Sample.combine( "ttg_%s"%year, [ttg1l, ttg2l, ttg0l] )
+
+        # check if variables are TTreeFormulas
+        if type( settings.reco_variable ) == type({}) and len(settings.reco_variable)==1:
+            reco_variable_name = settings.reco_variable.keys()[0]
+            ttreeFormulas.update( settings.reco_variable )
+        else:
+            reco_variable_name = settings.reco_variable
+        if type( settings.fiducial_variable ) == type({}) and len(settings.fiducial_variable)==1:
+            fiducial_variable_name = settings.fiducial_variable.keys()[0]
+            ttreeFormulas.update( settings.fiducial_variable )
+        else:
+            fiducial_variable_name = settings.fiducial_variable
+ 
 
         # Apply 'small'
         if args.small:           
@@ -192,22 +208,25 @@ else:
             shift_year =  i_year*settings.max_reco_val
 
             # reco observable 
-            reco_variable_val       = getattr( r.event, settings.reco_variable )
+            reco_variable_val       = getattr( r.event, reco_variable_name )
 
             # put reco overflow in the last bin
-            if reco_variable_val >= settings.max_reco_val:
+            if reco_variable_val >= settings.max_reco_val and (settings.reco_overflow in ["upper","both"]):
                 reco_variable_val = settings.max_reco_bincenter 
 
             # fiducial observable 
-            fiducial_variable_val   = getattr( r.event, settings.fiducial_variable ) 
+            fiducial_variable_val   = getattr( r.event, fiducial_variable_name ) 
 
             # put fiducial overflow in the last bin
-            if fiducial_variable_val >= settings.max_fiducial_val:
+            if fiducial_variable_val >= settings.max_fiducial_val and (settings.fiducial_overflow in ["upper", "both"] ):
                 fiducial_variable_val = settings.max_fiducial_bincenter 
 
             # Sanity check: A fiducial event should have a fiducial_variable_val that is within the fiducial thresholds
             val_in_fiducial = ( fiducial_variable_val>=settings.fiducial_thresholds[0] and fiducial_variable_val<settings.fiducial_thresholds[-1] )
             assert val_in_fiducial or not r.event.is_fiducial, "Fiducial variable %s=%f not in fiducial regions %r"%( settings.fiducial_variable, fiducial_variable_val, settings.fiducial_thresholds )
+            # Sanity check: A reco event should have a reco_variable_val that is within the reco thresholds
+            val_in_reco = ( reco_variable_val>=settings.reco_thresholds[0] and reco_variable_val<settings.reco_thresholds[-1] )
+            assert val_in_reco or not r.event.is_reco, "reco variable %s=%f not in reco regions %r"%( settings.reco_variable, reco_variable_val, settings.reco_thresholds )
                  
             if r.event.is_reco:
                 # counter
@@ -565,101 +584,81 @@ plotting.draw(
     redrawHistos = True,
 )
 
-#sys.exit(0)
-#
-#def get_TMatrixD( histo ):
-#    Tmatrix = ROOT.TMatrixD(histo.GetNbinsX(),histo.GetNbinsY())
-#    for i in range( histo.GetNbinsX() ): 
-#        for j in range( histo.GetNbinsY() ):
-#            Tmatrix[i][j] = histo.GetBinContent(i+1,j+1)
-#    return Tmatrix
-#
-## probability matrix
-#
-## Do it once again!
-#unfolding_data_output = getOutput(settings.unfolding_data_input, "unfolding_data_input")
-#
-#probability_matrix = matrix.Clone()
-#probability_matrix.Clear()
-#unfold.GetProbabilityMatrix(probability_matrix,mapping)
-#probability_TMatrix = get_TMatrixD( probability_matrix )
-#plot_probability_matrix = Plot2D.fromHisto("probability_matrix", [[probability_matrix]], texY = plot_matrix.texY, texX = plot_matrix.texX )
-#draw2D( plot_probability_matrix )
-#
-## output covariance matrix
-#output_covariance_matrix = ROOT.TH2D("output_covariance_matrix", "output_covariance_matrix", len(settings.fiducial_thresholds)-1, array.array('d', settings.fiducial_thresholds), len(settings.fiducial_thresholds)-1, array.array('d', settings.fiducial_thresholds) )
-#unfold.GetEmatrix( output_covariance_matrix )
-#output_covariance_TMatrix = get_TMatrixD( output_covariance_matrix )
-#
-#plot_output_covariance_matrix = Plot2D.fromHisto("output_covariance_matrix", [[output_covariance_matrix]], texY = settings.tex_gen, texX = settings.tex_gen )
-#draw2D( plot_output_covariance_matrix )
-#
-## output correlation matrix
-#output_correlation_matrix = output_covariance_matrix.Clone("output_correlation_matrix")
-#for i in range( 1, output_correlation_matrix.GetNbinsX()+1 ): 
-#    for j in range( 1, output_correlation_matrix.GetNbinsY()+1 ): 
-#        if output_correlation_matrix.GetBinContent(i,i)!=0 and output_correlation_matrix.GetBinContent(j,j)!=0:
-#            output_correlation_matrix.SetBinContent(i, j, output_covariance_matrix.GetBinContent(i,j)/sqrt(output_covariance_matrix.GetBinContent(i,i)*output_covariance_matrix.GetBinContent(j,j)))
-#        else:
-#            output_correlation_matrix.SetBinContent(i, j, 0.)
-#
-#plot_output_correlation_matrix = Plot2D.fromHisto("output_correlation_matrix", [[output_correlation_matrix]], texY = settings.tex_gen, texX = settings.tex_gen )
-#draw2D( plot_output_correlation_matrix )
-#
-## input inverse covariance matrix
-#input_inverse_covariance_matrix = ROOT.TH2D("input_inverse_covariance_matrix", "input_inverse_covariance_matrix", len(settings.reco_thresholds)-1, array.array('d', settings.reco_thresholds), len(settings.reco_thresholds)-1, array.array('d', settings.reco_thresholds) )
-#unfold.GetInputInverseEmatrix( input_inverse_covariance_matrix )
-#input_inverse_covariance_TMatrix = get_TMatrixD( input_inverse_covariance_matrix )
-#
-#plot_input_inverse_covariance_matrix = Plot2D.fromHisto("input_inverse_covariance_matrix", [[input_inverse_covariance_matrix]], texY = settings.tex_reco, texX = settings.tex_reco )
-#draw2D( plot_input_inverse_covariance_matrix )
-#
-## input covariance matrix
-#input_inverse_covariance_TMatrix = get_TMatrixD( input_inverse_covariance_matrix )
-#input_covariance_TMatrix = input_inverse_covariance_TMatrix.Clone() 
-#input_covariance_TMatrix.Invert()
-#input_covariance_matrix = ROOT.TH2D("input_covariance_matrix", "input_covariance_matrix", len(settings.reco_thresholds)-1, array.array('d', settings.reco_thresholds), len(settings.reco_thresholds)-1, array.array('d', settings.reco_thresholds) )
-#for i in range( input_covariance_matrix.GetNbinsX() ): 
-#    for j in range( input_covariance_matrix.GetNbinsY() ):
-#        input_covariance_matrix.SetBinContent(i+1,j+1,input_covariance_TMatrix[i][j]) 
-#plot_input_covariance_matrix = Plot2D.fromHisto("input_covariance_matrix", [[input_covariance_matrix]], texY = settings.tex_reco, texX = settings.tex_reco )
-#draw2D( plot_input_covariance_matrix )
-#
-#input_correlation_matrix = input_covariance_matrix.Clone("input_correlation_matrix")
-#for i in range( 1, input_correlation_matrix.GetNbinsX()+1 ): 
-#    for j in range( 1, input_correlation_matrix.GetNbinsY()+1 ): 
-#        if input_correlation_matrix.GetBinContent(i,i)!=0 and input_correlation_matrix.GetBinContent(j,j)!=0:
-#            input_correlation_matrix.SetBinContent(i, j, input_covariance_matrix.GetBinContent(i,j)/sqrt(input_covariance_matrix.GetBinContent(i,i)*input_covariance_matrix.GetBinContent(j,j)))
-#        else:
-#            input_correlation_matrix.SetBinContent(i, j, 0.)
-#
-#plot_input_correlation_matrix = Plot2D.fromHisto("input_correlation_matrix", [[input_correlation_matrix]], texY = settings.tex_reco, texX = settings.tex_reco )
-#draw2D( plot_input_correlation_matrix )
-#
-#
+def get_TMatrixD( histo ):
+    Tmatrix = ROOT.TMatrixD(histo.GetNbinsX(),histo.GetNbinsY())
+    for i in range( histo.GetNbinsX() ): 
+        for j in range( histo.GetNbinsY() ):
+            Tmatrix[i][j] = histo.GetBinContent(i+1,j+1)
+    return Tmatrix
+
+# probability matrix
+
+# Do it once again!
+unfolding_data_output = getOutput(settings.unfolding_data_input, "unfolding_data_input")
+
+probability_matrix = matrix.Clone()
+probability_matrix.Clear()
+unfold.GetProbabilityMatrix(probability_matrix,mapping)
+probability_TMatrix = get_TMatrixD( probability_matrix )
+plot_probability_matrix = Plot2D.fromHisto("probability_matrix", [[probability_matrix]], texY = plot_matrix.texY, texX = plot_matrix.texX )
+draw2D( plot_probability_matrix )
+
+# output covariance matrix
+output_covariance_matrix = ROOT.TH2D("output_covariance_matrix", "output_covariance_matrix", len(settings.fiducial_thresholds)-1, array.array('d', settings.fiducial_thresholds), len(settings.fiducial_thresholds)-1, array.array('d', settings.fiducial_thresholds) )
+unfold.GetEmatrix( output_covariance_matrix )
+output_covariance_TMatrix = get_TMatrixD( output_covariance_matrix )
+
+plot_output_covariance_matrix = Plot2D.fromHisto("output_covariance_matrix", [[output_covariance_matrix]], texY = settings.tex_gen, texX = settings.tex_gen )
+draw2D( plot_output_covariance_matrix )
+
+# output correlation matrix
+output_correlation_matrix = output_covariance_matrix.Clone("output_correlation_matrix")
+for i in range( 1, output_correlation_matrix.GetNbinsX()+1 ): 
+    for j in range( 1, output_correlation_matrix.GetNbinsY()+1 ): 
+        if output_correlation_matrix.GetBinContent(i,i)!=0 and output_correlation_matrix.GetBinContent(j,j)!=0:
+            output_correlation_matrix.SetBinContent(i, j, output_covariance_matrix.GetBinContent(i,j)/sqrt(output_covariance_matrix.GetBinContent(i,i)*output_covariance_matrix.GetBinContent(j,j)))
+        else:
+            output_correlation_matrix.SetBinContent(i, j, 0.)
+
+plot_output_correlation_matrix = Plot2D.fromHisto("output_correlation_matrix", [[output_correlation_matrix]], texY = settings.tex_gen, texX = settings.tex_gen )
+draw2D( plot_output_correlation_matrix )
+
+# input inverse covariance matrix
+input_inverse_covariance_matrix = ROOT.TH2D("input_inverse_covariance_matrix", "input_inverse_covariance_matrix", len(settings.reco_thresholds)-1, array.array('d', settings.reco_thresholds), len(settings.reco_thresholds)-1, array.array('d', settings.reco_thresholds) )
+unfold.GetInputInverseEmatrix( input_inverse_covariance_matrix )
+input_inverse_covariance_TMatrix = get_TMatrixD( input_inverse_covariance_matrix )
+
+plot_input_inverse_covariance_matrix = Plot2D.fromHisto("input_inverse_covariance_matrix", [[input_inverse_covariance_matrix]], texY = settings.tex_reco, texX = settings.tex_reco )
+draw2D( plot_input_inverse_covariance_matrix )
+
+# input covariance matrix
+input_inverse_covariance_TMatrix = get_TMatrixD( input_inverse_covariance_matrix )
+input_covariance_TMatrix = input_inverse_covariance_TMatrix.Clone() 
+input_covariance_TMatrix.Invert()
+input_covariance_matrix = ROOT.TH2D("input_covariance_matrix", "input_covariance_matrix", len(settings.reco_thresholds)-1, array.array('d', settings.reco_thresholds), len(settings.reco_thresholds)-1, array.array('d', settings.reco_thresholds) )
+for i in range( input_covariance_matrix.GetNbinsX() ): 
+    for j in range( input_covariance_matrix.GetNbinsY() ):
+        input_covariance_matrix.SetBinContent(i+1,j+1,input_covariance_TMatrix[i][j]) 
+plot_input_covariance_matrix = Plot2D.fromHisto("input_covariance_matrix", [[input_covariance_matrix]], texY = settings.tex_reco, texX = settings.tex_reco )
+draw2D( plot_input_covariance_matrix )
+
+input_correlation_matrix = input_covariance_matrix.Clone("input_correlation_matrix")
+for i in range( 1, input_correlation_matrix.GetNbinsX()+1 ): 
+    for j in range( 1, input_correlation_matrix.GetNbinsY()+1 ): 
+        if input_correlation_matrix.GetBinContent(i,i)!=0 and input_correlation_matrix.GetBinContent(j,j)!=0:
+            input_correlation_matrix.SetBinContent(i, j, input_covariance_matrix.GetBinContent(i,j)/sqrt(input_covariance_matrix.GetBinContent(i,i)*input_covariance_matrix.GetBinContent(j,j)))
+        else:
+            input_correlation_matrix.SetBinContent(i, j, 0.)
+
+plot_input_correlation_matrix = Plot2D.fromHisto("input_correlation_matrix", [[input_correlation_matrix]], texY = settings.tex_reco, texX = settings.tex_reco )
+draw2D( plot_input_correlation_matrix )
+
+
 ##Vxx_Inv = ROOT.TMatrixD( ROOT.TMatrixD(probability_TMatrix, ROOT.TMatrixD.kMult, input_inverse_covariance_TMatrix), ROOT.TMatrixD.kMult, ROOT.TMatrixD(ROOT.TMatrixD.kTransposed,probability_TMatrix) )
 #Vxx_Inv = ROOT.TMatrixD( ROOT.TMatrixD(ROOT.TMatrixD(ROOT.TMatrixD.kTransposed,probability_TMatrix), ROOT.TMatrixD.kMult, input_inverse_covariance_TMatrix), ROOT.TMatrixD.kMult, probability_TMatrix )
 #
 #Vxx = ROOT.TMatrixD( ROOT.TMatrixD.kInverted, Vxx_Inv )
 
-
-#unfold.IsA().Destructor( unfold ) 
-
-## input correlation matrix
-#input_correlation_matrix = input_covariance_matrix.Clone("input_correlation_matrix")
-#for i in range( 1, input_correlation_matrix.GetNbinsX()+1 ): 
-#    for j in range( 1, input_correlation_matrix.GetNbinsY()+1 ): 
-#        if input_correlation_matrix.GetBinContent(i,i)!=0 and input_correlation_matrix.GetBinContent(j,j)!=0:
-#            input_correlation_matrix.SetBinContent(i, j, input_covariance_matrix.GetBinContent(i,j)/sqrt(input_covariance_matrix.GetBinContent(i,i)*input_covariance_matrix.GetBinContent(j,j)))
-#        else:
-#            input_correlation_matrix.SetBinContent(i, j, 0.)
-#
-#plot_input_correlation_matrix = Plot2D.fromHisto("input_correlation_matrix", [[input_correlation_matrix]], texY = settings.tex_gen, texX = settings.tex_gen )
-#draw2D( plot_input_correlation_matrix,
-#                 plot_directory = plot_directory_,
-#                 logX = False, logY = False, logZ = False,
-#                 drawObjects = drawObjects(),
-#                )
 
 #Vxx = Dxy Vyy^-1 Dxy^T
 #    = (E A^T Vyy^-1) Vyy (E A^T Vyy^-1)^T
