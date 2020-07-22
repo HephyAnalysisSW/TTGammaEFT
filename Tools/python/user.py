@@ -70,7 +70,8 @@ if os.environ["USER"] in ["martina.fellinger"]: #CBE cluster
 
     analysis_results                    = results_directory
     cache_directory                     = "/users/martina.fellinger/public/cache/"
-	unfolding_cache_directory			= "/mnt/hephy/cms/martina.fellinger/TTGammaEFT/cache/"
+
+    unfolding_cache_directory           = "/mnt/hephy/cms/martina.fellinger/TTGammaEFT/cache/"
     combineReleaseLocation              = "/users/martina.fellinger/public/CMSSW_10_2_9/src/tmp"
     cardfileLocation                    = "/mnt/hephy/cms/martina.fellinger/TTGammaEFT/results/cardfiles/"
 
@@ -93,7 +94,6 @@ if os.environ["USER"] in ["lukas.lechner"]: #CBE cluster
     cache_directory                     = "/scratch/lukas.lechner/TTGammaEFT/cache/"
     unfolding_cache_directory           = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache/"
 
->>>>>>> c4cc1bee7f4e27d718872de4e171d251b868666a
     combineReleaseLocation              = "/users/lukas.lechner/public/CMSSW_10_2_18/src/tmp/"
     cardfileLocation                    = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/results/cardfiles/"
 
