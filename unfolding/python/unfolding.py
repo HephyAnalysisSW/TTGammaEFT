@@ -1,6 +1,7 @@
 # Standard imports
 import ROOT
 ROOT.gROOT.SetBatch(True)
+import uuid
 import os, sys, copy, array
 from   math import log, sqrt
 # RootTools
@@ -9,7 +10,7 @@ from RootTools.core.standard          import *
 # Analysis
 from Analysis.Tools.MergingDirDB      import MergingDirDB
 from Analysis.Tools.metFilters        import getFilterCut
-import Analysis.Tools.syncer
+#import Analysis.Tools.syncer
 
 # Internal Imports
 from TTGammaEFT.Tools.user            import plot_directory, cache_directory
@@ -32,6 +33,7 @@ argParser.add_argument("--logLevel",           action="store",      default="INF
 argParser.add_argument("--plot_directory",     action="store",      default="102X_TTG_ppv1_v1",                                              help="plot sub-directory")
 argParser.add_argument("--prefix",             action="store",      default=None,  type=str,                                                 help="for debugging")
 argParser.add_argument("--small",              action="store_true",                                                                          help="Run only on a small subset of the data?")
+argParser.add_argument("--extended",           action="store_true",                                                                          help="Write extended output?")
 argParser.add_argument("--overwrite",          action="store_true",                                                                          help="overwrite cache?")
 argParser.add_argument('--settings',           action='store',      type=str, default="ptG_unfolding_closure",                               help="Settings.")
 
@@ -205,7 +207,7 @@ else:
             yield_tot   += gen_weight_val*reco_reweight_val 
 
             # shift the reco variable to the correct block
-            shift_year =  i_year*settings.max_reco_val
+            shift_year =  i_year*(settings.max_reco_val - settings.min_reco_val)
 
             # reco observable 
             reco_variable_val       = getattr( r.event, reco_variable_name )
@@ -269,7 +271,7 @@ else:
     dirDB.add( loop_key, (matrix, fiducial_spectrum, reco_spectrum, reco_fout_spectrum, yield_fid, yield_fid_reco, yield_reco), overwrite=True )
 
 # Unfolding matrix
-plot_matrix = Plot2D.fromHisto("unfolding_matrix", [[matrix]], texY = settings.tex_gen, texX = settings.tex_reco + " +%i*(year-2016)"%settings.max_reco_val )
+plot_matrix = Plot2D.fromHisto("unfolding_matrix", [[matrix]], texY = settings.tex_gen, texX = settings.tex_reco + " +%i*(year-2016)"%(settings.max_reco_val-settings.min_reco_val) )
 draw2D( plot_matrix, widths = {'x_width':500*len(settings.years)} )
 
 # checking the matrix
@@ -355,6 +357,8 @@ def getOutput( input_spectrum, name = "unfolded_spectrum", tau = 0.): #Why shoul
         unfolded_mc_spectrum = matrix.ProjectionY(name)
         stuff.append( unfolded_mc_spectrum )
         unfolded_mc_spectrum.Clear()
+        unfolded_mc_spectrum.SetName(str(uuid.uuid4()))
+        #ROOT.SetOwnership( histogram, False )
         unfold.SetInput( input_spectrum, 1.0)
         unfold.DoUnfold(tau)
         unfold.GetOutput(unfolded_mc_spectrum)
@@ -416,28 +420,29 @@ if not hasattr(settings, "unfolding_data_input"):
 # input plot unsubtracted
 boxes = []
 ratio_boxes = []
-for band in reversed(settings.systematic_bands):
-    for i in range(1, band['ref'].GetNbinsX()+1):
-        box = ROOT.TBox( band['ref'].GetXaxis().GetBinLowEdge(i),  
-                         band['down'].GetBinContent(i),
-                         band['ref'].GetXaxis().GetBinUpEdge(i),
-                         band['up'].GetBinContent(i),
-             )
-        box.SetLineColor(band['color'])
-        box.SetFillStyle(3244)
-        box.SetFillColor(band['color'])
-        boxes.append(box)
-
-        if band['ref'].GetBinContent(i)!=0: 
-            ratio_box = ROOT.TBox( band['ref'].GetXaxis().GetBinLowEdge(i),  
-                             band['down'].GetBinContent(i)/band['ref'].GetBinContent(i),
-                             band['ref'].GetXaxis().GetBinUpEdge(i),
-                             band['up'].GetBinContent(i)/band['ref'].GetBinContent(i),
-                 )
-            ratio_box.SetLineColor(band['color'])
-            ratio_box.SetFillStyle(3244)
-            ratio_box.SetFillColor(band['color'])
-            ratio_boxes.append(ratio_box)
+#for band in reversed(settings.systematic_bands):
+#    for i in range(1, band['ref'].GetNbinsX()+1):
+#        box = ROOT.TBox( band['ref'].GetXaxis().GetBinLowEdge(i),  
+#                         band['down'].GetBinContent(i),
+#                         band['ref'].GetXaxis().GetBinUpEdge(i),
+#                         band['up'].GetBinContent(i),
+#             )
+#        box.SetLineColor(band['color'])
+#        box.SetFillStyle(3244)
+#        box.SetFillColor(band['color'])
+#        boxes.append(box)
+#        stuff.append(box)
+#        if band['ref'].GetBinContent(i)!=0: 
+#            ratio_box = ROOT.TBox( band['ref'].GetXaxis().GetBinLowEdge(i),  
+#                             band['down'].GetBinContent(i)/band['ref'].GetBinContent(i),
+#                             band['ref'].GetXaxis().GetBinUpEdge(i),
+#                             band['up'].GetBinContent(i)/band['ref'].GetBinContent(i),
+#                 )
+#            ratio_box.SetLineColor(band['color'])
+#            ratio_box.SetFillStyle(3244)
+#            ratio_box.SetFillColor(band['color'])
+#            ratio_boxes.append(ratio_box)
+#            stuff.append(ratio_box)
 
 settings.unfolding_data_input.style = styles.errorStyle( ROOT.kBlack )
 settings.unfolding_mc_input.style   = styles.lineStyle( ROOT.kBlue, width = 2)
@@ -471,27 +476,29 @@ for band in reversed(settings.systematic_bands):
     band['down_subtracted'] = fout_subtraction(band['down'])
     band['up_subtracted']   = fout_subtraction(band['up'])
 
-    for i in range(1, band['ref'].GetNbinsX()+1):
-        box = ROOT.TBox( band['ref_subtracted'].GetXaxis().GetBinLowEdge(i),  
-                         band['down_subtracted'].GetBinContent(i),
-                         band['ref_subtracted'].GetXaxis().GetBinUpEdge(i),
-                         band['up_subtracted'].GetBinContent(i),
-             )
-        box.SetLineColor(band['color'])
-        box.SetFillStyle(3244)
-        box.SetFillColor(band['color'])
-        boxes.append(box)
-
-        if band['ref_subtracted'].GetBinContent(i)!=0: 
-            ratio_box = ROOT.TBox( band['ref_subtracted'].GetXaxis().GetBinLowEdge(i),  
-                             band['down_subtracted'].GetBinContent(i)/band['ref_subtracted'].GetBinContent(i),
-                             band['ref_subtracted'].GetXaxis().GetBinUpEdge(i),
-                             band['up_subtracted'].GetBinContent(i)/band['ref_subtracted'].GetBinContent(i),
-                 )
-            ratio_box.SetLineColor(band['color'])
-            ratio_box.SetFillStyle(3244)
-            ratio_box.SetFillColor(band['color'])
-            ratio_boxes.append(ratio_box)
+#    for i in range(1, band['ref'].GetNbinsX()+1):
+#        box = ROOT.TBox( band['ref_subtracted'].GetXaxis().GetBinLowEdge(i),  
+#                         band['down_subtracted'].GetBinContent(i),
+#                         band['ref_subtracted'].GetXaxis().GetBinUpEdge(i),
+#                         band['up_subtracted'].GetBinContent(i),
+#             )
+#        box.SetLineColor(band['color'])
+#        box.SetFillStyle(3244)
+#        box.SetFillColor(band['color'])
+#        boxes.append(box)
+#        stuff.append(box)
+#
+#        if band['ref_subtracted'].GetBinContent(i)!=0: 
+#            ratio_box = ROOT.TBox( band['ref_subtracted'].GetXaxis().GetBinLowEdge(i),  
+#                             band['down_subtracted'].GetBinContent(i)/band['ref_subtracted'].GetBinContent(i),
+#                             band['ref_subtracted'].GetXaxis().GetBinUpEdge(i),
+#                             band['up_subtracted'].GetBinContent(i)/band['ref_subtracted'].GetBinContent(i),
+#                 )
+#            ratio_box.SetLineColor(band['color'])
+#            ratio_box.SetFillStyle(3244)
+#            ratio_box.SetFillColor(band['color'])
+#            ratio_boxes.append(ratio_box)
+#            stuff.append(ratio_box)
 
 unfolding_data_input_subtracted = fout_subtraction( settings.unfolding_data_input )
 unfolding_mc_input_subtracted   = fout_subtraction( settings.unfolding_mc_input )
@@ -523,6 +530,8 @@ plotting.draw(
 
 unfolding_data_output = getOutput(unfolding_data_input_subtracted, "unfolding_data_input_subtracted")
 unfolding_data_output.Scale(1./settings.lumi_factor)
+
+assert False, ""
 
 # unfolding the mc
 unfolding_mc_output = getOutput(unfolding_mc_input_subtracted, "unfolding_mc_input_subtracted")
@@ -560,6 +569,7 @@ for band in reversed(settings.systematic_bands):
             ratio_box.SetFillStyle(3244)
             ratio_box.SetFillColor(band['color'])
             ratio_boxes.append(ratio_box)
+
 
 unfolding_data_output.style = styles.errorStyle( ROOT.kBlack )
 unfolding_mc_output.style   = styles.lineStyle( ROOT.kBlue, width = 2)
