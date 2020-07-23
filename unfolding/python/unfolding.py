@@ -10,7 +10,7 @@ from RootTools.core.standard          import *
 # Analysis
 from Analysis.Tools.MergingDirDB      import MergingDirDB
 from Analysis.Tools.metFilters        import getFilterCut
-#import Analysis.Tools.syncer
+import Analysis.Tools.syncer
 
 # Internal Imports
 from TTGammaEFT.Tools.user            import plot_directory, cache_directory
@@ -356,9 +356,8 @@ def getOutput( input_spectrum, name = "unfolded_spectrum", tau = 0.): #Why shoul
     elif isinstance( unfold, ROOT.TUnfold ):
         unfolded_mc_spectrum = matrix.ProjectionY(name)
         stuff.append( unfolded_mc_spectrum )
-        unfolded_mc_spectrum.Clear()
+        #unfolded_mc_spectrum.Clear() # This line produces a segfault at exit. 
         unfolded_mc_spectrum.SetName(str(uuid.uuid4()))
-        #ROOT.SetOwnership( histogram, False )
         unfold.SetInput( input_spectrum, 1.0)
         unfold.DoUnfold(tau)
         unfold.GetOutput(unfolded_mc_spectrum)
@@ -420,29 +419,29 @@ if not hasattr(settings, "unfolding_data_input"):
 # input plot unsubtracted
 boxes = []
 ratio_boxes = []
-#for band in reversed(settings.systematic_bands):
-#    for i in range(1, band['ref'].GetNbinsX()+1):
-#        box = ROOT.TBox( band['ref'].GetXaxis().GetBinLowEdge(i),  
-#                         band['down'].GetBinContent(i),
-#                         band['ref'].GetXaxis().GetBinUpEdge(i),
-#                         band['up'].GetBinContent(i),
-#             )
-#        box.SetLineColor(band['color'])
-#        box.SetFillStyle(3244)
-#        box.SetFillColor(band['color'])
-#        boxes.append(box)
-#        stuff.append(box)
-#        if band['ref'].GetBinContent(i)!=0: 
-#            ratio_box = ROOT.TBox( band['ref'].GetXaxis().GetBinLowEdge(i),  
-#                             band['down'].GetBinContent(i)/band['ref'].GetBinContent(i),
-#                             band['ref'].GetXaxis().GetBinUpEdge(i),
-#                             band['up'].GetBinContent(i)/band['ref'].GetBinContent(i),
-#                 )
-#            ratio_box.SetLineColor(band['color'])
-#            ratio_box.SetFillStyle(3244)
-#            ratio_box.SetFillColor(band['color'])
-#            ratio_boxes.append(ratio_box)
-#            stuff.append(ratio_box)
+for band in reversed(settings.systematic_bands):
+    for i in range(1, band['ref'].GetNbinsX()+1):
+        box = ROOT.TBox( band['ref'].GetXaxis().GetBinLowEdge(i),  
+                         band['down'].GetBinContent(i),
+                         band['ref'].GetXaxis().GetBinUpEdge(i),
+                         band['up'].GetBinContent(i),
+             )
+        box.SetLineColor(band['color'])
+        box.SetFillStyle(3244)
+        box.SetFillColor(band['color'])
+        boxes.append(box)
+        stuff.append(box)
+        if band['ref'].GetBinContent(i)!=0: 
+            ratio_box = ROOT.TBox( band['ref'].GetXaxis().GetBinLowEdge(i),  
+                             band['down'].GetBinContent(i)/band['ref'].GetBinContent(i),
+                             band['ref'].GetXaxis().GetBinUpEdge(i),
+                             band['up'].GetBinContent(i)/band['ref'].GetBinContent(i),
+                 )
+            ratio_box.SetLineColor(band['color'])
+            ratio_box.SetFillStyle(3244)
+            ratio_box.SetFillColor(band['color'])
+            ratio_boxes.append(ratio_box)
+            stuff.append(ratio_box)
 
 settings.unfolding_data_input.style = styles.errorStyle( ROOT.kBlack )
 settings.unfolding_mc_input.style   = styles.lineStyle( ROOT.kBlue, width = 2)
@@ -476,29 +475,29 @@ for band in reversed(settings.systematic_bands):
     band['down_subtracted'] = fout_subtraction(band['down'])
     band['up_subtracted']   = fout_subtraction(band['up'])
 
-#    for i in range(1, band['ref'].GetNbinsX()+1):
-#        box = ROOT.TBox( band['ref_subtracted'].GetXaxis().GetBinLowEdge(i),  
-#                         band['down_subtracted'].GetBinContent(i),
-#                         band['ref_subtracted'].GetXaxis().GetBinUpEdge(i),
-#                         band['up_subtracted'].GetBinContent(i),
-#             )
-#        box.SetLineColor(band['color'])
-#        box.SetFillStyle(3244)
-#        box.SetFillColor(band['color'])
-#        boxes.append(box)
-#        stuff.append(box)
-#
-#        if band['ref_subtracted'].GetBinContent(i)!=0: 
-#            ratio_box = ROOT.TBox( band['ref_subtracted'].GetXaxis().GetBinLowEdge(i),  
-#                             band['down_subtracted'].GetBinContent(i)/band['ref_subtracted'].GetBinContent(i),
-#                             band['ref_subtracted'].GetXaxis().GetBinUpEdge(i),
-#                             band['up_subtracted'].GetBinContent(i)/band['ref_subtracted'].GetBinContent(i),
-#                 )
-#            ratio_box.SetLineColor(band['color'])
-#            ratio_box.SetFillStyle(3244)
-#            ratio_box.SetFillColor(band['color'])
-#            ratio_boxes.append(ratio_box)
-#            stuff.append(ratio_box)
+    for i in range(1, band['ref'].GetNbinsX()+1):
+        box = ROOT.TBox( band['ref_subtracted'].GetXaxis().GetBinLowEdge(i),  
+                         band['down_subtracted'].GetBinContent(i),
+                         band['ref_subtracted'].GetXaxis().GetBinUpEdge(i),
+                         band['up_subtracted'].GetBinContent(i),
+             )
+        box.SetLineColor(band['color'])
+        box.SetFillStyle(3244)
+        box.SetFillColor(band['color'])
+        boxes.append(box)
+        stuff.append(box)
+
+        if band['ref_subtracted'].GetBinContent(i)!=0: 
+            ratio_box = ROOT.TBox( band['ref_subtracted'].GetXaxis().GetBinLowEdge(i),  
+                             band['down_subtracted'].GetBinContent(i)/band['ref_subtracted'].GetBinContent(i),
+                             band['ref_subtracted'].GetXaxis().GetBinUpEdge(i),
+                             band['up_subtracted'].GetBinContent(i)/band['ref_subtracted'].GetBinContent(i),
+                 )
+            ratio_box.SetLineColor(band['color'])
+            ratio_box.SetFillStyle(3244)
+            ratio_box.SetFillColor(band['color'])
+            ratio_boxes.append(ratio_box)
+            stuff.append(ratio_box)
 
 unfolding_data_input_subtracted = fout_subtraction( settings.unfolding_data_input )
 unfolding_mc_input_subtracted   = fout_subtraction( settings.unfolding_mc_input )
@@ -530,8 +529,6 @@ plotting.draw(
 
 unfolding_data_output = getOutput(unfolding_data_input_subtracted, "unfolding_data_input_subtracted")
 unfolding_data_output.Scale(1./settings.lumi_factor)
-
-assert False, ""
 
 # unfolding the mc
 unfolding_mc_output = getOutput(unfolding_mc_input_subtracted, "unfolding_mc_input_subtracted")
@@ -603,11 +600,13 @@ def get_TMatrixD( histo ):
 
 # probability matrix
 
+if not args.extended:
+    sys.exit(0)
+ 
 # Do it once again!
 unfolding_data_output = getOutput(settings.unfolding_data_input, "unfolding_data_input")
 
 probability_matrix = matrix.Clone()
-probability_matrix.Clear()
 unfold.GetProbabilityMatrix(probability_matrix,mapping)
 probability_TMatrix = get_TMatrixD( probability_matrix )
 plot_probability_matrix = Plot2D.fromHisto("probability_matrix", [[probability_matrix]], texY = plot_matrix.texY, texX = plot_matrix.texX )
