@@ -37,6 +37,47 @@ if os.environ["USER"] in ["llechner"]: #Heplx, Lxplus
     dpm_directory                       = "/dpm/oeaw.ac.at/home/cms/store/user/llechner/"
     eos_directory                       = "/eos/cms/store/group/phys_susy/hephy/"
 
+
+if os.environ["USER"] in ["mfellinger"]: #Heplx, Lxplus
+    tmp_directory                       = "/afs/hephy.at/data/mfellinger01/Top_tmp/"
+    results_directory                   = "/afs/hephy.at/data/mfellinger01/TTGammaEFT/results/"
+
+    mva_directory                       = "/afs/hephy.at/data/mfellinger01/TTGammaEFT/mva/"
+
+    plot_directory                      = "/afs/hephy.at/user/l/mfellinger/www/TTGammaEFT/"
+
+    postprocessing_output_directory     = "/afs/hephy.at/data/mfellinger03/TTGammaEFT/nanoTuples/"
+    gridpack_directory                  = "/afs/hephy.at/data/mfellinger01/TTGammaEFT/gridpacks/"
+
+    analysis_results                    = results_directory
+    cache_directory                     = "/afs/hephy.at/data/mfellinger01/TTGammaEFT/cache/"
+    combineReleaseLocation              = "/afs/hephy.at/work/l/mfellinger/CMSSW_10_2_9/src/"
+    cardfileLocation                    = "/afs/hephy.at/data/mfellinger01/TTGammaEFT/results/cardfiles/"
+
+    dpm_directory                       = "/dpm/oeaw.ac.at/home/cms/store/user/mfellinger/"
+    eos_directory                       = "/eos/cms/store/group/phys_susy/hephy/"
+
+
+if os.environ["USER"] in ["martina.fellinger"]: #CBE cluster
+    tmp_directory                       = "/mnt/hephy/cms/martina.fellinger/tmp/TTGammaEFT/"
+    results_directory                   = "/mnt/hephy/cms/martina.fellinger/TTGammaEFT/results/"
+
+    mva_directory                       = "/mnt/hephy/cms/martina.fellinger/TTGammaEFT/mva/"
+    plot_directory                      = "/mnt/hephy/cms/martina.fellinger/www/TTGammaEFT/"
+
+    postprocessing_output_directory     = "/scratch/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed"
+    gridpack_directory                  = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/gridpacks/"
+
+    analysis_results                    = results_directory
+    cache_directory                     = "/users/martina.fellinger/public/cache/"
+
+    unfolding_cache_directory           = "/mnt/hephy/cms/martina.fellinger/TTGammaEFT/cache/"
+    combineReleaseLocation              = "/users/martina.fellinger/public/CMSSW_10_2_9/src/tmp"
+    cardfileLocation                    = "/mnt/hephy/cms/martina.fellinger/TTGammaEFT/results/cardfiles/"
+
+    dpm_directory                       = "/scratch/lukas.lechner/TTGammaEFT/nanoTuples/"
+    eos_directory                       = "/mnt/hephy/cms/martina.fellinger/TTGammaEFT/"
+
 if os.environ["USER"] in ["lukas.lechner"]: #CBE cluster
     tmp_directory                       = "/mnt/hephy/cms/lukas.lechner/tmp/TTGammaEFT/"
     results_directory                   = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/results/"
@@ -48,7 +89,9 @@ if os.environ["USER"] in ["lukas.lechner"]: #CBE cluster
     gridpack_directory                  = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/gridpacks/"
 
     analysis_results                    = results_directory
-    cache_directory                     = "/users/lukas.lechner/public/cache/"
+#    cache_directory                     = "/users/lukas.lechner/public/cache/"
+#    cache_directory                     = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache/"
+    cache_directory                     = "/scratch/lukas.lechner/TTGammaEFT/cache/"
     unfolding_cache_directory           = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache/"
 
     combineReleaseLocation              = "/users/lukas.lechner/public/CMSSW_10_2_18/src/tmp/"
