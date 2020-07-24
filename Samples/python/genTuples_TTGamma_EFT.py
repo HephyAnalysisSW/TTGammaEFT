@@ -36,7 +36,6 @@ else:
     ov = False
 
 
-from Samples.Tools.config import redirector as redirector
 dbFile = cache_directory + "/samples/DB_TTGamma_GEN_EFT.sql"
 
 logger.info( "Using db file: %s", dbFile )
@@ -60,37 +59,37 @@ ttGamma_Had_restrict_4WC_order2_ref_rwgt.nEvents               = 1000000
 
 # EFT bkg
 # inclusive decays
-tW_restrict_4WC_order2_ref_rwgt                  = FWLiteSample.fromDAS("tW_restrict_4WC_order2_ref_rwgt", "/tW_rwgt/llechner-tW_rwgt-2d8f5fdca1229e45c3a70a69bd387c61/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
+tW_restrict_4WC_order2_ref_rwgt                  = FWLiteSample.fromDAS("tW_restrict_4WC_order2_ref_rwgt", "/tW_rwgt_ref/llechner-tW_rwgt_ref-2d8f5fdca1229e45c3a70a69bd387c61/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 tW_restrict_4WC_order2_ref_rwgt.reweight_pkl     = os.path.join( gridpack_directory, "EFT", "dipoles", "tW_rwgt", "tW_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
 tW_restrict_4WC_order2_ref_rwgt.xSection         = 48.164 #LO dim6top
 tW_restrict_4WC_order2_ref_rwgt.nEvents          = 5000000
 
 # inclusive decays
-tWG_restrict_4WC_order2_ref_rwgt                  = FWLiteSample.fromDAS("tWG_restrict_4WC_order2_ref_rwgt", "/tWG_rwgt/llechner-tWG_rwgt-7cad25d8018690e060a09b0cfd608304/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
+tWG_restrict_4WC_order2_ref_rwgt                  = FWLiteSample.fromDAS("tWG_restrict_4WC_order2_ref_rwgt", "/tWG_rwgt_ref_v3/llechner-tWG_rwgt_ref_v3-7cad25d8018690e060a09b0cfd608304/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 tWG_restrict_4WC_order2_ref_rwgt.reweight_pkl     = os.path.join( gridpack_directory, "EFT", "dipoles", "tWG_rwgt", "tWG_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
 tWG_restrict_4WC_order2_ref_rwgt.xSection         = 0.339 #LO dim6top
 tWG_restrict_4WC_order2_ref_rwgt.nEvents          = 5000000
 
 # inclusive decays
-st_tch_restrict_4WC_order2_ref_rwgt                  = FWLiteSample.fromDAS("st_tch_restrict_4WC_order2_ref_rwgt", "/st_tch_rwgt/llechner-st_tch_rwgt-553d2d42a0865b5dbac64c04516f94d1/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
+st_tch_restrict_4WC_order2_ref_rwgt                  = FWLiteSample.fromDAS("st_tch_restrict_4WC_order2_ref_rwgt", "/st_tch_rwgt_ref/llechner-st_tch_rwgt_ref-553d2d42a0865b5dbac64c04516f94d1/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 st_tch_restrict_4WC_order2_ref_rwgt.reweight_pkl     = os.path.join( gridpack_directory, "EFT", "dipoles", "st_tch_rwgt", "st_tch_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
 st_tch_restrict_4WC_order2_ref_rwgt.xSection         = 142.049 #LO dim6top
 st_tch_restrict_4WC_order2_ref_rwgt.nEvents          = 5000000
 
 # inclusive decays
-stg_tch_restrict_4WC_order2_ref_rwgt                  = FWLiteSample.fromDAS("stg_tch_restrict_4WC_order2_ref_rwgt", "/stg_tch_rwgt/llechner-stg_tch_rwgt-fe2213c58e4de06cf875593f88d095b3/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
+stg_tch_restrict_4WC_order2_ref_rwgt                  = FWLiteSample.fromDAS("stg_tch_restrict_4WC_order2_ref_rwgt", "/stg_tch_rwgt_ref/llechner-stg_tch_rwgt_ref-fe2213c58e4de06cf875593f88d095b3/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 stg_tch_restrict_4WC_order2_ref_rwgt.reweight_pkl     = os.path.join( gridpack_directory, "EFT", "dipoles", "stg_tch_rwgt", "stg_tch_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
 stg_tch_restrict_4WC_order2_ref_rwgt.xSection         = 3.122 #LO dim6top
 stg_tch_restrict_4WC_order2_ref_rwgt.nEvents          = 5000000
 
 # inclusive decays
-st_sch_restrict_4WC_order2_ref_rwgt                  = FWLiteSample.fromDAS("st_sch_restrict_4WC_order2_ref_rwgt", "/st_sch_rwgt/llechner-st_sch_rwgt-8953fc0dffb64448b800da0f6a738d05/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
+st_sch_restrict_4WC_order2_ref_rwgt                  = FWLiteSample.fromDAS("st_sch_restrict_4WC_order2_ref_rwgt", "/st_sch_rwgt_ref/llechner-st_sch_rwgt_ref-8953fc0dffb64448b800da0f6a738d05/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 st_sch_restrict_4WC_order2_ref_rwgt.reweight_pkl     = os.path.join( gridpack_directory, "EFT", "dipoles", "st_sch_rwgt", "st_sch_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
 st_sch_restrict_4WC_order2_ref_rwgt.xSection         = 7.126 #LO dim6top
 st_sch_restrict_4WC_order2_ref_rwgt.nEvents          = 5000000
 
 # inclusive decays
-stg_sch_restrict_4WC_order2_ref_rwgt                  = FWLiteSample.fromDAS("stg_sch_restrict_4WC_order2_ref_rwgt", "/stg_sch_rwgt/llechner-stg_sch_rwgt-038f8ce656868e08138c1d1b935cd738/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
+stg_sch_restrict_4WC_order2_ref_rwgt                  = FWLiteSample.fromDAS("stg_sch_restrict_4WC_order2_ref_rwgt", "/stg_sch_rwgt_ref/llechner-stg_sch_rwgt_ref-038f8ce656868e08138c1d1b935cd738/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 stg_sch_restrict_4WC_order2_ref_rwgt.reweight_pkl     = os.path.join( gridpack_directory, "EFT", "dipoles", "stg_sch_rwgt", "stg_sch_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
 stg_sch_restrict_4WC_order2_ref_rwgt.xSection         = 0.040 #LO dim6top
 stg_sch_restrict_4WC_order2_ref_rwgt.nEvents          = 5000000
@@ -109,21 +108,21 @@ tt01j_restrict_4WC_order2_ref_rwgt.nEvents          = int(10000000 * 489.2 / 127
 
 
 EFT = [
-    ttGamma_SemiLept_restrict_4WC_order2_ref_rwgt,
-    ttGamma_Dilept_restrict_4WC_order2_ref_rwgt,
-    ttGamma_Had_restrict_4WC_order2_ref_rwgt,
+#    ttGamma_SemiLept_restrict_4WC_order2_ref_rwgt,
+#    ttGamma_Dilept_restrict_4WC_order2_ref_rwgt,
+#    ttGamma_Had_restrict_4WC_order2_ref_rwgt,
     tW_restrict_4WC_order2_ref_rwgt,
     tWG_restrict_4WC_order2_ref_rwgt,
     st_tch_restrict_4WC_order2_ref_rwgt,
     stg_tch_restrict_4WC_order2_ref_rwgt,
     st_sch_restrict_4WC_order2_ref_rwgt,
     stg_sch_restrict_4WC_order2_ref_rwgt,
-    tt01j_restrict_4WC_order2_ref_rwgt,
+#    tt01j_restrict_4WC_order2_ref_rwgt,
 #    tt0123j_restrict_4WC_order2_ref_rwgt,
 ]
 
 allSamples = EFT
 
 for s in allSamples:
-    for f in  s.files: print f
     s.isData = False
+
