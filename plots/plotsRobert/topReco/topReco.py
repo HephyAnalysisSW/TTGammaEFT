@@ -2,8 +2,6 @@
 ''' Analysis script for standard plots
 '''
 
-#import Analysis.Tools.syncer as syncer
-
 # Standard imports
 import ROOT, os, operator
 ROOT.gROOT.SetBatch(True)
@@ -20,6 +18,8 @@ from TTGammaEFT.Tools.objectSelection import photonSelector
 
 from Analysis.Tools.metFilters        import getFilterCut
 from Analysis.Tools.helpers           import getCollection, deltaR
+import Analysis.Tools.syncer          as syncer
+
 
 # Default Parameter
 loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET']
@@ -122,8 +122,7 @@ read_variables_MC = ["overlapRemoval/I",
 
 read_variables_MC += map( lambda var: "GenPhotonCMSUnfold0_"  + var, variables )
 
-# add here variables that should be read only for Data samples
-read_variables_Data = [ "event/I", "run/I", "luminosityBlock/I" ]
+read_variables_MC += [ "event/I", "run/I", "luminosityBlock/I" ]
 
 strategies = ["BsPlusHardestTwo", "BsPlusHardestThree", "onlyBs", "allJets", "twoBestBs"]
 read_variables.extend( [ ("topReco_%s"%strategy + "_%s")%var for var in ["neuPt/F",  "neuPz/F", "topMass/F", "WMass/F", "WPt/F", "topPt/F", "Jet_index/I"] for strategy in strategies] )
@@ -136,11 +135,15 @@ def mc_match( event, sample ):
         l_idx       = event.LeptonTight0_genPartIdx
         l_pdgId     = event.LeptonTight0_pdgId
         # nAOD gen flags
-        try:
+
+        #print l_idx, event.nGenPart
+        if l_idx<event.nGenPart and l_idx<100:
+            #print l_idx, event.nGenPart, event.event, event.run, event.luminosityBlock
             event.l_isPrompt           = event.GenPart_statusFlags[l_idx]&1
-            event.l_isTauDecayProduct  = event.GenPart_statusFlags[l_idx]>>2&1
-        except IndexError:
-            event.l_isPrompt           = False 
+            event.l_isTauDecayProduct  = (event.GenPart_statusFlags[l_idx]>>2)&1
+            #print event.GenPart_statusFlags[l_idx], event.l_isPrompt, event.l_isTauDecayProduct
+        else:
+            event.l_isPrompt           = False
             event.l_isTauDecayProduct  = False
     else:
         l_idx       = None 
@@ -238,8 +241,8 @@ stack      = Stack( *list([ sample ]  for c in components) )
 if args.small:
     for sample in stack.samples:
         sample.normalization=1.
-        #sample.reduceFiles( factor=30 )
-        sample.reduceFiles( to=1 )
+        sample.reduceFiles( factor=30 )
+        #sample.reduceFiles( to=1 )
         sample.scale /= sample.normalization
 
 preSelection = cutInterpreter.cutString( args.selection + "-" + args.mode )
@@ -350,13 +353,13 @@ for strategy in strategies:
 
 # fill the histograms here, depending on the selection this can take a while
 # here you also say which plots you want to fill (plots), which variables they need (read_variables) and which additionl functions to call for each event (sequence)
-assert False, ""
 plotting.fill( plotList, read_variables=read_variables, sequence=sequence )
 
 for plot in plotList:
     #histos = [h[0] for h in plot.histos_added]
-    total  = plot.histos_added[0][0].Integral()
-    extra  = total - sum( [ plot.histos_added[i][0].Integral() for i in range(1, len(plot.histos))] )
+    h_added = plot.histos_added
+    total  = h_added[0][0].Integral()
+    extra  = total - sum( [ h_added[i][0].Integral() for i in range(1, len(plot.histos))] )
     for i_hs, hs in enumerate(plot.histos):
         for i_h, h in enumerate(hs):
             h.style   = h_styles[i_hs][i_h]
