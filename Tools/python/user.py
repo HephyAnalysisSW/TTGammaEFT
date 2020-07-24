@@ -112,3 +112,25 @@ if os.environ["USER"] in ["lgoldsch"]:
     dpm_directory                   = "/dpm/oeaw.ac.at/home/cms/store/user/llechner/"
     eos_directory                   = "/eos/cms/store/group/phys_susy/hephy/"
     cache_directory                 = "/afs/hephy.at/data/llechner01/TTGammaEFT/cache/"
+
+if os.environ["USER"] in ["meikee.pagsinohin"]: #CBE cluster
+    tmp_directory                       = "/mnt/hephy/cms/meikee.pagsinohin/tmp/TTGammaEFT/"
+    results_directory                   = "/mnt/hephy/cms/meikee.pagsinohin/TTGammaEFT/results/"
+
+    mva_directory                       = "/mnt/hephy/cms/meikee.pagsinohin/TTGammaEFT/mva/"
+    plot_directory                      = "/mnt/hephy/cms/meikee.pagsinohin/www/TTGammaEFT/"
+
+    postprocessing_output_directory     = "/scratch/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/"
+    gridpack_directory                  = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/gridpacks/"
+
+    analysis_results                    = results_directory
+    cache_directory                     = "/users/meikee.pagsinohin/public/cache/"
+    unfolding_cache_directory           = "/mnt/hephy/cms/meikee.pagsinohin/TTGammaEFT/cache/"
+
+    combineReleaseLocation              = "/users/meikee.pagsinohin/public/CMSSW_10_2_18/src/tmp/"
+    cardfileLocation                    = "/mnt/hephy/cms/meikee.pagsinohin/TTGammaEFT/results/cardfiles/"
+
+    dpm_directory                       = "/scratch/lukas.lechner/TTGammaEFT/nanoTuples/"
+    eos_directory                       = "/mnt/hephy/cms/meikee.pagsinohin/TTGammaEFT/"
+
+
