@@ -47,6 +47,13 @@ dirs["ttGamma_2l_4WC"]   = [ "ttGamma_Dilept_restrict_4WC_order2_ref_rwgt" ]
 # only combine samples with the same reference point!
 dirs["ttGamma_4WC"]      = dirs["ttGamma_0l_4WC"] + dirs["ttGamma_1l_4WC"] + dirs["ttGamma_2l_4WC"]
 
+dirs["tt01j_0l_4WC"]   = [ "tt01j_Had_restrict_4WC_order2_ref_rwgt" ]
+dirs["tt01j_1l_4WC"]   = [ "tt01j_SemiLept_restrict_4WC_order2_ref_rwgt" ]
+dirs["tt01j_2l_4WC"]   = [ "tt01j_Dilept_restrict_4WC_order2_ref_rwgt" ]
+
+# only combine samples with the same reference point!
+dirs["tt01j_4WC"]      = dirs["tt01j_0l_4WC"] + dirs["tt01j_1l_4WC"] + dirs["tt01j_2l_4WC"]
+
 dirs["tW_4WC"]           = [ "tW_restrict_4WC_order2_ref_rwgt" ]
 dirs["tWGamma_4WC"]      = [ "tWG_restrict_4WC_order2_ref_rwgt" ]
 dirs["st_tch_4WC"]       = [ "st_tch_restrict_4WC_order2_ref_rwgt" ]
@@ -90,7 +97,15 @@ st_sch_4WC_ref.reweight_pkl    = os.path.join( gridpack_directory, "EFT", "dipol
 stg_sch_4WC_ref                = Sample.fromDirectory( name="stg_sch_4WC_ref", treeName="Events", isData=False, color=color.TGamma, texName="t#gamma (s-ch)", directory=directories["stGamma_sch_4WC"])
 stg_sch_4WC_ref.reweight_pkl   = os.path.join( gridpack_directory, "EFT", "dipoles", "stg_sch_rwgt", "stg_sch_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
 
-#tt01j_4WC_ref                  = Sample.fromDirectory( name="tt01j_4WC_ref", treeName="Events", isData=False, color=color.TT, texName="t#bar{t}", directory=directories["tt_4WC"])
-#tt01j_4WC_ref.reweight_pkl     = os.path.join( gridpack_directory, "EFT", "dipoles", "tt01j_rwgt", "tt01j_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
+TT_4WC_ref                        = Sample.fromDirectory( name="TT_4WC_ref", treeName="Events", isData=False, color=color.TT, texName="t#bar{t}", directory=directories["tt01j_4WC"])
+TT_4WC_ref.reweight_pkl           = os.path.join( gridpack_directory, "EFT", "dipoles", "tt01j_SemiLept_restrict", "tt01j_SemiLept_restrict_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
 
+TT_Had_4WC_ref                    = Sample.fromDirectory( name="TT_Had_4WC_ref", treeName="Events", isData=False, color=color.TT, texName="t#bar{t}", directory=directories["tt01j_0l_4WC"])
+TT_Had_4WC_ref.reweight_pkl       = os.path.join( gridpack_directory, "EFT", "dipoles", "tt01j_Had_restrict", "tt01j_Had_restrict_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
+
+TT_SemiLep_4WC_ref                = Sample.fromDirectory( name="TT_SemiLep_4WC_ref", treeName="Events", isData=False, color=color.TT, texName="t#bar{t}", directory=directories["tt01j_1l_4WC"])
+TT_SemiLep_4WC_ref.reweight_pkl   = os.path.join( gridpack_directory, "EFT", "dipoles", "tt01j_SemiLept_restrict", "tt01j_SemiLept_restrict_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
+
+TT_Dilep_4WC_ref                  = Sample.fromDirectory( name="TT_Dilep_4WC_ref", treeName="Events", isData=False, color=color.TT, texName="t#bar{t}", directory=directories["tt01j_2l_4WC"])
+TT_Dilep_4WC_ref.reweight_pkl     = os.path.join( gridpack_directory, "EFT", "dipoles", "tt01j_Dilept_restrict", "tt01j_Dilept_restrict_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
 
