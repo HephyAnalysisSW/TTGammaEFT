@@ -76,16 +76,17 @@ class Setup:
 
         if checkOnly:
             self.processes = {}
-            self.processes.update( { sample:          None for sample in default_sampleList + default_systematicList } )
-            self.processes.update( { sample+"_gen":   None for sample in default_sampleList + default_systematicList } )
-            self.processes.update( { sample+"_misID": None for sample in default_sampleList + default_systematicList } )
-            self.processes.update( { sample+"_had":   None for sample in default_sampleList + default_systematicList } )
-            self.processes.update( { sample+"_hp":    None for sample in default_sampleList + default_systematicList } )
-            self.processes.update( { sample+"_fake":  None for sample in default_sampleList + default_systematicList } )
-            self.processes.update( { sample+"_PU":    None for sample in default_sampleList + default_systematicList } )
-            self.processes.update( { sample+"_np":    None for sample in default_sampleList + default_systematicList } )
+            self.processes.update( { sample:          None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch" ] } )
+            self.processes.update( { sample+"_gen":   None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch" ] } )
+            self.processes.update( { sample+"_misID": None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch" ] } )
+            self.processes.update( { sample+"_had":   None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch" ] } )
+            self.processes.update( { sample+"_hp":    None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch" ] } )
+            self.processes.update( { sample+"_fake":  None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch" ] } )
+            self.processes.update( { sample+"_PU":    None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch" ] } )
+            self.processes.update( { sample+"_np":    None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch" ] } )
             self.processes["Data"] = "Run%i"%self.year if self.year != "RunII" else "RunII"
 
+            print self.processes
             if year == 2016:
                 self.lumi     = 35.92*1000
                 self.dataLumi = 35.92*1000
@@ -105,7 +106,7 @@ class Setup:
             ttg_TuneUp   = mc_samples.TTG_TuneUp
             ttg_TuneDown = mc_samples.TTG_TuneDown
             ttg_erdOn    = mc_samples.TTG_erdOn
-            tt           = mc_samples.Top
+            top          = mc_samples.Top
             DY           = mc_samples.DY_LO
             zg           = mc_samples.ZG
             wg           = mc_samples.WG
@@ -113,9 +114,14 @@ class Setup:
             other        = mc_samples.rest #other
             qcd          = mc_samples.QCD
             gjets        = mc_samples.GJets
+            tt           = mc_samples.TT_pow
+            tW           = mc_samples.ST_tW
+            st_tch       = mc_samples.ST_tch
+            st_sch       = mc_samples.ST_sch
 
-            mc           = [ ttg, tt, DY, zg, wjets, wg, other, qcd, gjets ]
+            mc           = [ ttg, top, DY, zg, wjets, wg, other, qcd, gjets ]
             mc          += [ ttg_TuneUp, ttg_TuneDown, ttg_erdOn ]
+            mc          += [ tt, tW, st_tch, st_sch ]
             self.processes = {}
             self.processes.update( { sample.name:          sample for sample in mc } )
             self.processes.update( { sample.name+"_gen":   sample for sample in mc } )
@@ -379,13 +385,13 @@ class Setup:
         isMuVar = False
         if dataMC == "MC" and self.sys['selectionModifier'] in muVariations:
             lSysStr = "_" + self.sys['selectionModifier']
-            leptonPtCutVar += "_totalUp" if "up" in self.sys['selectionModifier'].lower() else "_totalDown"
+#            leptonPtCutVar += "_totalUp" if "up" in self.sys['selectionModifier'].lower() else "_totalDown"
             isMuVar = True
         if dataMC == "MC" and self.sys['selectionModifier'] in eVariations:
             lSysStr = "_" + self.sys['selectionModifier']
             pSysStr = "_" + self.sys['selectionModifier']
             isEVar = True
-            leptonPtCutVar += "_totalUp" if "up" in self.sys['selectionModifier'].lower() else "_totalDown"
+#            leptonPtCutVar += "_totalUp" if "up" in self.sys['selectionModifier'].lower() else "_totalDown"
 
         #leptons or inv. iso leptons
         res["prefixes"].append( tightLepton )
@@ -531,6 +537,7 @@ class Setup:
 
         if dataMC == "MC":
             res["cuts"].append( "overlapRemoval==1" )
+            res["cuts"].append( "pTStitching==1" )
 
         if dataMC != "DataMC":
             res["cuts"].append( getFilterCut(isData=(dataMC=="Data"), year=self.year, skipBadChargedCandidate=True) )
@@ -688,13 +695,13 @@ if __name__ == "__main__":
     setup = Setup( year="RunII" )
     for name, dict in allRegions.items():
 #        if not "wjetsec3" in name.lower() and not "wjetsbarrel3" in name.lower(): continue
-        if not "sr3" in name.lower(): continue
+        if not "sr3p" in name.lower(): continue
         print
         print name
 #        dict["parameters"]["invertLepIso"] = False
         print
         setup = setup.sysClone( parameters=dict["parameters"] )
-        setup = setup.sysClone({"selectionModifier":"eTotalUp"})
+        setup = setup.sysClone({"selectionModifier":"eResUp"})
         for channel in dict["channels"]:
             print
             print channel

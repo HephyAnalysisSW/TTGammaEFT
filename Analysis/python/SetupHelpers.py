@@ -116,6 +116,7 @@ signalRegions = {}
 # Signal Regions Settings
 # processes.keys() will be the proc visible in the combine card
 # processes.values() is a list of processes that will be combined for the entry in combine
+
 signalRegions["SR2"]  = { "parameters": { "zWindow":"all", "nJet":(2,2), "nBTag":(1,-1), "nPhoton":(1,1) },
                           "channels":   lepChannels,
                           "regions":    regionsTTGloose,
@@ -152,8 +153,8 @@ signalRegions["SR4p"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag
                           "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                          }
 
-signalRegions["SR3Fine"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
-                              "channels":   lepChannels,
+signalRegions["SR3PtUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
+                              "channels":   ["all"],
                               "regions":    regionsTTGlooseFine,
                               "inclRegion": inclRegionsTTGloose,
                               "noPhotonCR": False,
@@ -161,17 +162,17 @@ signalRegions["SR3Fine"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nB
                               "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                              }
 
-signalRegions["SR3pFine"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
-                              "channels":   lepChannels,
+signalRegions["SR3pPtUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
+                              "channels":   ["all"],
                               "regions":    regionsTTGlooseFine,
                               "inclRegion": inclRegionsTTGloose,
                               "noPhotonCR": False,
-                              "processes":  processes,
+                              "processes":  processesSR,
                               "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                              }
 
-signalRegions["SR4pFine"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
-                              "channels":   lepChannels,
+signalRegions["SR4pPtUnfold"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
+                              "channels":   ["all"],
                               "regions":    regionsTTGlooseFine,
                               "inclRegion": inclRegionsTTGloose,
                               "noPhotonCR": False,
@@ -179,57 +180,111 @@ signalRegions["SR4pFine"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "n
                               "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                              }
 
-signalRegions["SR3Unfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
-                                "channels":   lepChannels,
-                                "regions":    regionsTTGlooseUnfolding,
-                                "inclRegion": inclRegionsTTGloose,
-                                "noPhotonCR": False,
-                                "processes":  processes,
-                                "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
-                               }
-
-signalRegions["SR3pUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
-                                "channels":   lepChannels,
-                                "regions":    regionsTTGlooseUnfolding,
-                                "inclRegion": inclRegionsTTGloose,
-                                "noPhotonCR": False,
-                                "processes":  processes,
-                                "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
-                               }
-
-signalRegions["SR4pUnfold"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
-                                "channels":   lepChannels,
-                                "regions":    regionsTTGlooseUnfolding,
-                                "inclRegion": inclRegionsTTGloose,
-                                "noPhotonCR": False,
-                                "processes":  processes,
-                                "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
-                               }
-
 signalRegions["SR3EtaUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
-                                   "channels":   lepChannels,
+                                  "channels":   ["all"],
                                    "regions":    regionsTTGlooseEtaUnfolding,
                                    "inclRegion": inclRegionsTTGloose,
                                    "noPhotonCR": False,
-                                   "processes":  processes,
+                                   "processes":  processesSR,
                                    "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                                   }
 
 signalRegions["SR3pEtaUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
-                                   "channels":   lepChannels,
+                                   "channels":   lepChannels, #["all"],
                                    "regions":    regionsTTGlooseEtaUnfolding,
                                    "inclRegion": inclRegionsTTGloose,
                                    "noPhotonCR": False,
-                                   "processes":  processes,
+                                   "processes":  processesSR,
                                    "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                                   }
 
 signalRegions["SR4pEtaUnfold"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
-                                   "channels":   lepChannels,
+                                   "channels":   ["all"],
                                    "regions":    regionsTTGlooseEtaUnfolding,
                                    "inclRegion": inclRegionsTTGloose,
                                    "noPhotonCR": False,
-                                   "processes":  processes,
+                                   "processes":  processesSR,
+                                   "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                                  }
+
+signalRegions["SR3AbsEtaUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
+                                  "channels":   ["all"],
+                                   "regions":    regionsTTGlooseAbsEtaUnfolding,
+                                   "inclRegion": inclRegionsTTGloose,
+                                   "noPhotonCR": False,
+                                   "processes":  processesSR,
+                                   "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                                  }
+
+signalRegions["SR3pAbsEtaUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
+                                   "channels":   lepChannels, #["all"],
+                                   "regions":    regionsTTGlooseAbsEtaUnfolding,
+                                   "inclRegion": inclRegionsTTGloose,
+                                   "noPhotonCR": False,
+                                   "processes":  processesSR,
+                                   "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                                  }
+
+signalRegions["SR4pAbsEtaUnfold"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
+                                   "channels":   ["all"],
+                                   "regions":    regionsTTGlooseAbsEtaUnfolding,
+                                   "inclRegion": inclRegionsTTGloose,
+                                   "noPhotonCR": False,
+                                   "processes":  processesSR,
+                                   "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                                  }
+
+signalRegions["SR3dRUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
+                                  "channels":   ["all"],
+                                   "regions":    regionsTTGloosedRUnfolding,
+                                   "inclRegion": inclRegionsTTGloose,
+                                   "noPhotonCR": False,
+                                   "processes":  processesSR,
+                                   "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                                  }
+
+signalRegions["SR3pdRUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
+                                   "channels":   ["all"],
+                                   "regions":    regionsTTGloosedRUnfolding,
+                                   "inclRegion": inclRegionsTTGloose,
+                                   "noPhotonCR": False,
+                                   "processes":  processesSR,
+                                   "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                                  }
+
+signalRegions["SR4pdRUnfold"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
+                                   "channels":   ["all"],
+                                   "regions":    regionsTTGloosedRUnfolding,
+                                   "inclRegion": inclRegionsTTGloose,
+                                   "noPhotonCR": False,
+                                   "processes":  processesSR,
+                                   "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                                  }
+
+signalRegions["SR3dPhiUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
+                                  "channels":   ["all"],
+                                   "regions":    regionsTTGloosedPhiUnfolding,
+                                   "inclRegion": inclRegionsTTGloose,
+                                   "noPhotonCR": False,
+                                   "processes":  processesSR,
+                                   "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                                  }
+
+signalRegions["SR3pdPhiUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
+                                   "channels":   ["all"],
+                                   "regions":    regionsTTGloosedPhiUnfolding,
+                                   "inclRegion": inclRegionsTTGloose,
+                                   "noPhotonCR": False,
+                                   "processes":  processesSR,
+                                   "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                                  }
+
+signalRegions["SR4pdPhiUnfold"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
+                                   "channels":   ["all"],
+                                   "regions":    regionsTTGloosedPhiUnfolding,
+                                   "inclRegion": inclRegionsTTGloose,
+                                   "noPhotonCR": False,
+                                   "processes":  processesSR,
                                    "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                                   }
 
@@ -259,78 +314,6 @@ signalRegions["SR4pM3"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBT
                             "processes":  processesSR,
                             "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                          }
-
-signalRegions["SR3Eta"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
-                             "channels":   lepChannels,
-                             "regions":    regionsTTGlooseEta,
-                             "inclRegion": inclRegionsTTGloose,
-                             "noPhotonCR": False,
-                             "processes":  processesSR,
-                             "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
-                            }
-
-signalRegions["SR3pEta"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
-                             "channels":   lepChannels,
-                             "regions":    regionsTTGlooseEta,
-                             "inclRegion": inclRegionsTTGloose,
-                             "noPhotonCR": False,
-                             "processes":  processesSR,
-                             "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
-                            }
-
-signalRegions["SR4pEta"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
-                             "channels":   lepChannels,
-                             "regions":    regionsTTGlooseEta,
-                             "inclRegion": inclRegionsTTGloose,
-                             "noPhotonCR": False,
-                             "processes":  processesSR,
-                             "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
-                            }
-
-signalRegions["SR3EtaFine"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
-                                 "channels":   lepChannels,
-                                 "regions":    regionsTTGlooseEtaFine,
-                                 "inclRegion": inclRegionsTTGloose,
-                                 "noPhotonCR": False,
-                                 "processes":  processesSR,
-                                 "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
-                               }
-
-signalRegions["SR3pEtaFine"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
-                                 "channels":   lepChannels,
-                                 "regions":    regionsTTGlooseEtaFine,
-                                 "inclRegion": inclRegionsTTGloose,
-                                 "noPhotonCR": False,
-                                 "processes":  processesSR,
-                                 "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
-                               }
-
-signalRegions["SR4pEtaFine"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
-                                 "channels":   lepChannels,
-                                 "regions":    regionsTTGlooseEtaFine,
-                                 "inclRegion": inclRegionsTTGloose,
-                                 "noPhotonCR": False,
-                                 "processes":  processesSR,
-                                 "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
-                                }
-
-signalRegions["SR3EtaM3"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
-                               "channels":   lepChannels,
-                               "regions":    m3EtaRegions,
-                               "inclRegion": m3Regions,
-                               "noPhotonCR": False,
-                               "processes":  processesSR,
-                               "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
-                              }
-
-signalRegions["SR4pEtaM3"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
-                               "channels":   lepChannels,
-                               "regions":    m3EtaRegions,
-                               "inclRegion": m3Regions,
-                               "noPhotonCR": False,
-                               "processes":  processesSR,
-                               "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
-                              }
 
 default_SR = signalRegions["SR4pM3"]
 
@@ -598,21 +581,28 @@ ZG4pSF_val[2018]    = u_float( 1.10, 0.27 )
 ZG4pSF_val["RunII"] = u_float( 1.21, 0.21 )
 
 # all processes are all samples + them splitted in photon categories
-allProcesses            = copy.copy(default_sampleList)
-allProcesses           += [ s+"_gen"   for s in default_sampleList if not "DD" in s ]
-allProcesses           += [ s+"_misID" for s in default_sampleList if not "DD" in s ]
-allProcesses           += [ s+"_had"   for s in default_sampleList if not "DD" in s ]
-allProcesses           += [ s+"_hp"    for s in default_sampleList if not "DD" in s ]
-allProcesses           += [ s+"_fake"  for s in default_sampleList if not "DD" in s ]
-allProcesses           += [ s+"_PU"    for s in default_sampleList if not "DD" in s ]
-allProcesses           += [ s+"_np"    for s in default_sampleList if not "DD" in s ]
+p                       = copy.copy(default_sampleList) + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch" ]
+allProcesses            = [ s+"_gen"   for s in p if not "DD" in s ]
+allProcesses           += [ s+"_misID" for s in p if not "DD" in s ]
+allProcesses           += [ s+"_had"   for s in p if not "DD" in s ]
+allProcesses           += [ s+"_hp"    for s in p if not "DD" in s ]
+allProcesses           += [ s+"_fake"  for s in p if not "DD" in s ]
+allProcesses           += [ s+"_PU"    for s in p if not "DD" in s ]
+allProcesses           += [ s+"_np"    for s in p if not "DD" in s ]
 allProcesses           += [ "fakes-DD" ]
+allProcesses           += p
 
 analysis_results = os.path.join( results_directory, "analysis" )
 cache_dir        = os.path.join( cache_directory,   "analysis" )
-jmeVariations    = ["jer", "jerUp", "jerDown", "jesTotalUp", "jesTotalDown"]
+# JEC Tags, (standard is "Total")
+jesTags = ['FlavorQCD', 'RelativeBal', 'HF', 'BBEC1', 'EC2', 'Absolute', 'Total']
+for year in [2016,2017,2018]:
+    jesTags += ['Absolute_%i'%year, 'HF_%i'%year, 'EC2_%i'%year, 'RelativeSample_%i'%year, 'BBEC1_%i'%year]
+jesVariations = ["jes"+j+"Up" for j in jesTags] + ["jes"+j+"Down" for j in jesTags]
+
+jmeVariations    = ["jer", "jerUp", "jerDown"] + jesVariations
 metVariations    = ["unclustEnUp", "unclustEnDown"]
-eVariations      = ["eTotalUp", "eTotalDown"]
+eVariations      = ["eScaleUp", "eScaleDown", "eResUp", "eResDown"]
 muVariations     = ["muTotalUp", "muTotalDown"]
 
 # Control Regions Settings
@@ -1164,6 +1154,11 @@ customQCDTF_updates["5J1P"]["SR"] = {                      "nJet":(5,5),        
 QCD_cutReplacements = {
                         "mLtight0Gamma":     "mLinvtight0Gamma",
                         "PhotonGood0":       "PhotonGoodInvLepIso0",
+                        "ltight0GammaNoSieieNoChgIsodPhi":       "linvtight0GammaNoSieieNoChgIsodPhi",
+                        "ltight0GammadPhi":       "linvtight0GammadPhi",
+                        "ltight0GammaNoSieieNoChgIsodR":       "linvtight0GammaNoSieieNoChgIsodR",
+                        "ltight0GammadR":       "linvtight0GammadR",
+
 #                        "m3":                "m3inv",
 }
 
@@ -1202,7 +1197,7 @@ limitOrdering += pSR
 
 # EFT parameter ranges:
 # 30 bins from -1.5 to 1.5 + the SM value 0, calc value in the middle of the bin
-xRange       = np.linspace( -1.5, 1.5, 30, endpoint=False)
+xRange       = np.linspace( -1.0, 1.0, 20, endpoint=False)
 halfstepsize = 0.5 * ( xRange[1] - xRange[0] )
 xRange       = [ round(el + halfstepsize, 3) for el in xRange ] + [0]
 xRange.sort()
@@ -1210,5 +1205,4 @@ xRange.sort()
 eftParameterRange = {}
 eftParameterRange["ctZ"]  = xRange
 eftParameterRange["ctZI"] = xRange
-#print xRange
 
