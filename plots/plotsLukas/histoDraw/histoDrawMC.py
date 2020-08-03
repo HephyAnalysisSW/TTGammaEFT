@@ -8,6 +8,7 @@ from RootTools.core.standard           import *
 
 # Analysis
 from Analysis.Tools.metFilters         import getFilterCut
+import Analysis.Tools.syncer as syncer
 
 # Internal Imports
 from TTGammaEFT.Tools.user             import plot_directory, cache_directory
@@ -130,7 +131,7 @@ if args.small:
     data_sample.setWeightString( "weight*%f"%(1./data_sample.normalization) )
 
 for s in mc:
-    s.setSelectionString( [ filterCutMc, "overlapRemoval==1" ] )
+    s.setSelectionString( [ filterCutMc, "pTStitching==1", "overlapRemoval==1" ] )
     s.read_variables = read_variables_MC
     sampleWeight     = "1"
     if args.small:           

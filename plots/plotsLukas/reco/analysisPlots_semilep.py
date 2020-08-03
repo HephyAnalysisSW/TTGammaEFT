@@ -29,6 +29,7 @@ from Analysis.Tools.u_float           import u_float
 from Analysis.Tools.mt2Calculator     import mt2Calculator
 from TTGammaEFT.Tools.overlapRemovalTTG import getParentIds
 from Analysis.Tools.runUtils          import prepareTokens, useToken
+import Analysis.Tools.syncer as syncer
 
 from TTGammaEFT.Analysis.Setup        import Setup
 from TTGammaEFT.Analysis.EstimatorList   import EstimatorList
@@ -1399,34 +1400,34 @@ for index, mode in enumerate( allModes ):
         data_sample.setSelectionString( [ filterCutData, leptonSelection, "triggeredInvIso==1" ] )
         print data_sample.selectionString
     if categoryPlot:
-        all_cat0.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_sel0 )
-        all_cat1.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_sel1 )
-        all_cat2.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_sel2 )
-        all_cat3.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_sel3 )
+        all_cat0.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "pTStitching==1", "overlapRemoval==1" ] + cat_sel0 )
+        all_cat1.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "pTStitching==1", "overlapRemoval==1" ] + cat_sel1 )
+        all_cat2.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "pTStitching==1", "overlapRemoval==1" ] + cat_sel2 )
+        all_cat3.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "pTStitching==1", "overlapRemoval==1" ] + cat_sel3 )
     elif args.leptonCategory:
-        ttg_2l.setSelectionString(    [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_gen2L )
-        ttg_l.setSelectionString(     [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_genL )
-        ttg_tau_l.setSelectionString( [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_genTau_l )
-        ttg_tau_q.setSelectionString( [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_genTau_q )
-        ttg_had.setSelectionString(   [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_genHad )
+        ttg_2l.setSelectionString(    [ filterCutMc, leptonSelection, "triggered==1", "pTStitching==1", "overlapRemoval==1" ] + cat_gen2L )
+        ttg_l.setSelectionString(     [ filterCutMc, leptonSelection, "triggered==1", "pTStitching==1", "overlapRemoval==1" ] + cat_genL )
+        ttg_tau_l.setSelectionString( [ filterCutMc, leptonSelection, "triggered==1", "pTStitching==1", "overlapRemoval==1" ] + cat_genTau_l )
+        ttg_tau_q.setSelectionString( [ filterCutMc, leptonSelection, "triggered==1", "pTStitching==1", "overlapRemoval==1" ] + cat_genTau_q )
+        ttg_had.setSelectionString(   [ filterCutMc, leptonSelection, "triggered==1", "pTStitching==1", "overlapRemoval==1" ] + cat_genHad )
 
-        tt_2l.setSelectionString(     [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_gen2L )
-        tt_l.setSelectionString(      [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_genL )
-        tt_tau_l.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_genTau_l )
-        tt_tau_q.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_genTau_q )
-        tt_had.setSelectionString(    [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] + cat_genHad )
+        tt_2l.setSelectionString(     [ filterCutMc, leptonSelection, "triggered==1", "pTStitching==1", "overlapRemoval==1" ] + cat_gen2L )
+        tt_l.setSelectionString(      [ filterCutMc, leptonSelection, "triggered==1", "pTStitching==1", "overlapRemoval==1" ] + cat_genL )
+        tt_tau_l.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "pTStitching==1", "overlapRemoval==1" ] + cat_genTau_l )
+        tt_tau_q.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "pTStitching==1", "overlapRemoval==1" ] + cat_genTau_q )
+        tt_had.setSelectionString(    [ filterCutMc, leptonSelection, "triggered==1", "pTStitching==1", "overlapRemoval==1" ] + cat_genHad )
 
-        all_noTT.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] )
+        all_noTT.setSelectionString(  [ filterCutMc, leptonSelection, "triggered==1", "pTStitching==1", "overlapRemoval==1" ] )
     else:
         for sample in mc:# + signals:
             if (sample.name.startswith("DY") and args.replaceZG): #no ZG sample
-                sample.setSelectionString( [ filterCutMc, leptonSelection, "triggered==1" ] )
+                sample.setSelectionString( [ filterCutMc, leptonSelection, "triggered==1", "pTStitching==1" ] )
             else:
-                sample.setSelectionString( [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ] )
+                sample.setSelectionString( [ filterCutMc, leptonSelection, "triggered==1", "pTStitching==1", "overlapRemoval==1" ] )
 
     if args.invLeptonIso and not regionPlot:
-        preSelectionSR = "&&".join( [ cutInterpreter.cutString( args.selection ), filterCutMc, isoleptonSelection,    "triggeredInvIso==1", "overlapRemoval==1"  ] )
-        preSelectionCR = "&&".join( [ preSelection,                               filterCutMc, invIsoleptonSelection, "triggeredInvIso==1", "overlapRemoval==1"  ] )
+        preSelectionSR = "&&".join( [ cutInterpreter.cutString( args.selection ), filterCutMc, isoleptonSelection,    "triggeredInvIso==1", "pTStitching==1", "overlapRemoval==1"  ] )
+        preSelectionCR = "&&".join( [ preSelection,                               filterCutMc, invIsoleptonSelection, "triggeredInvIso==1", "pTStitching==1", "overlapRemoval==1"  ] )
 
         yield_QCD_CR  = u_float( qcd.getYieldFromDraw(   selectionString=preSelectionCR, weightString="weight*%f*%s"%(lumi_scale,weightString) ) )
         yield_QCD_SR  = u_float( qcd.getYieldFromDraw(   selectionString=preSelectionSR, weightString="weight*%f*%s"%(lumi_scale,weightString) ) )

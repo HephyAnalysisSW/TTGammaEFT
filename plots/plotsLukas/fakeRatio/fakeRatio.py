@@ -10,6 +10,7 @@ from math                             import isnan, ceil, pi
 
 # RootTools
 from RootTools.core.standard          import *
+import Analysis.Tools.syncer as syncer
 
 # Internal Imports
 from TTGammaEFT.Tools.user            import plot_directory
@@ -294,7 +295,7 @@ for index, mode in enumerate( allModes ):
 
     # Define lepton selections
     leptonSelection = cutInterpreter.cutString( mode )
-    mcSelection = [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ]
+    mcSelection = [ filterCutMc, leptonSelection, triggerCutMc, "pTStitching==1", "overlapRemoval==1" ]
 
     for var in pSel:
         locals()["tt_"+var].setSelectionString( mcSelection + [cutInterpreter.cutString( var )] )

@@ -21,6 +21,7 @@ from TTGammaEFT.Analysis.Setup         import Setup
 from TTGammaEFT.Analysis.EstimatorList import EstimatorList
 
 from TTGammaEFT.Samples.color          import color
+import Analysis.Tools.syncer as syncer
 from Analysis.Tools.MergingDirDB      import MergingDirDB
 
 # Default Parameter
@@ -170,7 +171,7 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
 else:
     raise Exception("Region not implemented")
 
-selectionString = "&&".join( [ filterCutMc, "overlapRemoval==1", "triggered==1", selection ] )
+selectionString = "&&".join( [ filterCutMc, "pTStitching==1", "overlapRemoval==1", "triggered==1", selection ] )
 for s in mc:
     s.setSelectionString( selectionString )
     s.read_variables = read_variables

@@ -8,6 +8,7 @@ from RootTools.core.standard           import *
 
 # Analysis
 from Analysis.Tools.metFilters         import getFilterCut
+import Analysis.Tools.syncer as syncer
 
 # Internal Imports
 from TTGammaEFT.Tools.user             import plot_directory, cache_directory
@@ -97,7 +98,7 @@ setup = setup.sysClone( parameters=allRegions[args.selection]["parameters"] )
 
 selection = setup.selection( "MC", channel="all", **setup.defaultParameters() )["prefix"]
 selection = cutInterpreter.cutString( selection.replace("4p","2") )
-selection += "&&triggered==1"
+selection += "&&pTStitching==1&&triggered==1"
 if args.addCut:
     selection += "&&" + cutInterpreter.cutString( args.addCut )
 print( "Using selection string: %s"%selection )
@@ -111,7 +112,7 @@ print( "Using selection string: %s"%mc_2.selectionString )
 
 selection = setup.selection( "MC", channel="all", **setup.defaultParameters() )["prefix"]
 selection = cutInterpreter.cutString( selection.replace("4p","3") )
-selection += "&&triggered==1"
+selection += "&&pTStitching==1&&triggered==1"
 if args.addCut:
     selection += "&&" + cutInterpreter.cutString( args.addCut )
 
@@ -123,7 +124,7 @@ print( "Using selection string: %s"%mc_3.selectionString )
 
 selection = setup.selection( "MC", channel="all", **setup.defaultParameters() )["prefix"]
 selection = cutInterpreter.cutString( selection )
-selection += "&&triggered==1"
+selection += "&&pTStitching==1&&triggered==1"
 if args.addCut:
     selection += "&&" + cutInterpreter.cutString( args.addCut )
 

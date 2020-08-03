@@ -4,8 +4,6 @@ import os, copy, sys
 import ctypes
 import ROOT
 from math                                import sqrt
-import operator
-from itertools import groupby 
 
 # TTGammaEFT
 from TTGammaEFT.Tools.user              import plot_directory, cache_directory
@@ -39,7 +37,6 @@ argParser.add_argument( "--addMisIDSF",         action="store_true",            
 argParser.add_argument('--tag',                 action='store',      default="combined",        type=str,                                             help='tag for unc studies')
 argParser.add_argument('--variables',           action='store',      default='ctZI', type=str, nargs=1, choices=["ctZ","ctZI"],                      help="argument plotting variables")
 argParser.add_argument( "--expected",           action="store_true",                                                        help="Use sum of backgrounds instead of data." )
-argParser.add_argument( "--inclRegion",         action="store_true",                                                        help="use inclusive photon pt region" )
 argParser.add_argument( "--useRegions",         action="store",      nargs='*',       type=str, choices=allRegions.keys(),  help="Which regions to use?" )
 args = argParser.parse_args()
 
@@ -66,18 +63,13 @@ for reg in allRegions.keys():
 regionNames.sort()
 if args.addDYSF:     regionNames.append("addDYSF")
 if args.addMisIDSF:  regionNames.append("addMisIDSF")
-if args.inclRegion:  regionNames.append("incl")
 
-if args.year == 2016:   lumi_scale = 35.92
-elif args.year == 2017: lumi_scale = 41.53
-elif args.year == 2018: lumi_scale = 59.74
-elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
+regionNamesIncl = copy.deepcopy(regionNames)
+regionNamesIncl.append("incl")
 
 baseDir       = os.path.join( cache_directory, "analysis",  str(args.year) if args.year != "RunII" else "COMBINED", "limits" )
 cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
-
-print cacheFileName
 
 directory = os.path.join( plot_directory, "nllPlots", str(args.year), "_".join( regionNames ))
 addon = "expected" if args.expected else "observed"
@@ -88,38 +80,55 @@ if not os.path.isdir( plot_directory_ ):
     try: os.makedirs( plot_directory_ )
     except: pass
 
+if args.year == 2016:   lumi_scale = 35.92
+elif args.year == 2017: lumi_scale = 41.53
+elif args.year == 2018: lumi_scale = 59.74
+elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
+
 #binning range
-xRange = eftParameterRange["ctZ"]
-yRange = eftParameterRange["ctZI"]
+xRange = eftParameterRange[args.variables] 
 print xRange
-print yRange
-def getNllData( varx, vary ):
-    EFTparams = ["ctZ", str(varx), "ctZI", str(vary)]
+def getNllData( var1):
+    dict = {"ctZI":0, "ctZ":0}
+    dict[args.variables] = var1
+    EFTparams = ["ctZ", str(dict["ctZ"]), "ctZI", str(dict["ctZI"])]
+
     configlist = regionNames + EFTparams
-    configlist.append("incl" if args.inclRegion else "diff")
+    configlist.append("diff")
     configlist.append("expected" if args.expected else "observed")
     sConfig = "_".join(configlist)
+
+    configlistIncl = regionNamesIncl + EFTparams
+    configlistIncl.append("incl")
+    configlistIncl.append("expected" if args.expected else "observed")
+    sConfigIncl = "_".join(configlistIncl)
+
     if nllCache.contains(sConfig): nll = nllCache.get(sConfig)
     else:                          nll = -999
-    return float(nll)
+
+    if nllCache.contains(sConfigIncl): nllIncl = nllCache.get(sConfigIncl)
+    else:                              nllIncl = -999
+
+    return float(nll), float(nllIncl)
 
 
 logger.info("Loading cache data" )
-points = [ (0,0) ] #SM point
-points += [ (0, varY) for varY in yRange] #1D plots
-points += [ (varX, 0) for varX in xRange] #1D plots
-points += [ (varX, varY) for varY in yRange for varX in xRange] #2D plots
+points = [ (0) ] #SM point
+points += [ (varX) for varX in xRange] #1D plots
 
-nllData  = [ (varx, vary, getNllData( varx, vary )) for (varx, vary) in points ]
-sm_nll   = getNllData(0,0)
+nllData  = [ (var1, getNllData( var1 )) for var1 in points ]
+print nllData
+sm_nll, sm_nllIncl   = getNllData(0)
+print getNllData(0)
 
-nllData  = [ (x, y, -2*(nll - sm_nll)) for x, y, nll in nllData if -2*(nll - sm_nll) >= 0]
-nllData.sort( key = lambda res: (res[0 if args.variables=="ctZ" else 1], res[2]) )
+nllDataIncl  = [ (x, -2*(nll[1] - sm_nllIncl)) for x, nll in nllData  if nll[1] > -998 ]
+nllData  = [ (x, -2*(nll[0] - sm_nll)) for x, nll in nllData  if nll[0] > -998 ]
 
-xNLL = []
-for key, group in groupby( nllData, operator.itemgetter(0 if args.variables=="ctZ" else 1) ):
-    x, y, res = list(group)[0]
-    xNLL.append((x if args.variables=="ctZ" else y, res))
+xNLL     = [ (x, nll) for x, nll in nllData if nll >= 0 ]
+xNLLIncl = [ (x, nll) for x, nll in nllDataIncl if nll >= 0 ]
+
+print xNLLIncl
+print xNLL
 
 def toGraph( name, title, data ):
     result  = ROOT.TGraph( len(data) )
@@ -134,12 +143,14 @@ def toGraph( name, title, data ):
     #res = ROOT.TGraphDelaunay(result)
     return result
 
-polString = "[0]*x**2+[1]*x**3+[2]*x**4"#+[3]*x**5"#+[4]*x**6"#+[5]*x**7+[6]*x**8+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
+polString = "[0]*x**2+[1]*x**3+[2]*x**4+[3]*x**5+[4]*x**6"#+[5]*x**7+[6]*x**8"#+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
 xPlotLow, xPlotHigh = args.xRange
 
-def plot1D( dat, var, xmin, xmax, lumi_scale ):
+def plot1D( dat, datIncl, var, xmin, xmax ):
     # get TGraph from results data list
     xhist = toGraph( var, var, dat )
+    xhistIncl = toGraph( var+"Incl", var, datIncl )
+
     func  = ROOT.TF1("func", polString, xmin, xmax )
     xhist.Fit(func,"NO")
     x68min = func.GetX( 0.989, xmin, 0 )
@@ -155,6 +166,23 @@ def plot1D( dat, var, xmin, xmax, lumi_scale ):
     func.SetLineColor(ROOT.kBlack)
     func.SetNpx(1000)
 
+    funcIncl  = ROOT.TF1("funcIncl", polString, xmin, xmax )
+    xhistIncl.Fit(funcIncl,"NO")
+    x68minIncl = funcIncl.GetX( 0.989, xmin, 0 )
+    x68maxIncl = funcIncl.GetX( 0.989, 0, xmax )
+    x95minIncl = funcIncl.GetX( 3.84, xmin, 0 )
+    x95maxIncl = funcIncl.GetX( 3.84, 0, xmax )
+
+    xhistIncl.SetLineWidth(0)
+
+    funcIncl.SetFillColor(ROOT.kWhite)
+    funcIncl.SetFillStyle(1001)
+    funcIncl.SetLineWidth(3)
+#    funcIncl.SetLineStyle(11)
+    funcIncl.SetLineColor(ROOT.kGray+1)
+    funcIncl.SetNpx(1000)
+
+
     ROOT.gStyle.SetPadLeftMargin(0.14)
     ROOT.gStyle.SetPadRightMargin(0.1)
     ROOT.gStyle.SetPadTopMargin(0.11)
@@ -164,7 +192,7 @@ def plot1D( dat, var, xmin, xmax, lumi_scale ):
     cans = ROOT.TCanvas("cans","cans",500,500)
 
     #if not None in args.zRange:
-    xhist.GetYaxis().SetRangeUser( -0.01, 5.5 )
+    xhist.GetYaxis().SetRangeUser( 0, 5.5 )
     xhist.GetXaxis().SetRangeUser( xmin, xmax )
 
 
@@ -186,11 +214,33 @@ def plot1D( dat, var, xmin, xmax, lumi_scale ):
     func68.GetXaxis().SetRangeUser( xmin, xmax )
     func95.GetXaxis().SetRangeUser( xmin, xmax )
 
+
+    func95Incl = ROOT.TF1("func95Incl",polString, x95minIncl,x95maxIncl )
+    xhistIncl.Fit(func95Incl,"NO")
+    func95Incl.SetFillColor(ROOT.kGray+2)
+    func95Incl.SetFillStyle(1001)
+    func95Incl.SetLineWidth(0)
+    func95Incl.SetNpx(1000)
+
+    func68Incl = ROOT.TF1("func68Incl",polString, x68minIncl,x68maxIncl )
+    xhistIncl.Fit(func68Incl,"NO")
+    func68Incl.SetFillColor(ROOT.kGray+1)
+    func68Incl.SetFillStyle(1001)
+    func68Incl.SetLineWidth(0)
+    func68Incl.SetNpx(1000)
+
+    funcIncl.GetXaxis().SetRangeUser( xmin, xmax )
+    func68Incl.GetXaxis().SetRangeUser( xmin, xmax )
+    func95Incl.GetXaxis().SetRangeUser( xmin, xmax )
+
     xhist.Draw("ALO")
+#    func95Incl.Draw("FOSAME")
+#    func68Incl.Draw("FOSAME")
     func.Draw("COSAME")
     func95.Draw("FOSAME")
     func68.Draw("FOSAME")
 #    xhist.Draw("LSAME")
+    funcIncl.Draw("COSAME")
     func.Draw("COSAME")
     if args.plotData: xhist.Draw("*SAME")
 
@@ -213,13 +263,16 @@ def plot1D( dat, var, xmin, xmax, lumi_scale ):
     print x68min, x68max
     print x95min, x95max
 
-    funcName = "profiled log-likelihood ratio"
+    funcName = "log-likelihood ratio"
     leg = ROOT.TLegend(0.3,0.7,0.7,0.87)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.035)
-    leg.AddEntry( func, funcName ,"l")
-    leg.AddEntry( func68, "68%s CL [%.2f, %.2f]"%("%",x68min, x68max), "f")
-    leg.AddEntry( func95, "95%s CL [%.2f, %.2f]"%("%",x95min, x95max), "f")
+    leg.AddEntry( func, funcName + " (diff)" ,"l")
+    leg.AddEntry( funcIncl, funcName + " (incl)" ,"l")
+    leg.AddEntry( func68, "68%s CL (diff) [%.2f, %.2f]"%("%",x68min, x68max), "f")
+    leg.AddEntry( func95, "95%s CL (diff) [%.2f, %.2f]"%("%",x95min, x95max), "f")
+#    leg.AddEntry( func68Incl, "68%s CL (incl) [%.2f, %.2f]"%("%",x68minIncl, x68maxIncl), "f")
+#    leg.AddEntry( func95Incl, "95%s CL (incl) [%.2f, %.2f]"%("%",x95minIncl, x95maxIncl), "f")
     leg.Draw()
 
     xTitle = var.replace("c", "C_{").replace("I", "}^{[Im]").replace('p','#phi') + '}'
@@ -251,7 +304,7 @@ def plot1D( dat, var, xmin, xmax, lumi_scale ):
     # Redraw axis, otherwise the filled graphes overlay
     cans.RedrawAxis()
 
-    plotname = "%s%s%s_profiled"%(var, "", "_%s"%args.tag if args.tag != "combined" else "")
+    plotname = "%s%s%s_wIncl"%(var, "", "_%s"%args.tag if args.tag != "combined" else "")
     for e in [".png",".pdf",".root"]:
         cans.Print( plot_directory_ + "/%s%s"%(plotname, e) )
 
@@ -262,5 +315,5 @@ def plot1D( dat, var, xmin, xmax, lumi_scale ):
 
 xmin = xPlotLow  if xPlotLow  else -1.49
 xmax = xPlotHigh if xPlotHigh else 1.49
-plot1D( xNLL, args.variables, xmin, xmax, lumi_scale )
+plot1D( xNLL, xNLLIncl, args.variables, xmin, xmax )
 

@@ -41,7 +41,6 @@ argParser.add_argument("--expected",             action="store_true",           
 argParser.add_argument("--preliminary",          action="store_true",                            help="Run expected?")
 #argParser.add_argument("--systOnly",             action="store_true",                            help="correlation matrix with systematics only?")
 argParser.add_argument("--year",                 action="store",      type=str, default="2016",    help="Which year?")
-argParser.add_argument("--plotYear",             action="store",                default=None,    help="Which year to plot from combined fits?")
 argParser.add_argument("--carddir",              action='store',                default='limits/cardFiles/defaultSetup/observed',      help="which cardfile directory?")
 argParser.add_argument("--cardfile",             action='store',                default='',      help="which cardfile?")
 argParser.add_argument("--substituteCard",       action='store',                default=None,    help="which cardfile to substitute the plot with?")
@@ -82,9 +81,9 @@ if args.plotChannels and "all" in args.plotChannels: args.plotChannels += ["e","
 if args.plotChannels and "e"   in args.plotChannels: args.plotChannels += ["eetight"]
 if args.plotChannels and "mu"  in args.plotChannels: args.plotChannels += ["mumutight"]
 
-if   args.year == 2016 or (args.plotYear and args.plotYear == "2016"): lumi_scale = 35.92
-elif args.year == 2017 or (args.plotYear and args.plotYear == "2017"): lumi_scale = 41.53
-elif args.year == 2018 or (args.plotYear and args.plotYear == "2018"): lumi_scale = 59.74
+if   args.year == 2016: lumi_scale = 35.92
+elif args.year == 2017: lumi_scale = 41.53
+elif args.year == 2018: lumi_scale = 59.74
 elif args.year == "combined": lumi_scale = 35.92 + 41.53 + 59.74
 
 dirName  = "_".join( [ item for item in args.cardfile.split("_") if not (item.startswith("add") or item == "incl") ] )
@@ -121,9 +120,8 @@ print allNuisances
 if args.substituteCard:
     rebinnedCardFile = os.path.join( cache_directory, "analysis", str(args.year) if args.year != "combined" else "COMBINED", args.carddir, args.substituteCard+".txt" )
 
-    subCardFile = Results.createRebinnedResults( rebinnedCardFile )
-#    subCardFile = "/scratch/lukas.lechner/TTGammaEFT/cache/analysis/2016/limits/cardFiles/defaultSetup/observed/SR3pM3_VG3p_misDY3p_addDYSF/SR3pdRUnfold_addDYSF.txt"
-#    subCardFile = "/scratch/lukas.lechner/TTGammaEFT/cache/analysis/COMBINED/limits/cardFiles/defaultSetup/expected/SR3pM3_VG3p_misDY3p_addDYSF/SR3pFine_addDYSF.txt"
+#    subCardFile = Results.createRebinnedResults( rebinnedCardFile )
+    subCardFile = "/scratch/lukas.lechner/TTGammaEFT/cache/analysis/2016/limits/cardFiles/defaultSetup/observed/SR3pM3_VG3p_misDY3p_addDYSF/SR3pdRUnfold_addDYSF.txt"
     del Results
     Results     = CombineResults( cardFile=subCardFile, plotDirectory=plotDirectory, year=args.year, bkgOnly=args.bkgOnly, isSearch=False, rebinnedCardFile=rebinnedCardFile )
 
@@ -202,8 +200,7 @@ def plotRegions( sorted=True ):
     # get region histograms
     if args.year == "combined":
         hists_tmp = Results.getRegionHistos( postFit=args.postFit, plotBins=plotBins, nuisances=plotNuisances, addStatOnlyHistos=True, bkgSubstracted=args.bkgSubstracted, labelFormater=labelFormater )
-        for i, dir in enumerate(Results.channels if not args.plotYear else [key for key, val in Results.years.iteritems() if val == args.plotYear]):
-            print i, dir
+        for i, dir in enumerate(Results.channels):
             if i == 0:
                 hists = {key:hist.Clone(str(i)+dir+key) for key, hist in hists_tmp[dir].iteritems() if not args.plotNuisances or key not in plotNuisances} #copy.deepcopy(hists_tmp)
                 if args.plotNuisances:
@@ -302,7 +299,6 @@ def plotRegions( sorted=True ):
     if args.bkgSubstracted: addon += ["bkgSub"]
     if args.substituteCard: addon += ["rebinned"] + [ cr for cr in subCard ]#if cr not in args.cardfile.split("_") ]
     if args.plotNuisances:  addon += args.plotNuisances
-    if args.plotYear:       addon += [args.plotYear]
 
     # plot name
     if   args.plotRegions and args.plotChannels: plotName = "_".join( ["regions"] + addon + args.plotRegions + [ch for ch in args.plotChannels if not "tight" in ch] )
@@ -313,16 +309,12 @@ def plotRegions( sorted=True ):
     if args.cacheHistogram:
         from Analysis.Tools.MergingDirDB      import MergingDirDB
         from TTGammaEFT.Tools.user            import cache_directory
-        year = str(args.year)
-        if args.plotYear: year += "_" + str(args.plotYear)
         cache_dir = os.path.join(cache_directory, "unfolding", str(args.year), "bkgSubstracted", "expected" if args.expected else "observed")
-        print cache_dir
         dirDB = MergingDirDB(cache_dir)
         if not dirDB: raise
         addon = []
         if args.plotRegions:  addon += args.plotRegions
         if args.plotChannels: addon += args.plotChannels
-        if args.plotYear:     addon += [args.plotYear]
         systematics = [ sys for sys in Results.getPulls( postFit=True ).keys() if not "prop" in sys ]
         # data histogram
         name = ["bkgSubtracted", args.substituteCard, args.cardfile, "data"]

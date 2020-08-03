@@ -21,6 +21,7 @@ from TTGammaEFT.Tools.objectSelection import isBJet, photonSelector, vidNestedWP
 
 from Analysis.Tools.metFilters        import getFilterCut
 from Analysis.Tools.helpers           import getCollection
+import Analysis.Tools.syncer as syncer
 
 # Default Parameter
 loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET']
@@ -354,7 +355,7 @@ if args.small:
 weight_ = lambda event, sample: event.weight
 
 # Use some defaults (set defaults before you create/import list of Plots!!)
-#preSelection = "&&".join( [ cutInterpreter.cutString( args.selection ), "overlapRemoval==1"] )
+#preSelection = "&&".join( [ cutInterpreter.cutString( args.selection ), "pTStitching==1", "overlapRemoval==1"] )
 preSelection = "&&".join( [ cutInterpreter.cutString( args.selection ) ] )
 Plot.setDefaults( stack=stack, weight=staticmethod( weight_ ), selectionString=preSelection )#, addOverFlowBin='upper' )
 
@@ -464,12 +465,12 @@ for index, mode in enumerate( allModes ):
     leptonSelection = cutInterpreter.cutString( mode )
     if not args.noData:    data_sample.setSelectionString( [ filterCutData, leptonSelection ] )
     if categoryPlot:
-        all_cat0.setSelectionString(  [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] + cat_sel0 )
-        all_cat1.setSelectionString(  [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] + cat_sel1 )
-        all_cat2.setSelectionString(  [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] + cat_sel2 )
-        all_cat3.setSelectionString(  [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] + cat_sel3 )
+        all_cat0.setSelectionString(  [ filterCutMc, leptonSelection, triggerCutMc, "pTStitching==1", "overlapRemoval==1" ] + cat_sel0 )
+        all_cat1.setSelectionString(  [ filterCutMc, leptonSelection, triggerCutMc, "pTStitching==1", "overlapRemoval==1" ] + cat_sel1 )
+        all_cat2.setSelectionString(  [ filterCutMc, leptonSelection, triggerCutMc, "pTStitching==1", "overlapRemoval==1" ] + cat_sel2 )
+        all_cat3.setSelectionString(  [ filterCutMc, leptonSelection, triggerCutMc, "pTStitching==1", "overlapRemoval==1" ] + cat_sel3 )
     else:
-        for sample in mc + signals: sample.setSelectionString( [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] )
+        for sample in mc + signals: sample.setSelectionString( [ filterCutMc, leptonSelection, triggerCutMc, "pTStitching==1", "overlapRemoval==1" ] )
 
     # Overlap removal
 #    if any( x.name == "TTG" for x in mc ) and any( x.name == "Top" for x in mc ):
