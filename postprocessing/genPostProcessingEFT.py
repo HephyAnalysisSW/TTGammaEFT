@@ -255,7 +255,9 @@ new_variables += [ "nLeptonVetoIsoCorr/I" ]
 new_variables += [ "nJetGood/I" ]
 new_variables += [ "nBTagGood/I" ]
 new_variables += [ "nPhotonGood/I" ]
+new_variables += [ "nPhotonNoChgIsoNoSieie/I" ]
 new_variables += [ "PhotonGood0_"  + var for var in genPhotonVarStringWrite.split(",") ]
+new_variables += [ "PhotonNoChgIsoNoSieie0_"  + var for var in genPhotonVarStringWrite.split(",") ]
 new_variables += [ "LeptonTight0_" + var for var in genLeptonVarStringWrite.split(",") ]
 
 new_variables += [ "nGenJetsCMSUnfold/I" ]
@@ -603,6 +605,7 @@ def filler( event ):
     genP0 = ( GenPhotonCMSUnfold[:1] + [None] )[0]
     if genP0: fill_vector( event, "GenPhotonCMSUnfold0",  genPhotonVars, genP0 )
     if genP0: fill_vector( event, "PhotonGood0",          genPhotonVars, genP0 )
+    if genP0: fill_vector( event, "PhotonNoChgIsoNoSieie0",          genPhotonVars, genP0 )
 
     GenPhotonATLASUnfold.sort( key = lambda p: -p["pt"] )
     genP0 = ( GenPhotonATLASUnfold[:1] + [None] )[0]
@@ -639,6 +642,7 @@ def filler( event ):
     event.nJetGood             = event.nGenJetsCMSUnfold
     event.nBTagGood            = event.nGenBJetCMSUnfold
     event.nPhotonGood          = event.nGenPhotonCMSUnfold
+    event.nPhotonNoChgIsoNoSieie = event.nGenPhotonCMSUnfold
 
     event.nGenElectronATLASUnfold = len( filter( lambda l: abs( l["pdgId"] ) == 11, GenLeptonATLASUnfold ) )
     event.nGenMuonATLASUnfold     = len( filter( lambda l: abs( l["pdgId"] ) == 13, GenLeptonATLASUnfold ) )
