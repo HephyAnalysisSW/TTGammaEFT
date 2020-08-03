@@ -32,6 +32,7 @@ argParser.add_argument('--job',              action='store',  default=0,        
 args = argParser.parse_args()
 
 if args.year != "RunII": args.year = int(args.year)
+if args.checkOnly: args.overwrite = False
 
 # Logging
 import Analysis.Tools.logger as logger
@@ -85,6 +86,7 @@ for channel in channels:
             else:
                 jobs.extend(estimate.getBkgSysJobs(r, channel, setup))
 
+#jobs = splitList( jobs, 32)[1]
 if args.nJobs != 1:
     jobs = splitList( jobs, args.nJobs)[args.job]
 
@@ -101,13 +103,14 @@ else:
 if args.checkOnly:
     for res in results:
         print args.selectEstimator, res[0][0], res[0][1], args.controlRegion, res[1].val
-    sys.exit(0)
+    if not args.createExecFile:
+        sys.exit(0)
 
 
 if args.createExecFile:
     for res in results:
         if res[1].val < 0:
-            with open( "est/missingEstimates_%i_%s_%s_%s.sh"%(args.year, args.controlRegion, args.selectEstimator, args.selectRegion), "w" if args.overwrite else "a" ) as f:
+            with open( "est/missingEstimates_%i_%s_%s.sh"%(args.year, args.controlRegion, args.selectEstimator), "w" if args.overwrite else "a" ) as f:
                 f.write( "python " + " ".join( [ item for item in sys.argv if item not in ["--createExecFile", "--checkOnly"] ] ) + "\n" )
             sys.exit(0)
 

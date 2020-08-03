@@ -82,11 +82,14 @@ def wrapper(arg):
         QCDTF["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
 
         # define the 2016 e-channel QCD sideband in barrel only (bad mT fit in EC)
-        if channel == "e" and args.year == 2016 and (etaHigh > 1.479 or etaHigh < 0):
-            QCDTF["CR"]["leptonEta"] = ( 0, 1.479 )
+#        if channel == "e" and args.year == 2016 and (etaHigh > 1.479 or etaHigh < 0):
+#            QCDTF["CR"]["leptonEta"] = ( 0, 1.479 )
 
         qcdUpdates  = { "CR":QCDTF["CR"], "SR":QCDTF["SR"] }
-        transferFac = estimate.cachedTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=args.overwrite, checkOnly=args.checkOnly )
+        transferFac = estimate.cachedTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=False, checkOnly=args.checkOnly )
+        tfQCDMC = estimate.cachedQCDMCTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=args.overwrite, checkOnly=args.checkOnly )
+        print "ratio", tfQCDMC
+        print "fitted", transferFac
         return (arg, transferFac )
 
 jobs=[]

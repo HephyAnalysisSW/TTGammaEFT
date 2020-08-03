@@ -314,7 +314,7 @@ read_variables += map( lambda var: "LeptonTight1_"            + var, leptonVaria
 read_variables += map( lambda var: "Bj0_"                     + var, bJetVariables )
 read_variables += map( lambda var: "Bj1_"                     + var, bJetVariables )
 
-read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval/I",
+read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval/I", "pTStitching/I",
                      "nGenWElectron/I", "nGenWMuon/I", "nGenWTau/I", "nGenW/I", "nGenWJets/I", "nGenWTauElectron/I", "nGenWTauMuon/I", "nGenWTauJets/I",
                      "nGenElectron/I",
                      "nGenMuon/I",
@@ -583,7 +583,7 @@ for index, mode in enumerate( allModes ):
 
     data_sample.setSelectionString( [ filterCutData, leptonSelection, leptonEtaCut_Barrel ] )
     for sample in mc + signals:
-        sample.setSelectionString( [ filterCutMc, leptonSelection, leptonEtaCut_Barrel, triggerCutMc, "overlapRemoval==1" ] )
+        sample.setSelectionString( [ filterCutMc, leptonSelection, leptonEtaCut_Barrel, triggerCutMc, "pTStitching==1", "overlapRemoval==1" ] )
 
     print data_sample.selectionString
     print mc[0].selectionString
@@ -592,7 +592,7 @@ for index, mode in enumerate( allModes ):
 
     data_sample.setSelectionString( [ filterCutData, leptonSelection, leptonEtaCut_EC ] )
     for sample in mc + signals:
-        sample.setSelectionString( [ filterCutMc, leptonSelection, leptonEtaCut_EC, triggerCutMc, "overlapRemoval==1" ] )
+        sample.setSelectionString( [ filterCutMc, leptonSelection, leptonEtaCut_EC, triggerCutMc, "pTStitching==1", "overlapRemoval==1" ] )
 
     print
     print data_sample.selectionString
@@ -635,13 +635,13 @@ for index, mode in enumerate( allModes ):
 
         preSelectionSRData_Barrel = "&&".join( [ preSelectionTFSR, filterCutData, isoleptonSelection, leptonSREtaCut_Barrel ] )
         preSelectionCRData_Barrel = "&&".join( [ preSelectionTFCR, filterCutData, leptonSelection,    leptonEtaCut_Barrel    ] )
-        preSelectionSRMC_Barrel   = "&&".join( [ preSelectionTFSR, filterCutMc,   isoleptonSelection, leptonSREtaCut_Barrel, triggerCutMc, "overlapRemoval==1"  ] )
-        preSelectionCRMC_Barrel   = "&&".join( [ preSelectionTFCR, filterCutMc,   leptonSelection,    leptonEtaCut_Barrel,   triggerCutMc, "overlapRemoval==1"  ] )
+        preSelectionSRMC_Barrel   = "&&".join( [ preSelectionTFSR, filterCutMc,   isoleptonSelection, leptonSREtaCut_Barrel, triggerCutMc, "pTStitching==1", "overlapRemoval==1"  ] )
+        preSelectionCRMC_Barrel   = "&&".join( [ preSelectionTFCR, filterCutMc,   leptonSelection,    leptonEtaCut_Barrel,   triggerCutMc, "pTStitching==1", "overlapRemoval==1"  ] )
 
         preSelectionSRData_EC = "&&".join( [ preSelectionTFSR, filterCutData, isoleptonSelection, leptonSREtaCut_EC ] )
         preSelectionCRData_EC = "&&".join( [ preSelectionTFCR, filterCutData, leptonSelection,    leptonEtaCut_EC    ] )
-        preSelectionSRMC_EC   = "&&".join( [ preSelectionTFSR, filterCutMc,   isoleptonSelection, leptonSREtaCut_EC, triggerCutMc, "overlapRemoval==1"  ] )
-        preSelectionCRMC_EC   = "&&".join( [ preSelectionTFCR, filterCutMc,   leptonSelection,    leptonEtaCut_EC,   triggerCutMc, "overlapRemoval==1"  ] )
+        preSelectionSRMC_EC   = "&&".join( [ preSelectionTFSR, filterCutMc,   isoleptonSelection, leptonSREtaCut_EC, triggerCutMc, "pTStitching==1", "overlapRemoval==1"  ] )
+        preSelectionCRMC_EC   = "&&".join( [ preSelectionTFCR, filterCutMc,   leptonSelection,    leptonEtaCut_EC,   triggerCutMc, "pTStitching==1", "overlapRemoval==1"  ] )
 
         # Calculate yields for Data
         data_sample.setSelectionString( "(1)" )
