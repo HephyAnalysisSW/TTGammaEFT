@@ -42,7 +42,7 @@ import RootTools.core.logger as logger_rt
 logger_rt = logger_rt.get_logger( args.logLevel, logFile = None )
 
 extensions_ = ["pdf", "png", "root"]
-plot_directory_ = os.path.join( plot_directory, 'QCDTFComp', str(args.year), args.plot_directory, args.mode )
+plot_directory_ = os.path.join( plot_directory, 'QCDTFMCvsFit', str(args.year), args.plot_directory, args.mode )
 copyIndexPHP( plot_directory_ )
 
 if args.year == 2016:   lumi_scale = 35.92
@@ -65,26 +65,26 @@ setup1b0p      = setup1b0p.sysClone( parameters=parameters1b0p )
 estimate1b0p.initCache(setup1b0p.defaultCacheDir())
 
 cachedTF       = {}
-cachedTF["0b0p"] = {}
-cachedTF["1b0p"] = {}
-cachedTF["0b1p"] = {}
-cachedTF["1b1p"] = {}
+cachedTF["0b"] = {}
+cachedTF["1b"] = {}
+cachedTF["0bMC"] = {}
+cachedTF["1bMC"] = {}
 for nJet in [(2,2), (3,3), (4,-1)]:
     nj = str(nJet[0])
-    cachedTF["0b0p"][nj] = {}
-    cachedTF["1b0p"][nj] = {}
-    cachedTF["0b1p"][nj] = {}
-    cachedTF["1b1p"][nj] = {}
+    cachedTF["0b"][nj] = {}
+    cachedTF["1b"][nj] = {}
+    cachedTF["0bMC"][nj] = {}
+    cachedTF["1bMC"][nj] = {}
     for i_eta, eta in enumerate(etaBins[:-1] + ["incl"]):
         etakey = str(eta)
-        cachedTF["0b0p"][nj][etakey] = {}
-        cachedTF["1b0p"][nj][etakey] = {}
-        cachedTF["0b1p"][nj][etakey] = {}
-        cachedTF["1b1p"][nj][etakey] = {}
+        cachedTF["0b"][nj][etakey] = {}
+        cachedTF["1b"][nj][etakey] = {}
+        cachedTF["0bMC"][nj][etakey] = {}
+        cachedTF["1bMC"][nj][etakey] = {}
 
 # get brute force all of them
-for nP in [0,1]:
-    for nJet in [(2,2), (3,3), (4,-1)]:
+for nJet in [(2,2), (3,3), (4,-1)]:
+        print "jet", nJet
         nj = str(nJet[0])
         # inclusive tf
         nJetLow, nJetHigh = nJet
@@ -94,13 +94,6 @@ for nP in [0,1]:
         QCDTF = copy.deepcopy(QCDTF_updates)
         QCDTF["CR"]["nJet"] = ( nJetLow, nJetHigh )
         QCDTF["SR"]["nJet"] = ( nJetLow, nJetHigh )
-        QCDTF["CR"]["nPhoton"] = ( nP, nP )
-        QCDTF["SR"]["nPhoton"] = ( nP, nP )
-        if nP > 0:
-            QCDTF["CR"]["zWindow"] = "offZeg"
-            QCDTF["SR"]["zWindow"] = "offZeg"
-            QCDTF["CR"]["addMisIDSF"] = True
-            QCDTF["SR"]["addMisIDSF"] = True
 
         # Transfer Factor, get the QCD histograms always in barrel regions
         QCDTF["CR"]["leptonEta"] = ( etaLow, etaHigh )
@@ -109,10 +102,13 @@ for nP in [0,1]:
         QCDTF["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
 
         qcdUpdate  = { "CR":QCDTF["CR"], "SR":QCDTF["SR"] }
-        cachedTF["0b%ip"%nP][nj]["incl"]["incl"] = estimate0b0p.cachedTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
-        cachedTF["1b%ip"%nP][nj]["incl"]["incl"] = estimate1b0p.cachedTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+        cachedTF["0b"][nj]["incl"]["incl"] = estimate0b0p.cachedTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+        cachedTF["1b"][nj]["incl"]["incl"] = estimate1b0p.cachedTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+        cachedTF["0bMC"][nj]["incl"]["incl"] = estimate0b0p.cachedQCDMCTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+        cachedTF["1bMC"][nj]["incl"]["incl"] = estimate1b0p.cachedQCDMCTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
         # pt inclusive tf
         for i_eta, eta in enumerate(etaBins[:-1]):
+            print "eta", eta
             etakey = str(eta)
             etaLow, etaHigh   = eta, etaBins[i_eta+1]
             ptLow, ptHigh     = 0, -1
@@ -120,13 +116,6 @@ for nP in [0,1]:
             QCDTF = copy.deepcopy(QCDTF_updates)
             QCDTF["CR"]["nJet"] = ( nJetLow, nJetHigh )
             QCDTF["SR"]["nJet"] = ( nJetLow, nJetHigh )
-            QCDTF["CR"]["nPhoton"] = ( nP, nP )
-            QCDTF["SR"]["nPhoton"] = ( nP, nP )
-            if nP > 0:
-                QCDTF["CR"]["zWindow"] = "offZeg"
-                QCDTF["SR"]["zWindow"] = "offZeg"
-                QCDTF["CR"]["addMisIDSF"] = True
-                QCDTF["SR"]["addMisIDSF"] = True
 
             # Transfer Factor, get the QCD histograms always in barrel regions
             QCDTF["CR"]["leptonEta"] = ( etaLow, etaHigh )
@@ -135,10 +124,13 @@ for nP in [0,1]:
             QCDTF["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
 
             qcdUpdate  = { "CR":QCDTF["CR"], "SR":QCDTF["SR"] }
-            cachedTF["0b%ip"%nP][nj][etakey]["incl"] = estimate0b0p.cachedTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
-            cachedTF["1b%ip"%nP][nj][etakey]["incl"] = estimate1b0p.cachedTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+            cachedTF["0b"][nj][etakey]["incl"] = estimate0b0p.cachedTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+            cachedTF["1b"][nj][etakey]["incl"] = estimate1b0p.cachedTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+            cachedTF["0bMC"][nj][etakey]["incl"] = estimate0b0p.cachedQCDMCTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+            cachedTF["1bMC"][nj][etakey]["incl"] = estimate1b0p.cachedQCDMCTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
 
         for i_pt, pt in enumerate(ptBins[:-1]):
+            print "pt", pt
             # eta inclusive tf
             ptkey = str(pt)
             etaLow, etaHigh   = 0, -1
@@ -147,13 +139,6 @@ for nP in [0,1]:
             QCDTF = copy.deepcopy(QCDTF_updates)
             QCDTF["CR"]["nJet"] = ( nJetLow, nJetHigh )
             QCDTF["SR"]["nJet"] = ( nJetLow, nJetHigh )
-            QCDTF["CR"]["nPhoton"] = ( nP, nP )
-            QCDTF["SR"]["nPhoton"] = ( nP, nP )
-            if nP > 0:
-                QCDTF["CR"]["zWindow"] = "offZeg"
-                QCDTF["SR"]["zWindow"] = "offZeg"
-                QCDTF["CR"]["addMisIDSF"] = True
-                QCDTF["SR"]["addMisIDSF"] = True
 
             # Transfer Factor, get the QCD histograms always in barrel regions
             QCDTF["CR"]["leptonEta"] = ( etaLow, etaHigh )
@@ -162,10 +147,13 @@ for nP in [0,1]:
             QCDTF["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
 
             qcdUpdate  = { "CR":QCDTF["CR"], "SR":QCDTF["SR"] }
-            cachedTF["0b%ip"%nP][nj]["incl"][ptkey] = estimate0b0p.cachedTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
-            cachedTF["1b%ip"%nP][nj]["incl"][ptkey] = estimate1b0p.cachedTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+            cachedTF["0b"][nj]["incl"][ptkey] = estimate0b0p.cachedTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+            cachedTF["1b"][nj]["incl"][ptkey] = estimate1b0p.cachedTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+            cachedTF["0bMC"][nj]["incl"][ptkey] = estimate0b0p.cachedQCDMCTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+            cachedTF["1bMC"][nj]["incl"][ptkey] = estimate1b0p.cachedQCDMCTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
 
             for i_eta, eta in enumerate(etaBins[:-1]):
+                print "pt", pt, "eta", eta
                 etakey = str(eta)
                 etaLow, etaHigh   = eta, etaBins[i_eta+1]
                 ptLow, ptHigh     = pt,  ptBins[i_pt+1]
@@ -173,13 +161,6 @@ for nP in [0,1]:
                 QCDTF = copy.deepcopy(QCDTF_updates)
                 QCDTF["CR"]["nJet"] = ( nJetLow, nJetHigh )
                 QCDTF["SR"]["nJet"] = ( nJetLow, nJetHigh )
-                QCDTF["CR"]["nPhoton"] = ( nP, nP )
-                QCDTF["SR"]["nPhoton"] = ( nP, nP )
-                if nP > 0:
-                    QCDTF["CR"]["zWindow"] = "offZeg"
-                    QCDTF["SR"]["zWindow"] = "offZeg"
-                    QCDTF["CR"]["addMisIDSF"] = True
-                    QCDTF["SR"]["addMisIDSF"] = True
 
                 # Transfer Factor, get the QCD histograms always in barrel regions
                 QCDTF["CR"]["leptonEta"] = ( etaLow, etaHigh )
@@ -188,8 +169,10 @@ for nP in [0,1]:
                 QCDTF["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
 
                 qcdUpdate  = { "CR":QCDTF["CR"], "SR":QCDTF["SR"] }
-                cachedTF["0b%ip"%nP][nj][etakey][ptkey] = estimate0b0p.cachedTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
-                cachedTF["1b%ip"%nP][nj][etakey][ptkey] = estimate1b0p.cachedTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+                cachedTF["0b"][nj][etakey][ptkey] = estimate0b0p.cachedTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+                cachedTF["1b"][nj][etakey][ptkey] = estimate1b0p.cachedTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+                cachedTF["0bMC"][nj][etakey][ptkey] = estimate0b0p.cachedQCDMCTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+                cachedTF["1bMC"][nj][etakey][ptkey] = estimate1b0p.cachedQCDMCTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
 
 
 # Text on the plots
@@ -221,17 +204,6 @@ def drawPlots( plot, btags ):
                    copyIndexPHP = True,
                  )
 
-def draw2DPlots( plot, btags ):
-
-    plotting.draw2D( plot,
-                    plot_directory = plot_directory_,
-                    extensions = extensions_,
-                    logX = False, logY = False, logZ = False,
-                    zRange = (0.0, 1.0 if "nBTag0" in plot.name else 1.0),
-                    drawObjects = drawObjects( lumi_scale, btags ),
-                    copyIndexPHP = True,
-                )
-
 color = [ ROOT.kAzure-3, ROOT.kRed-3, ROOT.kGreen-2, ROOT.kOrange ]
 hists       = {}
 hists2D     = {}
@@ -243,21 +215,13 @@ for i_eta, eta in enumerate(etaBins[:-1] + ["incl"]):
         ptLow, ptHigh     = (str(pt),  str(ptBins[i_pt+1])) if pt != "incl" else ("incl", None)
 
         for b in range(2):
-            hists2D["%ib"%b] = ROOT.TH2F("hist2D%ib"%b, "hist2D%ib"%b, 2, 0, 2, 3, 2, 5)
-            hists2D["%ib"%b].GetZaxis().SetTitle( "QCD TF rel. diff" )
-            hists2D["%ib"%b].GetZaxis().SetTitleSize( 0.04 )
             hists["%ib"%b]   = {}
-            for p in range(2):
-                hists["%ib"%b]["nJ%iG"%p] = ROOT.TH1F("hist%ib_nJ%iG"%(b,p), "hist%ib_nJ%iG"%(b,p), 3, 2, 5)
-                hists["%ib"%b]["nJ%iG"%p].style = styles.errorStyle( color[p], width=3 )
-                hists["%ib"%b]["nJ%iG"%p].legendText = "N_{#gamma}=%i, N_{b-jets}=%i"%(p,b)
-                hists2D["%ib"%b].GetXaxis().SetBinLabel( p+1, str(p) )
-            for j in range(2,5):
-                hists["%ib"%b]["nG%iJ"%j] = ROOT.TH1F("hist%ib_nG%iJ"%(b,j), "hist%ib_nG%iJ"%(b,j), 2, 0, 2)
-                hists["%ib"%b]["nG%iJ"%j].style = styles.errorStyle( color[j-2], width=3 )
-                hists["%ib"%b]["nG%iJ"%j].legendText = "N_{jets}=%i, N_{b-jets}=%i"%(j,b)
-                lab = str(j) if j != 4 else "#geq4"
-                hists2D["%ib"%b].GetYaxis().SetBinLabel( j-1, lab )
+            hists["%ib"%b]["nJ"] = ROOT.TH1F("hist%ib_nJ"%(b), "hist%ib_nJ"%(b), 3, 2, 5)
+            hists["%ib"%b]["nJ"].style = styles.errorStyle( color[0], width=3 )
+            hists["%ib"%b]["nJ"].legendText = "fitted TF, N_{b-jets}=%i"%(b)
+            hists["%ib"%b]["nJMC"] = ROOT.TH1F("hist%ib_nJMC"%(b), "hist%ib_nJMC"%(b), 3, 2, 5)
+            hists["%ib"%b]["nJMC"].style = styles.errorStyle( color[1], width=3 )
+            hists["%ib"%b]["nJMC"].legendText = "QCD MC TF, N_{b-jets}=%i"%(b)
 
             addon = args.mode.replace("mu", "#mu")
 #            addon += "#geq1 b-tag" if b==1 else "0 b-tag"
@@ -268,58 +232,34 @@ for i_eta, eta in enumerate(etaBins[:-1] + ["incl"]):
                 addon += ", "
                 addon += "%s #leq |#eta| < %s"%(etaLow, etaHigh) if etaHigh and float(etaHigh) >= 0 else "|#eta| #geq %s"%etaLow
 
-            hists["%ib"%b]["nGUsed"] = ROOT.TH1F("hist%ib_nGUsed"%(b), "hist%ib_nGUsed"%(b), 2, 0, 2)
-            hists["%ib"%b]["nGUsed"].style = styles.lineStyle( ROOT.kBlack, width=3, errors=False )
-            hists["%ib"%b]["nGUsed"].legendText = "used TF (%s)"%addon
-
             hists["%ib"%b]["nJUsed"] = ROOT.TH1F("hist%ib_nJUsed"%(b), "hist%ib_nJUsed"%(b), 3, 2, 5)
             hists["%ib"%b]["nJUsed"].style = styles.lineStyle( ROOT.kBlack, width=3, errors=False )
             hists["%ib"%b]["nJUsed"].legendText = "used TF (%s)"%addon
 
         for b in range(2):
-            for p in range(2):
                 for j in range(2,5):
-                    hists["%ib"%b]["nG%iJ"%j].SetBinContent( p+1, cachedTF["%ib%ip"%(b,p)][str(j)][etakey][ptkey].val   )
-                    hists["%ib"%b]["nG%iJ"%j].SetBinError(   p+1, cachedTF["%ib%ip"%(b,p)][str(j)][etakey][ptkey].sigma )
-                    hists["%ib"%b]["nG%iJ"%j].GetXaxis().SetBinLabel( p+1, str(p) )
-
-                    hists["%ib"%b]["nJ%iG"%p].SetBinContent( j-1, cachedTF["%ib%ip"%(b,p)][str(j)][etakey][ptkey].val   )
-                    hists["%ib"%b]["nJ%iG"%p].SetBinError(   j-1, cachedTF["%ib%ip"%(b,p)][str(j)][etakey][ptkey].sigma )
+                    hists["%ib"%b]["nJ"].SetBinContent( j-1, cachedTF["%ib"%(b)][str(j)][etakey][ptkey].val   )
+                    hists["%ib"%b]["nJ"].SetBinError(   j-1, cachedTF["%ib"%(b)][str(j)][etakey][ptkey].sigma )
                     lab = str(j) if j != 4 else "#geq4"
-                    hists["%ib"%b]["nJ%iG"%p].GetXaxis().SetBinLabel( j-1, lab )
+                    hists["%ib"%b]["nJ"].GetXaxis().SetBinLabel( j-1, lab )
 
-                    hists["%ib"%b]["nGUsed"].SetBinContent( p+1, cachedTF["%ib0p"%(b)]["2"][etakey][ptkey].val   )
-                    hists["%ib"%b]["nGUsed"].SetBinError(   p+1, cachedTF["%ib0p"%(b)]["2"][etakey][ptkey].sigma )
-                    hists["%ib"%b]["nGUsed"].GetXaxis().SetBinLabel( p+1, str(p) )
+                    hists["%ib"%b]["nJMC"].SetBinContent( j-1, cachedTF["%ibMC"%(b)][str(j)][etakey][ptkey].val   )
+                    hists["%ib"%b]["nJMC"].SetBinError(   j-1, cachedTF["%ibMC"%(b)][str(j)][etakey][ptkey].sigma )
+                    lab = str(j) if j != 4 else "#geq4"
+                    hists["%ib"%b]["nJMC"].GetXaxis().SetBinLabel( j-1, lab )
 
-                    hists["%ib"%b]["nJUsed"].SetBinContent( j-1, cachedTF["%ib0p"%(b)]["2"][etakey][ptkey].val   )
-                    hists["%ib"%b]["nJUsed"].SetBinError(   j-1, cachedTF["%ib0p"%(b)]["2"][etakey][ptkey].sigma )
+                    hists["%ib"%b]["nJUsed"].SetBinContent( j-1, cachedTF["%ib"%(b)]["2"][etakey][ptkey].val   )
+                    hists["%ib"%b]["nJUsed"].SetBinError(   j-1, cachedTF["%ib"%(b)]["2"][etakey][ptkey].sigma )
                     hists["%ib"%b]["nJUsed"].GetXaxis().SetBinLabel( j-1, lab )
-
-                    relTF = (cachedTF["%ib%ip"%(b,p)][str(j)][etakey][ptkey] - cachedTF["%ib0p"%(b)]["2"][etakey][ptkey]) / cachedTF["%ib0p"%(b)]["2"][etakey][ptkey] if cachedTF["%ib0p"%(b)]["2"][etakey][ptkey] else u_float(0)
-                    hists2D["%ib"%b].SetBinContent( p+1, j-1, abs(relTF.val)   )
-                    hists2D["%ib"%b].SetBinError(   p+1, j-1, abs(relTF.sigma) )
-
 
         plots       = {}
         plots2D     = {}
         for b in range(2):
-            print "b", b
             label = "TT" if b==1 else "WJets"
             label += "_pT%sTo%s"%(ptLow, ptHigh) if ptHigh and float(ptHigh) >= 0 else "_pT%s"%ptLow
             label += "_eta%sTo%s"%(etaLow, etaHigh) if etaHigh and float(etaHigh) >= 0 else "_eta%s"%etaLow
-            print "label", label
-            plots2D["%ib"%b] = Plot2D.fromHisto( "QCDTF2D_"+label, [[hists2D["%ib"%b]]], texX="N_{#gamma}", texY="N_{jets}" )
             plots["%ib"%b]   = {}
-            print hists["%ib"%b]["nJUsed"]
-            print hists["%ib"%b]["nJ0G"]
-            print hists["%ib"%b]["nJ1G"]
-            print range(2)[::-1]
-            plots["%ib"%b]["nJ"] = Plot.fromHisto( "QCDTFnJet_"+label,    [ [hists["%ib"%b]["nJUsed"]], [hists["%ib"%b]["nJ0G"]] ], texX="N_{jets}", texY="QCD Transferfactor" )
-            plots["%ib"%b]["nJ"] = Plot.fromHisto( "QCDTFwPnJet_"+label,    [[hists["%ib"%b]["nJUsed"]]] + [[hists["%ib"%b]["nJ%iG"%p]] for p in range(2)[::-1]], texX="N_{jets}", texY="QCD Transferfactor" )
-            plots["%ib"%b]["nG"] = Plot.fromHisto( "QCDTFnPhoton_"+label, [[hists["%ib"%b]["nGUsed"]]] + [[hists["%ib"%b]["nG%iJ"%j]] for j in range(2,5)[::-1]], texX="N_{#gamma}", texY="QCD Transferfactor" )
+            plots["%ib"%b]["nJ"] = Plot.fromHisto( "QCDTFnJet_"+label,    [[hists["%ib"%b]["nJUsed"]]] + [[hists["%ib"%b]["nJ"]]]  + [[hists["%ib"%b]["nJMC"]]], texX="N_{jets}", texY="QCD Transferfactor" )
 
         for b in range(2):
-            draw2DPlots( plots2D["%ib"%b], b )
             drawPlots( plots["%ib"%b]["nJ"], b )
-            drawPlots( plots["%ib"%b]["nG"], b )

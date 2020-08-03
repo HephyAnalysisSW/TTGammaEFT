@@ -42,7 +42,7 @@ import RootTools.core.logger as logger_rt
 logger_rt = logger_rt.get_logger( args.logLevel, logFile = None )
 
 extensions_ = ["pdf", "png", "root"]
-plot_directory_ = os.path.join( plot_directory, 'QCDTFComp', str(args.year), args.plot_directory, args.mode )
+plot_directory_ = os.path.join( plot_directory, 'QCDMCTFComp', str(args.year), args.plot_directory, args.mode )
 copyIndexPHP( plot_directory_ )
 
 if args.year == 2016:   lumi_scale = 35.92
@@ -109,8 +109,8 @@ for nP in [0,1]:
         QCDTF["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
 
         qcdUpdate  = { "CR":QCDTF["CR"], "SR":QCDTF["SR"] }
-        cachedTF["0b%ip"%nP][nj]["incl"]["incl"] = estimate0b0p.cachedTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
-        cachedTF["1b%ip"%nP][nj]["incl"]["incl"] = estimate1b0p.cachedTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+        cachedTF["0b%ip"%nP][nj]["incl"]["incl"] = estimate0b0p.cachedQCDMCTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+        cachedTF["1b%ip"%nP][nj]["incl"]["incl"] = estimate1b0p.cachedQCDMCTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
         # pt inclusive tf
         for i_eta, eta in enumerate(etaBins[:-1]):
             etakey = str(eta)
@@ -135,8 +135,8 @@ for nP in [0,1]:
             QCDTF["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
 
             qcdUpdate  = { "CR":QCDTF["CR"], "SR":QCDTF["SR"] }
-            cachedTF["0b%ip"%nP][nj][etakey]["incl"] = estimate0b0p.cachedTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
-            cachedTF["1b%ip"%nP][nj][etakey]["incl"] = estimate1b0p.cachedTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+            cachedTF["0b%ip"%nP][nj][etakey]["incl"] = estimate0b0p.cachedQCDMCTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+            cachedTF["1b%ip"%nP][nj][etakey]["incl"] = estimate1b0p.cachedQCDMCTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
 
         for i_pt, pt in enumerate(ptBins[:-1]):
             # eta inclusive tf
@@ -162,8 +162,8 @@ for nP in [0,1]:
             QCDTF["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
 
             qcdUpdate  = { "CR":QCDTF["CR"], "SR":QCDTF["SR"] }
-            cachedTF["0b%ip"%nP][nj]["incl"][ptkey] = estimate0b0p.cachedTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
-            cachedTF["1b%ip"%nP][nj]["incl"][ptkey] = estimate1b0p.cachedTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+            cachedTF["0b%ip"%nP][nj]["incl"][ptkey] = estimate0b0p.cachedQCDMCTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+            cachedTF["1b%ip"%nP][nj]["incl"][ptkey] = estimate1b0p.cachedQCDMCTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
 
             for i_eta, eta in enumerate(etaBins[:-1]):
                 etakey = str(eta)
@@ -188,8 +188,8 @@ for nP in [0,1]:
                 QCDTF["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
 
                 qcdUpdate  = { "CR":QCDTF["CR"], "SR":QCDTF["SR"] }
-                cachedTF["0b%ip"%nP][nj][etakey][ptkey] = estimate0b0p.cachedTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
-                cachedTF["1b%ip"%nP][nj][etakey][ptkey] = estimate1b0p.cachedTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+                cachedTF["0b%ip"%nP][nj][etakey][ptkey] = estimate0b0p.cachedQCDMCTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+                cachedTF["1b%ip"%nP][nj][etakey][ptkey] = estimate1b0p.cachedQCDMCTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
 
 
 # Text on the plots
