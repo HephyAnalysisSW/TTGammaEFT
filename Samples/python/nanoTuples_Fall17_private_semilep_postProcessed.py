@@ -55,21 +55,27 @@ dirs["TT_pow"]           = ["TTLep_pow", "TTSingleLep_pow", "TTHad_pow"]
 dirs["TT_Lep"]           = ["TTLep_pow"]
 dirs["TT_SemiLep"]       = ["TTSingleLep_pow"]
 
-dirs["singleTop"]        = ["TBar_tWch_incl", "T_tWch_incl", "T_tch_pow", "TBar_tch_pow", "TToLeptons_sch_amcatnlo" ]#"TBar_tWch_ext", "T_tWch_ext"
+dirs["TG"]               = ["TGJets"] #"TGJets_lep"
+dirs["singleTop"]        = ["TBar_tWch_incl", "T_tWch_incl", "T_tch_pow", "TBar_tch_pow", "TToLeptons_sch_amcatnlo" ] + dirs["TG"]
+dirs["st_tW"]            = ["TBar_tWch_incl", "T_tWch_incl" ]
+dirs["st_tch"]           = ["T_tch_pow", "TBar_tch_pow" ] + dirs["TG"]
+dirs["st_sch"]           = ["TToLeptons_sch_amcatnlo" ]
 
 dirs["top"]              = dirs["TT_pow"] + dirs["singleTop"]
 
 #dirs["TTG_NLO"]          = ["TTGJets"]
-dirs["TTGSemiLep"]       = ["TTGSingleLep_LO"]
-dirs["TTGLep"]           = ["TTGLep_LO"]
-dirs["TTG"]              = ["TTGLep_LO", "TTGSingleLep_LO", "TTGHad_LO"]
+dirs["TTGSemiLep"]       = ["TTGSingleLep_LO", "TTGSingleLep_ptG100To200_LO", "TTGSingleLep_ptG200_LO"]
+dirs["TTGLep"]           = ["TTGLep_LO", "TTGLep_ptG100To200_LO", "TTGLep_ptG200_LO"]
+dirs["TTG"]              = ["TTGLep_LO", "TTGLep_ptG100To200_LO", "TTGLep_ptG200_LO", "TTGSingleLep_LO", "TTGSingleLep_ptG100To200_LO", "TTGSingleLep_ptG200_LO", "TTGHad_LO", "TTGHad_ptG100To200_LO", "TTGHad_ptG200_LO"]
+#dirs["TTGSemiLep"]       = ["TTGSingleLep_LO"]
+#dirs["TTGLep"]           = ["TTGLep_LO"]
+#dirs["TTG"]              = ["TTGLep_LO", "TTGSingleLep_LO", "TTGHad_LO"]
 dirs["TTG_TuneUp"]       = ["TTGLep_TuneUp_LO", "TTGSingleLep_TuneUp_LO"]
 dirs["TTG_TuneDown"]     = ["TTGLep_TuneDown_LO", "TTGSingleLep_TuneDown_LO"]
 dirs["TTG_erdOn"]        = ["TTGLep_erdOn_LO", "TTGSingleLep_erdOn_LO"]
 
 dirs["ZG_lowMLL"]        = ["ZGToLLG_lowMLL"]
 dirs["ZG_loose"]         = ["ZGToLLG_LoosePtlPtg"]
-dirs["TG"]               = ["TGJets"] #"TGJets_lep"
 
 dirs["WJets"]            = ["W1JetsToLNu", "W2JetsToLNu", "W3JetsToLNu", "W4JetsToLNu"]
 dirs["WG"]               = ["WGToLNuG"]
@@ -129,7 +135,7 @@ dirs["all_noQCD"]        = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_
 
 dirs["VG"]               = dirs["ZG_lowMLL"] + dirs["WG"]
 #dirs["rest"]             = dirs["singleTop"] + dirs["TG"] + dirs["other"]
-dirs["rest"]             = dirs["TG"] + dirs["other"]
+dirs["rest"]             = dirs["other"]
 
 directories = { key : [ os.path.join( data_directory_, postprocessing_directory_, dir) for dir in dirs[key] ] for key in dirs.keys() }
 
@@ -142,6 +148,9 @@ TT_pow           = getMCSample(name="TT_pow",           redirector=redirector, c
 TT_Lep           = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_Lep"], noCheckProxy=True, fromDPM=fromDPM)
 TT_SemiLep       = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_SemiLep"], noCheckProxy=True, fromDPM=fromDPM)
 singleTop        = getMCSample(name="singleTop",        redirector=redirector, color=color.T,               texName="single-t",          directory=directories["singleTop"], noCheckProxy=True, fromDPM=fromDPM)
+ST_tW            = getMCSample(name="ST_tW",            redirector=redirector, color=color.T,               texName="tW",                directory=directories["st_tW"], noCheckProxy=True, fromDPM=fromDPM)
+ST_tch           = getMCSample(name="ST_tch",           redirector=redirector, color=color.T,               texName="t (t-ch)",          directory=directories["st_tch"], noCheckProxy=True, fromDPM=fromDPM)
+ST_sch           = getMCSample(name="ST_sch",           redirector=redirector, color=color.T,               texName="t (s-ch)",          directory=directories["st_sch"], noCheckProxy=True, fromDPM=fromDPM)
 TTGSemiLep       = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTGSemiLep"], noCheckProxy=True, fromDPM=fromDPM)
 TTGLep           = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTGLep"], noCheckProxy=True, fromDPM=fromDPM)
 #TTG_NLO          = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_NLO"], noCheckProxy=True, fromDPM=fromDPM)

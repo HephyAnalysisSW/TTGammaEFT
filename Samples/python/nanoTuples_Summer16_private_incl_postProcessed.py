@@ -47,9 +47,13 @@ logger.info( "Loading MC samples from directory %s", os.path.join( data_director
 # Directories
 dirs = {}
 
-dirs["TTGLep"]           = ["TTGLep_LO"]
-dirs["TTGSemiLep"]       = ["TTGSingleLep_LO"]
-dirs["TTG"]              = ["TTGLep_LO", "TTGSingleLep_LO", "TTGHad_LO"]
+dirs["TTGLep"]           = ["TTGLep_LO", "TTGLep_ptG100To200_LO", "TTGLep_ptG200_LO"]
+dirs["TTGSemiLep"]       = ["TTGSingleLep_LO", "TTGSingleLep_ptG100To200_LO", "TTGSingleLep_ptG200_LO"]
+dirs["TTG"]              = ["TTGLep_LO", "TTGLep_ptG100To200_LO", "TTGLep_ptG200_LO", "TTGSingleLep_LO", "TTGSingleLep_ptG100To200_LO", "TTGSingleLep_ptG200_LO", "TTGHad_LO", "TTGHad_ptG100To200_LO", "TTGHad_ptG200_LO"]
+
+#dirs["TTGLep"]           = ["TTGLep_LO"]
+#dirs["TTGSemiLep"]       = ["TTGSingleLep_LO"]
+#dirs["TTG"]              = ["TTGLep_LO", "TTGSingleLep_LO", "TTGHad_LO"]
 
 directories = { key : [ os.path.join( data_directory_, postprocessing_directory_, dir) for dir in dirs[key] ] for key in dirs.keys() }
 
