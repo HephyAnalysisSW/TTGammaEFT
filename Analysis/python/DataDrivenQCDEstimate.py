@@ -39,53 +39,22 @@ class DataDrivenQCDEstimate(SystematicEstimator):
 
         logger.info( "Calculating QCD transfer factor" )
 
-        selection_MC_SR = setup.selection("MC",   channel=channel, **setup.defaultParameters())
-        selection_MC_CR = setup.selection("MC",   channel=channel, **setup.defaultParameters( update=qcdUpdates if qcdUpdates else QCD_updates ))
-
-        # currently we don't need a region dependence of the TF, if you do, uncomment here
-
-#        # remove specific region cuts for TF
-#        regionCut_CR    = region.cutString()
-#        for cut in QCDTF_regionCutRemovals:
-#            if not cut in regionCut_CR: continue
-#            regionCut_CR = "&&".join( [ subCut for subCut in regionCut_CR.split("&&") if not cut in subCut ] )
-#            print( "Removing region cut containing %s"%(cut) )
-#            if not regionCut_CR:
-#                regionCut_CR = "(1)"
-#                break
-#
-#        regionCut_SR = copy.copy(regionCut_CR)
-#
-#        # change region cuts for inverted leptons
-#        for cut, invCut in QCD_cutReplacements.iteritems():
-#            regionCut_CR = regionCut_CR.replace( cut, invCut )
-#            logger.info( "Changing region cut %s to %s"%(cut, invCut) )
-#
-#        logger.info( "Using CR region cut %s"%(regionCut_CR) )
-#        logger.info( "Using SR region cut %s"%(regionCut_SR) )
-#
-#        cuts_MC_SR = [ regionCut_SR, selection_MC_SR["cut"] ]
-#        if self.processCut:
-#            cuts_MC_SR.append( self.processCut )
-#            logger.info( "Adding process specific cut %s"%self.processCut )
-#
-#        cut_MC_SR = "&&".join( cuts_MC_SR )
-#        # QCD CR with 0 bjets and inverted lepton isolation +  SF for DY and MisIDSF
-#        # Attention: change region.cutstring to invLepIso and nBTag0 if there are leptons or btags in regions!!!
-#        cut_MC_CR    = "&&".join([ regionCut_CR, selection_MC_CR["cut"] ])
+        selection_MC_CR     = setup.selection("MC",   channel=channel, **setup.defaultParameters( update=qcdUpdates["CR"] if qcdUpdates else QCDTF_updates["CR"] ))
+        selection_MC_SR     = setup.selection("MC",   channel=channel, **setup.defaultParameters( update=qcdUpdates["SR"] if qcdUpdates else QCDTF_updates["SR"] ))
 
         cut_MC_SR = selection_MC_SR["cut"]
         cut_MC_CR = selection_MC_CR["cut"]
 
-        weight_MC = selection_MC_SR["weightStr"] # w/o misID SF
+        weight_MC_SR = selection_MC_SR["weightStr"]
+        weight_MC_CR = selection_MC_SR["weightStr"].replace("reweightTrigger","reweightInvIsoTrigger").replace("reweightLeptonTrackingTightSF","reweightLeptonTrackingTightSFInvIso").replace("reweightLeptonTightSF","reweightLeptonTightSFInvIso") # w/ misID SF
 
         # The QCD yield in the CR with SR weight (sic)
-        yield_QCD_CR     = self.yieldFromCache(setup, "QCD",    channel, cut_MC_CR,   weight_MC,   overwrite=overwrite)#*setup.dataLumi/1000.
-        yield_QCD_CR    += self.yieldFromCache(setup, "GJets",  channel, cut_MC_CR,   weight_MC,   overwrite=overwrite)#*setup.dataLumi/1000.
+        yield_QCD_CR     = self.yieldFromCache(setup, "QCD",    channel, cut_MC_CR,   weight_MC_CR,   overwrite=overwrite)#*setup.dataLumi/1000.
+        yield_QCD_CR    += self.yieldFromCache(setup, "GJets",  channel, cut_MC_CR,   weight_MC_CR,   overwrite=overwrite)#*setup.dataLumi/1000.
 
         # The QCD yield in the signal regions
-        yield_QCD_SR     = self.yieldFromCache(setup, "QCD",    channel, cut_MC_SR,   weight_MC,  overwrite=overwrite)#*setup.lumi/1000.
-        yield_QCD_SR    += self.yieldFromCache(setup, "GJets",  channel, cut_MC_SR,   weight_MC,  overwrite=overwrite)#*setup.lumi/1000.
+        yield_QCD_SR     = self.yieldFromCache(setup, "QCD",    channel, cut_MC_SR,   weight_MC_SR,  overwrite=overwrite)#*setup.lumi/1000.
+        yield_QCD_SR    += self.yieldFromCache(setup, "GJets",  channel, cut_MC_SR,   weight_MC_SR,  overwrite=overwrite)#*setup.lumi/1000.
 
         transferFac = yield_QCD_SR/yield_QCD_CR if yield_QCD_CR > 0 else u_float(0, 0)
 
@@ -119,39 +88,6 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         print( "Using QCD TF SR weightstring MC %s"%(weight_MC_SR) )
         print( "Using QCD TF SR weightstring Data %s"%(weight_Data_SR) )
 
-        # currently we don't need a region dependence of the TF, if you do, uncomment here
-
-#        regionCut_part = region.cutString()
-#        # remove specific region cuts for TF
-#        regionCut_CR   = copy.copy(regionCut_part)
-#        for cut in QCDTF_regionCutRemovals:
-#            if not cut in regionCut_CR: continue
-#            regionCut_CR = "&&".join( [ subCut for subCut in regionCut_CR.split("&&") if not cut in subCut ] )
-#            print( "Removing region cut containing %s"%(cut) )
-#            if not regionCut_CR:
-#                regionCut_CR = "(1)"
-#                break
-#
-#        regionCut_SR = copy.copy(regionCut_CR)
-#
-#        # change region cuts for inverted leptons
-#        for cut, invCut in QCD_cutReplacements.iteritems():
-#            regionCut_CR = regionCut_CR.replace( cut, invCut )
-#            print( "Changing region cut %s to %s"%(cut, invCut) )
-#
-#        print( "Using QCD TF full region cut %s"%(regionCut_part) )
-#        print( "Using QCD TF CR region cut %s"%(regionCut_CR) )
-#        print( "Using QCD TF SR region cut %s"%(regionCut_SR) )
-#
-#        # QCD CR with 0 bjets and inverted lepton isolation +  SF for DY and MisIDSF
-#        # Attention: change region.cutstring to invLepIso and nBTag0 if there are leptons or btags in regions!!!
-#        cut_MC_CR     = "&&".join([ regionCut_CR,   selection_MC_CR["cut"]   ])
-#        cut_Data_CR   = "&&".join([ regionCut_CR,   selection_Data_CR["cut"] ])
-#        cut_MC_SR     = "&&".join([ regionCut_SR,   selection_MC_SR["cut"]   ])
-#        cut_Data_SR   = "&&".join([ regionCut_SR,   selection_Data_SR["cut"] ])
-#        cut_Data_part = "&&".join([ regionCut_part, selection_Data_part["cut"] ])
-#        cut_Data_full = "&&".join([ regionCut_SR,   selection_Data_full["cut"] ])
-
         cut_MC_CR     = selection_MC_CR["cut"]
         cut_Data_CR   = selection_Data_CR["cut"]
         cut_MC_SR     = selection_MC_SR["cut"]
@@ -161,8 +97,6 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         print( "Using QCD TF CR Data total cut %s"%(cut_Data_CR) )
         print( "Using QCD TF SR MC total cut %s"%(cut_MC_SR) )
         print( "Using QCD TF SR Data total cut %s"%(cut_Data_SR) )
-#        print( "Using QCD TF SR full total cut %s"%(cut_Data_full) )
-#        print( "Using QCD TF SR part total cut %s"%(cut_Data_part) )
 
         # Calculate yields for Data
         yield_data_SR  = self.yieldFromCache(setup, "Data", channel, cut_Data_SR, weight_Data_SR, overwrite=overwrite)
@@ -176,19 +110,6 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         if yield_data_CR <= 0:
             logger.warning("CR data yield for QCD TF is 0!")
             return u_float(0, 0)
-
-#        # Calculate the fraction of data for the subregion (e.g. slices in M3 or M(l,gamma))
-#        yield_data_part = self.yieldFromCache(setup, "Data", channel, cut_Data_part, weight_Data_SR, overwrite=overwrite)
-#
-#        if yield_data_part <= 0:
-#            logger.warning("Fractional data yield for QCD TF is 0!")
-#            return u_float(0, 0)
-#
-#        yield_data_full = self.yieldFromCache(setup, "Data", channel, cut_Data_full, weight_Data_SR, overwrite=overwrite)
-#
-#        if yield_data_full <= 0:
-#            logger.warning("Full data yield for QCD TF is 0!")
-#            return u_float(0, 0)
 
         # Calculate yields for MC (normalized to data lumi)
         if addSF:
@@ -227,7 +148,6 @@ class DataDrivenQCDEstimate(SystematicEstimator):
             if s in ["QCD-DD", "QCD", "GJets", "Data"]: continue
             y_CR = self.yieldFromCache( setup, s, channel, cut_MC_CR, weight_MC_CR, overwrite=overwrite )
             y_SR = self.yieldFromCache( setup, s, channel, cut_MC_SR, weight_MC_SR, overwrite=overwrite )
-#            print "without SF", s, "CR", y_CR*setup.dataLumi/1000., "SR", y_SR*setup.dataLumi/1000.
             print "without SF", s, "CR", y_CR, "SR", y_SR
 
             if addSF:
@@ -246,21 +166,15 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                 elif "WG" in s:
                     y_CR *= WGSF_val[setup.year] #add WGamma SF
                     y_SR *= WGSF_val[setup.year] #add WGamma SF
-#            print "with SF", s, "CR", y_CR*setup.dataLumi/1000., "SR", y_SR*setup.dataLumi/1000.
             print "with SF", s, "CR", y_CR, "SR", y_SR
             yield_other_CR += y_CR
             yield_other_SR += y_SR
-
-#        yield_other_CR *= setup.dataLumi/1000.
-#        yield_other_SR *= setup.dataLumi/1000.
 
         qcd_est_CR   = yield_data_CR - yield_other_CR
         qcd_est_SR   = yield_data_SR - yield_other_SR
         # TF from full QCD CR to full SR
         transRatio   = qcd_est_SR / qcd_est_CR if qcd_est_CR > 0 else u_float(0, 0)
         # scale the TF for subregions in e.g. m(l,gamma) or m3 (region cuts)
-#        fractionalSR = yield_data_part / yield_data_full if yield_data_full > 0 else u_float(0, 0)
-
         transferFac = transRatio# * fractionalSR
 
         print("Calculating data-driven QCD TF normalization in channel " + channel + " using lumi " + str(setup.dataLumi) + ":")
@@ -270,10 +184,6 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         print("TF SR yield data:                " + str(yield_data_SR))
         print("TF SR yield other:               " + str(yield_other_SR))
         print("TF SR yield (data-other):        " + str(qcd_est_SR))
-#        print("TF full region yield (data):     " + str(yield_data_full))
-#        print("TF part region yield (data):     " + str(yield_data_part))
-#        print("transfer ratio:                  " + str(transRatio))
-#        print("transfer scale factor:           " + str(fractionalSR))
         print("transfer factor:                 " + str(transferFac))
 
         if transferFac <= 0:
@@ -536,7 +446,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
             weight_Data_CR    = selection_Data_CR["weightStr"]
             weight_MC_CR      = selection_MC_CR["weightStr"].replace("reweightTrigger","reweightInvIsoTrigger").replace("reweightLeptonTrackingTightSF","reweightLeptonTrackingTightSFInvIso").replace("reweightLeptonTightSF","reweightLeptonTightSFInvIso") # w/ misID SF
 
-            regionCut_CR      = region.cutString()
+            regionCut_CR      = region.cutString( setup.sys['selectionModifier'] )
 
             # change region cuts for inverted leptons
             for cut, invCut in QCD_cutReplacements.iteritems():

@@ -85,6 +85,7 @@ if os.environ["USER"] in ["lukas.lechner"]: #CBE cluster
     mva_directory                       = "/eos/vbc/incoming/user/lukas.lechner/TTGammaEFT/mva/"
     plot_directory                      = "/mnt/hephy/cms/lukas.lechner/www/TTGammaEFT/"
 
+#    postprocessing_output_directory     = "/scratch/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed"
     postprocessing_output_directory     = "/eos/vbc/incoming/user/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/"
     gridpack_directory                  = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/gridpacks/"
 
@@ -97,6 +98,7 @@ if os.environ["USER"] in ["lukas.lechner"]: #CBE cluster
     combineReleaseLocation              = "/users/lukas.lechner/public/CMSSW_10_2_18/src/tmp/"
     cardfileLocation                    = "/eos/vbc/incoming/user/lukas.lechner/TTGammaEFT/results/cardfiles/"
 
+#    dpm_directory                       = "/scratch/lukas.lechner/TTGammaEFT/nanoTuples/"
     dpm_directory                       = "/eos/vbc/incoming/user/lukas.lechner/TTGammaEFT/nanoTuples/"
     eos_directory                       = "/eos/vbc/incoming/user/lukas.lechner/TTGammaEFT/"
 

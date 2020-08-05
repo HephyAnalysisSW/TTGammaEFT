@@ -119,6 +119,7 @@ def calculation( arg ):
 
     selCuts += [triggerCutMc]
     selCuts += [filterCutMc]
+    selCuts += ["pTStitching==1"]
 #    if overlapcut: selCuts += ["overlapRemoval==1"]
 
     preSelectionSR = "&&".join( selCuts )

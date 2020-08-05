@@ -66,6 +66,7 @@ def wrapper(arg):
         channel,set = arg
         logger.debug("Running transfer factor, channel %s in setup %s for QCD-DD"%(channel, args.controlRegion))
         res = estimate.cachedTransferFactor(channel, setup, qcdUpdates=args.customQCDUpdates, save=True, overwrite=args.overwrite, checkOnly=args.checkOnly)
+        _ = estimate.cachedQCDMCTransferFactor(channel, setup, qcdUpdates=args.customQCDUpdates, save=True, overwrite=args.overwrite, checkOnly=args.checkOnly)
         return (arg, res )
 
 jobs=[]

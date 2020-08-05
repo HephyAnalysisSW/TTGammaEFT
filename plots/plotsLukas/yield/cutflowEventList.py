@@ -62,9 +62,9 @@ if "invl" in args.selection.lower(): trigger = "triggeredInvIso==1"
 else:                                trigger = "triggered==1"
 
 if args.noOverlap:
-    selection = "&&".join( [ cutInterpreter.cutString( args.selection ), filterCutMc, trigger ] )
+    selection = "&&".join( [ cutInterpreter.cutString( args.selection ), filterCutMc, trigger, "pTStitching==1" ] )
 else:
-    selection = "&&".join( [ cutInterpreter.cutString( args.selection ), filterCutMc, trigger, "overlapRemoval==1" ] )
+    selection = "&&".join( [ cutInterpreter.cutString( args.selection ), filterCutMc, trigger, "pTStitching==1", "overlapRemoval==1" ] )
 print selection
     
 # Define a reader

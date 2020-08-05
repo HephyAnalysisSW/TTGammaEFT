@@ -22,13 +22,10 @@ def convEtaLabel( lab ):
     rang = lab.split("_eta")[1].split("_")[0].split("To")
     if len(rang) > 1:
         low, high = rang[0], rang[1]
-        if low != "0":
-            return "%s #leq #eta(#gamma) < %s"%(low, high)
-        else:
-            return "#eta(#gamma) < %s"%(high)
+        return "%.2f #leq #eta(#gamma) < %.2f"%(float(low), float(high))
     else:
         low = rang[0]
-        return "#eta(#gamma) #geq %s"%(low)
+        return "#eta(#gamma) #geq %.2f"%(float(low))
 
 def convM3Label( lab ):
     # PhotonGood0_pt20To120_m370To140
@@ -49,7 +46,6 @@ def convMlgLabel( lab ):
     rang = lab.split("_")[0].split("mLtight0Gamma")[1].split("To")
     if len(rang) > 1:
         low, high = rang[0], rang[1]
-        print low, type(low)
         if low != "0":
             return "%s #leq M_{l,#gamma} < %s GeV"%(low, high)
         else:
@@ -57,6 +53,30 @@ def convMlgLabel( lab ):
     else:
         low = rang[0]
         return "M_{l,#gamma} #geq %s GeV"%(low)
+
+def convDRLabel( lab ):
+    rang = lab.split("_")[0].split("ltight0GammaNoSieieNoChgIsodR")[1].split("To")
+    if len(rang) > 1:
+        low, high = rang[0], rang[1]
+        if low != "0":
+            return "%.2f #leq #Delta R(l,#gamma) < %.2f"%(float(low), float(high))
+        else:
+            return "#Delta R(l,#gamma) < %.2f"%float(high)
+    else:
+        low = rang[0]
+        return "#Delta R(l,#gamma) #geq %.2f"%float(low)
+
+def convDPhiLabel( lab ):
+    rang = lab.split("_")[0].split("ltight0GammaNoSieieNoChgIsodPhi")[1].split("To")
+    if len(rang) > 1:
+        low, high = rang[0], rang[1]
+        if low != "0":
+            return "%.2f #leq #Delta #phi(l,#gamma) < %.2f"%(float(low), float(high))
+        else:
+            return "#Delta #phi(l,#gamma) < %.2f"%float(high)
+    else:
+        low = rang[0]
+        return "#Delta #phi(l,#gamma) #geq %.2f"%float(low)
 
 def convChgIsoLabel( lab ):
     # PhotonNoChgIsoNoSieie0_pt20To120_(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)0To1
@@ -87,6 +107,10 @@ def convLabel( lab ):
     # summary function for all separate label formating functions
     if "nPhotonGood" in lab:
         return convNPhotonLabel( lab )
+    elif "ltight0GammaNoSieieNoChgIsodR" in lab:
+        return convDRLabel( lab )
+    elif "ltight0GammaNoSieieNoChgIsodPhi" in lab:
+        return convDPhiLabel( lab )
     elif "eta" in lab:
         label = convEtaLabel( lab )
         if "m3" in lab:
@@ -260,7 +284,7 @@ def getUncertaintyBoxes( totalHist, minMax=0.3, lineColor=ROOT.kGray+3, fillColo
 
     return boxes, ratio_boxes
 
-def getErrorBoxes( totalHist, minMax=0.3, lineColor=ROOT.kGray+3, fillColor=ROOT.kGray+3, hashcode=3144 ):
+def getErrorBoxes( totalHist, minMax=0.3, lineColor=ROOT.kGray+3, fillColor=ROOT.kGray+3, hashcode=3144, ratioCenter=None ):
     nBins = totalHist.GetNbinsX()
     boxes = []
     ratio_boxes = []
@@ -275,6 +299,10 @@ def getErrorBoxes( totalHist, minMax=0.3, lineColor=ROOT.kGray+3, fillColor=ROOT
         else:
             sys_rel = 1.
 
+        rCenter = 1.
+        if ratioCenter:
+            rCenter = ratioCenter.GetBinContent(ib)
+
         width = (totalHist.GetXaxis().GetBinUpEdge(ib) - totalHist.GetXaxis().GetBinLowEdge(ib))*0.5 #0.015*nBins #0.007*nBins
         # uncertainty box in main histogram
         box = ROOT.TBox( totalHist.GetXaxis().GetBinCenter(ib)-width,  max([0.006, val-syst]), totalHist.GetXaxis().GetBinCenter(ib)+width, max([0.006, val+syst]) )
@@ -283,9 +311,9 @@ def getErrorBoxes( totalHist, minMax=0.3, lineColor=ROOT.kGray+3, fillColor=ROOT
         box.SetFillColor(fillColor)
 
         # uncertainty box in ratio histogram
-        r_min = max( [ 1-sys_rel, r_min ])
-        r_max = min( [ 1+sys_rel, r_max ])
-        r_box = ROOT.TBox( totalHist.GetXaxis().GetBinCenter(ib)-width,  max(1-minMax, 1-sys_rel), totalHist.GetXaxis().GetBinCenter(ib)+width, min(1+minMax, 1+sys_rel) )
+        r_min = max( [ rCenter-sys_rel, r_min ])
+        r_max = min( [ rCenter+sys_rel, r_max ])
+        r_box = ROOT.TBox( totalHist.GetXaxis().GetBinCenter(ib)-width,  max(1-minMax, rCenter-sys_rel), totalHist.GetXaxis().GetBinCenter(ib)+width, min(1+minMax, rCenter+sys_rel) )
         r_box.SetLineColor(lineColor)
         r_box.SetFillStyle(hashcode)
         r_box.SetFillColor(fillColor)

@@ -12,6 +12,7 @@ from RootTools.core.standard           import *
 # Analysis
 from Analysis.Tools.metFilters         import getFilterCut
 from Analysis.Tools.helpers            import add_histos
+import Analysis.Tools.syncer as syncer
 
 # Internal Imports
 from TTGammaEFT.Tools.user             import plot_directory, cache_directory
@@ -94,7 +95,10 @@ def eleSelectionModifier( sys, returntype = "func"):
                 string = string.replace(s, s+"_"+sys)
             string = string.replace("PhotonNoChgIsoNoSieie0", "PhotonNoChgIsoNoSieie0"+"_"+sys)
             pt = "PhotonNoChgIsoNoSieie0"+"_"+sys+"_pt"
-            string = string.replace(pt, "0.5*(%s+%s)"%(pt+"_totalUp",pt+"_totalDown"))
+            if "Scale" in sys:
+                string = string.replace(pt, "0.5*(%s+%s)"%(pt+"_eScaleUp",pt+"_eScaleDown"))
+            if "Res" in sys:
+                string = string.replace(pt, "0.5*(%s+%s)"%(pt+"_eResUp",pt+"_eResDown"))
             string = string.replace("triggered", "triggered"+"_"+sys)
             return string
         return changeCut_
@@ -245,14 +249,16 @@ variations = {
     "PhotonSFDown"              : {"replaceWeight":("reweightPhotonSF","reweightPhotonSFDown"),                           "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightPhotonSFDown"]]},
     "PhotonElectronVetoSFUp"    : {"replaceWeight":("reweightPhotonElectronVetoSF","reweightPhotonElectronVetoSFUp"),     "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightPhotonElectronVetoSFUp"]]},
     "PhotonElectronVetoSFDown"  : {"replaceWeight":("reweightPhotonElectronVetoSF","reweightPhotonElectronVetoSFDown"),   "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightPhotonElectronVetoSFDown"]]},
-#    "eTotalUp"                  : {"selectionModifier":eleSelectionModifier("eTotalUp"),                                  "read_variables" : [ "%s/F"%v for v in nominalMCWeights + eleSelectionModifier("eTotalUp","list")]},
-#    "eTotalDown"                : {"selectionModifier":eleSelectionModifier("eTotalDown"),                               "read_variables" : [ "%s/F"%v for v in nominalMCWeights + eleSelectionModifier("eTotalDown","list")]},
-#    "muTotalUp"                 : {"selectionModifier":muonSelectionModifier("muTotalUp"),                                "read_variables" : [ "%s/F"%v for v in nominalMCWeights + muonSelectionModifier("muTotalUp","list")]},
-#    "muTotalDown"               : {"selectionModifier":muonSelectionModifier("muTotalDown"),                              "read_variables" : [ "%s/F"%v for v in nominalMCWeights + muonSelectionModifier("muTotalDown","list")]},
+    "eScaleUp"                  : {"selectionModifier":eleSelectionModifier("eScaleUp"),                                  "read_variables" : [ "%s/F"%v for v in nominalMCWeights + eleSelectionModifier("eScaleUp","list")]},
+    "eScaleDown"                : {"selectionModifier":eleSelectionModifier("eScaleDown"),                                "read_variables" : [ "%s/F"%v for v in nominalMCWeights + eleSelectionModifier("eScaleDown","list")]},
+    "eResUp"                  : {"selectionModifier":eleSelectionModifier("eResUp"),                                  "read_variables" : [ "%s/F"%v for v in nominalMCWeights + eleSelectionModifier("eResUp","list")]},
+    "eResDown"                : {"selectionModifier":eleSelectionModifier("eResDown"),                                "read_variables" : [ "%s/F"%v for v in nominalMCWeights + eleSelectionModifier("eResDown","list")]},
+    "muTotalUp"                 : {"selectionModifier":muonSelectionModifier("muTotalUp"),                                "read_variables" : [ "%s/F"%v for v in nominalMCWeights + muonSelectionModifier("muTotalUp","list")]},
+    "muTotalDown"               : {"selectionModifier":muonSelectionModifier("muTotalDown"),                              "read_variables" : [ "%s/F"%v for v in nominalMCWeights + muonSelectionModifier("muTotalDown","list")]},
     "jerUp"                     : {"selectionModifier":jetSelectionModifier("jerUp"),                                     "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jerUp","list")]},
     "jerDown"                   : {"selectionModifier":jetSelectionModifier("jerDown"),                                   "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jerDown","list")]},
-    "jesTotalUp"                : {"selectionModifier":jetSelectionModifier("jesTotalUp"),                                "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jesTotalUp","list")]},
-    "jesTotalDown"              : {"selectionModifier":jetSelectionModifier("jesTotalDown"),                              "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jesTotalDown","list")]},
+#    "jesTotalUp"                : {"selectionModifier":jetSelectionModifier("jesTotalUp"),                                "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jesTotalUp","list")]},
+#    "jesTotalDown"              : {"selectionModifier":jetSelectionModifier("jesTotalDown"),                              "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jesTotalDown","list")]},
 #    "unclustEnUp"               : {"selectionModifier":metSelectionModifier("unclustEnUp"),                               "read_variables" : [ "%s/F"%v for v in nominalMCWeights]},
 #    "unclustEnDown"             : {"selectionModifier":metSelectionModifier("unclustEnDown"),                             "read_variables" : [ "%s/F"%v for v in nominalMCWeights]},
     "BTag_SF_b_Down"            : {"replaceWeight":("reweightBTag_SF","reweightBTag_SF_b_Down"),                          "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightBTag_SF_b_Down"]]},  
@@ -260,14 +266,18 @@ variations = {
     "BTag_SF_l_Down"            : {"replaceWeight":("reweightBTag_SF","reweightBTag_SF_l_Down"),                          "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightBTag_SF_l_Down"]]},
     "BTag_SF_l_Up"              : {"replaceWeight":("reweightBTag_SF","reweightBTag_SF_l_Up"),                            "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightBTag_SF_l_Up"] ]},
 }
+jesTags = ['FlavorQCD', 'RelativeBal', 'HF', 'BBEC1', 'EC2', 'Absolute', 'Absolute_%i'%args.year, 'HF_%i'%args.year, 'EC2_%i'%args.year, 'RelativeSample_%i'%args.year, 'BBEC1_%i'%args.year]
+jesVariations = ["jes"+j+"Up" for j in jesTags] + ["jes"+j+"Down" for j in jesTags]
+for j in jesVariations:
+    variations[j] = {"selectionModifier":jetSelectionModifier(j),"read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier(j,"list")]}
 
-selection_systematics = [ "jerUp", "jerDown", "jesTotalUp", "jesTotalDown" ]
+selection_systematics = [ "jerUp", "jerDown" ] + jesVariations
 variables_with_selection_systematics = [ "nJetGoodInvSieie", "nBTagGoodInvSieie", "ht", "m3" ]
 metselection_systematics = [ "unclustEnUp", "unclustEnDown" ]
 metvariables_with_selection_systematics = [ "MET_pt", "mT" ]
-eleselection_systematics = [ "eTotalUp", "eTotalDown", "muTotalUp", "muTotalDown" ]
+eleselection_systematics = [ "eResUp", "eResDown", "eScaleUp", "eScaleDown",  "muTotalUp", "muTotalDown" ]
 elevariables_with_selection_systematics = [ "nPhotonNoChgIsoNoSieie" ]
-phoselection_systematics = [ "eTotalUp", "eTotalDown" ]
+phoselection_systematics = [ "eScaleUp", "eScaleDown", "eResUp", "eResDown" ]
 phovariables_with_selection_systematics = [ "nPhotonNoChgIsoNoSieie" ]
 # Add a default selection modifier that does nothing
 for key, variation in variations.iteritems():
@@ -330,7 +340,7 @@ data_sample.setSelectionString( [filterCutData]+blinding )
 data_sample.setWeightString( "weight" )
 
 for s in mc:
-    s.setSelectionString( [ filterCutMc, "overlapRemoval==1" ] )
+    s.setSelectionString( [ filterCutMc, "pTStitching==1", "overlapRemoval==1" ] )
     s.read_variables = read_variables_MC
 
 replaceSelection = {
@@ -584,7 +594,7 @@ if args.variation == "central":
 
 if args.variation:
     var = args.variable
-    if args.variation.startswith("eTotal"):
+    if args.variation.startswith("eScale") or args.variation.startswith("eRes"):
         var = args.variable.replace("PhotonNoChgIsoNoSieie0_","PhotonNoChgIsoNoSieie0_"+args.variation+"_")
     if args.variable in variables_with_selection_systematics and args.variation in selection_systematics:
         var = args.variable + "_" + args.variation
@@ -614,10 +624,11 @@ if args.variation:
 
 
 systematics = [\
-#    {"name":"MER",              "pair":("muTotalDown", "muTotalUp"),},
-#    {"name":"EER",              "pair":("eTotalDown", "eTotalUp"),},
+    {"name":"MER",              "pair":("muTotalDown", "muTotalUp"),},
+    {"name":"EER",              "pair":("eResDown", "eResUp"),},
+    {"name":"EES",              "pair":("eScaleDown", "eScaleUp"),},
     {"name":"JER",              "pair":("jerDown", "jerUp"),},
-    {"name":"JEC",              "pair":("jesTotalDown", "jesTotalUp")},
+#    {"name":"JEC",              "pair":("jesTotalDown", "jesTotalUp")},
 #    {"name":"Unclustered",      "pair":("unclustEnDown", "unclustEnUp") },
     {"name":"PU",               "pair":("PUDown", "PUUp")},
     {"name":"BTag_b",           "pair":("BTag_SF_b_Down", "BTag_SF_b_Up" )},
@@ -630,6 +641,8 @@ systematics = [\
     {"name":"prefireSF",        "pair":("L1PrefireDown", "L1PrefireUp")},
 ]
 
+for j in jesTags:
+    systematics.append( {"name":j, "pair":("jes%sDown"%j, "jes%sUp"%j)} )
 
 missing_cmds   = []
 variation_data = {}
@@ -645,7 +658,7 @@ for s in mc:
             mc_normalization_weight_string = MC_WEIGHT(variations[variation], lumi_scale, returntype="string")
             s.setWeightString( mc_normalization_weight_string )
             var = args.variable if args.variable not in variables_with_selection_systematics or variation not in selection_systematics else args.variable + "_" + variation
-            if variation.startswith("eTotal"):
+            if variation.startswith("eRes") or variation.startswith("eScale"):
                 var = args.variable.replace("PhotonNoChgIsoNoSieie0_","PhotonNoChgIsoNoSieie0_"+variation+"_")
             key = (s.name, "AR", var, "_".join(map(str,args.binning)), s.weightString, s.selectionString, normalization_selection_string, variation)
 

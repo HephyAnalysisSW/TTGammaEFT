@@ -22,6 +22,7 @@ from TTGammaEFT.Tools.objectSelection import isBJet, photonSelector, vidNestedWP
 from Analysis.Tools.metFilters        import getFilterCut
 from Analysis.Tools.helpers           import getCollection, deltaR
 from TTGammaEFT.Tools.overlapRemovalTTG import photonFromTopDecay, hasMesonMother, getParentIds, isIsolatedPhoton, getPhotonCategory, hasLeptonMother, getPhotonMother, getAdvancedPhotonCategory
+import Analysis.Tools.syncer as syncer
 
 # Default Parameter
 loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET']
@@ -218,7 +219,7 @@ mc_fit.color   = ROOT.kCyan+2
 filterCutData = getFilterCut( args.year, isData=True, skipBadChargedCandidate=True )
 filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )
 
-mcSelection = [ filterCutMc, "triggered==1" ]
+mcSelection = [ filterCutMc, "triggered==1", "pTStitching==1" ]
 if not (args.onlyTT or args.onlyTTLep or args.onlyTTSemiLep): mcSelection += [ "overlapRemoval==1" ]
 
 if args.sideband == "chgIso":

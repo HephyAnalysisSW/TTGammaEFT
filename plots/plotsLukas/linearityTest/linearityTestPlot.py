@@ -11,6 +11,7 @@ import os, sys, copy
 
 # Analysis
 from Analysis.Tools.cardFileWriter.CombineResults    import CombineResults
+import Analysis.Tools.syncer as syncer
 
 # TTGammaEFT
 from TTGammaEFT.Tools.user            import plot_directory, cache_directory

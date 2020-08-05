@@ -11,4 +11,3 @@ python run_EFTestimate_new.py --sample TTG_4WC_ref --controlRegion SR3pM3 #SPLIT
 #python run_EFTestimate_new.py --sample TTG_4WC_ref --controlRegion SR4pM3 #SPLIT400
 
 #python run_EFTestimate_new.py --sample TTG_4WC_ref --controlRegion misTT2 #SPLIT100
-

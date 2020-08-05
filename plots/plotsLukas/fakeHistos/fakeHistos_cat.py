@@ -8,6 +8,7 @@ from RootTools.core.standard           import *
 
 # Analysis
 from Analysis.Tools.metFilters         import getFilterCut
+import Analysis.Tools.syncer as syncer
 
 # Internal Imports
 from TTGammaEFT.Tools.user             import plot_directory, cache_directory
@@ -126,8 +127,8 @@ if args.small:
 print data_sample.selectionString
 
 for s in mc:
-    s.setSelectionString( [ filterCutMc, "overlapRemoval==1" ] )
-#    s.setSelectionString( [ filterCutMc, triggerCutMc, "overlapRemoval==1" ] )
+    s.setSelectionString( [ filterCutMc, "pTStitching==1", "overlapRemoval==1" ] )
+#    s.setSelectionString( [ filterCutMc, triggerCutMc, "pTStitching==1", "overlapRemoval==1" ] )
     s.read_variables = read_variables_MC
     sampleWeight     = "1"
     if args.small:           

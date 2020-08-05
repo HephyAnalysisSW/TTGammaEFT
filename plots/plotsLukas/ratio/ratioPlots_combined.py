@@ -23,6 +23,7 @@ from TTGammaEFT.Analysis.SetupHelpers  import *
 from Analysis.Tools.metFilters        import getFilterCut
 from Analysis.Tools.helpers           import getCollection, deltaR
 from Analysis.Tools.overlapRemovalTTG import photonFromTopDecay, hasMesonMother, getParentIds, isIsolatedPhoton, getPhotonCategory, hasLeptonMother, getPhotonMother, getAdvancedPhotonCategory
+import Analysis.Tools.syncer as syncer
 
 # Default Parameter
 loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET']
@@ -927,7 +928,7 @@ for index, mode in enumerate( allModes ):
 
     # Define 2l selections
     leptonSelection = cutInterpreter.cutString( mode )
-    mcSelection = [ filterCutMc, leptonSelection, "triggered==1", "overlapRemoval==1" ]
+    mcSelection = [ filterCutMc, leptonSelection, "triggered==1", "pTStitching==1", "overlapRemoval==1" ]
 
     # sideband/fit region cuts
     if not args.noData: data_sample.setSelectionString( [filterCutData, "triggered==1", leptonSelection, "reweightHEM>0" ] + sb_sel )

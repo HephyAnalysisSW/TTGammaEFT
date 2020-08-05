@@ -147,6 +147,7 @@ def calculation( arg ):
     if triggercut: selCuts += [triggerCutMc]
     if filtercut:  selCuts += [filterCutMc]
     if overlapcut: selCuts += ["overlapRemoval==1"]
+    selCuts += ["pTStitching==1"]
 
     preSelectionSR = "&&".join( selCuts )
 #    if not args.useCorrectedIsoVeto: preSelectionSR = preSelectionSR.replace("nLeptonVetoIsoCorr","nLeptonVeto")

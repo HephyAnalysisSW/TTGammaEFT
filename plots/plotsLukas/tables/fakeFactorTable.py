@@ -18,7 +18,8 @@ argParser.add_argument("--logLevel",         action="store",  default="INFO",   
 argParser.add_argument("--year",             action="store",  default="2016",   type=str,                        help="Which year?")
 argParser.add_argument("--cores",            action="store",  default=1,      type=int,                        help="run multicore?")
 argParser.add_argument("--controlRegion",    action="store",  default="SR4pM3",   type=str, choices=CRChoices,     help="For CR region?")
-argParser.add_argument("--label",             action="store",      default="Region",  type=str, nargs="*",                            help="which region label?")
+argParser.add_argument("--addCut",           action="store",  default=None,   type=str,                       help="For CR region?")
+argParser.add_argument("--label",            action="store",      default="Region",  type=str, nargs="*",                            help="which region label?")
 args = argParser.parse_args()
 
 args.label = " ".join(args.label)
@@ -66,16 +67,17 @@ def wrapper(arg):
         return (key, subkey, channel, fakesData.tuple(), kappaData.tuple(), kappaMC.tuple(), ddfakes.tuple(), fakesMC.tuple(), sf.tuple() )
 
 def strToKey( r ):
-    print r
     r   = r.replace("\\","\\\\").replace("#","\\")
-    print r
     if len(r.split(","))>1:
         out = tuple(r.split(",")) if "p_{T}" in r else ("inclusive", r)
     else:
-        out = (r,"inclusive") if "p_{T}" in r else ("inclusive", "inclusive")
-    print out
+        if "p_{T}" in r:
+            out = (r,"inclusive")
+        elif "eta" in r:
+            out = (r,"inclusive")
+        else:
+            out = ("inclusive","inclusive")
     out = ( "$%s$"%o if o !="inclusive" else o for o in out)
-    print out
     return out
 
 jobs=[]
@@ -121,7 +123,7 @@ def printFakesTable():
         f.write("\\multicolumn{13}{c}{%i: $\\mathcal{L}=%s$ fb$^{-1}$}\\\\ \n"%(args.year, "{:.2f}".format(lumi_scale)))
         f.write("\\hline\n")
         f.write("\\hline\n")
-        for pt in sorted(resDict.keys(), key = lambda n: [i for i, l in enumerate(["inclusive", "20 \\leq", "120 \\leq", "220 \\leq"]) if l in n][0] ):
+        for pt in resDict.keys(): #sorted(resDict.keys(), key = lambda n: [i for i, l in enumerate(["inclusive", "20 \\leq", "120 \\leq", "220 \\leq"]) if l in n][0] ):
             resD = resDict[pt]
             f.write("\\multicolumn{13}{c}{}\\\\ \n")
             f.write("\\hline\n")

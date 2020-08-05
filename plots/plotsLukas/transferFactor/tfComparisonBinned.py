@@ -17,6 +17,7 @@ from TTGammaEFT.Analysis.SetupHelpers    import dilepChannels, lepChannels, allP
 
 # Analysis Imports
 from Analysis.Tools.u_float              import u_float
+import Analysis.Tools.syncer as syncer
 
 loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET']
 CRChoices     = allRegions.keys()

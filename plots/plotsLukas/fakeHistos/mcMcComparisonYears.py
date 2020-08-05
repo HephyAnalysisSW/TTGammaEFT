@@ -8,6 +8,7 @@ from RootTools.core.standard           import *
 
 # Analysis
 from Analysis.Tools.metFilters         import getFilterCut
+import Analysis.Tools.syncer as syncer
 
 # Internal Imports
 from TTGammaEFT.Tools.user             import plot_directory, cache_directory
@@ -102,19 +103,19 @@ elif "4p" in args.selection:
 filterCutMC = getFilterCut( 2016, isData=False,  skipBadChargedCandidate=True )
 weightString    = "%f*weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
 weightStringAR  = "((%s)+(%s*%f*((nPhotonNoChgIsoNoSieie>0)*(PhotonNoChgIsoNoSieie0_photonCatMagic==2))))"%(weightString,weightString,(misIDSF_val[2016].val-1))
-mc16.setSelectionString( [filterCutMC, "reweightHEM>0", cutInterpreter.cutString( args.mode )] )
+mc16.setSelectionString( [filterCutMC, "pTStitching==1", "reweightHEM>0", cutInterpreter.cutString( args.mode )] )
 mc16.setWeightString( weightStringAR )
 
 filterCutMC = getFilterCut( 2017, isData=False,  skipBadChargedCandidate=True )
 weightString    = "%f*weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
 weightStringAR  = "((%s)+(%s*%f*((nPhotonNoChgIsoNoSieie>0)*(PhotonNoChgIsoNoSieie0_photonCatMagic==2))))"%(weightString,weightString,(misIDSF_val[2017].val-1))
-mc17.setSelectionString( [filterCutMC, "reweightHEM>0", cutInterpreter.cutString( args.mode )] )
+mc17.setSelectionString( [filterCutMC, "pTStitching==1", "reweightHEM>0", cutInterpreter.cutString( args.mode )] )
 mc17.setWeightString( weightStringAR )
 
 filterCutMC = getFilterCut( 2018, isData=False,  skipBadChargedCandidate=True )
 weightString    = "%f*weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF"%lumi_scale
 weightStringAR  = "((%s)+(%s*%f*((nPhotonNoChgIsoNoSieie>0)*(PhotonNoChgIsoNoSieie0_photonCatMagic==2))))"%(weightString,weightString,(misIDSF_val[2018].val-1))
-mc18.setSelectionString( [filterCutMC, "reweightHEM>0", cutInterpreter.cutString( args.mode )] )
+mc18.setSelectionString( [filterCutMC, "pTStitching==1", "reweightHEM>0", cutInterpreter.cutString( args.mode )] )
 mc18.setWeightString( weightStringAR )
 
 setup = Setup( year=2016, photonSelection=False, checkOnly=False, runOnLxPlus=False ) #photonselection always false for qcd estimate
@@ -122,7 +123,7 @@ setup = setup.sysClone( parameters=allRegions[args.selection]["parameters"] )
 
 selection = setup.selection( "MC", channel="all", **setup.defaultParameters() )["prefix"]
 selection = cutInterpreter.cutString( selection )
-selection += "&&triggered==1"
+selection += "&&pTStitching==1&&triggered==1"
 print selection
 if args.addCut:
     selection += "&&" + cutInterpreter.cutString( args.addCut )
