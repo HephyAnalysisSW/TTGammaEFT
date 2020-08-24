@@ -16,6 +16,7 @@ ROOT.gROOT.SetBatch( True )
 from TTGammaEFT.Tools.user              import plot_directory, cache_directory
 from TTGammaEFT.Analysis.SetupHelpers    import *
 from Analysis.Tools.MergingDirDB         import MergingDirDB
+import Analysis.Tools.syncer as syncer
 
 # Default Parameter
 loggerChoices = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTSET"]
@@ -32,6 +33,7 @@ argParser.add_argument('--zRange',              action='store',      default=[0,
 argParser.add_argument('--xyRange',            action='store',      default=[None, None, None, None],  type=float, nargs=4,                          help="argument parameters")
 argParser.add_argument('--plotData',            action='store_true',                                                                                  help='Plot data points?')
 argParser.add_argument('--addDYSF',             action='store_true',                                                                                  help='Plot data points taken with --addDYSF?')
+argParser.add_argument( "--addMisIDSF",         action="store_true",                                                        help="add default misID scale factor" )
 argParser.add_argument('--tag',                 action='store',      default="combined",        type=str,                                             help='tag for unc studies')
 argParser.add_argument('--variables' ,         action='store',      default = ['ctZ', 'ctZI'], type=str, nargs=2,                                    help="argument plotting variables")
 argParser.add_argument( "--expected",           action="store_true",                                                        help="Use sum of backgrounds instead of data." )
@@ -62,9 +64,10 @@ for reg in allRegions.keys():
 # use the regions as key for caches
 regionNames.sort()
 if args.addDYSF:     regionNames.append("addDYSF")
+if args.addMisIDSF:  regionNames.append("addMisIDSF")
 if args.inclRegion:  regionNames.append("incl")
 
-baseDir       = os.path.join( cache_directory, "analysis",  str(args.year), "limits" )
+baseDir       = os.path.join( cache_directory, "analysis",  str(args.year) if args.year != "RunII" else "COMBINED", "limits" )
 cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
 

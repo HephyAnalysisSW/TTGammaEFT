@@ -7,6 +7,7 @@ import uuid
 
 from Analysis.Tools.CombineResults import CombineResults
 from TTGammaEFT.Tools.user         import analysis_results, plot_directory, combineReleaseLocation, cache_directory
+import Analysis.Tools.syncer as syncer
 
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")

@@ -117,6 +117,8 @@ special_cuts = {
     "genE":                 "nGenElectronCMSUnfold==1",
 
     "phiGlt1p1":             "abs(PhotonGood0_phi)<1.1",
+    "lowPhotonEta":          "PhotonNoChgIsoNoSieie0_eta<=0",
+    "highPhotonEta":         "PhotonNoChgIsoNoSieie0_eta>0",
     "onZEphiGlt1p1":         "((abs(mLtight0Gamma-%s)<=%s&&abs(PhotonGood0_phi)<1.1&&nElectronTight==1)||(abs(mLtight0Gamma-%s)>%s&&nElectronTight==1)||(nElectronTight==0))"%(mZ,zMassRange,mZ,zMassRange),
 
     "n12Jet":               "nJetGood==1||nJetGood==2",
@@ -322,5 +324,5 @@ discrete_variables += [ ("nGenLepATLAS", "nGenLeptonATLASUnfold"), ("nGenJetATLA
 cutInterpreter = CutInterpreter( continous_variables, discrete_variables, special_cuts)
 
 if __name__ == "__main__":
-    print cutInterpreter.cutString("llowEta-mt100")
+    print cutInterpreter.cutString("nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1")
 

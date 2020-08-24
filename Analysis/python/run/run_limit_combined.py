@@ -54,6 +54,8 @@ argParser.add_argument( "--useTxt",             action="store_true",            
 argParser.add_argument( "--skipFitDiagnostics", action="store_true",                                                        help="Don't do the fitDiagnostics (this is necessary for pre/postfit plots" )
 argParser.add_argument( "--significanceScan",   action="store_true",                                                        help="Calculate significance instead?")
 argParser.add_argument( "--linTest",            action="store",      default=1,   type=float,                              help="linearity test: scale data by factor" )
+argParser.add_argument('--order',               action='store',      default=2, type=int,                                                             help='Polynomial order of weight string (e.g. 2)')
+argParser.add_argument('--parameters',          action='store',      default=[], type=str, nargs='+',                       help = "argument parameters")
 args=argParser.parse_args()
 
 if args.linTest != 1: args.expected = True
@@ -71,6 +73,18 @@ if args.useChannels and "all"  in args.useChannels: args.useChannels  = None
 
 default_QCD_unc = 0.5
 default_ZG_unc = 0.3
+
+# read the EFT parameters
+EFTparams = []
+if args.parameters:
+    coeffs = args.parameters[::2]
+    str_vals = args.parameters[1::2]
+    for i_param, (coeff, str_val, ) in enumerate(zip(coeffs, str_vals)):
+        EFTparams.append(coeff)
+        EFTparams.append(str_val)
+
+eft =  "_".join(EFTparams)
+
 
 if args.keepCard:
     args.overwrite = False
@@ -141,6 +155,27 @@ if args.ttPOI:       regionNames.append("ttPOI")
 if args.useChannels: regionNames.append("_".join([ch for ch in args.useChannels if not "tight" in ch]))
 if args.linTest != 1: regionNames.append(str(args.linTest).replace(".","_"))
 
+if args.parameters:
+    # load and define the EFT sample
+    from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed  import *
+    eftSample = TTG_4WC_ref
+
+    baseDir       = os.path.join( cache_directory, "analysis",  "COMBINED", "limits" )
+    cacheFileName = os.path.join( baseDir, "calculatednll" )
+    nllCache      = MergingDirDB( cacheFileName )
+
+    baseDir       = os.path.join( cache_directory, "analysis", "eft" )
+    cacheFileName = os.path.join( baseDir, eftSample.name )
+    yieldCache    = MergingDirDB( cacheFileName )
+
+    configlist = regionNames + EFTparams
+    configlist.append("incl" if args.inclRegion else "diff")
+    configlist.append("expected" if args.expected else "observed")
+
+    sEFTConfig = "_".join(configlist)
+    if not args.overwrite and nllCache.contains( sEFTConfig ): sys.exit(0)
+
+
 years = [2016,2017,2018]
 
 def wrapper():
@@ -154,7 +189,12 @@ def wrapper():
     for year in years:
         baseDir       = os.path.join( cache_directory, "analysis",  str(year), "limits" )
         limitDir      = os.path.join( baseDir, "cardFiles", args.label, "expected" if args.expected else "observed" )
-        cardFileNameTxt   = os.path.join( limitDir, "_".join( regionNames ) + ".txt" )
+
+        if args.parameters:
+            cardFileNameTxt   = os.path.join( limitDir, "_".join( regionNames ), eft + ".txt" )
+        else:
+            cardFileNameTxt   = os.path.join( limitDir, "_".join( regionNames ) + ".txt" )
+
         cardFileNameShape = cardFileNameTxt.replace( ".txt", "_shapeCard.txt" )
     
         #print cardFileName
@@ -177,18 +217,33 @@ def wrapper():
     combinedCard = txtcombinedCard if args.useTxt else shapecombinedCard
     print combinedCard
 
-    cardFileNameTxt   = os.path.join( limitDir, "_".join( regionNames ) + ".txt" )
+    if args.parameters:
+        cardFileNameTxt   = os.path.join( limitDir, "_".join( regionNames ), eft + ".txt" )
+    else:
+        cardFileNameTxt   = os.path.join( limitDir, "_".join( regionNames ) + ".txt" )
     cardFileNameShape = cardFileNameTxt.replace( ".txt", "_shape.root" )
     cardFileName      = cardFileNameTxt
     logger.info( "File %s found. Reusing."%cardFileName )
     cardFileNameShape = cardFileNameShape.replace('.root', 'Card.txt')
     cardFileName      = cardFileNameTxt if args.useTxt else cardFileNameShape
     
-    sConfig = "_".join(regionNames)
-    res = c.calcLimit( cardFileName )
-    c.calcNuisances( cardFileName, bonly=args.bkgOnly )
+    if args.parameters:
+        nll          = c.calcNLL( cardFileName )
+        nll_prefit   = nll['nll0']
+        nll_postfit  = nll['nll_abs']
+        NLL = nll['nll']
 
-    if args.plot:
+        if nll_prefit  is None or abs(nll_prefit) > 10000 or abs(nll_prefit) < 1e-5:   nll_prefit  = 999
+        if nll_postfit is None or abs(nll_postfit) > 10000 or abs(nll_postfit) < 1e-5: nll_postfit = 999
+
+        nllCache.add( sEFTConfig, NLL, overwrite=True )
+
+    else:
+        sConfig = "_".join(regionNames)
+        res = c.calcLimit( cardFileName )
+        c.calcNuisances( cardFileName, bonly=args.bkgOnly )
+
+    if args.plot and not args.parameters:
         path  = os.environ["CMSSW_BASE"]
         path +="/src/TTGammaEFT/plots/plotsLukas/regions"
         if args.expected:
@@ -208,7 +263,7 @@ def wrapper():
     ###################
     # extract the SFs #
     ###################
-    if True:
+    if not args.parameters:
         default_QCD_unc = 0.5
         default_HadFakes_unc = 0.10
         default_ZG_unc    = 0.3

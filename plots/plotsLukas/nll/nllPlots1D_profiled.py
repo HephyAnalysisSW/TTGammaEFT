@@ -13,6 +13,7 @@ from TTGammaEFT.Tools.Cache             import Cache
 from TTGammaEFT.Analysis.SetupHelpers    import *
 
 from Analysis.Tools.MergingDirDB         import MergingDirDB
+import Analysis.Tools.syncer as syncer
 
 # RootTools
 from RootTools.core.standard   import *
@@ -34,12 +35,15 @@ argParser.add_argument( "--year",               action="store",      default="20
 argParser.add_argument('--xRange',             action='store',      default=[None, None],  type=float, nargs=2,                          help="argument parameters")
 argParser.add_argument('--plotData',            action='store_true',                                                                                  help='Plot data points?')
 argParser.add_argument('--addDYSF',             action='store_true',                                                                                  help='Plot data points taken with --addDYSF?')
+argParser.add_argument( "--addMisIDSF",         action="store_true",                                                        help="add default misID scale factor" )
 argParser.add_argument('--tag',                 action='store',      default="combined",        type=str,                                             help='tag for unc studies')
 argParser.add_argument('--variables',           action='store',      default='ctZI', type=str, nargs=1, choices=["ctZ","ctZI"],                      help="argument plotting variables")
 argParser.add_argument( "--expected",           action="store_true",                                                        help="Use sum of backgrounds instead of data." )
 argParser.add_argument( "--inclRegion",         action="store_true",                                                        help="use inclusive photon pt region" )
 argParser.add_argument( "--useRegions",         action="store",      nargs='*',       type=str, choices=allRegions.keys(),  help="Which regions to use?" )
 args = argParser.parse_args()
+
+if args.year != "RunII": args.year = int(args.year)
 
 # Logging
 import Analysis.Tools.logger as logger
@@ -61,9 +65,15 @@ for reg in allRegions.keys():
 # use the regions as key for caches
 regionNames.sort()
 if args.addDYSF:     regionNames.append("addDYSF")
+if args.addMisIDSF:  regionNames.append("addMisIDSF")
 if args.inclRegion:  regionNames.append("incl")
 
-baseDir       = os.path.join( cache_directory, "analysis",  str(args.year), "limits" )
+if args.year == 2016:   lumi_scale = 35.92
+elif args.year == 2017: lumi_scale = 41.53
+elif args.year == 2018: lumi_scale = 59.74
+elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
+
+baseDir       = os.path.join( cache_directory, "analysis",  str(args.year) if args.year != "RunII" else "COMBINED", "limits" )
 cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
 
@@ -77,11 +87,6 @@ plot_directory_ = os.path.join( directory, addon )
 if not os.path.isdir( plot_directory_ ):
     try: os.makedirs( plot_directory_ )
     except: pass
-
-if args.year == 2016:   lumi_scale = 35.92
-elif args.year == 2017: lumi_scale = 41.53
-elif args.year == 2018: lumi_scale = 59.74
-elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
 
 #binning range
 xRange = eftParameterRange["ctZ"]
@@ -132,7 +137,7 @@ def toGraph( name, title, data ):
 polString = "[0]*x**2+[1]*x**3+[2]*x**4"#+[3]*x**5"#+[4]*x**6"#+[5]*x**7+[6]*x**8+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
 xPlotLow, xPlotHigh = args.xRange
 
-def plot1D( dat, var, xmin, xmax ):
+def plot1D( dat, var, xmin, xmax, lumi_scale ):
     # get TGraph from results data list
     xhist = toGraph( var, var, dat )
     func  = ROOT.TF1("func", polString, xmin, xmax )
@@ -257,5 +262,5 @@ def plot1D( dat, var, xmin, xmax ):
 
 xmin = xPlotLow  if xPlotLow  else -1.49
 xmax = xPlotHigh if xPlotHigh else 1.49
-plot1D( xNLL, args.variables, xmin, xmax )
+plot1D( xNLL, args.variables, xmin, xmax, lumi_scale )
 

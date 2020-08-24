@@ -25,8 +25,8 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop       import M
 ## modules for nanoAOD postprocessor
 #from PhysicsTools.NanoAODTools.postprocessing.modules.jme.METSigProducer        import METSigProducer 
 from   PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetHelperRun2      import createJMECorrector
-import PhysicsTools.NanoAODTools.postprocessing.modules.common.ElectronScaleSmear as ElectronScaleSmear
-import PhysicsTools.NanoAODTools.postprocessing.modules.common.PhotonScaleSmear   as PhotonScaleSmear
+#import PhysicsTools.NanoAODTools.postprocessing.modules.common.ElectronScaleSmear as ElectronScaleSmear
+#import PhysicsTools.NanoAODTools.postprocessing.modules.common.PhotonScaleSmear   as PhotonScaleSmear
 
 # Logger
 import logging
@@ -37,7 +37,7 @@ def extractEra(sampleName):
 
 class NanoAODTools:
 
-    def __init__( self, sample, year, output_directory, runOnUL=False ):
+    def __init__( self, sample, year, output_directory, jesTags=None, runOnUL=False ):
 
         if year not in [ 2016, 2017, 2018 ]:
             raise Exception("year %i not known"%year)
@@ -53,6 +53,7 @@ class NanoAODTools:
         self.postfix          = "_for_%s"%self.name
         self.files            = [ f for f in sample.files if nonEmptyFile(f) ]
         self.outfiles         = None
+        self.jesTags          = jesTags if jesTags else ["Total"]
 
         self.era = None
         if self.isData:
@@ -76,18 +77,19 @@ class NanoAODTools:
 
             self.modules = []
     
-            JMECorrector = createJMECorrector( isMC=(not self.isData), dataYear=self.year, runPeriod=self.era, jesUncert="Total", jetType = "AK4PFchs", metBranchName=self.METCollection, applySmearing=False )
+            JMECorrector = createJMECorrector( isMC=(not self.isData), dataYear=self.year, runPeriod=self.era, jesUncert=",".join(self.jesTags), jetType = "AK4PFchs", metBranchName=self.METCollection, applySmearing=False )
+#            JMECorrector = createJMECorrector( isMC=(not self.isData), dataYear=self.year, runPeriod=self.era, jesUncert="Total", jetType = "AK4PFchs", metBranchName=self.METCollection, applySmearing=False )
             self.modules.append( JMECorrector() )
-            if not self.isData:
-                if self.year == 2016:
-                    self.modules.append(ElectronScaleSmear.elecUnc2016MC())
-                    self.modules.append(PhotonScaleSmear.phoUnc2016MC())
-                elif self.year == 2017:
-                    self.modules.append(ElectronScaleSmear.elecUnc2017MC())
-                    self.modules.append(PhotonScaleSmear.phoUnc2017MC())
-                elif self.year == 2018:
-                    self.modules.append(ElectronScaleSmear.elecUnc2018MC())
-                    self.modules.append(PhotonScaleSmear.phoUnc2018MC())
+#            if not self.isData:
+#                if self.year == 2016:
+#                    self.modules.append(ElectronScaleSmear.elecUnc2016MC())
+#                    self.modules.append(PhotonScaleSmear.phoUnc2016MC())
+#                elif self.year == 2017:
+#                    self.modules.append(ElectronScaleSmear.elecUnc2017MC())
+#                    self.modules.append(PhotonScaleSmear.phoUnc2017MC())
+#                elif self.year == 2018:
+#                    self.modules.append(ElectronScaleSmear.elecUnc2018MC())
+#                    self.modules.append(PhotonScaleSmear.phoUnc2018MC())
 
             p = PostProcessor( self.output_directory, [f], cut=cut, modules=self.modules, postfix="%s_%s"%(self.postfix, file_hash))
             p.run()

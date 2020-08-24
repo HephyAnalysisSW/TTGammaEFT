@@ -314,7 +314,7 @@ read_variables += map( lambda var: "LeptonTight1_"            + var, leptonVaria
 read_variables += map( lambda var: "Bj0_"                     + var, bJetVariables )
 read_variables += map( lambda var: "Bj1_"                     + var, bJetVariables )
 
-read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval/I",
+read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval/I", "pTStitching/I",
                      "nGenWElectron/I", "nGenWMuon/I", "nGenWTau/I", "nGenW/I", "nGenWJets/I", "nGenWTauElectron/I", "nGenWTauMuon/I", "nGenWTauJets/I",
                      "nGenElectron/I",
                      "nGenMuon/I",
@@ -569,7 +569,7 @@ for index, mode in enumerate( allModes ):
 
     data_sample.setSelectionString( [ filterCutData, leptonSelection ] )
     for sample in mc + signals:
-        sample.setSelectionString( [ filterCutMc, leptonSelection, triggerCutMc, "overlapRemoval==1" ] )
+        sample.setSelectionString( [ filterCutMc, leptonSelection, triggerCutMc, "pTStitching==1", "overlapRemoval==1" ] )
 
     plotting.fill( plots, read_variables=read_variables, sequence=sequence )
 
@@ -589,8 +589,8 @@ for index, mode in enumerate( allModes ):
     else:
         preSelectionSRData = "&&".join( [ preSelectionTFSR, filterCutData, isoleptonSelection ] )
         preSelectionCRData = "&&".join( [ preSelectionTFCR, filterCutData, leptonSelection    ] )
-        preSelectionSRMC   = "&&".join( [ preSelectionTFSR, filterCutMc,   isoleptonSelection, triggerCutMc, "overlapRemoval==1"  ] )
-        preSelectionCRMC   = "&&".join( [ preSelectionTFCR, filterCutMc,   leptonSelection,    triggerCutMc, "overlapRemoval==1"  ] )
+        preSelectionSRMC   = "&&".join( [ preSelectionTFSR, filterCutMc,   isoleptonSelection, triggerCutMc, "pTStitching==1", "overlapRemoval==1"  ] )
+        preSelectionCRMC   = "&&".join( [ preSelectionTFCR, filterCutMc,   leptonSelection,    triggerCutMc, "pTStitching==1", "overlapRemoval==1"  ] )
 
         # Calculate yields for Data
         data_sample.setSelectionString( "(1)" )

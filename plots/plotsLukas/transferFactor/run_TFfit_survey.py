@@ -20,6 +20,7 @@ from TTGammaEFT.Analysis.EstimatorList import EstimatorList
 
 from TTGammaEFT.Samples.color          import color
 from Analysis.Tools.MergingDirDB      import MergingDirDB
+import Analysis.Tools.syncer as syncer
 
 # Default Parameter
 loggerChoices = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTSET"]
@@ -140,7 +141,7 @@ data_sample.setSelectionString( [filterCutData, "reweightHEM>0"] )
 data_sample.setWeightString( "weight" )
 
 for s in mc:
-    s.setSelectionString( [ filterCutMc, "overlapRemoval==1" ] )
+    s.setSelectionString( [ filterCutMc, "pTStitching==1", "overlapRemoval==1" ] )
     s.read_variables = read_variables_MC
     sampleWeight     = "1"
 

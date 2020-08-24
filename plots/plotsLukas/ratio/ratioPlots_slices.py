@@ -21,6 +21,7 @@ from TTGammaEFT.Analysis.Setup         import Setup
 from TTGammaEFT.Analysis.EstimatorList import EstimatorList
 
 from TTGammaEFT.Samples.color          import color
+import Analysis.Tools.syncer as syncer
 from Analysis.Tools.MergingDirDB      import MergingDirDB
 
 # Default Parameter
@@ -178,7 +179,7 @@ else:
     raise Exception("Region not implemented")
 
 for s in mc:
-    s.addSelectionString( [ filterCutMc, "overlapRemoval==1", "triggered==1", selection ] )
+    s.addSelectionString( [ filterCutMc, "pTStitching==1", "overlapRemoval==1", "triggered==1", selection ] )
     s.read_variables = read_variables
 
 lumiString = "(35.92*(year==2016)+41.53*(year==2017)+59.74*(year==2018))"

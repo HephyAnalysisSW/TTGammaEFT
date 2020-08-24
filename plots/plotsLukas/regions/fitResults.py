@@ -121,9 +121,9 @@ print allNuisances
 if args.substituteCard:
     rebinnedCardFile = os.path.join( cache_directory, "analysis", str(args.year) if args.year != "combined" else "COMBINED", args.carddir, args.substituteCard+".txt" )
 
-#    subCardFile = Results.createRebinnedResults( rebinnedCardFile )
+    subCardFile = Results.createRebinnedResults( rebinnedCardFile )
 #    subCardFile = "/scratch/lukas.lechner/TTGammaEFT/cache/analysis/2016/limits/cardFiles/defaultSetup/observed/SR3pM3_VG3p_misDY3p_addDYSF/SR3pdRUnfold_addDYSF.txt"
-    subCardFile = "/scratch/lukas.lechner/TTGammaEFT/cache/analysis/COMBINED/limits/cardFiles/defaultSetup/expected/SR3pM3_VG3p_misDY3p_addDYSF/SR3pFine_addDYSF.txt"
+#    subCardFile = "/scratch/lukas.lechner/TTGammaEFT/cache/analysis/COMBINED/limits/cardFiles/defaultSetup/expected/SR3pM3_VG3p_misDY3p_addDYSF/SR3pFine_addDYSF.txt"
     del Results
     Results     = CombineResults( cardFile=subCardFile, plotDirectory=plotDirectory, year=args.year, bkgOnly=args.bkgOnly, isSearch=False, rebinnedCardFile=rebinnedCardFile )
 

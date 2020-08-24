@@ -82,7 +82,7 @@ def wrapper(arg):
         res = {"val":-1, "sigma":0}
     else:
         selection = setup.genSelection( "MC", channel=channel, **setup.defaultParameters())["cut"]
-        selection = "&&".join( [ selection, r.cutString() ] )
+        selection = "&&".join( [ selection, r.cutString().replace("PhotonNoChgIsoNoSieie0_pt","PhotonGood0_pt") ] )
         weightString = "ref_weight*(" + get_weight_string(params) + ")"
         res = eftSample.getYieldFromDraw( selectionString=selection, weightString=weightString )
         cache.add( key, res, overwrite=True )
@@ -124,6 +124,6 @@ else:
 
 if args.checkOnly:
     for res in results:
-        print res[0][0], res[0][1], res[0][2], "yield:", res[1]["val"]
+        print res[0][0], res[0][1], res[0][2], res[0][3], "yield:", res[1]["val"]
     sys.exit(0)
 

@@ -29,11 +29,15 @@ class NanoVariables:
             raise Exception( "Variables not implemented for year %s"%year )
 
         self.knownParticleLists = [ "Electron", "Muon", "Lepton", "Jet", "BJet", "Photon", "Gen", "GenJet" ]
+        jesTags = ['FlavorQCD', 'RelativeBal', 'HF', 'BBEC1', 'EC2', 'Absolute', 'Absolute_%i'%year, 'HF_%i'%year, 'EC2_%i'%year, 'RelativeSample_%i'%year, 'BBEC1_%i'%year, 'Total']
+        jesVariations = ["jes"+j+"Up" for j in jesTags] + ["jes"+j+"Down" for j in jesTags]
 
         self.ElectronVariables = [\
                                   Variable( "pt",                       "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
-                                  Variable( "pt_totalUp",               "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
-                                  Variable( "pt_totalDown",             "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
+                                  Variable( "pt_eScaleUp",              "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
+                                  Variable( "pt_eScaleDown",            "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
+                                  Variable( "pt_eResUp",                "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
+                                  Variable( "pt_eResDown",              "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
                                   Variable( "eta",                      "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                   Variable( "phi",                      "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                   Variable( "pfRelIso03_all",           "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
@@ -84,8 +88,8 @@ class NanoVariables:
 
         self.MuonVariables = [\
                               Variable( "pt",               "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
-                              Variable( "pt_totalUp",       "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
-                              Variable( "pt_totalDown",     "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
+                              Variable( "pt_muTotalUp",     "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
+                              Variable( "pt_muTotalDown",   "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
                               Variable( "eta",              "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                               Variable( "phi",              "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                               Variable( "pfRelIso03_all",   "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
@@ -132,8 +136,6 @@ class NanoVariables:
         self.JetVariables = [\
                              Variable( "pt",               "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                              Variable( "pt_nom",           "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=True ),
-                             Variable( "pt_jesTotalUp",    "F", read=True,  write=True,  inData=False, inPlot=True, isSyst=True ),
-                             Variable( "pt_jesTotalDown",  "F", read=True,  write=True,  inData=False, inPlot=True, isSyst=True ),
                              Variable( "pt_jerUp",         "F", read=True,  write=True,  inData=False, inPlot=True, isSyst=True ),
                              Variable( "pt_jerDown",       "F", read=True,  write=True,  inData=False, inPlot=True, isSyst=True ),
 #                             Variable( "pt_unclustEnUp",   "F", read=True,  write=True,  inData=False, inPlot=True, isSyst=True ), # unclustered energy uncertainty is for MET only
@@ -174,6 +176,8 @@ class NanoVariables:
                              Variable( "index",            "I", read=False, write=True,  inData=True, inPlot=False, isSyst=False ),
                             ]
 
+        self.JetVariables += [ Variable( "pt_%s"%j,    "F", read=True,  write=True,  inData=False, inPlot=True, isSyst=True ) for j in jesVariations ]
+
         self.BJetVariables = [\
                               Variable( "pt",    "F", read=True,  write=True,  inData=True, inPlot=True, isSyst=False ),
                               Variable( "eta",   "F", read=True,  write=True,  inData=True, inPlot=True, isSyst=False ),
@@ -190,8 +194,10 @@ class NanoVariables:
                                 Variable( "pfRelIso03_chg",    "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                 Variable( "phi",               "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                 Variable( "pt",                "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
-                                Variable( "pt_totalUp",        "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
-                                Variable( "pt_totalDown",      "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
+                                Variable( "pt_eScaleUp",       "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
+                                Variable( "pt_eScaleDown",     "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
+                                Variable( "pt_eResUp",         "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
+                                Variable( "pt_eResDown",       "F", read=False, write=True,  inData=True,  inPlot=True, isSyst=True ),
                                 Variable( "sieie",             "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                 Variable( photonCutVarName,    "I", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
                                 Variable( "electronVeto",      "O", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
