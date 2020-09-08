@@ -69,7 +69,7 @@ if os.environ["USER"] in ["martina.fellinger"]: #CBE cluster
     gridpack_directory                  = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/gridpacks/"
 
     analysis_results                    = results_directory
-    cache_directory                     = "/users/martina.fellinger/public/cache/"
+    cache_directory                     = "/scratch/martina.fellinger/cache/"
 
     unfolding_cache_directory           = "/mnt/hephy/cms/martina.fellinger/TTGammaEFT/cache/"
     combineReleaseLocation              = "/users/martina.fellinger/public/CMSSW_10_2_9/src/tmp"

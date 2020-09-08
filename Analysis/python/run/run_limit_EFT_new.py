@@ -13,17 +13,15 @@ from TTGammaEFT.Analysis.MCBasedEstimate import MCBasedEstimate
 from TTGammaEFT.Analysis.regions         import regionsTTG, noPhotonRegionTTG, inclRegionsTTG, regionsTTGfake, inclRegionsTTGfake, chgIso_thresh, chgIsoRegions, gammaPT_thresholds, mLgRegions
 from TTGammaEFT.Analysis.SetupHelpers    import *
 
-from TTGammaEFT.Tools.user               import combineReleaseLocation, cardfileLocation
-from TTGammaEFT.Tools.user               import cache_directory_read as cache_directory
+from TTGammaEFT.Tools.user               import cache_directory, combineReleaseLocation, cardfileLocation
 from Analysis.Tools.MergingDirDB         import MergingDirDB
 from Analysis.Tools.u_float              import u_float
 from Analysis.Tools.cardFileWriter       import cardFileWriter
 from Analysis.Tools.getPostFit           import getPrePostFitFromMLF, getFitResults
 from TTGammaEFT.Tools.cutInterpreter     import cutInterpreter
 
-# load the EFT samples
+# load and define the EFT sample
 from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed  import *
-eftSample = 'TTG_4WC_ref'
 
 # Default Parameter
 loggerChoices = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTSET"]
@@ -63,6 +61,7 @@ argParser.add_argument( "--plot",               action="store_true",            
 argParser.add_argument('--order',              action='store',      default=2, type=int,                                                             help='Polynomial order of weight string (e.g. 2)')  
 argParser.add_argument('--parameters',         action='store',      default=['ctZ', '2', 'ctZI', '2', 'ctW', '2', 'ctWI', '2'], type=str, nargs='+', help = "argument parameters")
 argParser.add_argument('--mode',               action='store',      default="all", type=str, choices=["mu", "e", "all"],               help="plot lepton mode" )
+argParser.add_argument('--withbkg',            action='store_true', help="reweight sample and bkg or sample only?")
 args=argParser.parse_args()
 
 if args.year != "RunII": args.year = int(args.year)
@@ -79,7 +78,14 @@ if args.useChannels and "mu"   in args.useChannels: args.useChannels += ["mumuti
 if args.useChannels and "all"  in args.useChannels: args.useChannels  = None
 
 # read the EFT parameters
-eft =  "_".join(args.parameters)
+EFTparams = []
+if args.parameters:
+    coeffs = args.parameters[::2]
+    str_vals = args.parameters[1::2]
+    for i_param, (coeff, str_val ) in enumerate(zip(coeffs, str_vals)):
+        EFTparams.append(coeff)
+        EFTparams.append(str_val)
+eft =  "_".join(EFTparams)
 
 useCache = True
 if args.keepCard:
@@ -96,7 +102,7 @@ if not args.checkOnly:
     default_setup            = Setup( year=args.year, runOnLxPlus=args.runOnLxPlus, checkOnly=True )
     default_setup.estimators = EstimatorList( default_setup )
     default_setup.data       = default_setup.processes["Data"]
-    #default_setup.processes  = default_setup.estimators.constructProcessDict( processDict=default_processes )
+#    default_setup.processes  = default_setup.estimators.constructProcessDict( processDict=default_processes )
     default_setup.processes["Data"] = default_setup.data
     default_setup.addon      = ""
     default_setup.regions    = inclRegionsTTG if args.inclRegion else regionsTTG
@@ -114,6 +120,21 @@ with0pCR = False
 with1pCR = False
 setups = []
 
+splitProcessDict = {}
+splitProcessDict["ST_tch_gen"]    = { "process":["ST_tch_gen"] }
+splitProcessDict["ST_tch_misID"]  = { "process":["ST_tch_misID"] }
+splitProcessDict["ST_sch_gen"]    = { "process":["ST_sch_gen"] }
+splitProcessDict["ST_sch_misID"]  = { "process":["ST_sch_misID"] }
+splitProcessDict["ST_tW_gen"]     = { "process":["ST_tW_gen"] }
+splitProcessDict["ST_tW_misID"]   = { "process":["ST_tW_misID"] }
+splitProcessDict["TT_pow_gen"]    = { "process":["TT_pow_gen"] }
+splitProcessDict["TT_pow_misID"]  = { "process":["TT_pow_misID"] }
+splitProcessDict["TTG_had"]       = { "process":["TTG_had"] }
+splitProcessDict["WG_had"]        = { "process":["WG_had"] }
+splitProcessDict["ZG_had"]        = { "process":["ZG_had"] }
+splitProcessDict["other_had"]     = { "process":["other_had"] }
+splitProcessDict["WJets_had"]     = { "process":["WJets_had"] }
+splitProcessDict["DY_LO_had"]     = { "process":["DY_LO_had"] }
 
 for key, val in allRegions.items():
     if not key in args.useRegions: continue
@@ -138,6 +159,7 @@ for key, val in allRegions.items():
     locals()["setup"+key].processes    = estimators.constructProcessDict( processDict=val["processes"] ) if "processes" in val else default_setup.processes if val["noPhotonCR"] else default_photon_setup.processes
     locals()["setup"+key].processes["Data"] = locals()["setup"+key].data
     locals()["setup"+key].addon      = key
+    locals()["setup"+key].split_processes = estimators.constructProcessDict( splitProcessDict )  
 
 # sort regions accoring to ordering
 for reg in limitOrdering:
@@ -161,26 +183,53 @@ if args.wJetsPOI:    regionNames.append("wJetsPOI")
 if args.ttPOI:       regionNames.append("ttPOI")
 if args.useChannels: regionNames.append("_".join([ch for ch in args.useChannels if not "tight" in ch]))
 
-baseDir            = os.path.join( cache_directory, "analysis",  str(args.year), "limits", "withbkg" if args.withbkg else "withoutbkg" )
-limitDir           = os.path.join( baseDir, "cardFiles", args.label, "expected" if args.expected else "observed" )
+baseDir       = os.path.join( cache_directory, "analysis",  str(args.year), "limits", "withbkg" if args.withbkg else "withoutbkg" )
+limitDir      = os.path.join( baseDir, "cardFiles", args.label, "expected" if args.expected else "observed")
 if not os.path.exists( limitDir ): os.makedirs( limitDir )
-cacheFileName      = os.path.join( baseDir, "calculatednll" )
-nllCache           = MergingDirDB( cacheFileName )
-cacheFileName      = os.path.join( baseDir, "calculatedLimits" )
-limitCache         = MergingDirDB( cacheFileName )
-cacheFileName      = os.path.join( baseDir, "calculatedSignifs" )
-signifCache        = MergingDirDB( cacheFileName )
 
-cacheDir           = os.path.join( cache_directory, "modelling",  str(args.year) )
-cacheFileName      = os.path.join( cacheDir, "Scale" )
-scaleUncCache      = MergingDirDB( cacheFileName )
-cacheFileName      = os.path.join( cacheDir, "PDF" )
-pdfUncCache        = MergingDirDB( cacheFileName )
-cacheFileName      = os.path.join( cacheDir, "PS" )
-psUncCache         = MergingDirDB( cacheFileName )
+cacheFileName = os.path.join( baseDir, "calculatednll" )
+nllCache      = MergingDirDB( cacheFileName )
 
-baseDir            = os.path.join( cache_directory, "analysis", "eft" )
-cacheFileName      = os.path.join( baseDir, eftSample )
+cacheFileName   = os.path.join( baseDir, "calculatedLimits" )
+limitCache      = MergingDirDB( cacheFileName )
+
+cacheFileName   = os.path.join( baseDir, "calculatedSignifs" )
+signifCache     = MergingDirDB( cacheFileName )
+
+cacheDir        = os.path.join( cache_directory, "modelling",  str(args.year) )
+
+cacheFileName   = os.path.join( cacheDir, "Scale" )
+scaleUncCache   = MergingDirDB( cacheFileName )
+
+cacheFileName   = os.path.join( cacheDir, "PDF" )
+pdfUncCache     = MergingDirDB( cacheFileName )
+
+cacheFileName   = os.path.join( cacheDir, "PS" )
+psUncCache      = MergingDirDB( cacheFileName )
+
+
+
+#print (yieldCache_TTG.contains(yieldkey))
+#print (yieldCache_TTG.contains(smyieldkey))
+
+#store all the different samples in different caches (signal=TTG, background=TT,st_tch,st_sch,tW)
+baseDir       = os.path.join( cache_directory, "analysis", "eft" )
+cacheFileName = os.path.join( baseDir, 'TTG_4WC_ref' )
+yieldCache_TTG    = MergingDirDB( cacheFileName )
+cacheFileName = os.path.join( baseDir, 'TT_4WC_ref' )
+yieldCache_TT    = MergingDirDB( cacheFileName )
+cacheFileName = os.path.join( baseDir, 'tWG_4WC_ref' )
+yieldCache_tWG    = MergingDirDB( cacheFileName )
+cacheFileName = os.path.join( baseDir, 'tW_4WC_ref' )
+yieldCache_tW    = MergingDirDB( cacheFileName )
+cacheFileName = os.path.join( baseDir, 'stg_tch_4WC_ref' )
+yieldCache_stg_tch    = MergingDirDB( cacheFileName )
+cacheFileName = os.path.join( baseDir, 'st_tch_4WC_ref' )
+yieldCache_st_tch    = MergingDirDB( cacheFileName )
+cacheFileName = os.path.join( baseDir, 'stg_sch_4WC_ref' )
+yieldCache_stg_sch    = MergingDirDB( cacheFileName )
+cacheFileName = os.path.join( baseDir, 'st_sch_4WC_ref' )
+yieldCache_st_sch    = MergingDirDB( cacheFileName )
 
 def getScaleUnc(name, r, channel, setup):
     key      = uniqueKey( name, r, channel, setup ) + tuple(str(args.year))
@@ -197,7 +246,7 @@ def getPSUnc(name, r, channel, setup):
     PSUnc = psUncCache.get( key )
     return max(0.001, PSUnc)
 
-configlist = regionNames + args.parameters
+configlist = regionNames + EFTparams
 configlist.append("incl" if args.inclRegion else "diff")
 configlist.append("expected" if args.expected else "observed")
 
@@ -243,12 +292,12 @@ def wrapper():
         c.addUncertainty( "Scale",         shapeString)
         c.addUncertainty( "PDF",           shapeString)
         c.addUncertainty( "PS",            shapeString)
-        #c.addUncertainty( "ISR",           shapeString)
+#       c.addUncertainty( "ISR",           shapeString)
 
         default_QCD_unc = 0.5
         c.addUncertainty( "QCD_norm", shapeString )
-        #c.addUncertainty( "QCD_TF", shapeString )
-        #c.addUncertainty( "QCD_lowMlg", shapeString )
+#       c.addUncertainty( "QCD_TF", shapeString )
+#       c.addUncertainty( "QCD_lowMlg", shapeString )
 
         # Only if TT CR is used
         default_TT_unc = 0.05
@@ -258,7 +307,7 @@ def wrapper():
             c.addUncertainty( "TT_norm", shapeString )
                 
         default_HadFakes_unc = 0.05
-        #c.addUncertainty( "Fakes_norm",      shapeString )
+#       c.addUncertainty( "Fakes_norm",      shapeString )
         default_HadCorr_unc = 0.05
         addFakeUnc = False
         if any( ["fake" in name for name in args.useRegions] ):
@@ -270,11 +319,11 @@ def wrapper():
                 c.addUncertainty( "fake_corr_%i"%i_iso,   shapeString )                
 
         if not args.vgPOI and with1pCR:
-            #c.addFreeParameter('ZG', 1, '[0.5,1.5]')
+#           c.addFreeParameter('ZG', 1, '[0.5,1.5]')
             c.addFreeParameter('WG', '*WG*', 1, '[0.5,1.5]')
 
-        #default_WG_unc    = 0.30
-        #c.addUncertainty( "WG_norm",      shapeString )
+#       default_WG_unc    = 0.30
+#       c.addUncertainty( "WG_norm",      shapeString )
 
         default_ZG_unc    = 0.2
         c.addUncertainty( "ZG_norm",      shapeString )
@@ -282,11 +331,11 @@ def wrapper():
         default_Other_unc    = 0.15
         c.addUncertainty( "Other_norm",      shapeString )
 
-        #default_ZG3_unc    = 0.15
-        #c.addUncertainty( "ZG_nJet",      shapeString )
+#       default_ZG3_unc    = 0.15
+#       c.addUncertainty( "ZG_nJet",      shapeString )
 
-        #default_misID4p_unc    = 0.1
-        #c.addUncertainty( "misID4p",      shapeString )
+#       default_misID4p_unc    = 0.1
+#       c.addUncertainty( "misID4p",      shapeString )
 
         default_TTGpT_unc    = 0.1
         if not args.inclRegion and with1pCR:
@@ -309,7 +358,7 @@ def wrapper():
         if not args.addMisIDSF and not args.misIDPOI and with1pCR:
             c.addFreeParameter('misID', '*misID*', 1, '[0,5]')
         elif not args.misIDPOI and with1pCR:
-            c.addFreeParameter('misID', '*misID*', 1, '[0,2]')
+            c.addFreeParameter('misID', 1, '[0,2]')
 
         for setup in setups:
             observation = DataObservation( name="Data", process=setup.data, cacheDir=setup.defaultCacheDir() )
@@ -321,6 +370,56 @@ def wrapper():
             for r in setup.regions:
                 for i_ch, channel in enumerate(setup.channels):
                     if args.useChannels and channel not in args.useChannels: continue
+                    
+                    #calc the ratios for the different samples (signal and background)
+                    smyieldkey  =  (setup.name, str(r),channel, "ctZ_0_ctZI_0_ctW_0_ctWI_0")
+                    yieldkey    =  (setup.name, str(r),channel, str(eft))
+                   
+                    #signal 
+                    #print ('yieldkey:', yieldCache_TTG.contains(yieldkey))
+                    #print (str(eft))
+                    #print ('smyieldkey:', yieldCache_TTG.contains(smyieldkey))
+                    smyield     =  yieldCache_TTG.get(smyieldkey)["val"]
+                    ratio_TTG   =  yieldCache_TTG.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
+                    print ratio_TTG
+                    #background
+                    if args.withbkg: 
+                        smyield         =  yieldCache_TT.get(smyieldkey)["val"]
+                        ratio_TT        =  yieldCache_TT.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
+                        print ratio_TT
+                        smyield         =  yieldCache_tW.get(smyieldkey)["val"]
+                        ratio_tW        =  yieldCache_tW.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
+                        print ratio_tW
+                        smyield         =  yieldCache_tWG.get(smyieldkey)["val"]
+                        ratio_tWG       =  yieldCache_tWG.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
+                        print ratio_tWG
+                        smyield         =  yieldCache_st_tch.get(smyieldkey)["val"]
+                        ratio_st_tch    =  yieldCache_st_tch.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
+                        print ratio_st_tch
+                        smyield         =  yieldCache_stg_tch.get(smyieldkey)["val"]
+                        ratio_stg_tch   =  yieldCache_stg_tch.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
+                        print ratio_stg_tch
+                        smyield         =  yieldCache_st_sch.get(smyieldkey)["val"]
+                        ratio_st_sch    =  yieldCache_st_sch.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
+                        print ratio_st_sch
+                        smyield         =  yieldCache_stg_sch.get(smyieldkey)["val"]
+                        ratio_stg_sch   =  yieldCache_stg_sch.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
+                        print ratio_stg_sch
+   
+                        #calc the amount of each sample in the components defined in SetupHelpers
+                        #yield_st_tch_gen     = setup.split_processes['ST_tch_gen'][0].cachedEstimate(r, channel,setup)
+                        #yield_st_tch_misID   = setup.split_processes['ST_tch_misID'][0].cachedEstimate(r, channel,setup)
+                        #yield_st_tch_had     = setup.split_processes['ST_tch_had'][0].cachedEstimate(r, channel,setup)
+                        #yield_st_sch_gen     = setup.split_processes['ST_sch_gen'][0].cachedEstimate(r, channel,setup)
+                        #yield_st_sch_misID   = setup.split_processes['ST_sch_misID'][0].cachedEstimate(r, channel,setup)
+                        #yield_st_sch_had     = setup.split_processes['ST_sch_had'][0].cachedEstimate(r, channel,setup)
+                        #yield_tW_gen         = setup.split_processes['ST_tW_gen'][0].cachedEstimate(r, channel,setup)
+                        #yield_tW_misID       = setup.split_processes['ST_tW_misID'][0].cachedEstimate(r, channel,setup)
+                        #yield_tW_had         = setup.split_processes['ST_tW_had'][0].cachedEstimate(r, channel,setup)
+                        #yield_TT_gen         = setup.split_processes['TT_pow_gen'][0].cachedEstimate(r, channel,setup)
+                        #yield_TT_misID       = setup.split_processes['TT_pow_misID'][0].cachedEstimate(r, channel,setup)
+                        #yield_TT_had         = setup.split_processes['TT_pow_had'][0].cachedEstimate(r, channel,setup)
+
 
                     niceName      = " ".join( [ channel, str(r), setup.addon ] )
                     binname       = "Bin%i"%counter
@@ -344,20 +443,6 @@ def wrapper():
                     sigUnc = {}
                     for pName, pList in setup.processes.items():
 
-                        #yields einlesen und ratio berechnen
-                        smyieldkey  =  (setup.name, str(r),channel,  "ctZ_0_ctZI_0_ctW_0_ctWI_0")
-                        smyield     =  yieldCache.get(smyieldkey)["val"]
-                        yieldkey    =  (setup.name, str(r),channel, str(eft))
-                        if yieldCache.contains( yieldkey ): 
-                            ratio       =  yieldCache.get(yieldkey)["val"]
-                        else:
-                            raise Exception("yieldCache does not contain key")
-                        
-                        if smyield > 0: ratio /= smyield
-                        else: ratio = 1 
-
-                            
-                        print ratio
                         if pName == "Data": continue
                         misIDPOI = "misID" in pName and args.misIDPOI
                         vgPOI    = ("WG" in pName or "ZG" in pName or "VG" in pName) and args.vgPOI
@@ -375,7 +460,7 @@ def wrapper():
 
                         for e in pList:                           
                             exp_yield = e.cachedEstimate( r, channel, setup )
-                            if signal: exp_yield *= ratio
+
                             if signal and args.addSSM:
                                 exp_yield *= SSMSF_val[args.year].val
                                 logger.info( "Scaling signal by %f"%(SSMSF_val[args.year].val) )
@@ -397,9 +482,26 @@ def wrapper():
                             if e.name.count( "had" ) and args.addFakeSF:
                                 exp_yield *= fakeSF_val[args.year].val
                                 logger.info( "Scaling fake background %s by %f"%(e.name,fakeSF_val[args.year].val) )
+
+                            total_exp_bkg += exp_yield.val
+
+                            #reweight the signal(TTGamma) with the calculated ratio
+                            if e.name== 'TTG_gen': exp_yield *= ratio_TTG
+                            if e.name== 'TTG_misID': exp_yield *= ratio_TT
+                            #reweight also the background with the calculated ratio
+                            if args.withbkg:
+                                if e.name== 'Top_misID': exp_yield *= ((yield_st_tch_misID/exp_yield)*ratio_st_tch + (yield_st_sch_misID/exp_yield)*ratio_st_sch + (yield_tW_misID/exp_yield)*ratio_tW + (yield_TT_misID/exp_yield)*ratio_TT) 
+                                if e.name== 'Top_gen': exp_yield *= ((yield_st_tch_gen/exp_yield)*ratio_stg_tch + (yield_st_sch_gen/exp_yield)*ratio_stg_sch + (yield_tW_gen/exp_yield)*ratio_tWG + (yield_TT_gen/exp_yield)*ratio_TTG)
+#                                if e.name=='fakes-DD' or e.name.endswith('_had'):
+#                                    if e.name== 'TTG_had':
+#                                    if e.name== 'Top_had': exp_yield *= ratio_TT
+#                                    if e.name== 'fakes-DD':
+
+                                #fakes still to be done
+
+
                             e.expYield = exp_yield
                             expected  += exp_yield
-
                         logger.info( "Expectation for process %s: %s", pName, expected.val )
 
                         if newPOI_input and signal:
@@ -408,9 +510,8 @@ def wrapper():
                         else:
                             c.specifyExpectation( binname, pName, expected.val )
 
-                        if signal: total_exp_bkg += (expected.val/ratio)
-                       
-                        else: total_exp_bkg += expected.val
+#                       if signal: total_exp_bkg += (expected.val/ratio_TTG)
+#                       else: total_exp_bkg += expected.val
 
                         if signal and expected.val <= 0.01: mute = True
 

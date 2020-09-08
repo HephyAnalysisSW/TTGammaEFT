@@ -1204,15 +1204,8 @@ halfstepsize = 0.5 * ( xRange[1] - xRange[0] )
 xRange       = [ round(el + halfstepsize, 3) for el in xRange ] + [0]
 xRange.sort()
 
-yRange       = np.linspace( -0.5, 0.5, 30, endpoint=False)
-halfstepsize = 0.5 * ( yRange[1] - yRange[0] )
-yRange       = [ round(el + halfstepsize, 3) for el in yRange ] + [0]
-yRange.sort()
-
 eftParameterRange = {}
 eftParameterRange["ctZ"]  = xRange
 eftParameterRange["ctZI"] = xRange
-eftParameterRange["ctW"]  = yRange
-eftParameterRange["ctWI"] = yRange
-
-
+eftParameterRange["ctW"]  = xRange
+eftParameterRange["ctWI"] = xRange

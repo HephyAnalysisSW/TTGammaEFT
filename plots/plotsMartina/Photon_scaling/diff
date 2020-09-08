@@ -1,0 +1,236 @@
+36d35
+< argParser.add_argument('--sample',             action='store',      default='TTG_4WC_ref',   type=str,                                               help="Which sample to plot")
+46d44
+< import Analysis.Tools.syncer as syncer
+55,59d52
+< 
+< #import TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed as eftSample
+< #junk=[TTG_4WC_ref, TTG_Had_4WC, TTG_SemiLep_4WC_ref, TTG_Dilep_4WC_ref, tWG_4WC_ref, st_tch_4WC_ref,stg_tch_4WC_ref, st_sch_4WC_ref, stg_sch_4WC_ref]
+< #from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed      import *
+< #eftSample = junk[i]
+61,77c54
+< eftSample = eval(args.sample)
+< #from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed      import *
+< #eftSample = TTG_SemiLep_4WC_ref
+< #from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed      import *
+< #eftSample = TTG_Dilep_4WC_ref
+< #from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed      import *
+< #eftSample = tW_4WC_ref
+< #from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed      import *
+< #eftSample = tWG_4WC_ref
+< #from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed      import *
+< #eftSample = st_tch_4WC_ref
+< #from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed      import *
+< #eftSample = stg_tch_4WC_ref
+< #from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed      import *
+< #eftSample = st_sch_4WC_ref
+< #from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed      import *
+< #eftSample = stg_sch_4WC_ref
+---
+> eftSample = TTG_4WC_ref
+97,98d73
+< #print (smweightstring)
+< 
+105c80
+<     for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
+---
+>     for i_param, (coeff, val, str_val, ) in enumerate(zip(coeffs, vals, str_vals)):
+116c91
+<             'name': coeff
+---
+>             'name': coeff         
+118,122c93,94
+< 
+< #print (smweightstring)
+< #print (bsmweightstring)
+< 
+< params.append( {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack, 'histo' : Histo, 'name': 'SM'} )
+---
+>         
+> params.append( {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack, 'histo' : Histo, 'name': 'SM'})
+135,136d106
+< print(checkReferencePoint(eftSample))
+< 
+172c142
+<             plot_directory_ = os.path.join( plot_directory, 'genPlotsEFT', str(args.year), args.plot_directory,'photon_reweighting' , args.selection, args.mode, "log" if log else "lin" )
+---
+>             plot_directory_ = os.path.join( plot_directory, 'genPlotsEFT', str(args.year), args.plot_directory, args.selection, args.mode, "log" if log else "lin" )
+177c147
+<                            yRange = (0.1, "auto"),
+---
+>                            yRange = (0.1, "auto") if log else (0.001, "auto"),
+184d153
+< 
+193c162,163
+<                   "dRBLepWLep/F", "dRWLepWHad/F", "dRBHadWHad/F", "dRBLepBHad/F", "dRTopLepTopHad/F", "mT/F", "m3/F", "ht/F"
+---
+>                   "dRBLepWLep/F", "dRWLepWHad/F", "dRBHadWHad/F", "dRBLepBHad/F", "dRTopLepTopHad/F",
+>                   "mT/F", "m3/F", "ht/F"
+220c190,191
+< read_variables += map( lambda var: "GenBJetCMSUnfold1_" + var, ["pt/F","eta/F","phi/F"] )
+---
+> read_variables += map( lambda var: "GenBJetCMSUnfold1_"  + var, ["pt/F","eta/F","phi/F"] )
+> 
+226d196
+< 
+237d206
+< 
+246c215
+< weight = lambda event, sample: event.weight
+---
+> weight = lambda event, sample: event.weight 
+261c230
+< 
+---
+>     
+299c268
+< 
+---
+> #CMSUnfold
+471a441,442
+> 
+>  
+738a710
+> 
+834a807
+> 
+870,876c843,849
+< plotList.append( Plot(
+<     name      = 'ht', # name of the plot file
+<     texX      = 'h (GeV)', # x axis label
+<     texY      = 'Number of Events', # y axis label
+<     attribute = lambda event, sample: event.ht, # variable to plot
+<     binning   = [ 20, 20, 500 ], # 20 bins from 20 to 120
+< ))
+---
+> #plotList.append( Plot(
+>  #   name      = 'ht', # name of the plot file
+>   #  texX      = 'h (GeV)', # x axis label
+>    # texY      = 'Number of Events', # y axis label
+>    # attribute = lambda event, sample: event.ht, # variable to plot
+>    # binning   = [ 20, 20, 500 ], # 20 bins from 20 to 120
+> #))
+1080,1202d1052
+< 
+< 
+< 
+< #plotList.append( Plot(
+< #    name      = 'GenPhotonCMSUnfold0_pt', # name of the plot file
+< #    texX      = 'gen p_{T}(#gamma_{0}) (GeV)', # x axis label
+< #    texY      = 'Number of Events', # y axis label
+< #    attribute = lambda event, sample: event.GenPhotonCMSUnfold0_pt, # variable to plot
+< #    binning   = [ 20, 20, 300 ],
+< #))
+< #plotList.append( Plot(
+< #    name      = 'GenPhotonCMSUnfold0_eta',
+< #    texX      = 'gen #eta(#gamma_{0})',
+< #    texY      = 'Number of Events',
+< #    attribute = lambda event, sample: event.GenPhotonCMSUnfold0_eta,
+< #    binning   = [ 10, -1.5, 1.5 ],
+< #))
+< #plotList.append( Plot(
+< #    name      = 'GenPhotonCMSUnfold0_phi',
+< #    texX      = 'gen #phi(#gamma_{0})',
+< #    texY      = 'Number of Events',
+< #    attribute = lambda event, sample: event.GenPhotonCMSUnfold0_phi,
+< #    binning   = [ 10, -pi, pi ],
+< #))
+< 
+< 
+< #plotList.append( Plot(
+< #    name      = 'GenLeptonCMSUnfold0_pt', # name of the plot file
+< #    texX      = 'gen p_{T}(#gamma_{0}) (GeV)', # x axis label
+< #    texY      = 'Number of Events', # y axis label
+< #    attribute = lambda event, sample: event.GenLeptonCMSUnfold0_pt, # variable to plot
+< #    binning   = [ 20, 20, 300 ],
+< #))
+< #plotList.append( Plot(
+< #    name      = 'GenLeptonCMSUnfold0_eta',
+< #    texX      = 'gen #eta(#gamma_{0})',
+< #    texY      = 'Number of Events',
+< #    attribute = lambda event, sample: event.GenLeptonCMSUnfold0_eta,
+< #    binning   = [ 10, -2.5, 2.5 ],
+< #))
+< #plotList.append( Plot(
+< #    name      = 'GenLeptonCMSUnfold0_phi',
+< #    texX      = 'gen #phi(#gamma_{0})',
+< #    texY      = 'Number of Events',
+< #    attribute = lambda event, sample: event.GenLeptonCMSUnfold0_phi,
+< #    binning   = [ 10, -pi, pi ],
+< #))
+< #
+< 
+< #plotList.append( Plot(
+< #    name      = 'GenJetsCMSUnfold0_pt', # name of the plot file
+< #    texX      = 'gen p_{T}(#gamma_{0}) (GeV)', # x axis label
+< #    texY      = 'Number of Events', # y axis label
+< #    attribute = lambda event, sample: event.GenJetsCMSUnfold0_pt, # variable to plot
+< #    binning   = [ 20, 20, 300 ],
+< #))
+< #plotList.append( Plot(
+< #    name      = 'GenJetsCMSUnfold0_eta',
+< #    texX      = 'gen #eta(#gamma_{0})',
+< #    texY      = 'Number of Events',
+< #    attribute = lambda event, sample: event.GenJetsCMSUnfold0_eta,
+< #    binning   = [ 10, -2.5, 2.5 ],
+< #))
+< #plotList.append( Plot(
+< #    name      = 'GenJetsCMSUnfold0_phi',
+< #    texX      = 'gen #phi(#gamma_{0})',
+< #    texY      = 'Number of Events',
+< #    attribute = lambda event, sample: event.GenJetsCMSUnfold0_phi,
+< #    binning   = [ 10, -pi, pi ],
+< #))
+< #
+< 
+< #plotList.append( Plot(
+< #    name      = 'GenBJetCMSUnfold0_pt', # name of the plot file
+< #    texX      = 'gen p_{T}(#gamma_{0}) (GeV)', # x axis label
+< #    texY      = 'Number of Events', # y axis label
+< #    attribute = lambda event, sample: event.GenBJetCMSUnfold0_pt, # variable to plot
+< #    binning   = [ 20, 20, 300 ],
+< #))
+< #plotList.append( Plot(
+< #    name      = 'GenBJetCMSUnfold0_eta',
+< #    texX      = 'gen #eta(#gamma_{0})',
+< #    texY      = 'Number of Events',
+< #    attribute = lambda event, sample: event.GenBJetCMSUnfold0_eta,
+< #    binning   = [ 10, -2.5, 2.5 ],
+< #))
+< #plotList.append( Plot(
+< #    name      = 'GenBJetCMSUnfold0_phi',
+< #    texX      = 'gen #phi(#gamma_{0})',
+< #    texY      = 'Number of Events',
+< #    attribute = lambda event, sample: event.GenBJetCMSUnfold0_phi,
+< #    binning   = [ 10, -pi, pi ],
+< #))
+< #
+< #
+< plotList.append( Plot(
+<     name      = 'nGenJetsCMSUnfold', # name of the plot file
+<     texX      = 'Number of Jets', # x axis label
+<     texY      = 'Number of Events', # y axis label
+<     attribute = lambda event, sample: event.nGenJetsCMSUnfold, # variable to plot
+<     binning   = [ 10, 0, 10 ],
+< ))
+< plotList.append( Plot(
+<     name      = 'nGenBJetCMSUnfold', # name of the plot file
+<     texX      = 'Number of BJets', # x axis label
+<     texY      = 'Number of Events', # y axis label
+<     attribute = lambda event, sample: event.nGenBJetCMSUnfold, # variable to plot
+<     binning   = [ 4, 0, 4 ],
+< ))
+< plotList.append( Plot(
+<     name      = 'nGenLeptonCMSUnfold', # name of the plot file
+<     texX      = 'Number of Leptons', # x axis label
+<     texY      = 'Number of Events', # y axis label
+<     attribute = lambda event, sample: event.nGenLeptonCMSUnfold, # variable to plot
+<     binning   = [ 4, 0, 4 ],
+< ))
+< plotList.append( Plot(
+<     name      = 'nGenPhotonCMSUnfold', # name of the plot file
+<     texX      = 'Number of Photons', # x axis label
+<     texY      = 'Number of Events', # y axis label
+<     attribute = lambda event, sample: event.nGenPhotonCMSUnfold, # variable to plot
+<     binning   = [ 4, 0, 4 ],
+< ))

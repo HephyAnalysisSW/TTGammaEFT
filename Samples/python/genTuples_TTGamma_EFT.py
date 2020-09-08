@@ -279,6 +279,7 @@ allSamples = EFT_weightWidth + EFT + [test]
 
 
 for s in allSamples:
+    print s.reweight_pkl
     s.isData = False
 
 #for s in allSamples:
