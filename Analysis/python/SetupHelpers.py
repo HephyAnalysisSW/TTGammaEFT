@@ -2,7 +2,8 @@ import os, copy
 
 from Analysis.Tools.u_float      import u_float
 
-from TTGammaEFT.Tools.user       import results_directory, cache_directory
+from TTGammaEFT.Tools.user       import results_directory
+from TTGammaEFT.Tools.user       import cache_directory_read as cache_directory
 from TTGammaEFT.Analysis.regions import *
 from TTGammaEFT.Samples.color    import color
 
@@ -22,7 +23,7 @@ QCD         = ["QCD-DD"]
 fakes       = ["DY_LO_had","Top_had","TTG_had","WG_had","ZG_had","other_had","WJets_had"]
 
 default_sampleList            = ["TTG","Top","DY_LO","ZG","WG","WJets","other","QCD-DD"]
-default_systematicList        = ["TTG_TuneUp","TTG_TuneDown","TTG_erdOn"]
+default_systematicList        = ["TTG_TuneUp","TTG_TuneDown","TTG_erdOn","TTG_QCDbased"] #,"TTG_GluonMove"]
 default_photonSampleList      = signal + DY_misID + TT_misID + other_misID + WG + ZG + other + QCD + fakes + ["fakes-DD"]
 
 processes = {
@@ -155,7 +156,7 @@ signalRegions["SR4p"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag
 
 signalRegions["SR3PtUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
                               "channels":   ["all"],
-                              "regions":    regionsTTGlooseFine,
+                              "regions":    regionsTTGlooseUnfolding,
                               "inclRegion": inclRegionsTTGloose,
                               "noPhotonCR": False,
                               "processes":  processes,
@@ -164,7 +165,7 @@ signalRegions["SR3PtUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,3),
 
 signalRegions["SR3pPtUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
                               "channels":   ["all"],
-                              "regions":    regionsTTGlooseFine,
+                              "regions":    regionsTTGlooseUnfolding,
                               "inclRegion": inclRegionsTTGloose,
                               "noPhotonCR": False,
                               "processes":  processesSR,
@@ -173,7 +174,7 @@ signalRegions["SR3pPtUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1
 
 signalRegions["SR4pPtUnfold"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
                               "channels":   ["all"],
-                              "regions":    regionsTTGlooseFine,
+                              "regions":    regionsTTGlooseUnfolding,
                               "inclRegion": inclRegionsTTGloose,
                               "noPhotonCR": False,
                               "processes":  processes,
@@ -190,7 +191,7 @@ signalRegions["SR3EtaUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,3)
                                   }
 
 signalRegions["SR3pEtaUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
-                                   "channels":   lepChannels, #["all"],
+                                   "channels":   ["all"],
                                    "regions":    regionsTTGlooseEtaUnfolding,
                                    "inclRegion": inclRegionsTTGloose,
                                    "noPhotonCR": False,
@@ -217,7 +218,7 @@ signalRegions["SR3AbsEtaUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3
                                   }
 
 signalRegions["SR3pAbsEtaUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
-                                   "channels":   lepChannels, #["all"],
+                                   "channels":   ["all"],
                                    "regions":    regionsTTGlooseAbsEtaUnfolding,
                                    "inclRegion": inclRegionsTTGloose,
                                    "noPhotonCR": False,
@@ -581,14 +582,15 @@ ZG4pSF_val[2018]    = u_float( 1.10, 0.27 )
 ZG4pSF_val["RunII"] = u_float( 1.21, 0.21 )
 
 # all processes are all samples + them splitted in photon categories
-p                       = copy.copy(default_sampleList) + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch" ]
-allProcesses            = [ s+"_gen"   for s in p if not "DD" in s ]
-allProcesses           += [ s+"_misID" for s in p if not "DD" in s ]
-allProcesses           += [ s+"_had"   for s in p if not "DD" in s ]
-allProcesses           += [ s+"_hp"    for s in p if not "DD" in s ]
-allProcesses           += [ s+"_fake"  for s in p if not "DD" in s ]
-allProcesses           += [ s+"_PU"    for s in p if not "DD" in s ]
-allProcesses           += [ s+"_np"    for s in p if not "DD" in s ]
+p                       = copy.copy(default_sampleList) + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "all_mc" ]
+allProcesses            = [ s+"_gen"      for s in p if not "DD" in s ]
+allProcesses           += [ s+"_misID"    for s in p if not "DD" in s ]
+allProcesses           += [ s+"_had"      for s in p if not "DD" in s ]
+allProcesses           += [ s+"_prompt"   for s in p if not "DD" in s ]
+allProcesses           += [ s+"_hp"       for s in p if not "DD" in s ]
+allProcesses           += [ s+"_fake"     for s in p if not "DD" in s ]
+allProcesses           += [ s+"_PU"       for s in p if not "DD" in s ]
+allProcesses           += [ s+"_np"       for s in p if not "DD" in s ]
 allProcesses           += [ "fakes-DD" ]
 allProcesses           += p
 
@@ -1196,13 +1198,21 @@ limitOrdering += pSR
 
 
 # EFT parameter ranges:
-# 30 bins from -1.5 to 1.5 + the SM value 0, calc value in the middle of the bin
-xRange       = np.linspace( -1.0, 1.0, 20, endpoint=False)
+# 30 bins from -1. to 1. + the SM value 0, calc value in the middle of the bin
+xRange       = np.linspace( -1.0, 1.0, 30, endpoint=False)
 halfstepsize = 0.5 * ( xRange[1] - xRange[0] )
 xRange       = [ round(el + halfstepsize, 3) for el in xRange ] + [0]
 xRange.sort()
 
+yRange       = np.linspace( -0.5, 0.5, 30, endpoint=False)
+halfstepsize = 0.5 * ( yRange[1] - yRange[0] )
+yRange       = [ round(el + halfstepsize, 3) for el in yRange ] + [0]
+yRange.sort()
+
 eftParameterRange = {}
 eftParameterRange["ctZ"]  = xRange
 eftParameterRange["ctZI"] = xRange
+eftParameterRange["ctW"]  = yRange
+eftParameterRange["ctWI"] = yRange
+
 
