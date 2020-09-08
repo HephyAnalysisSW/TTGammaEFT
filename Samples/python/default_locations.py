@@ -13,6 +13,10 @@ class postprocessing_locations:
     MC2017_semilep  = "TTGammaEFT_PP_2017_TTG_private_v45/semilep/"
     MC2018_semilep  = "TTGammaEFT_PP_2018_TTG_private_v45/semilep/"
 
+    MC2016_semilep_private = "TTGammaEFT_PP_2016_TTG_private_v45_priv/semilep/"
+    MC2017_semilep_private = "TTGammaEFT_PP_2017_TTG_private_v45_priv/semilep/"
+    MC2018_semilep_private = "TTGammaEFT_PP_2018_TTG_private_v45_priv/semilep/"
+
     Run2016_semilep = "TTGammaEFT_PP_2016_TTG_Data_v45/semilep/"
     Run2017_semilep = "TTGammaEFT_PP_2017_TTG_Data_v45/semilep/"
     Run2018_semilep = "TTGammaEFT_PP_2018_TTG_Data_v45/semilep/"

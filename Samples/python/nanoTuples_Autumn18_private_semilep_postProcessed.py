@@ -10,14 +10,14 @@ from TTGammaEFT.Samples.color import color
 from TTGammaEFT.Samples.helpers import getMCSample
 
 # Data directory
-try:
-    data_directory_ = sys.modules['__main__'].data_directory
-except:
+if "data_directory" in os.environ:
+    data_directory_ = os.environ["data_directory"]
+else:
     from TTGammaEFT.Tools.user import dpm_directory as data_directory_
     data_directory_ += "postprocessed/"
-try:
-    postprocessing_directory_ = sys.modules['__main__'].postprocessing_directory
-except:
+if "postprocessing_directory" in os.environ:
+    postprocessing_directory_ = os.environ["postprocessing_directory"]
+else:
     from TTGammaEFT.Samples.default_locations import postprocessing_locations
     postprocessing_directory_ = postprocessing_locations.MC2018_semilep
 
@@ -26,8 +26,8 @@ try:
 except:
     fromDPM = not "clip" in os.getenv("HOSTNAME").lower() 
 
-#if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
-#    postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
+if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
+    postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
 
 # Redirector
 try:
@@ -65,6 +65,8 @@ dirs["TTG"]              = ["TTGLep_LO", "TTGLep_ptG100To200_LO", "TTGLep_ptG200
 dirs["TTG_TuneUp"]       = ["TTGLep_TuneUp_LO", "TTGSingleLep_TuneUp_LO"]
 dirs["TTG_TuneDown"]     = ["TTGLep_TuneDown_LO", "TTGSingleLep_TuneDown_LO"]
 dirs["TTG_erdOn"]        = ["TTGLep_erdOn_LO", "TTGSingleLep_erdOn_LO"]
+dirs["TTG_GluonMove"]   = ["TTGLep_GluonMove_LO", "TTGSingleLep_GluonMove_LO"]
+dirs["TTG_QCDbased"]    = ["TTGLep_QCDbased_LO", "TTGSingleLep_QCDbased_LO"]
 
 dirs["TG"]               = ["TGJets_comb"] #"TGJets_lep"
 #["TGJets_lep"]
@@ -128,13 +130,13 @@ dirs["QCD"]             += [ "QCD_Ele_pt20to30", "QCD_Ele_pt30to50", "QCD_Ele_pt
 
 dirs["GJets"]            = ["GJets_HT40to100", "GJets_HT100to200", "GJets_HT200to400", "GJets_HT400to600", "GJets_HT600toInf"]
 
-dirs["all_noOther_noTT"] = dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["TG"] + dirs["WJets"] + dirs["WG"]# + dirs["QCD"] + dirs["GJets"]
+dirs["all_noOther_noTT"] = dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG"]# + dirs["QCD"] + dirs["GJets"]
 dirs["all_noTT"]         = dirs["all_noOther_noTT"] + dirs["other"]
 
-dirs["all_noOther"]      = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["TG"] + dirs["WJets"] + dirs["WG"] + dirs["QCD"] + dirs["GJets"]
+dirs["all_noOther"]      = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG"] + dirs["QCD"] + dirs["GJets"]
 dirs["all"]              = dirs["all_noOther"] + dirs["other"]
 
-dirs["all_noQCD_noOther"] = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["TG"] + dirs["WJets"] + dirs["WG"]
+dirs["all_noQCD_noOther"] = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG"]
 dirs["all_noQCD"]         = dirs["all_noQCD_noOther"] + dirs["other"]
 
 dirs["VG"]               = dirs["ZG_lowMLL"] + dirs["WG"]
@@ -158,6 +160,8 @@ TTG              = getMCSample(name="TTG",              redirector=redirector, c
 TTG_TuneUp       = getMCSample(name="TTG_TuneUp",       redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_TuneUp"], noCheckProxy=True, fromDPM=fromDPM)
 TTG_TuneDown     = getMCSample(name="TTG_TuneDown",     redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_TuneDown"], noCheckProxy=True, fromDPM=fromDPM)
 TTG_erdOn        = getMCSample(name="TTG_erdOn",        redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_erdOn"], noCheckProxy=True, fromDPM=fromDPM)
+#TTG_GluonMove    = getMCSample(name="TTG_GluonMove",    redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_GluonMove"], noCheckProxy=True, fromDPM=fromDPM)
+TTG_QCDbased     = getMCSample(name="TTG_QCDbased",     redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_QCDbased"], noCheckProxy=True, fromDPM=fromDPM)
 TTGLep           = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTGLep"], noCheckProxy=True, fromDPM=fromDPM)
 TTGSemiLep       = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTGSemiLep"], noCheckProxy=True, fromDPM=fromDPM)
 WJets            = getMCSample(name="WJets",            redirector=redirector, color=color.W,               texName="W+jets",            directory=directories["WJets"], noCheckProxy=True, fromDPM=fromDPM)

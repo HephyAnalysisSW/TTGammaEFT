@@ -116,8 +116,6 @@ allNuisances  = Results.getNuisancesList( addRateParameter=args.postFit )
 #allNuisances  = Results.getNuisancesList( addRateParameter=False )
 plotNuisances = allNuisances if args.plotNuisances and args.plotNuisances[0] == "total" else args.plotNuisances
 
-print allNuisances
-
 if args.substituteCard:
     rebinnedCardFile = os.path.join( cache_directory, "analysis", str(args.year) if args.year != "combined" else "COMBINED", args.carddir, args.substituteCard+".txt" )
 
@@ -133,7 +131,6 @@ if args.plotChannels: labels = filter( lambda (i,(year, ch, lab, reg)): ch in ar
 
 labelFormater   = lambda x: ", ".join( [x.split(" ")[3], x.split(" ")[1].replace("mu","#mu").replace("tight","")] )
 labels = [ ( i, label ) for i, label in enumerate(Results.getBinLabels( labelFormater=lambda x:x.split(" "))[Results.channels[0]])]
-print labels
 crName    = [ cr for i, (year, lep, reg, cr) in labels ]
 plotBins  = [ i  for i, (year, lep, reg, cr) in labels ]
 crLabel   = map( lambda (i,(year, ch, lab, reg)): ", ".join( [ reg, ch.replace("mu","#mu").replace("tight","") ] ), labels )
@@ -164,12 +161,31 @@ def replaceHistoBinning( hists ):
         else:
             thresh += [ reg[-1].vals.values()[0][1] ]
         xLabel = reg[0].vals.keys()[0]
+        print
+        print
+        print
+        print
+        print xLabel
+        print
+        print
+        print
+        print
         if "PhotonGood0" in xLabel or "PhotonNoChgIsoNoSieie0" in xLabel or xLabel in ["ltight0GammaNoSieieNoChgIsodPhi", "ltight0GammaNoSieieNoChgIsodR"]:
-            if xLabel.endswith("_pt"):  xLabel = "p_{T}(#gamma) [GeV]"
-            if xLabel.endswith("_eta"): xLabel = "#eta(#gamma)"
-            if xLabel.endswith("dR"): xLabel = "#DeltaR(#gamma,l)"
-            if xLabel.endswith("dPhi"): xLabel = "#Delta#phi(#gamma,l)"
+            if xLabel.endswith("_pt"):   xLabel = "p_{T}(#gamma) [GeV]"
+            if xLabel.endswith("_eta"):  xLabel = "#eta(#gamma)"
+            if xLabel.endswith("_eta)"): xLabel = "|#eta(#gamma)|"
+            if xLabel.endswith("dR"):    xLabel = "#DeltaR(#gamma,l)"
+            if xLabel.endswith("dPhi"):  xLabel = "#Delta#phi(#gamma,l)"
 
+        print
+        print
+        print
+        print
+        print xLabel
+        print
+        print
+        print
+        print
         differential = True
         ch = subCard[-1]
         for h_key, h in hists.iteritems():
@@ -195,7 +211,7 @@ def replaceHistoBinning( hists ):
                     h_sub.SetBinError( i+1, h.GetBinError(i+1))
                 hists[h_key] = h_sub.Clone(h_key)
                 del h_sub
-        return hists
+        return hists, xLabel
 
 # region plot, sorted/not sorted, w/ or w/o +-1sigma changes in one nuisance
 def plotRegions( sorted=True ):
@@ -242,9 +258,9 @@ def plotRegions( sorted=True ):
     xLabel = ""
     if args.substituteCard: subCard = args.substituteCard.split("_")
     if args.bkgSubstracted and args.substituteCard:
-        hists = replaceHistoBinning( hists )
+        hists, xLabel = replaceHistoBinning( hists )
         differential = True
-        ch = subCard[-1]
+#        ch = subCard[-1]
 
     minMax = 0.29 #0.19 if args.postFit else 0.9
     if args.bkgSubstracted:
@@ -254,8 +270,8 @@ def plotRegions( sorted=True ):
         boxes_stat, ratio_boxes_stat = getErrorBoxes( copy.copy(hists["signal_stat"]), minMax, lineColor=ROOT.kAzure-3, fillColor=ROOT.kAzure-3, hashcode=1001, ratioCenter=ratioCenter )
     else:
         boxes,     ratio_boxes       = getUncertaintyBoxes( copy.copy(hists["total"]), minMax, lineColor=ROOT.kGray+3, fillColor=ROOT.kGray+3, hashcode=formatSettings(nBins)["hashcode"] )
-        if args.postFit:
-            boxes_stat, ratio_boxes_stat = getUncertaintyBoxes( copy.copy(hists["total_stat"]), minMax, lineColor=ROOT.kAzure-3, fillColor=ROOT.kAzure-3, hashcode=1001 )
+#        if args.postFit:
+#            boxes_stat, ratio_boxes_stat = getUncertaintyBoxes( copy.copy(hists["total_stat"]), minMax, lineColor=ROOT.kAzure-3, fillColor=ROOT.kAzure-3, hashcode=1001 )
 
     hists["data"].style        = styles.errorStyle( ROOT.kBlack )
     hists["data"].legendText   = "data" if not args.bkgSubstracted else "bkg-sub. data (#color[61]{stat}, #color[92]{total} error, %s)"%(ch.replace("mu","#mu") if ch != "all" else "e+#mu")
@@ -276,9 +292,9 @@ def plotRegions( sorted=True ):
     # some settings and things like e.g. uncertainty boxes
     drawObjects_       = drawObjects( nBins=nBins, isData=(not args.expected), lumi_scale=lumi_scale, postFit=args.postFit, cardfile=args.substituteCard if args.substituteCard else args.cardfile, preliminary=args.preliminary )
     drawObjects_      += boxes 
-    if args.postFit:
-        drawObjects_      += boxes_stat
-#    if args.bkgSubstracted: drawObjects_ += boxes_stat
+#    if args.postFit:
+#        drawObjects_      += boxes_stat
+    if args.bkgSubstracted: drawObjects_ += boxes_stat
     drawObjects_      += drawDivisions( crLabel, misIDPOI=("misIDPOI" in args.cardfile) ) 
     drawObjects_      += drawPTDivisions( crLabel, ptLabels )
 
@@ -352,8 +368,8 @@ def plotRegions( sorted=True ):
             legend            = [ (0.2, 0.86 if args.bkgSubstracted else formatSettings(nBins)["legylower"], 0.9, 0.9), formatSettings(nBins)["legcolumns"] ] if not differential else (0.15,0.80,0.9,0.9),
             widths            = { "x_width":formatSettings(nBins)["padwidth"], "y_width":formatSettings(nBins)["padheight"], "y_ratio_width":formatSettings(nBins)["padratio"] } if not differential else {},
             yRange            = ( 0.7, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ) if not differential else "auto",
-            ratio             = { "yRange": (1-minMax, 1+minMax), "texY":"Data/Pred." if args.bkgSubstracted else "Data/MC", "histos":ratioHistos, "drawObjects":ratio_boxes + ratio_boxes_stat if args.postFit else ratio_boxes, "histModifications":ratioHistModifications },
-            drawObjects       = drawObjects_ if not differential else drawObjectsDiff(lumi_scale) + boxes + boxes_stat,
+            ratio             = { "yRange": (1-minMax, 1+minMax), "texY":"Data/Pred." if args.bkgSubstracted else "Data/MC", "histos":ratioHistos, "drawObjects":ratio_boxes + ratio_boxes_stat if args.bkgSubstracted else ratio_boxes, "histModifications":ratioHistModifications },
+            drawObjects       = drawObjects_ if not differential else drawObjectsDiff(lumi_scale) + boxes + boxes_stat if args.bkgSubstracted else drawObjectsDiff(lumi_scale) + boxes,
             histModifications = histModifications,
             copyIndexPHP      = True,
             extensions        = ["png", "pdf", "root"] if args.bkgSubstracted else ["png"], # pdfs are quite large for sorted histograms (disco plot)
@@ -442,9 +458,9 @@ def plotImpacts():
 
 if args.plotRegionPlot or args.cacheHistogram:
     plotRegions( sorted=True )
+if args.plotImpacts and args.postFit:
+    plotImpacts()
 if args.plotCovMatrix:
     plotCovariance()
 if args.plotCorrelations and args.postFit:
     plotCorrelations()
-if args.plotImpacts and args.postFit:
-    plotImpacts()

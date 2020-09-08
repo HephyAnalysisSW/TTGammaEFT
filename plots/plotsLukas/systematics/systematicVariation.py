@@ -242,8 +242,8 @@ variations = {
     "PhotonElectronVetoSFDown"  : {"replaceWeight":("reweightPhotonElectronVetoSF","reweightPhotonElectronVetoSFDown"),   "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightPhotonElectronVetoSFDown"]]},
     "eScaleUp"                  : {"selectionModifier":eleSelectionModifier("eScaleUp"),                                  "read_variables" : [ "%s/F"%v for v in nominalMCWeights + eleSelectionModifier("eScaleUp","list")]},
     "eScaleDown"                : {"selectionModifier":eleSelectionModifier("eScaleDown"),                                "read_variables" : [ "%s/F"%v for v in nominalMCWeights + eleSelectionModifier("eScaleDown","list")]},
-    "eResUp"                  : {"selectionModifier":eleSelectionModifier("eResUp"),                                  "read_variables" : [ "%s/F"%v for v in nominalMCWeights + eleSelectionModifier("eResUp","list")]},
-    "eResDown"                : {"selectionModifier":eleSelectionModifier("eResDown"),                                "read_variables" : [ "%s/F"%v for v in nominalMCWeights + eleSelectionModifier("eResDown","list")]},
+#    "eResUp"                  : {"selectionModifier":eleSelectionModifier("eResUp"),                                  "read_variables" : [ "%s/F"%v for v in nominalMCWeights + eleSelectionModifier("eResUp","list")]},
+#    "eResDown"                : {"selectionModifier":eleSelectionModifier("eResDown"),                                "read_variables" : [ "%s/F"%v for v in nominalMCWeights + eleSelectionModifier("eResDown","list")]},
     "muTotalUp"                 : {"selectionModifier":muonSelectionModifier("muTotalUp"),                                "read_variables" : [ "%s/F"%v for v in nominalMCWeights + muonSelectionModifier("muTotalUp","list")]},
     "muTotalDown"               : {"selectionModifier":muonSelectionModifier("muTotalDown"),                              "read_variables" : [ "%s/F"%v for v in nominalMCWeights + muonSelectionModifier("muTotalDown","list")]},
     "jerUp"                     : {"selectionModifier":jetSelectionModifier("jerUp"),                                     "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jerUp","list")]},
@@ -567,6 +567,14 @@ if args.variation == "central":
                         if qcdHist_tmp.GetBinContent(i+1) < 0: qcdHist_tmp.SetBinContent(i+1, 0)
     
                     qcdHist_tmp.Scale(transferFac.val)
+
+                    nJetUpdates = copy.deepcopy(qcdUpdates)
+                    nJetUpdates["CR"]["leptonPt"] = ( 0, -1 )
+                    nJetUpdates["SR"]["leptonPt"] = ( 0, -1 )
+
+                    if setup.isBTagged:
+                        qcdHist_tmp.Scale(estimate._nJetScaleFactor(mode.replace("Inv",""), setup, qcdUpdates=nJetUpdates))
+
                     qcdHist.Add(qcdHist_tmp)
 
         # create the datadriven qcd histogram
@@ -602,10 +610,10 @@ if args.variation:
 systematics = [\
     {"name":"MER",              "pair":("muTotalDown", "muTotalUp"),},
     {"name":"EES",              "pair":("eScaleDown", "eScaleUp"),},
-    {"name":"EER",              "pair":("eResDown", "eResUp"),},
+#    {"name":"EER",              "pair":("eResDown", "eResUp"),},
     {"name":"JER",              "pair":("jerDown", "jerUp"),},
 #    {"name":"JEC",              "pair":("jesTotalDown", "jesTotalUp")},
-#    {"name":"Unclustered",      "pair":("unclustEnDown", "unclustEnUp") },
+    {"name":"Unclustered",      "pair":("unclustEnDown", "unclustEnUp") },
     {"name":"PU",               "pair":("PUDown", "PUUp")},
     {"name":"BTag_b",           "pair":("BTag_SF_b_Down", "BTag_SF_b_Up" )},
     {"name":"BTag_l",           "pair":("BTag_SF_l_Down", "BTag_SF_l_Up")},

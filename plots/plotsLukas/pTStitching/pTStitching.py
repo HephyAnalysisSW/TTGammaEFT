@@ -59,17 +59,17 @@ def drawObjects( lumi_scale ):
 os.environ["gammaSkim"]="False" #always false for QCD estimate
 if args.year == 2016:
 #    postprocessing_directory = "TTGammaEFT_PP_2016_TTG_private_v46/semilep/"
-    postprocessing_directory = "TTGammaEFT_PP_2016_TTG_private_v52/inclusive/"
+    postprocessing_directory = "TTGammaEFT_PP_2016_TTG_private_v45/inclusive/"
     import TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed_ptstitched as mc_samples
     lumi_scale   = 35.92
 elif args.year == 2017:
 #    postprocessing_directory = "TTGammaEFT_PP_2017_TTG_private_v46/semilep/"
-    postprocessing_directory = "TTGammaEFT_PP_2017_TTG_private_v52/inclusive/"
+    postprocessing_directory = "TTGammaEFT_PP_2017_TTG_private_v45/inclusive/"
     import TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed_ptstitched as mc_samples
     lumi_scale   = 41.53
 elif args.year == 2018:
 #    postprocessing_directory = "TTGammaEFT_PP_2018_TTG_private_v46/semilep/"
-    postprocessing_directory = "TTGammaEFT_PP_2018_TTG_private_v52/inclusive/"
+    postprocessing_directory = "TTGammaEFT_PP_2018_TTG_private_v45/inclusive/"
     import TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed_ptstitched as mc_samples
     lumi_scale   = 59.74
 elif args.year == "RunII":
@@ -114,11 +114,6 @@ variables = [ ("GenPhotonCMSUnfold0_pt", [30, 0, 300]), ("stitchedPt", [30, 0, 3
 for variable, binning in variables:
 
     selection = "1"
-
-    print mc.getYieldFromDraw( selectionString="nGenPhotonCMSUnfold==0", weightString="weight*%f"%lumi_scale )
-    print mc.getYieldFromDraw( selectionString="nGenPhotonCMSUnfold==1", weightString="weight*%f"%lumi_scale )
-    print mc.getYieldFromDraw( selectionString="nGenPhotonCMSUnfold==2", weightString="weight*%f"%lumi_scale )
-    sys.exit()
 
     mc.hist = mc.get1DHistoFromDraw( variable, binning=binning, selectionString=selection, weightString="weight*%f"%lumi_scale )
     mcStitched.hist = mcStitched.get1DHistoFromDraw( variable, binning=binning, selectionString=selection, weightString="weight*%f"%lumi_scale )

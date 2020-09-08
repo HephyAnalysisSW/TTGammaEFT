@@ -10,14 +10,14 @@ from TTGammaEFT.Samples.color import color
 from TTGammaEFT.Samples.helpers import getMCSample
 
 # Data directory
-try:
-    data_directory_ = sys.modules['__main__'].data_directory
-except:
+if "data_directory" in os.environ:
+    data_directory_ = os.environ["data_directory"]
+else:
     from TTGammaEFT.Tools.user import dpm_directory as data_directory_
     data_directory_ += "postprocessed/"
-try:
-    postprocessing_directory_ = sys.modules['__main__'].postprocessing_directory
-except:
+if "postprocessing_directory" in os.environ:
+    postprocessing_directory_ = os.environ["postprocessing_directory"]
+else:
     from TTGammaEFT.Samples.default_locations import postprocessing_locations
     postprocessing_directory_ = postprocessing_locations.MC2017_semilep
 
@@ -27,8 +27,8 @@ try:
 except:
     fromDPM = not "clip" in os.getenv("HOSTNAME").lower()
 
-#if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
-#    postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
+if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
+    postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
 
 # Redirector
 try:

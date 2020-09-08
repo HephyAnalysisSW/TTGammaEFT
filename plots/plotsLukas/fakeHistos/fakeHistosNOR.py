@@ -445,6 +445,7 @@ for i_pt, pt in enumerate(ptBins[:-1]):
             if qcdHist_tmp.GetBinContent(i+1) < 0: qcdHist_tmp.SetBinContent(i+1, 0)
 
         qcdHist_tmp.Scale(transferFac.val)
+        qcdHist_tmp.Scale(estimate._nJetScaleFactor(mode, setup))
         qcdHist.Add(qcdHist_tmp)
 
 

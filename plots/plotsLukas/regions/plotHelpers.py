@@ -22,10 +22,20 @@ def convEtaLabel( lab ):
     rang = lab.split("_eta")[1].split("_")[0].split("To")
     if len(rang) > 1:
         low, high = rang[0], rang[1]
-        return "%.2f #leq #eta(#gamma) < %.2f"%(float(low), float(high))
+        if low.startswith(")"):
+            l = "|#eta(#gamma)|"
+            low = low.replace(")","")
+        else:
+            l = "#eta(#gamma)"
+        return "%.2f #leq %s < %.2f"%(float(low), l, float(high))
     else:
         low = rang[0]
-        return "#eta(#gamma) #geq %.2f"%(float(low))
+        if low.startswith(")"):
+            l = "|#eta(#gamma)|"
+            low = low.replace(")","")
+        else:
+            l = "#eta(#gamma)"
+        return "%s #geq %.2f"%(l, float(low))
 
 def convM3Label( lab ):
     # PhotonGood0_pt20To120_m370To140

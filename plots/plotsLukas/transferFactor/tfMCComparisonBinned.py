@@ -31,6 +31,7 @@ argParser.add_argument("--logLevel",          action="store",  default="INFO",  
 argParser.add_argument("--plot_directory",    action="store",  default="102X_TTG_ppv22_v1")
 argParser.add_argument("--year",              action="store",  default="2016",     type=str, choices=["2016", "2017", "2018", "RunII"], help="Which year?")
 argParser.add_argument("--mode",              action="store",  default="e",      type=str, choices=["e", "mu"],        help="Which lepton selection?")
+argParser.add_argument("--nJetCorrected",     action="store_true",                                                     help="Correct for nJet dependence?")
 args = argParser.parse_args()
 
 if args.year != "RunII": args.year = int(args.year)
@@ -42,7 +43,7 @@ import RootTools.core.logger as logger_rt
 logger_rt = logger_rt.get_logger( args.logLevel, logFile = None )
 
 extensions_ = ["pdf", "png", "root"]
-plot_directory_ = os.path.join( plot_directory, 'QCDTFMCvsFit', str(args.year), args.plot_directory, args.mode )
+plot_directory_ = os.path.join( plot_directory, 'QCDTFMCvsFit', str(args.year), args.plot_directory, args.mode+"_nJetCorr" if args.nJetCorrected else args.mode)
 copyIndexPHP( plot_directory_ )
 
 if args.year == 2016:   lumi_scale = 35.92
@@ -82,9 +83,21 @@ for nJet in [(2,2), (3,3), (4,-1)]:
         cachedTF["0bMC"][nj][etakey] = {}
         cachedTF["1bMC"][nj][etakey] = {}
 
+if not args.nJetCorrected:
+    func0b = estimate0b0p._nJetFitFunction(args.mode, setup0b0p)
+    func1b = estimate1b0p._nJetFitFunction(args.mode, setup1b0p)
+
+    line0b = ROOT.TLine( 2, func0b.Eval(1.5), 5, func0b.Eval(4.5) )
+    line0b.SetLineWidth(3)
+    line0b.SetLineColor(ROOT.kGreen-2)
+
+    line1b = ROOT.TLine( 2, func1b.Eval(1.5), 5, func1b.Eval(4.5) )
+    line1b.SetLineWidth(3)
+    line1b.SetLineColor(ROOT.kGreen-2)
+
+
 # get brute force all of them
 for nJet in [(2,2), (3,3), (4,-1)]:
-        print "jet", nJet
         nj = str(nJet[0])
         # inclusive tf
         nJetLow, nJetHigh = nJet
@@ -102,13 +115,19 @@ for nJet in [(2,2), (3,3), (4,-1)]:
         QCDTF["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
 
         qcdUpdate  = { "CR":QCDTF["CR"], "SR":QCDTF["SR"] }
-        cachedTF["0b"][nj]["incl"]["incl"] = estimate0b0p.cachedTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
-        cachedTF["1b"][nj]["incl"]["incl"] = estimate1b0p.cachedTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
-        cachedTF["0bMC"][nj]["incl"]["incl"] = estimate0b0p.cachedQCDMCTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
-        cachedTF["1bMC"][nj]["incl"]["incl"] = estimate1b0p.cachedQCDMCTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+        if args.nJetCorrected:
+            nJetSF_0b0p = 1. / estimate0b0p._nJetScaleFactor(args.mode, setup0b0p, evalForNJet=nJetLow)
+            nJetSF_1b0p = 1. / estimate1b0p._nJetScaleFactor(args.mode, setup1b0p, evalForNJet=nJetLow)
+        else:
+            nJetSF_0b0p = 1.
+            nJetSF_1b0p = 1.
+
+        cachedTF["0b"][nj]["incl"]["incl"] = estimate0b0p.cachedTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True) * nJetSF_0b0p if nJetLow == 2 else u_float(-1,0)
+        cachedTF["1b"][nj]["incl"]["incl"] = estimate1b0p.cachedTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True) * nJetSF_1b0p if nJetLow == 2 else u_float(-1,0)
+        cachedTF["0bMC"][nj]["incl"]["incl"] = estimate0b0p.cachedQCDMCTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True) * nJetSF_0b0p
+        cachedTF["1bMC"][nj]["incl"]["incl"] = estimate1b0p.cachedQCDMCTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True) * nJetSF_1b0p
         # pt inclusive tf
         for i_eta, eta in enumerate(etaBins[:-1]):
-            print "eta", eta
             etakey = str(eta)
             etaLow, etaHigh   = eta, etaBins[i_eta+1]
             ptLow, ptHigh     = 0, -1
@@ -124,13 +143,12 @@ for nJet in [(2,2), (3,3), (4,-1)]:
             QCDTF["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
 
             qcdUpdate  = { "CR":QCDTF["CR"], "SR":QCDTF["SR"] }
-            cachedTF["0b"][nj][etakey]["incl"] = estimate0b0p.cachedTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
-            cachedTF["1b"][nj][etakey]["incl"] = estimate1b0p.cachedTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
-            cachedTF["0bMC"][nj][etakey]["incl"] = estimate0b0p.cachedQCDMCTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
-            cachedTF["1bMC"][nj][etakey]["incl"] = estimate1b0p.cachedQCDMCTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+            cachedTF["0b"][nj][etakey]["incl"] = estimate0b0p.cachedTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True) * nJetSF_0b0p if nJetLow == 2 else u_float(-1,0)
+            cachedTF["1b"][nj][etakey]["incl"] = estimate1b0p.cachedTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True) * nJetSF_1b0p if nJetLow == 2 else u_float(-1,0)
+            cachedTF["0bMC"][nj][etakey]["incl"] = estimate0b0p.cachedQCDMCTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True) * nJetSF_0b0p
+            cachedTF["1bMC"][nj][etakey]["incl"] = estimate1b0p.cachedQCDMCTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True) * nJetSF_1b0p
 
         for i_pt, pt in enumerate(ptBins[:-1]):
-            print "pt", pt
             # eta inclusive tf
             ptkey = str(pt)
             etaLow, etaHigh   = 0, -1
@@ -147,13 +165,12 @@ for nJet in [(2,2), (3,3), (4,-1)]:
             QCDTF["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
 
             qcdUpdate  = { "CR":QCDTF["CR"], "SR":QCDTF["SR"] }
-            cachedTF["0b"][nj]["incl"][ptkey] = estimate0b0p.cachedTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
-            cachedTF["1b"][nj]["incl"][ptkey] = estimate1b0p.cachedTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
-            cachedTF["0bMC"][nj]["incl"][ptkey] = estimate0b0p.cachedQCDMCTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
-            cachedTF["1bMC"][nj]["incl"][ptkey] = estimate1b0p.cachedQCDMCTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+            cachedTF["0b"][nj]["incl"][ptkey] = estimate0b0p.cachedTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True) * nJetSF_0b0p if nJetLow == 2 else u_float(-1,0)
+            cachedTF["1b"][nj]["incl"][ptkey] = estimate1b0p.cachedTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True) * nJetSF_1b0p if nJetLow == 2 else u_float(-1,0)
+            cachedTF["0bMC"][nj]["incl"][ptkey] = estimate0b0p.cachedQCDMCTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True) * nJetSF_0b0p
+            cachedTF["1bMC"][nj]["incl"][ptkey] = estimate1b0p.cachedQCDMCTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True) * nJetSF_1b0p
 
             for i_eta, eta in enumerate(etaBins[:-1]):
-                print "pt", pt, "eta", eta
                 etakey = str(eta)
                 etaLow, etaHigh   = eta, etaBins[i_eta+1]
                 ptLow, ptHigh     = pt,  ptBins[i_pt+1]
@@ -169,10 +186,10 @@ for nJet in [(2,2), (3,3), (4,-1)]:
                 QCDTF["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
 
                 qcdUpdate  = { "CR":QCDTF["CR"], "SR":QCDTF["SR"] }
-                cachedTF["0b"][nj][etakey][ptkey] = estimate0b0p.cachedTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
-                cachedTF["1b"][nj][etakey][ptkey] = estimate1b0p.cachedTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
-                cachedTF["0bMC"][nj][etakey][ptkey] = estimate0b0p.cachedQCDMCTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True)
-                cachedTF["1bMC"][nj][etakey][ptkey] = estimate1b0p.cachedQCDMCTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True)
+                cachedTF["0b"][nj][etakey][ptkey] = estimate0b0p.cachedTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True) * nJetSF_0b0p if nJetLow == 2 else u_float(-1,0)
+                cachedTF["1b"][nj][etakey][ptkey] = estimate1b0p.cachedTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True) * nJetSF_1b0p if nJetLow == 2 else u_float(-1,0)
+                cachedTF["0bMC"][nj][etakey][ptkey] = estimate0b0p.cachedQCDMCTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=True) * nJetSF_0b0p
+                cachedTF["1bMC"][nj][etakey][ptkey] = estimate1b0p.cachedQCDMCTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=True) * nJetSF_1b0p
 
 
 # Text on the plots
@@ -190,23 +207,41 @@ def drawObjects( lumi_scale, btags ):
     ]
     return [tex.DrawLatex(*l) for l in lines]
 
+def legMod( legend ):
+#    nullhist = ROOT.TH1F("null","null", 3, 2, 5)
+#    for j in range(1,7):
+#       nullhist.SetBinContent( j, 100 )
+#    nullhist.style = styles.lineStyle( ROOT.kGreen-2, width=3, errors=False )
+#    nullhist.legendText = "lin. fit for N_{jet} corr."
+    legend.AddEntry(line0b, "lin. fit for N_{jet} corr.", "l")
+
 
 def drawPlots( plot, btags ):
 
     maxY = max( [ h.GetMaximum() for hList in plot.histos for h in hList ] )
+
+    obj = []
+    legMods = []
+    if plot.name.count("incl") == 2 and not args.nJetCorrected:
+        obj += [line0b if btags == 0 else line1b]
+        legMods += [legMod]
+
     plotting.draw( plot,
                    plot_directory = plot_directory_,
                    extensions = extensions_,
                    logX = False, logY = False, sorting = False,
                    yRange = (0.0, maxY*2.5),
-                   legend = [(0.2,0.7,0.9,0.88), 1],
-                   drawObjects = drawObjects( lumi_scale, btags ),
+                   legend = [(0.2,0.7,0.6,0.88), 1],
+                   drawObjects = drawObjects( lumi_scale, btags ) + obj,
+                   legendModifications = legMods,
                    copyIndexPHP = True,
+                   redrawHistos = True,
                  )
 
 color = [ ROOT.kAzure-3, ROOT.kRed-3, ROOT.kGreen-2, ROOT.kOrange ]
 hists       = {}
 hists2D     = {}
+legAddon = " (corr)" if args.nJetCorrected else ""
 for i_eta, eta in enumerate(etaBins[:-1] + ["incl"]):
     etakey = str(eta)
     for i_pt, pt in enumerate(ptBins[:-1] + ["incl"]):
@@ -218,10 +253,10 @@ for i_eta, eta in enumerate(etaBins[:-1] + ["incl"]):
             hists["%ib"%b]   = {}
             hists["%ib"%b]["nJ"] = ROOT.TH1F("hist%ib_nJ"%(b), "hist%ib_nJ"%(b), 3, 2, 5)
             hists["%ib"%b]["nJ"].style = styles.errorStyle( color[0], width=3 )
-            hists["%ib"%b]["nJ"].legendText = "fitted TF, N_{b-jets}=%i"%(b)
+            hists["%ib"%b]["nJ"].legendText = "fitted TF, N_{b-jets}=%i%s"%(b,legAddon)
             hists["%ib"%b]["nJMC"] = ROOT.TH1F("hist%ib_nJMC"%(b), "hist%ib_nJMC"%(b), 3, 2, 5)
             hists["%ib"%b]["nJMC"].style = styles.errorStyle( color[1], width=3 )
-            hists["%ib"%b]["nJMC"].legendText = "QCD MC TF, N_{b-jets}=%i"%(b)
+            hists["%ib"%b]["nJMC"].legendText = "QCD MC TF, N_{b-jets}=%i%s"%(b,legAddon)
 
             addon = args.mode.replace("mu", "#mu")
 #            addon += "#geq1 b-tag" if b==1 else "0 b-tag"

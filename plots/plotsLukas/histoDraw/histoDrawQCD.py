@@ -510,8 +510,15 @@ if not skipQCD:
                 for i in range(qcdHist_tmp.GetNbinsX()):
                     if qcdHist_tmp.GetBinContent(i+1) < 0: qcdHist_tmp.SetBinContent(i+1, 0)
 
+                nJetUpdates = copy.deepcopy(qcdUpdates)
+                nJetUpdates["CR"]["leptonPt"] = ( 0, -1 )
+                nJetUpdates["SR"]["leptonPt"] = ( 0, -1 )
+
                 qcdHist_tmp.Scale(transferFac.val)
+                if setup.isBTagged:
+                    qcdHist_tmp.Scale(estimate._nJetScaleFactor(mode.replace("Inv",""), setup, qcdUpdates=nJetUpdates))
                 qcdHist.Add(qcdHist_tmp)
+
 
 
 sbInt = qcdHist.Integral()
