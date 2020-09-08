@@ -176,6 +176,7 @@ special_cuts = {
     "photoncat3":        "PhotonGood0_photonCatMagic==3",
     "photoncat4":        "PhotonGood0_photonCatMagic==4",
     "photoncat13":       "(PhotonGood0_photonCatMagic==1||PhotonGood0_photonCatMagic==3)",
+    "photoncat02":       "(PhotonGood0_photonCatMagic==0||PhotonGood0_photonCatMagic==2)",
     "photoncat134":      "(PhotonGood0_photonCatMagic==1||PhotonGood0_photonCatMagic==3||PhotonGood0_photonCatMagic==4)",
 
     "photonAdvcat0":        "PhotonGood0_photonCatMagic==0",
@@ -189,6 +190,7 @@ special_cuts = {
     "invLphotoncat2":        "PhotonGoodInvLepIso0_photonCatMagic==2",
     "invLphotoncat3":        "PhotonGoodInvLepIso0_photonCatMagic==3",
     "invLphotoncat4":        "PhotonGoodInvLepIso0_photonCatMagic==4",
+    "invLphotoncat02":       "(PhotonGoodInvLepIso0_photonCatMagic==0||PhotonGoodInvLepIso0_photonCatMagic==2)",
     "invLphotoncat13":       "(PhotonGoodInvLepIso0_photonCatMagic==1||PhotonGoodInvLepIso0_photonCatMagic==3)",
     "invLphotoncat134":      "(PhotonGoodInvLepIso0_photonCatMagic==1||PhotonGoodInvLepIso0_photonCatMagic==3||PhotonGoodInvLepIso0_photonCatMagic==4)",
 
@@ -198,6 +200,7 @@ special_cuts = {
     "invSieiephotoncat3":        "PhotonInvSieie0_photonCatMagic==3",
     "invSieiephotoncat4":        "PhotonInvSieie0_photonCatMagic==4",
     "invSieiephotoncat13":       "(PhotonInvSieie0_photonCatMagic==1||PhotonInvSieie0_photonCatMagic==3)",
+    "invSieiephotoncat02":       "(PhotonInvSieie0_photonCatMagic==0||PhotonInvSieie0_photonCatMagic==2)",
     "invSieiephotoncat134":       "(PhotonInvSieie0_photonCatMagic==1||PhotonInvSieie0_photonCatMagic==3||PhotonInvSieie0_photonCatMagic==4)",
 
     "invLInvSieiephotoncat0":        "PhotonInvSieieInvLepIso0_photonCatMagic==0",
@@ -206,6 +209,7 @@ special_cuts = {
     "invLInvSieiephotoncat3":        "PhotonInvSieieInvLepIso0_photonCatMagic==3",
     "invLInvSieiephotoncat4":        "PhotonInvSieieInvLepIso0_photonCatMagic==4",
     "invLInvSieiephotoncat13":       "(PhotonInvSieieInvLepIso0_photonCatMagic==1||PhotonInvSieieInvLepIso0_photonCatMagic==3)",
+    "invLInvSieiephotoncat02":       "(PhotonInvSieieInvLepIso0_photonCatMagic==0||PhotonInvSieieInvLepIso0_photonCatMagic==2)",
     "invLInvSieiephotoncat134":      "(PhotonInvSieieInvLepIso0_photonCatMagic==1||PhotonInvSieieInvLepIso0_photonCatMagic==3||PhotonInvSieieInvLepIso0_photonCatMagic==4)",
 
     "invChgIsophotoncat0":        "PhotonInvChgIso0_photonCatMagic==0",
@@ -214,6 +218,7 @@ special_cuts = {
     "invChgIsophotoncat3":        "PhotonInvChgIso0_photonCatMagic==3",
     "invChgIsophotoncat4":        "PhotonInvChgIso0_photonCatMagic==4",
     "invChgIsophotoncat13":       "(PhotonInvChgIso0_photonCatMagic==1||PhotonInvChgIso0_photonCatMagic==3)",
+    "invChgIsophotoncat02":       "(PhotonInvChgIso0_photonCatMagic==0||PhotonInvChgIso0_photonCatMagic==2)",
     "invChgIsophotoncat134":      "(PhotonInvChgIso0_photonCatMagic==1||PhotonInvChgIso0_photonCatMagic==3||PhotonInvChgIso0_photonCatMagic==4)",
 
     "invLInvChgIsophotoncat0":        "PhotonInvChgIsoInvLepIso0_photonCatMagic==0",
@@ -222,6 +227,7 @@ special_cuts = {
     "invLInvChgIsophotoncat3":        "PhotonInvChgIsoInvLepIso0_photonCatMagic==3",
     "invLInvChgIsophotoncat4":        "PhotonInvChgIsoInvLepIso0_photonCatMagic==4",
     "invLInvChgIsophotoncat13":       "(PhotonInvChgIsoInvLepIso0_photonCatMagic==1||PhotonInvChgIsoInvLepIso0_photonCatMagic==3)",
+    "invLInvChgIsophotoncat02":       "(PhotonInvChgIsoInvLepIso0_photonCatMagic==0||PhotonInvChgIsoInvLepIso0_photonCatMagic==2)",
     "invLInvChgIsophotoncat134":      "(PhotonInvChgIsoInvLepIso0_photonCatMagic==1||PhotonInvChgIsoInvLepIso0_photonCatMagic==3||PhotonInvChgIsoInvLepIso0_photonCatMagic==4)",
 
     "invChgIsoInvSieiephotoncat0":        "PhotonInvChgIsoInvSieie0_photonCatMagic==0",
@@ -230,6 +236,7 @@ special_cuts = {
     "invChgIsoInvSieiephotoncat3":        "PhotonInvChgIsoInvSieie0_photonCatMagic==3",
     "invChgIsoInvSieiephotoncat4":        "PhotonInvChgIsoInvSieie0_photonCatMagic==4",
     "invChgIsoInvSieiephotoncat13":       "(PhotonInvChgIsoInvSieie0_photonCatMagic==1||PhotonInvChgIsoInvSieie0_photonCatMagic==3)",
+    "invChgIsoInvSieiephotoncat02":       "(PhotonInvChgIsoInvSieie0_photonCatMagic==0||PhotonInvChgIsoInvSieie0_photonCatMagic==2)",
     "invChgIsoInvSieiephotoncat134":      "(PhotonInvChgIsoInvSieie0_photonCatMagic==1||PhotonInvChgIsoInvSieie0_photonCatMagic==3||PhotonInvChgIsoInvSieie0_photonCatMagic==4)",
 
     "noChgIsoNoSieiephotoncat0":        "PhotonNoChgIsoNoSieie0_photonCatMagic==0",
@@ -238,6 +245,7 @@ special_cuts = {
     "noChgIsoNoSieiephotoncat3":        "PhotonNoChgIsoNoSieie0_photonCatMagic==3",
     "noChgIsoNoSieiephotoncat4":        "PhotonNoChgIsoNoSieie0_photonCatMagic==4",
     "noChgIsoNoSieiephotoncat13":       "(PhotonNoChgIsoNoSieie0_photonCatMagic==1||PhotonNoChgIsoNoSieie0_photonCatMagic==3)",
+    "noChgIsoNoSieiephotoncat02":       "(PhotonNoChgIsoNoSieie0_photonCatMagic==0||PhotonNoChgIsoNoSieie0_photonCatMagic==2)",
     "noChgIsoNoSieiephotoncat134":      "(PhotonNoChgIsoNoSieie0_photonCatMagic==1||PhotonNoChgIsoNoSieie0_photonCatMagic==3||PhotonNoChgIsoNoSieie0_photonCatMagic==4)",
 
     "invLInvChgIsoInvSieiephotoncat0":        "PhotonInvChgIsoInvSieieInvLepIso0_photonCatMagic==0",
@@ -246,6 +254,7 @@ special_cuts = {
     "invLInvChgIsoInvSieiephotoncat3":        "PhotonInvChgIsoInvSieieInvLepIso0_photonCatMagic==3",
     "invLInvChgIsoInvSieiephotoncat4":        "PhotonInvChgIsoInvSieieInvLepIso0_photonCatMagic==4",
     "invLInvChgIsoInvSieiephotoncat13":       "(PhotonInvChgIsoInvSieieInvLepIso0_photonCatMagic==1||PhotonInvChgIsoInvSieieInvLepIso0_photonCatMagic==3)",
+    "invLInvChgIsoInvSieiephotoncat02":       "(PhotonInvChgIsoInvSieieInvLepIso0_photonCatMagic==0||PhotonInvChgIsoInvSieieInvLepIso0_photonCatMagic==2)",
     "invLInvChgIsoInvSieiephotoncat134":      "(PhotonInvChgIsoInvSieieInvLepIso0_photonCatMagic==1||PhotonInvChgIsoInvSieieInvLepIso0_photonCatMagic==3||PhotonInvChgIsoInvSieieInvLepIso0_photonCatMagic==4)",
 
     "invLNoChgIsoNoSieiephotoncat0":        "PhotonNoChgIsoNoSieieInvLepIso0_photonCatMagic==0",
@@ -254,6 +263,7 @@ special_cuts = {
     "invLNoChgIsoNoSieiephotoncat3":        "PhotonNoChgIsoNoSieieInvLepIso0_photonCatMagic==3",
     "invLNoChgIsoNoSieiephotoncat4":        "PhotonNoChgIsoNoSieieInvLepIso0_photonCatMagic==4",
     "invLNoChgIsoNoSieiephotoncat13":       "(PhotonNoChgIsoNoSieieInvLepIso0_photonCatMagic==1||PhotonNoChgIsoNoSieieInvLepIso0_photonCatMagic==3)",
+    "invLNoChgIsoNoSieiephotoncat02":       "(PhotonNoChgIsoNoSieieInvLepIso0_photonCatMagic==0||PhotonNoChgIsoNoSieieInvLepIso0_photonCatMagic==2)",
     "invLNoChgIsoNoSieiephotoncat134":      "(PhotonNoChgIsoNoSieieInvLepIso0_photonCatMagic==1||PhotonNoChgIsoNoSieieInvLepIso0_photonCatMagic==3||PhotonNoChgIsoNoSieieInvLepIso0_photonCatMagic==4)",
 
     "photonhadcat0":        "PhotonNoChgIsoNoSieie0_photonCatMagic==0",
@@ -262,6 +272,7 @@ special_cuts = {
     "photonhadcat3":        "PhotonNoChgIsoNoSieie0_photonCatMagic==3",
     "photonhadcat4":        "PhotonNoChgIsoNoSieie0_photonCatMagic==4",
     "photonhadcat13":       "(PhotonNoChgIsoNoSieie0_photonCatMagic==1||PhotonNoChgIsoNoSieie0_photonCatMagic==3)",
+    "photonhadcat02":       "(PhotonNoChgIsoNoSieie0_photonCatMagic==0||PhotonNoChgIsoNoSieie0_photonCatMagic==2)",
     "photonhadcat134":      "(PhotonNoChgIsoNoSieie0_photonCatMagic==1||PhotonNoChgIsoNoSieie0_photonCatMagic==3||PhotonNoChgIsoNoSieie0_photonCatMagic==4)",
 
     "looseGenMatch":          "PhotonNoChgIsoNoSieie0_genPartIdx>=0",
