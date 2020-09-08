@@ -10,7 +10,8 @@ from TTGammaEFT.Analysis.DataObservation       import DataObservation
 from TTGammaEFT.Analysis.MCBasedEstimate       import MCBasedEstimate
 from TTGammaEFT.Analysis.DataDrivenQCDEstimate import DataDrivenQCDEstimate
 
-from TTGammaEFT.Tools.user                     import analysis_results, cache_directory
+from TTGammaEFT.Tools.user                     import analysis_results
+from TTGammaEFT.Tools.user                     import cache_directory_read as cache_directory
 from TTGammaEFT.Tools.cutInterpreter           import cutInterpreter, zMassRange
 
 from Analysis.Tools.MergingDirDB               import MergingDirDB
@@ -119,110 +120,123 @@ class DataDrivenFakeEstimate(SystematicEstimator):
             setup_HsLc = setup.sysClone(parameters=params_HsLc)
             setup_HsHc = setup.sysClone(parameters=params_HsHc)
 
-            estimate = DataObservation(name="Data", process=setup.processes["Data"], cacheDir=setup.defaultCacheDir())
+#            estimate = DataObservation(name="Data", process=setup.processes["Data"], cacheDir=setup.defaultCacheDir())
+            estimate = DataObservation(name="Data", process=setup.processes["Data"])
 
-            estimate.initCache(setup_HsLc.defaultCacheDir())
+#            estimate.initCache(setup_HsLc.defaultCacheDir())
             data_HsLc = estimate.cachedEstimate( region, channel, setup_HsLc, overwrite=overwrite )
-            estimate.initCache(setup_HsHc.defaultCacheDir())
+#            estimate.initCache(setup_HsHc.defaultCacheDir())
             data_HsHc = estimate.cachedEstimate( region, channel, setup_HsHc, overwrite=overwrite )
 
             mcPrompt_HsLc = u_float(0)
             mcPrompt_HsHc = u_float(0)
 
-            if addSF:
-                if setup.nJet == "2":
-                    DYSF_val    = DY2SF_val
-                    WGSF_val    = WG2SF_val
-                    ZGSF_val    = ZG2SF_val
-                    QCDSF_val   = QCD2SF_val
-                elif setup.nJet == "3":
-                    DYSF_val    = DY3SF_val
-                    WGSF_val    = WG3SF_val
-                    ZGSF_val    = ZG3SF_val
-                    QCDSF_val   = QCD3SF_val
-                elif setup.nJet == "4":
-                    DYSF_val    = DY4SF_val
-                    WGSF_val    = WG4SF_val
-                    ZGSF_val    = ZG4SF_val
-                    QCDSF_val   = QCD4SF_val
-                elif setup.nJet == "5":
-                    DYSF_val    = DY5SF_val
-                    WGSF_val    = WG5SF_val
-                    ZGSF_val    = ZG5SF_val
-                    QCDSF_val   = QCD5SF_val
-                elif setup.nJet == "2p":
-                    DYSF_val    = DY2pSF_val
-                    WGSF_val    = WG2pSF_val
-                    ZGSF_val    = ZG2pSF_val
-                    QCDSF_val   = QCD2pSF_val
-                elif setup.nJet == "3p":
-                    DYSF_val    = DY3pSF_val
-                    WGSF_val    = WG3pSF_val
-                    ZGSF_val    = ZG3pSF_val
-                    QCDSF_val   = QCD3pSF_val
-                elif setup.nJet == "4p":
-                    DYSF_val    = DY4pSF_val
-                    WGSF_val    = WG4pSF_val
-                    ZGSF_val    = ZG4pSF_val
-                    QCDSF_val   = QCD4pSF_val
+#            if addSF:
+#                if setup.nJet == "2":
+#                    DYSF_val    = DY2SF_val
+#                    WGSF_val    = WG2SF_val
+#                    ZGSF_val    = ZG2SF_val
+#                    QCDSF_val   = QCD2SF_val
+#                elif setup.nJet == "3":
+#                    DYSF_val    = DY3SF_val
+#                    WGSF_val    = WG3SF_val
+#                    ZGSF_val    = ZG3SF_val
+#                    QCDSF_val   = QCD3SF_val
+#                elif setup.nJet == "4":
+#                    DYSF_val    = DY4SF_val
+#                    WGSF_val    = WG4SF_val
+#                    ZGSF_val    = ZG4SF_val
+#                    QCDSF_val   = QCD4SF_val
+#                elif setup.nJet == "5":
+#                    DYSF_val    = DY5SF_val
+#                    WGSF_val    = WG5SF_val
+#                    ZGSF_val    = ZG5SF_val
+#                    QCDSF_val   = QCD5SF_val
+#                elif setup.nJet == "2p":
+#                    DYSF_val    = DY2pSF_val
+#                    WGSF_val    = WG2pSF_val
+#                    ZGSF_val    = ZG2pSF_val
+#                    QCDSF_val   = QCD2pSF_val
+#                elif setup.nJet == "3p":
+#                    DYSF_val    = DY3pSF_val
+#                    WGSF_val    = WG3pSF_val
+#                    ZGSF_val    = ZG3pSF_val
+#                    QCDSF_val   = QCD3pSF_val
+#                elif setup.nJet == "4p":
+#                    DYSF_val    = DY4pSF_val
+#                    WGSF_val    = WG4pSF_val
+#                    ZGSF_val    = ZG4pSF_val
+#                    QCDSF_val   = QCD4pSF_val
 
-            for s in default_photonSampleList:
-                if s in ["QCD-DD", "QCD", "GJets", "Data", "fakes-DD"]: continue
-                if "had" in s: continue
+#            for s in default_photonSampleList + ["QCD_gen","GJets_gen","QCD_misID","GJets_misID"]:
+#                if s in ["QCD-DD", "QCD", "GJets", "Data", "fakes-DD"]: continue
+#                if s in ["QCD-DD", "Data", "fakes-DD"]: continue
+#                if "had" in s: continue
 
-                # get the MC based Estimate for fakes in the region
-                estimate = MCBasedEstimate( name=s, process=setup.processes[s] )
-                estimate.initCache(setup.defaultCacheDir())
+#                # get the MC based Estimate for fakes in the region
+#                estimate = MCBasedEstimate( name=s, process=setup.processes[s] )
+#                estimate.initCache(setup.defaultCacheDir())
 
-                y_HsLc = estimate.cachedEstimate( region, channel, setup_HsLc, overwrite=overwrite )
-                y_HsHc = estimate.cachedEstimate( region, channel, setup_HsHc, overwrite=overwrite )
+#                y_HsLc = estimate.cachedEstimate( region, channel, setup_HsLc, overwrite=overwrite )
+#                y_HsHc = estimate.cachedEstimate( region, channel, setup_HsHc, overwrite=overwrite )
 
-                if addSF:
-                    if "DY_LO" in s:
-                        y_HsLc *= DYSF_val[setup.year].val #add DY SF
-                        y_HsHc *= DYSF_val[setup.year].val #add DY SF
-#                    elif "WJets" in s:
-#                        y_HsLc *= WJetsSF_val[setup.year].val #add WJets SF
-#                        y_HsHc *= WJetsSF_val[setup.year].val #add WJets SF
-                    elif "TTG" in s:
-                        y_HsLc *= SSMSF_val[setup.year].val #add TTG SF
-                        y_HsHc *= SSMSF_val[setup.year].val #add TTG SF
-                    elif "ZG" in s:
-                        y_HsLc *= ZGSF_val[setup.year].val #add ZGamma SF
-                        y_HsHc *= ZGSF_val[setup.year].val #add ZGamma SF
-                    elif "WG" in s:
-                        y_HsLc *= WGSF_val[setup.year].val #add WGamma SF
-                        y_HsHc *= WGSF_val[setup.year].val #add WGamma SF
+#                if addSF:
+#                    if "DY_LO" in s:
+#                        y_HsLc *= DYSF_val[setup.year].val #add DY SF
+#                        y_HsHc *= DYSF_val[setup.year].val #add DY SF
+##                    elif "WJets" in s:
+##                        y_HsLc *= WJetsSF_val[setup.year].val #add WJets SF
+##                        y_HsHc *= WJetsSF_val[setup.year].val #add WJets SF
+##                    elif "TTG" in s:
+##                        y_HsLc *= SSMSF_val[setup.year].val #add TTG SF
+##                        y_HsHc *= SSMSF_val[setup.year].val #add TTG SF
+#                    elif "ZG" in s:
+#                        y_HsLc *= ZGSF_val[setup.year].val #add ZGamma SF
+#                        y_HsHc *= ZGSF_val[setup.year].val #add ZGamma SF
+#                    elif "WG" in s:
+#                        y_HsLc *= WGSF_val[setup.year].val #add WGamma SF
+#                        y_HsHc *= WGSF_val[setup.year].val #add WGamma SF
 
-                mcPrompt_HsLc += y_HsLc
-                mcPrompt_HsHc += y_HsHc
+#                mcPrompt_HsLc += y_HsLc
+#                mcPrompt_HsHc += y_HsHc
+
+            # get the MC based Estimate for fakes in the region
+            estimate = MCBasedEstimate( name="all_mc_prompt", process=setup.processes["all_mc_prompt"] )
+#            estimate.initCache(setup.defaultCacheDir())
+
+            mcPrompt_HsLc += estimate.cachedEstimate( region, channel, setup_HsLc, overwrite=overwrite )
+            print "prompt hslc", mcPrompt_HsLc
+            mcPrompt_HsHc += estimate.cachedEstimate( region, channel, setup_HsHc, overwrite=overwrite )
+            print "prompt hshc", mcPrompt_HsHc
 
             # check if any of the factors would be <= 0 to safe time:
             if data_HsLc - mcPrompt_HsLc <= 0: return u_float(0)
             if data_HsHc - mcPrompt_HsHc <= 0: return u_float(0)
 
             # Add QCD to Prompt, make sure you run on the semilep skim
-            estimate = DataDrivenQCDEstimate( name="QCD-DD" )
-            estimate.initCache(setup.defaultCacheDir())
+#            estimate = DataDrivenQCDEstimate( name="QCD-DD" )
+#            estimate.initCache(setup.defaultCacheDir())
 
-            setup_noSys_HsHc = Setup( year=setup.year, photonSelection=False )
-            setup_noSys_HsHc = setup_noSys_HsHc.sysClone( parameters=setup.parameters )
-            setup_noSys_HsHc = setup_noSys_HsHc.sysClone( parameters=params_HsHc )
+#            setup_noSys_HsHc = Setup( year=setup.year, photonSelection=False )
+#            setup_noSys_HsHc = setup_noSys_HsHc.sysClone( parameters=setup.parameters )
+#            setup_noSys_HsHc = setup_noSys_HsHc.sysClone( parameters=params_HsHc )
 
-            y_QCD_HsHc     = estimate.cachedEstimate( region, channel, setup_noSys_HsHc, overwrite=overwrite )
-            y_QCD_HsHc    *= QCDSF_val[setup.year].val
-            mcPrompt_HsHc += y_QCD_HsHc.val
+#            y_QCD_HsHc     = estimate.cachedEstimate( region, channel, setup_noSys_HsHc, overwrite=overwrite )
+#            y_QCD_HsHc    *= QCDSF_val[setup.year].val
+#            mcPrompt_HsHc += y_QCD_HsHc.val
+
             dataHad_HsHc   = data_HsHc-mcPrompt_HsHc
 
             if dataHad_HsHc <= 0: return u_float(0)
 
-            setup_noSys_HsLc = Setup( year=setup.year, photonSelection=False )
-            setup_noSys_HsLc = setup_noSys_HsLc.sysClone( parameters=setup.parameters )
-            setup_noSys_HsLc = setup_noSys_HsLc.sysClone( parameters=params_HsLc )
+#            setup_noSys_HsLc = Setup( year=setup.year, photonSelection=False )
+#            setup_noSys_HsLc = setup_noSys_HsLc.sysClone( parameters=setup.parameters )
+#            setup_noSys_HsLc = setup_noSys_HsLc.sysClone( parameters=params_HsLc )
 
-            y_QCD_HsLc     = estimate.cachedEstimate( region, channel, setup_noSys_HsLc, overwrite=overwrite )
-            y_QCD_HsLc    *= QCDSF_val[setup.year].val
-            mcPrompt_HsLc += y_QCD_HsLc.val
+#            y_QCD_HsLc     = estimate.cachedEstimate( region, channel, setup_noSys_HsLc, overwrite=overwrite )
+#            y_QCD_HsLc    *= QCDSF_val[setup.year].val
+#            mcPrompt_HsLc += y_QCD_HsLc.val
+
             dataHad_HsLc   = data_HsLc-mcPrompt_HsLc
 
             if dataHad_HsLc <= 0: return u_float(0)
@@ -237,83 +251,91 @@ class DataDrivenFakeEstimate(SystematicEstimator):
             params_LsHc.update( param_LsHc )
             setup_LsHc  = setup.sysClone(parameters=params_LsHc)
 
-            estimate = DataObservation(name="Data", process=setup.processes["Data"], cacheDir=setup.defaultCacheDir())
+#            estimate = DataObservation(name="Data", process=setup.processes["Data"], cacheDir=setup.defaultCacheDir())
+            estimate = DataObservation(name="Data", process=setup.processes["Data"])
 
-            estimate.initCache(setup_LsHc.defaultCacheDir())
+#            estimate.initCache(setup_LsHc.defaultCacheDir())
             data_LsHc = estimate.cachedEstimate( region, channel, setup_LsHc, overwrite=overwrite )
 
             mcPrompt_LsHc = u_float(0)
 
-            if addSF:
-                if setup.nJet == "2":
-                    DYSF_val    = DY2SF_val
-                    WGSF_val    = WG2SF_val
-                    ZGSF_val    = ZG2SF_val
-                    QCDSF_val   = QCD2SF_val
-                elif setup.nJet == "3":
-                    DYSF_val    = DY3SF_val
-                    WGSF_val    = WG3SF_val
-                    ZGSF_val    = ZG3SF_val
-                    QCDSF_val   = QCD3SF_val
-                elif setup.nJet == "4":
-                    DYSF_val    = DY4SF_val
-                    WGSF_val    = WG4SF_val
-                    ZGSF_val    = ZG4SF_val
-                    QCDSF_val   = QCD4SF_val
-                elif setup.nJet == "5":
-                    DYSF_val    = DY5SF_val
-                    WGSF_val    = WG5SF_val
-                    ZGSF_val    = ZG5SF_val
-                    QCDSF_val   = QCD5SF_val
-                elif setup.nJet == "2p":
-                    DYSF_val    = DY2pSF_val
-                    WGSF_val    = WG2pSF_val
-                    ZGSF_val    = ZG2pSF_val
-                    QCDSF_val   = QCD2pSF_val
-                elif setup.nJet == "3p":
-                    DYSF_val    = DY3pSF_val
-                    WGSF_val    = WG3pSF_val
-                    ZGSF_val    = ZG3pSF_val
-                    QCDSF_val   = QCD3pSF_val
-                elif setup.nJet == "4p":
-                    DYSF_val    = DY4pSF_val
-                    WGSF_val    = WG4pSF_val
-                    ZGSF_val    = ZG4pSF_val
-                    QCDSF_val   = QCD4pSF_val
+#            if addSF:
+#                if setup.nJet == "2":
+#                    DYSF_val    = DY2SF_val
+#                    WGSF_val    = WG2SF_val
+#                    ZGSF_val    = ZG2SF_val
+#                    QCDSF_val   = QCD2SF_val
+#                elif setup.nJet == "3":
+#                    DYSF_val    = DY3SF_val
+#                    WGSF_val    = WG3SF_val
+#                    ZGSF_val    = ZG3SF_val
+#                    QCDSF_val   = QCD3SF_val
+#                elif setup.nJet == "4":
+#                    DYSF_val    = DY4SF_val
+#                    WGSF_val    = WG4SF_val
+#                    ZGSF_val    = ZG4SF_val
+#                    QCDSF_val   = QCD4SF_val
+#                elif setup.nJet == "5":
+#                    DYSF_val    = DY5SF_val
+#                    WGSF_val    = WG5SF_val
+#                    ZGSF_val    = ZG5SF_val
+#                    QCDSF_val   = QCD5SF_val
+#                elif setup.nJet == "2p":
+#                    DYSF_val    = DY2pSF_val
+#                    WGSF_val    = WG2pSF_val
+#                    ZGSF_val    = ZG2pSF_val
+#                    QCDSF_val   = QCD2pSF_val
+#                elif setup.nJet == "3p":
+#                    DYSF_val    = DY3pSF_val
+#                    WGSF_val    = WG3pSF_val
+#                    ZGSF_val    = ZG3pSF_val
+#                    QCDSF_val   = QCD3pSF_val
+#                elif setup.nJet == "4p":
+#                    DYSF_val    = DY4pSF_val
+#                    WGSF_val    = WG4pSF_val
+#                    ZGSF_val    = ZG4pSF_val
+#                    QCDSF_val   = QCD4pSF_val
 
-            for s in default_photonSampleList:
-                if s in ["QCD-DD", "QCD", "GJets", "Data", "fakes-DD"]: continue
-                if "had" in s: continue
+#            for s in default_photonSampleList + ["QCD_gen","GJets_gen","QCD_misID","GJets_misID"]:
+##                if s in ["QCD-DD", "QCD", "GJets", "Data", "fakes-DD"]: continue
+#                if s in ["QCD-DD", "Data", "fakes-DD"]: continue
+#                if "had" in s: continue
 
-                # get the MC based Estimate for fakes in the region
-                estimate = MCBasedEstimate( name=s, process=setup.processes[s] )
-                estimate.initCache(setup.defaultCacheDir())
+#                # get the MC based Estimate for fakes in the region
+#                estimate = MCBasedEstimate( name=s, process=setup.processes[s] )
+#                estimate.initCache(setup.defaultCacheDir())
 
-                y_LsHc = estimate.cachedEstimate( region, channel, setup_LsHc, overwrite=overwrite )
+#                y_LsHc = estimate.cachedEstimate( region, channel, setup_LsHc, overwrite=overwrite )
 
-                if addSF:
-                    if "DY_LO" in s:    y_LsHc *= DYSF_val[setup.year].val #add DY SF
-#                    elif "WJets" in s:  y_LsHc *= WJetsSF_val[setup.year].val #add WJets SF
-                    elif "TTG" in s:    y_LsHc *= SSMSF_val[setup.year].val #add TTG SF
-                    elif "ZG" in s:     y_LsHc *= ZGSF_val[setup.year].val #add ZGamma SF
-                    elif "WG" in s:     y_LsHc *= WGSF_val[setup.year].val #add WGamma SF
+#                if addSF:
+#                    if "DY_LO" in s:    y_LsHc *= DYSF_val[setup.year].val #add DY SF
+##                    elif "WJets" in s:  y_LsHc *= WJetsSF_val[setup.year].val #add WJets SF
+##                    elif "TTG" in s:    y_LsHc *= SSMSF_val[setup.year].val #add TTG SF
+#                    elif "ZG" in s:     y_LsHc *= ZGSF_val[setup.year].val #add ZGamma SF
+#                    elif "WG" in s:     y_LsHc *= WGSF_val[setup.year].val #add WGamma SF
 
-                mcPrompt_LsHc += y_LsHc
+#                mcPrompt_LsHc += y_LsHc
+
+            estimate = MCBasedEstimate( name="all_mc_prompt", process=setup.processes["all_mc_prompt"] )
+#            estimate.initCache(setup.defaultCacheDir())
+
+            mcPrompt_LsHc += estimate.cachedEstimate( region, channel, setup_LsHc, overwrite=overwrite )
+            print "prompt lshc", mcPrompt_LsHc
 
             # check if any of the factors would be <= 0 to safe time:
             if data_LsHc - mcPrompt_LsHc <= 0: return u_float(0)
 
             # Add QCD to Prompt, make sure you run on the semilep skim
-            estimate = DataDrivenQCDEstimate( name="QCD-DD" )
-            estimate.initCache(setup.defaultCacheDir())
+#            estimate = DataDrivenQCDEstimate( name="QCD-DD" )
+#            estimate.initCache(setup.defaultCacheDir())
 
-            setup_noSys_LsHc = Setup( year=setup.year, photonSelection=False )
-            setup_noSys_LsHc = setup_noSys_LsHc.sysClone( parameters=setup.parameters )
-            setup_noSys_LsHc = setup_noSys_LsHc.sysClone( parameters=params_LsHc )
+#            setup_noSys_LsHc = Setup( year=setup.year, photonSelection=False )
+#            setup_noSys_LsHc = setup_noSys_LsHc.sysClone( parameters=setup.parameters )
+#            setup_noSys_LsHc = setup_noSys_LsHc.sysClone( parameters=params_LsHc )
 
-            y_QCD_LsHc     = estimate.cachedEstimate( region, channel, setup_noSys_LsHc, overwrite=False )
-            y_QCD_LsHc    *= QCDSF_val[setup.year].val
-            mcPrompt_LsHc += y_QCD_LsHc.val
+#            y_QCD_LsHc     = estimate.cachedEstimate( region, channel, setup_noSys_LsHc, overwrite=False )
+#            y_QCD_LsHc    *= QCDSF_val[setup.year].val
+#            mcPrompt_LsHc += y_QCD_LsHc.val
 
             # create the data-driven factor
             dataHad_LsHc = data_LsHc-mcPrompt_LsHc
@@ -348,87 +370,97 @@ class DataDrivenFakeEstimate(SystematicEstimator):
             mcHad_HsLc = u_float(0)
             mcHad_HsHc = u_float(0)
 
-            if addSF:
-                if setup.nJet == "2":
-                    DYSF_val    = DY2SF_val
-                    WGSF_val    = WG2SF_val
-                    ZGSF_val    = ZG2SF_val
-                    QCDSF_val   = QCD2SF_val
-                elif setup.nJet == "3":
-                    DYSF_val    = DY3SF_val
-                    WGSF_val    = WG3SF_val
-                    ZGSF_val    = ZG3SF_val
-                    QCDSF_val   = QCD3SF_val
-                elif setup.nJet == "4":
-                    DYSF_val    = DY4SF_val
-                    WGSF_val    = WG4SF_val
-                    ZGSF_val    = ZG4SF_val
-                    QCDSF_val   = QCD4SF_val
-                elif setup.nJet == "5":
-                    DYSF_val    = DY5SF_val
-                    WGSF_val    = WG5SF_val
-                    ZGSF_val    = ZG5SF_val
-                    QCDSF_val   = QCD5SF_val
-                elif setup.nJet == "2p":
-                    DYSF_val    = DY2pSF_val
-                    WGSF_val    = WG2pSF_val
-                    ZGSF_val    = ZG2pSF_val
-                    QCDSF_val   = QCD2pSF_val
-                elif setup.nJet == "3p":
-                    DYSF_val    = DY3pSF_val
-                    WGSF_val    = WG3pSF_val
-                    ZGSF_val    = ZG3pSF_val
-                    QCDSF_val   = QCD3pSF_val
-                elif setup.nJet == "4p":
-                    DYSF_val    = DY4pSF_val
-                    WGSF_val    = WG4pSF_val
-                    ZGSF_val    = ZG4pSF_val
-                    QCDSF_val   = QCD4pSF_val
+#            if addSF:
+#                if setup.nJet == "2":
+#                    DYSF_val    = DY2SF_val
+#                    WGSF_val    = WG2SF_val
+#                    ZGSF_val    = ZG2SF_val
+#                    QCDSF_val   = QCD2SF_val
+#                elif setup.nJet == "3":
+#                    DYSF_val    = DY3SF_val
+#                    WGSF_val    = WG3SF_val
+#                    ZGSF_val    = ZG3SF_val
+#                    QCDSF_val   = QCD3SF_val
+#                elif setup.nJet == "4":
+#                    DYSF_val    = DY4SF_val
+#                    WGSF_val    = WG4SF_val
+#                    ZGSF_val    = ZG4SF_val
+#                    QCDSF_val   = QCD4SF_val
+#                elif setup.nJet == "5":
+#                    DYSF_val    = DY5SF_val
+#                    WGSF_val    = WG5SF_val
+#                    ZGSF_val    = ZG5SF_val
+#                    QCDSF_val   = QCD5SF_val
+#                elif setup.nJet == "2p":
+#                    DYSF_val    = DY2pSF_val
+#                    WGSF_val    = WG2pSF_val
+#                    ZGSF_val    = ZG2pSF_val
+#                    QCDSF_val   = QCD2pSF_val
+#                elif setup.nJet == "3p":
+#                    DYSF_val    = DY3pSF_val
+#                    WGSF_val    = WG3pSF_val
+#                    ZGSF_val    = ZG3pSF_val
+#                    QCDSF_val   = QCD3pSF_val
+#                elif setup.nJet == "4p":
+#                    DYSF_val    = DY4pSF_val
+#                    WGSF_val    = WG4pSF_val
+#                    ZGSF_val    = ZG4pSF_val
+#                    QCDSF_val   = QCD4pSF_val
 
-            for s in default_photonSampleList:
-                if s in ["QCD-DD", "QCD", "GJets", "Data", "fakes-DD"]: continue
-                if not "had" in s: continue
+#            for s in default_photonSampleList + ["QCD_had","GJets_had"]:
+#                if s in ["QCD-DD", "Data", "fakes-DD"]: continue
+##                if s in ["QCD-DD", "QCD", "GJets", "Data", "fakes-DD"]: continue
+#                if not "had" in s: continue
+#
+#                # get the MC based Estimate for fakes in the region
+#                estimate = MCBasedEstimate( name=s, process=setup.processes[s] )
+#                estimate.initCache(setup.defaultCacheDir())
 
-                # get the MC based Estimate for fakes in the region
-                estimate = MCBasedEstimate( name=s, process=setup.processes[s] )
-                estimate.initCache(setup.defaultCacheDir())
+#                y_LsLc = estimate.cachedEstimate( region, channel, setup_LsLc, overwrite=overwrite )
+#                y_LsHc = estimate.cachedEstimate( region, channel, setup_LsHc, overwrite=overwrite )
+#                y_HsLc = estimate.cachedEstimate( region, channel, setup_HsLc, overwrite=overwrite )
+#                y_HsHc = estimate.cachedEstimate( region, channel, setup_HsHc, overwrite=overwrite )
 
-                y_LsLc = estimate.cachedEstimate( region, channel, setup_LsLc, overwrite=overwrite )
-                y_LsHc = estimate.cachedEstimate( region, channel, setup_LsHc, overwrite=overwrite )
-                y_HsLc = estimate.cachedEstimate( region, channel, setup_HsLc, overwrite=overwrite )
-                y_HsHc = estimate.cachedEstimate( region, channel, setup_HsHc, overwrite=overwrite )
+#                if addSF:
+#                    if "DY_LO" in s:
+#                        y_LsLc *= DYSF_val[setup.year].val #add DY SF
+#                        y_LsHc *= DYSF_val[setup.year].val #add DY SF
+#                        y_HsLc *= DYSF_val[setup.year].val #add DY SF
+#                        y_HsHc *= DYSF_val[setup.year].val #add DY SF
+##                    elif "WJets" in s:
+##                        y_LsLc *= WJetsSF_val[setup.year].val #add WJets SF
+##                        y_LsHc *= WJetsSF_val[setup.year].val #add WJets SF
+##                        y_HsLc *= WJetsSF_val[setup.year].val #add WJets SF
+##                        y_HsHc *= WJetsSF_val[setup.year].val #add WJets SF
+##                    elif "TTG" in s:
+##                        y_LsLc *= SSMSF_val[setup.year].val #add TTG SF
+##                        y_LsHc *= SSMSF_val[setup.year].val #add TTG SF
+##                        y_HsLc *= SSMSF_val[setup.year].val #add TTG SF
+##                        y_HsHc *= SSMSF_val[setup.year].val #add TTG SF
+#                    elif "ZG" in s:
+#                        y_LsLc *= ZGSF_val[setup.year].val #add ZGamma SF
+#                        y_LsHc *= ZGSF_val[setup.year].val #add ZGamma SF
+#                        y_HsLc *= ZGSF_val[setup.year].val #add ZGamma SF
+#                        y_HsHc *= ZGSF_val[setup.year].val #add ZGamma SF
+#                    elif "WG" in s:
+#                        y_LsLc *= WGSF_val[setup.year].val #add WGamma SF
+#                        y_LsHc *= WGSF_val[setup.year].val #add WGamma SF
+#                        y_HsLc *= WGSF_val[setup.year].val #add WGamma SF
+#                        y_HsHc *= WGSF_val[setup.year].val #add WGamma SF
 
-                if addSF:
-                    if "DY_LO" in s:
-                        y_LsLc *= DYSF_val[setup.year].val #add DY SF
-                        y_LsHc *= DYSF_val[setup.year].val #add DY SF
-                        y_HsLc *= DYSF_val[setup.year].val #add DY SF
-                        y_HsHc *= DYSF_val[setup.year].val #add DY SF
-#                    elif "WJets" in s:
-#                        y_LsLc *= WJetsSF_val[setup.year].val #add WJets SF
-#                        y_LsHc *= WJetsSF_val[setup.year].val #add WJets SF
-#                        y_HsLc *= WJetsSF_val[setup.year].val #add WJets SF
-#                        y_HsHc *= WJetsSF_val[setup.year].val #add WJets SF
-                    elif "TTG" in s:
-                        y_LsLc *= SSMSF_val[setup.year].val #add TTG SF
-                        y_LsHc *= SSMSF_val[setup.year].val #add TTG SF
-                        y_HsLc *= SSMSF_val[setup.year].val #add TTG SF
-                        y_HsHc *= SSMSF_val[setup.year].val #add TTG SF
-                    elif "ZG" in s:
-                        y_LsLc *= ZGSF_val[setup.year].val #add ZGamma SF
-                        y_LsHc *= ZGSF_val[setup.year].val #add ZGamma SF
-                        y_HsLc *= ZGSF_val[setup.year].val #add ZGamma SF
-                        y_HsHc *= ZGSF_val[setup.year].val #add ZGamma SF
-                    elif "WG" in s:
-                        y_LsLc *= WGSF_val[setup.year].val #add WGamma SF
-                        y_LsHc *= WGSF_val[setup.year].val #add WGamma SF
-                        y_HsLc *= WGSF_val[setup.year].val #add WGamma SF
-                        y_HsHc *= WGSF_val[setup.year].val #add WGamma SF
+#                mcHad_LsLc += y_LsLc
+#                mcHad_LsHc += y_LsHc
+#                mcHad_HsLc += y_HsLc
+#                mcHad_HsHc += y_HsHc
 
-                mcHad_LsLc += y_LsLc
-                mcHad_LsHc += y_LsHc
-                mcHad_HsLc += y_HsLc
-                mcHad_HsHc += y_HsHc
+            estimate = MCBasedEstimate( name="all_mc_had", process=setup.processes["all_mc_had"] )
+#            estimate.initCache(setup.defaultCacheDir())
+
+            mcHad_LsLc += estimate.cachedEstimate( region, channel, setup_LsLc, overwrite=overwrite )
+            mcHad_LsHc += estimate.cachedEstimate( region, channel, setup_LsHc, overwrite=overwrite )
+            mcHad_HsLc += estimate.cachedEstimate( region, channel, setup_HsLc, overwrite=overwrite )
+            mcHad_HsHc += estimate.cachedEstimate( region, channel, setup_HsHc, overwrite=overwrite )
+            print "had", mcHad_LsLc, mcHad_LsHc, mcHad_HsLc, mcHad_HsHc
 
             # check if any of the factors would be <= 0 to safe time:
             if mcHad_LsLc <= 0: return u_float(0)
@@ -452,61 +484,67 @@ class DataDrivenFakeEstimate(SystematicEstimator):
 
             mcHad_LsLc  = u_float(0)
 
-            if addSF:
-                if setup.nJet == "2":
-                    DYSF_val    = DY2SF_val
-                    WGSF_val    = WG2SF_val
-                    ZGSF_val    = ZG2SF_val
-                    QCDSF_val   = QCD2SF_val
-                elif setup.nJet == "3":
-                    DYSF_val    = DY3SF_val
-                    WGSF_val    = WG3SF_val
-                    ZGSF_val    = ZG3SF_val
-                    QCDSF_val   = QCD3SF_val
-                elif setup.nJet == "4":
-                    DYSF_val    = DY4SF_val
-                    WGSF_val    = WG4SF_val
-                    ZGSF_val    = ZG4SF_val
-                    QCDSF_val   = QCD4SF_val
-                elif setup.nJet == "5":
-                    DYSF_val    = DY5SF_val
-                    WGSF_val    = WG5SF_val
-                    ZGSF_val    = ZG5SF_val
-                    QCDSF_val   = QCD5SF_val
-                elif setup.nJet == "2p":
-                    DYSF_val    = DY2pSF_val
-                    WGSF_val    = WG2pSF_val
-                    ZGSF_val    = ZG2pSF_val
-                    QCDSF_val   = QCD2pSF_val
-                elif setup.nJet == "3p":
-                    DYSF_val    = DY3pSF_val
-                    WGSF_val    = WG3pSF_val
-                    ZGSF_val    = ZG3pSF_val
-                    QCDSF_val   = QCD3pSF_val
-                elif setup.nJet == "4p":
-                    DYSF_val    = DY4pSF_val
-                    WGSF_val    = WG4pSF_val
-                    ZGSF_val    = ZG4pSF_val
-                    QCDSF_val   = QCD4pSF_val
+#            if addSF:
+#                if setup.nJet == "2":
+#                    DYSF_val    = DY2SF_val
+#                    WGSF_val    = WG2SF_val
+#                    ZGSF_val    = ZG2SF_val
+#                    QCDSF_val   = QCD2SF_val
+#                elif setup.nJet == "3":
+#                    DYSF_val    = DY3SF_val
+#                    WGSF_val    = WG3SF_val
+#                    ZGSF_val    = ZG3SF_val
+#                    QCDSF_val   = QCD3SF_val
+#                elif setup.nJet == "4":
+#                    DYSF_val    = DY4SF_val
+#                    WGSF_val    = WG4SF_val
+#                    ZGSF_val    = ZG4SF_val
+#                    QCDSF_val   = QCD4SF_val
+#                elif setup.nJet == "5":
+#                    DYSF_val    = DY5SF_val
+#                    WGSF_val    = WG5SF_val
+#                    ZGSF_val    = ZG5SF_val
+#                    QCDSF_val   = QCD5SF_val
+#                elif setup.nJet == "2p":
+#                    DYSF_val    = DY2pSF_val
+#                    WGSF_val    = WG2pSF_val
+#                    ZGSF_val    = ZG2pSF_val
+#                    QCDSF_val   = QCD2pSF_val
+#                elif setup.nJet == "3p":
+#                    DYSF_val    = DY3pSF_val
+#                    WGSF_val    = WG3pSF_val
+#                    ZGSF_val    = ZG3pSF_val
+#                    QCDSF_val   = QCD3pSF_val
+#                elif setup.nJet == "4p":
+#                    DYSF_val    = DY4pSF_val
+#                    WGSF_val    = WG4pSF_val
+#                    ZGSF_val    = ZG4pSF_val
+#                    QCDSF_val   = QCD4pSF_val
 
-            for s in default_photonSampleList:
-                if s in ["QCD-DD", "QCD", "GJets", "Data", "fakes-DD"]: continue
-                if not "had" in s: continue
+#            for s in default_photonSampleList + ["QCD","GJets"]:
+#                if s in ["QCD-DD", "Data", "fakes-DD"]: continue
+#                if not "had" in s: continue
 
-                # get the MC based Estimate for fakes in the region
-                estimate = MCBasedEstimate( name=s, process=setup.processes[s] )
-                estimate.initCache(setup.defaultCacheDir())
+#                # get the MC based Estimate for fakes in the region
+#                estimate = MCBasedEstimate( name=s, process=setup.processes[s] )
+#                estimate.initCache(setup.defaultCacheDir())
 
-                y_LsLc = estimate.cachedEstimate( region, channel, setup_LsLc, overwrite=overwrite )
+#                y_LsLc = estimate.cachedEstimate( region, channel, setup_LsLc, overwrite=overwrite )
 
-                if addSF:
-                    if "DY_LO" in s:    y_LsLc *= DYSF_val[setup.year].val #add DY SF
-#                    elif "WJets" in s:  y_LsLc *= WJetsSF_val[setup.year].val #add WJets SF
-                    elif "TTG" in s:    y_LsLc *= SSMSF_val[setup.year].val #add TTG SF
-                    elif "ZG" in s:     y_LsLc *= ZGSF_val[setup.year].val #add ZGamma SF
-                    elif "WG" in s:     y_LsLc *= WGSF_val[setup.year].val #add WGamma SF
+#                if addSF:
+#                    if "DY_LO" in s:    y_LsLc *= DYSF_val[setup.year].val #add DY SF
+##                    elif "WJets" in s:  y_LsLc *= WJetsSF_val[setup.year].val #add WJets SF
+##                    elif "TTG" in s:    y_LsLc *= SSMSF_val[setup.year].val #add TTG SF
+#                    elif "ZG" in s:     y_LsLc *= ZGSF_val[setup.year].val #add ZGamma SF
+#                    elif "WG" in s:     y_LsLc *= WGSF_val[setup.year].val #add WGamma SF
 
-                mcHad_LsLc += y_LsLc
+#                mcHad_LsLc += y_LsLc
+
+
+            estimate = MCBasedEstimate( name="all_mc_had", process=setup.processes["all_mc_had"] )
+#            estimate.initCache(setup.defaultCacheDir())
+
+            mcHad_LsLc += estimate.cachedEstimate( region, channel, setup_LsLc, overwrite=overwrite )
 
             if mcHad_LsLc <= 0: return u_float(0)
             return mcHad_LsLc
@@ -520,7 +558,7 @@ if __name__ == "__main__":
     overwrite = False
     print "incl"
 
-    setup = Setup(year=2016, photonSelection=False)
+    setup = Setup(year=2016, photonSelection=True)
 #    setup = setup.sysClone(parameters=allRegions["SR2"]["parameters"])
     setup = setup.sysClone(parameters=allRegions["SR4p"]["parameters"])
 
