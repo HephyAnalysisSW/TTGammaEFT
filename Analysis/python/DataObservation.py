@@ -5,7 +5,7 @@ from Analysis.Tools.u_float           import u_float
 from Analysis.Tools.MergingDirDB             import MergingDirDB
 from TTGammaEFT.Analysis.SetupHelpers import dilepChannels, lepChannels
 from TTGammaEFT.Analysis.Region       import Region
-from TTGammaEFT.Tools.user            import cache_directory
+from TTGammaEFT.Tools.user            import cache_directory_read as cache_directory
 
 # Logging
 if __name__=="__main__":
@@ -57,6 +57,20 @@ class DataObservation():
             logger.debug( "Adding cached %s result for %r"%(self.name, key) )
         elif not checkOnly:
             res = self.observation( region, channel, setup, overwrite )
+        else:
+            res = u_float(-1,0)
+        return res if res >= 0 or checkOnly else u_float(0,0)
+
+    def writeToCache(self, region, channel, setup, value, signalAddon=None, save=True, overwrite=False, checkOnly=False):
+        key =  self.uniqueKey(region, channel, setup)
+        if (self.cache and self.cache.contains(key)) and not overwrite:
+            res = self.cache.get(key)
+            if res.val != value.val: print "Warning, caches estimate not equal to input value: have %s, got %s"%(res, value)
+            logger.debug( "Loading cached %s result for %r : %r"%(self.name, key, res) )
+        elif self.cache and not checkOnly:
+            _res = self.cache.add( key, value, overwrite=True )
+            res = value
+            logger.debug( "Adding cached %s result for %r"%(self.name, key) )
         else:
             res = u_float(-1,0)
         return res if res >= 0 or checkOnly else u_float(0,0)
