@@ -40,27 +40,26 @@ dirs = {}
 
 #dirs["ttGamma_incl_4WC"] = [ "ttGamma_incl_restrict_MadSpin_4WC_order2_ref_rwgt" ]
 
-dirs["ttGamma_0l_4WC"]   = [ "ttGamma_Had_restrict_4WC_order2_ref_rwgt" ]
-dirs["ttGamma_1l_4WC"]   = [ "ttGamma_SemiLept_restrict_4WC_order2_ref_rwgt" ]
-dirs["ttGamma_2l_4WC"]   = [ "ttGamma_Dilept_restrict_4WC_order2_ref_rwgt" ]
+dirs["ttGamma_0l_4WC"]   = [ "ttGamma_Had_restrict_4WC_order2_ref_rwgt_weightWidth" ]
+dirs["ttGamma_1l_4WC"]   = [ "ttGamma_SemiLept_restrict_4WC_order2_ref_rwgt_weightWidth" ]
+dirs["ttGamma_2l_4WC"]   = [ "ttGamma_Dilept_restrict_4WC_order2_ref_rwgt_weightWidth" ]
 
 # only combine samples with the same reference point!
 dirs["ttGamma_4WC"]      = dirs["ttGamma_0l_4WC"] + dirs["ttGamma_1l_4WC"] + dirs["ttGamma_2l_4WC"]
 
-dirs["tt01j_0l_4WC"]   = [ "tt01j_Had_restrict_4WC_order2_ref_rwgt" ]
-dirs["tt01j_1l_4WC"]   = [ "tt01j_SemiLept_restrict_4WC_order2_ref_rwgt" ]
-dirs["tt01j_2l_4WC"]   = [ "tt01j_Dilept_restrict_4WC_order2_ref_rwgt" ]
+dirs["tt01j_0l_4WC"]   = [ "tt01j_Had_restrict_4WC_order2_ref_rwgt_weightWidth" ]
+dirs["tt01j_1l_4WC"]   = [ "tt01j_SemiLept_restrict_4WC_order2_ref_rwgt_weightWidth" ]
+dirs["tt01j_2l_4WC"]   = [ "tt01j_Dilept_restrict_4WC_order2_ref_rwgt_weightWidth" ]
 
 # only combine samples with the same reference point!
-dirs["tt01j_4WC"]      = dirs["tt01j_0l_4WC"] + dirs["tt01j_1l_4WC"] + dirs["tt01j_2l_4WC"]
+dirs["tt01j_4WC"]      = dirs["tt01j_2l_4WC"] + dirs["tt01j_1l_4WC"] + dirs["tt01j_0l_4WC"]
 
-dirs["tW_4WC"]           = [ "tW_restrict_4WC_order2_ref_rwgt" ]
-dirs["tWGamma_4WC"]      = [ "tWG_restrict_4WC_order2_ref_rwgt" ]
-dirs["st_tch_4WC"]       = [ "st_tch_restrict_4WC_order2_ref_rwgt" ]
-dirs["stGamma_tch_4WC"]  = [ "stg_tch_restrict_4WC_order2_ref_rwgt" ]
-dirs["st_sch_4WC"]       = [ "st_sch_restrict_4WC_order2_ref_rwgt" ]
-dirs["stGamma_sch_4WC"]  = [ "stg_sch_restrict_4WC_order2_ref_rwgt" ]
-#dirs["tt_4WC"]           = [ "tt01j_restrict_4WC_order2_ref_rwgt" ]
+dirs["tW_4WC"]           = [ "tW_restrict_4WC_order2_ref_rwgt_weightWidth" ]
+dirs["tWGamma_4WC"]      = [ "tWG_restrict_4WC_order2_ref_rwgt_weightWidth" ]
+dirs["st_tch_4WC"]       = [ "st_tch_restrict_4WC_order2_ref_rwgt_weightWidth" ]
+dirs["stGamma_tch_4WC"]  = [ "stg_tch_restrict_4WC_order2_ref_rwgt_weightWidth" ]
+dirs["st_sch_4WC"]       = [ "st_sch_restrict_4WC_order2_ref_rwgt_weightWidth" ]
+dirs["stGamma_sch_4WC"]  = [ "stg_sch_restrict_4WC_order2_ref_rwgt_weightWidth" ]
 
 
 directories = { key : [ os.path.join( data_directory_, postprocessing_directory_, dir) for dir in dirs[key] ] for key in dirs.keys() }
