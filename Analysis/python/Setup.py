@@ -23,7 +23,7 @@ else:
     logger = logging.getLogger(__name__)
 
 class Setup:
-    def __init__(self, year=2016, photonSelection=False, checkOnly=False, runOnLxPlus=False):
+    def __init__(self, year=2016, photonSelection=False, checkOnly=False, runOnLxPlus=False, private=False):
 
         logger.info("Initializing Setup")
 
@@ -53,6 +53,7 @@ class Setup:
         self.isSignalRegion    = self.parameters["nBTag"][0] == 1 and self.parameters["nPhoton"][0] == 1 and not self.parameters["photonIso"]
         self.nJet = str(self.parameters["nJet"][0])
         if self.parameters["nJet"][1] < 0: self.nJet += "p"
+        self.isBTagged = self.parameters["nBTag"][0] >= 1
 
         self.sys = {"weight":"weight", "reweight":["reweightHEM", "reweightTrigger", "reweightL1Prefire", "reweightPU", "reweightLeptonTightSF", "reweightLeptonTrackingTightSF", "reweightPhotonSF", "reweightPhotonElectronVetoSF", "reweightBTag_SF"], "selectionModifier":None} 
 
@@ -61,32 +62,43 @@ class Setup:
             from Samples.Tools.config import redirector_global as redirector
         os.environ["gammaSkim"] = str(photonSelection)
         #define samples
+
+        from TTGammaEFT.Samples.default_locations import postprocessing_locations
         if year == 2016 and not checkOnly:
-            import TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed as mc_samples 
             from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import Run2016 as data
+            if private:
+                import TTGammaEFT.Samples.nanoTuples_Summer16_private_v6_semilep_postProcessed as mc_samples
+            else:
+                import TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed as mc_samples
         elif year == 2017 and not checkOnly:
-            import TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed  as mc_samples 
             from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import Run2017 as data
+            if private:
+                import TTGammaEFT.Samples.nanoTuples_Fall17_private_v6_semilep_postProcessed  as mc_samples
+            else:
+                import TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed  as mc_samples
         elif year == 2018 and not checkOnly:
-            import TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed as mc_samples
             from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import Run2018 as data
+            if private:
+                import TTGammaEFT.Samples.nanoTuples_Autumn18_private_v6_semilep_postProcessed as mc_samples
+            else:
+                import TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed as mc_samples
         elif year == "RunII" and not checkOnly:
-            import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
             from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data
+            import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
 
         if checkOnly:
             self.processes = {}
-            self.processes.update( { sample:          None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch" ] } )
-            self.processes.update( { sample+"_gen":   None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch" ] } )
-            self.processes.update( { sample+"_misID": None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch" ] } )
-            self.processes.update( { sample+"_had":   None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch" ] } )
-            self.processes.update( { sample+"_hp":    None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch" ] } )
-            self.processes.update( { sample+"_fake":  None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch" ] } )
-            self.processes.update( { sample+"_PU":    None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch" ] } )
-            self.processes.update( { sample+"_np":    None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch" ] } )
+            self.processes.update( { sample:           None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "GJets", "QCD", "all_mc" ] } )
+            self.processes.update( { sample+"_gen":    None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "GJets", "QCD", "all_mc" ] } )
+            self.processes.update( { sample+"_misID":  None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "GJets", "QCD", "all_mc" ] } )
+            self.processes.update( { sample+"_had":    None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "GJets", "QCD", "all_mc" ] } )
+            self.processes.update( { sample+"_prompt": None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "GJets", "QCD", "all_mc" ] } )
+            self.processes.update( { sample+"_hp":     None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "GJets", "QCD", "all_mc" ] } )
+            self.processes.update( { sample+"_fake":   None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "GJets", "QCD", "all_mc" ] } )
+            self.processes.update( { sample+"_PU":     None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "GJets", "QCD", "all_mc" ] } )
+            self.processes.update( { sample+"_np":     None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "GJets", "QCD", "all_mc" ] } )
             self.processes["Data"] = "Run%i"%self.year if self.year != "RunII" else "RunII"
 
-            print self.processes
             if year == 2016:
                 self.lumi     = 35.92*1000
                 self.dataLumi = 35.92*1000
@@ -102,35 +114,43 @@ class Setup:
 
         else:
             # not really needed I think:
-            ttg          = mc_samples.TTG
-            ttg_TuneUp   = mc_samples.TTG_TuneUp
-            ttg_TuneDown = mc_samples.TTG_TuneDown
-            ttg_erdOn    = mc_samples.TTG_erdOn
-            top          = mc_samples.Top
-            DY           = mc_samples.DY_LO
-            zg           = mc_samples.ZG
-            wg           = mc_samples.WG
-            wjets        = mc_samples.WJets
-            other        = mc_samples.rest #other
-            qcd          = mc_samples.QCD
-            gjets        = mc_samples.GJets
-            tt           = mc_samples.TT_pow
-            tW           = mc_samples.ST_tW
-            st_tch       = mc_samples.ST_tch
-            st_sch       = mc_samples.ST_sch
+            ttg           = mc_samples.TTG
+            tt            = mc_samples.TT_pow
+            if not private:
+                ttg_TuneUp    = mc_samples.TTG_TuneUp
+                ttg_TuneDown  = mc_samples.TTG_TuneDown
+                ttg_erdOn     = mc_samples.TTG_erdOn
+                ttg_QCDbased  = mc_samples.TTG_QCDbased
+#                ttg_GluonMove = mc_samples.TTG_GluonMove
+                top          = mc_samples.Top
+                DY           = mc_samples.DY_LO
+                zg           = mc_samples.ZG
+                wg           = mc_samples.WG
+                wjets        = mc_samples.WJets
+                other        = mc_samples.rest #other
+                qcd          = mc_samples.QCD
+                gjets        = mc_samples.GJets
+                tW           = mc_samples.ST_tW
+                st_tch       = mc_samples.ST_tch
+                st_sch       = mc_samples.ST_sch
+                all          = mc_samples.all_mc
 
-            mc           = [ ttg, top, DY, zg, wjets, wg, other, qcd, gjets ]
-            mc          += [ ttg_TuneUp, ttg_TuneDown, ttg_erdOn ]
-            mc          += [ tt, tW, st_tch, st_sch ]
+            if private:
+                mc           = [ ttg, tt ]
+            else:
+                mc           = [ ttg, top, DY, zg, wjets, wg, other, qcd, gjets, all ]
+                mc          += [ ttg_TuneUp, ttg_TuneDown, ttg_erdOn, ttg_QCDbased] #, ttg_GluonMove ]
+                mc          += [ tt, tW, st_tch, st_sch ]
             self.processes = {}
-            self.processes.update( { sample.name:          sample for sample in mc } )
-            self.processes.update( { sample.name+"_gen":   sample for sample in mc } )
-            self.processes.update( { sample.name+"_misID": sample for sample in mc } )
-            self.processes.update( { sample.name+"_had":   sample for sample in mc } )
-            self.processes.update( { sample.name+"_hp":    sample for sample in mc } )
-            self.processes.update( { sample.name+"_fake":  sample for sample in mc } )
-            self.processes.update( { sample.name+"_PU":    sample for sample in mc } )
-            self.processes.update( { sample.name+"_np":    sample for sample in mc } )
+            self.processes.update( { sample.name:           sample for sample in mc } )
+            self.processes.update( { sample.name+"_gen":    sample for sample in mc } )
+            self.processes.update( { sample.name+"_misID":  sample for sample in mc } )
+            self.processes.update( { sample.name+"_had":    sample for sample in mc } )
+            self.processes.update( { sample.name+"_prompt": sample for sample in mc } )
+            self.processes.update( { sample.name+"_hp":     sample for sample in mc } )
+            self.processes.update( { sample.name+"_fake":   sample for sample in mc } )
+            self.processes.update( { sample.name+"_PU":     sample for sample in mc } )
+            self.processes.update( { sample.name+"_np":     sample for sample in mc } )
             self.processes["Data"] = data
 
             self.lumi     = data.lumi
@@ -186,6 +206,7 @@ class Setup:
         res.isSignalRegion    = res.parameters["nBTag"][0] == 1 and res.parameters["nPhoton"][0] == 1 and not res.parameters["photonIso"]
         res.nJet = str(res.parameters["nJet"][0])
         if res.parameters["nJet"][1] < 0: res.nJet += "p"
+        res.isBTagged = res.parameters["nBTag"][0] >= 1
         return res
 
     def defaultParameters(self, update={} ):
@@ -269,7 +290,7 @@ class Setup:
         assert zWindow in ["offZeg", "onZeg", "onZSFllTight", "onZSFllgTight", "onZSFlloffZSFllg", "all"], "zWindow must be one of onZeg, offZeg, onZSFllTight, onZSFllgTight, all. Got %r"%zWindow
         assert m3Window in ["offM3", "onM3", "all"], "m3Window must be one of onM3, offM3, all. Got %r"%m3Window
         assert photonIso in [None, "highSieieNoChgIso", "lowSieieNoChgIso", "noSieie", "highSieie", "lowChgIsoNoSieie", "highChgIsoNoSieie", "noChgIso", "highChgIso", "noChgIsoNoSieie", "highChgIsohighSieie"], "PhotonIso must be one of highSieie, highChgIso, highChgIsohighSieie. Got %r"%photonIso
-        assert processCut in [None, "cat0","cat1","cat2","cat3","cat13","cat134", "cat4"], "Process specific cut must be one of cat0, cat2, cat13, cat4. Got %r"%processCut
+        assert processCut in [None, "cat0","cat1","cat2","cat3","cat13","cat02","cat134", "cat4"], "Process specific cut must be one of cat0, cat2, cat13, cat4. Got %r"%processCut
         if self.sys['selectionModifier']:
             assert self.sys['selectionModifier'] in jmeVariations+metVariations+eVariations+muVariations, "Don't know about systematic variation %r, take one of %s"%(self.sys['selectionModifier'], ",".join(jmeVariations+metVariations+eVariations+muVariations))
 
@@ -692,7 +713,7 @@ class Setup:
 
 
 if __name__ == "__main__":
-    setup = Setup( year="RunII" )
+    setup = Setup( year=2016, private=True )
     for name, dict in allRegions.items():
 #        if not "wjetsec3" in name.lower() and not "wjetsbarrel3" in name.lower(): continue
         if not "sr3p" in name.lower(): continue
