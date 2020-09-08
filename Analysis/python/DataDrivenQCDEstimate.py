@@ -5,7 +5,8 @@ from math import sqrt
 
 from TTGammaEFT.Analysis.SystematicEstimator import SystematicEstimator
 from TTGammaEFT.Analysis.SetupHelpers        import *
-from TTGammaEFT.Tools.user                   import analysis_results, cache_directory
+from TTGammaEFT.Tools.user                   import analysis_results
+from TTGammaEFT.Tools.user                   import cache_directory_read as cache_directory
 from TTGammaEFT.Tools.cutInterpreter  import cutInterpreter, zMassRange
 
 from Analysis.Tools.MergingDirDB             import MergingDirDB
@@ -264,6 +265,8 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         dataHist  = self.histoFromCache( var,    binning, setup, "Data", channel, cut_Data_SR, weight_Data_SR, overwrite=overwriteHistos)
         # safe some memory, you don't need the CR data hist, only for estimating the qcd hist
         qcdHist   = self.histoFromCache( invVar, binning, setup, "Data", channel, cut_Data_CR, weight_Data_CR, overwrite=overwriteHistos)
+
+        print "data", dataHist.Integral(), qcdHist.Integral()
         fixedHist = dataHist.Clone("fixed") # sum of contributions that stay fixed
         fixedHist.Scale(0.)
 
@@ -302,6 +305,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
             if s in ["QCD-DD", "QCD", "GJets", "Data"]: continue
             tmp_SR = self.histoFromCache( var,    binning, setup, s, channel, cut_MC_SR, weight_MC_SR, overwrite=overwriteHistos )
             tmp_CR = self.histoFromCache( invVar, binning, setup, s, channel, cut_MC_CR, weight_MC_CR, overwrite=overwriteHistos )
+            print s, tmp_SR.Integral(), tmp_CR.Integral()
 
             # apply SF after histo caching
             if addSF:
@@ -362,6 +366,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         nFixedScale = fixedHist.Integral() / nTotal
         nQCDScale   = qcdHist.Integral()   / nTotal
 
+        print nTotal, floatHist.Integral(), fixedHist.Integral(), qcdHist.Integral()
         if not all([nTotal,nFloatScale,nFixedScale,nQCDScale]):
             raise Exception("Something is wrong with the cached histograms for the QCD TF!")
 
@@ -414,6 +419,60 @@ class DataDrivenQCDEstimate(SystematicEstimator):
 
         return transferFac if transferFac > 0 else u_float(0.001, 1)
 
+
+    def _nJetFitFunction(self, channel, setup, qcdUpdates=None, overwrite=False):
+
+        # fill a histogram with the QCD MC TF for 2, 3 and >=4 jets and fit a linear function to it
+        qcdTF = ROOT.TH1F( "tf", "tf", 3, 1.5, 4.5 )
+        func  = ROOT.TF1("func", "[0]+[1]*x", 1, 5 )
+
+        for nJet in [(2,2), (3,3), (4,-1)]:
+            qcdUpdate = copy.deepcopy(qcdUpdates) if qcdUpdates else QCDTF_updates
+            qcdUpdate["CR"]["nJet"] = nJet
+            qcdUpdate["SR"]["nJet"] = nJet
+            tf = self.cachedQCDMCTransferFactor( channel, setup, qcdUpdates=qcdUpdate, overwrite=overwrite )
+            qcdTF.SetBinContent( qcdTF.FindBin(nJet[0]), tf.val )
+            qcdTF.SetBinError(   qcdTF.FindBin(nJet[0]), tf.sigma )
+
+        qcdTF.Fit(func,"NO")
+
+        return func
+
+    def _nJetFittedScaleFactor(self, channel, setup, qcdUpdates=None, overwrite=False, evalForNJet=None ):
+        """ fit the MC TF in nJet bins
+            flat in 0 b-tag, but linear in b-tagged regions
+            estimate the ratio of the QCD TF in x Jet / 2 Jet and apply the factor in the QCD estimation
+            currently implemented for 3 and >=4 jet bins
+        """
+        # no scale factor for 2 jet or 1 jet bins
+        if (not evalForNJet and setup.nJet in ["2", "2p", "1", "1p"]) or (evalForNJet and evalForNJet==2): return 1.
+
+        func = self._nJetFitFunction(channel=channel, setup=setup, qcdUpdates=qcdUpdates, overwrite=overwrite)
+
+        # return the ratio of the value at the 2 jet bin to the current nJet bin in the setup, as the QCD TF is evaluated at the 2 jet bin
+        sf = func.Eval( int(setup.nJet[0]) if not evalForNJet else evalForNJet ) / func.Eval( 2 )
+        return sf if sf > 0 else 1.
+
+    def _nJetScaleFactor(self, channel, setup, qcdUpdates=None, overwrite=False, evalForNJet=None ):
+        """ fit the MC TF in nJet bins
+            flat in 0 b-tag, but linear in b-tagged regions
+            estimate the ratio of the QCD TF in x Jet / 2 Jet and apply the factor in the QCD estimation
+            currently implemented for 3 and >=4 jet bins
+        """
+        # no scale factor for 2 jet or 1 jet bins
+        if (not evalForNJet and setup.nJet in ["2", "2p", "1", "1p"]) or (evalForNJet and evalForNJet==2): return 1.
+
+        # inclusive qcd mc tf if not otherwise stated
+        qcdUpdate = copy.deepcopy(qcdUpdates) if qcdUpdates else QCDTF_updates
+        qcdUpdate["CR"]["nJet"] = setup.parameters["nJet"]
+        qcdUpdate["SR"]["nJet"] = setup.parameters["nJet"]
+        tfnjet = self.cachedQCDMCTransferFactor( channel, setup, qcdUpdates=qcdUpdate ).val
+
+        # inclusive 2 jet qcd mc tf if not otherwise stated
+        qcdUpdate["CR"]["nJet"] = (2,2)
+        qcdUpdate["SR"]["nJet"] = (2,2)
+        tf2jet = self.cachedQCDMCTransferFactor( channel, setup, qcdUpdates=qcdUpdate ).val
+        return tfnjet / tf2jet if tf2jet > 0 else 1.
 
     #Concrete implementation of abstract method "estimate" as defined in Systematic
     def _estimate(self, region, channel, setup, signalAddon=None, overwrite=False):
@@ -516,22 +575,32 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                     QCDTF_updates_2J["SR"]["leptonEta"] = ( etaLow, etaHigh )
                     QCDTF_updates_2J["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
 
-                    QCDTF_updates_nJ["CR"]["leptonEta"] = ( etaLow, etaHigh )
-                    QCDTF_updates_nJ["CR"]["leptonPt"]  = ( ptLow,  ptHigh   )
-                    QCDTF_updates_nJ["SR"]["leptonEta"] = ( etaLow, etaHigh )
-                    QCDTF_updates_nJ["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
+#                    QCDTF_updates_nJ["CR"]["leptonEta"] = ( etaLow, etaHigh )
+#                    QCDTF_updates_nJ["CR"]["leptonPt"]  = ( ptLow,  ptHigh   )
+#                    QCDTF_updates_nJ["SR"]["leptonEta"] = ( etaLow, etaHigh )
+#                    QCDTF_updates_nJ["SR"]["leptonPt"]  = ( ptLow,  ptHigh   )
 
                     # Remove that for now
                     # define the 2016 e-channel QCD sideband in barrel only (bad mT fit in EC)
                     if False and channel == "e" and setup.year == 2016 and (etaHigh > 1.479 or etaHigh < 0):
                         QCDTF_updates_2J["CR"]["leptonEta"] = ( 0, 1.479 )
-                        QCDTF_updates_nJ["CR"]["leptonEta"] = ( 0, 1.479 )
+#                        QCDTF_updates_nJ["CR"]["leptonEta"] = ( 0, 1.479 )
 
                     qcdUpdates  = { "CR":QCDTF_updates_2J["CR"], "SR":QCDTF_updates_2J["SR"] }
                     transferFac = self.cachedTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=overwrite, checkOnly=False )
                     if transferFac.val <= 0: continue
 
-                    qcdUpdates     = { "CR":QCDTF_updates_nJ["CR"], "SR":QCDTF_updates_nJ["SR"] }
+                    nJetSF = 1.
+                    if setup.isBTagged:
+                        nJetUpdates = copy.deepcopy(qcdUpdates)
+                        nJetUpdates["CR"]["leptonPt"] = ( 0, -1 )
+                        nJetUpdates["SR"]["leptonPt"] = ( 0, -1 )
+
+                        nJetSF = self._nJetScaleFactor(channel, setup, qcdUpdates=nJetUpdates)
+                        if nJetSF <= 0: nJetSF = 1.
+
+
+#                    qcdUpdates     = { "CR":QCDTF_updates_nJ["CR"], "SR":QCDTF_updates_nJ["SR"] }
 #                    transferFac_nJ = self.cachedTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=overwrite, checkOnly=False )
 
                     # set the transferfactor uncertainty to the nJet dependence uncertainty
@@ -583,7 +652,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                     # remove uncertainty from yield, replace it with transfer factor uncertainty
                     normRegYield.sigma = 0
 
-                    estimate = normRegYield*transferFac
+                    estimate   = normRegYield*transferFac*nJetSF
                     qcd_yield += estimate
 
                     logger.info("Calculating data-driven QCD normalization in channel " + channel + " using lumi " + str(setup.dataLumi) + ":")
@@ -592,7 +661,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                     logger.info("yield (data-other):        " + str(normRegYield))
                     logger.info("transfer factor:           " + str(transferFac))
 
-#        logger.info("Estimate for QCD in " + channel + " channel" + (" (lumi=" + str(setup.lumi) + "/pb)" if channel != "all" else "") + ": " + str(estimate) + (" (negative estimated being replaced by 0)" if estimate < 0 else ""))
+            # correct for the nJet dependence
             return qcd_yield if qcd_yield >= 0 else u_float(0, 0)
 
 if __name__ == "__main__":
@@ -605,11 +674,12 @@ if __name__ == "__main__":
 
     setup = Setup(year=2016, photonSelection=False)
 #    setup = setup.sysClone(parameters=allRegions["SR2"]["parameters"])
-    setup = setup.sysClone(parameters=allRegions["WJets2"]["parameters"])
+    setup = setup.sysClone(parameters=allRegions["TT4p"]["parameters"])
 
     estimate = DataDrivenQCDEstimate( "QCD-DD" )    
     estimate.initCache(setup.defaultCacheDir())
 
 #    print "e", "dd", estimate._fittedTransferFactor( "e", setup, overwrite=overwrite )
 #    print "mu", "dd", estimate._fittedTransferFactor( "mu", setup, overwrite=overwrite )
-    print "e", "dd", estimate._estimate( allRegions["WJets2"]["regions"][0], "e", setup, overwrite=overwrite )
+    print estimate._nJetScaleFactor("e", setup, qcdUpdates=None, overwrite=False)
+#    print "e", "dd", estimate._estimate( allRegions["WJets2"]["regions"][0], "e", setup, overwrite=overwrite )
