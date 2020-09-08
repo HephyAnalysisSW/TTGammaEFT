@@ -27,6 +27,7 @@ argParser.add_argument("--controlRegion",    action="store",  default=None,   ty
 argParser.add_argument("--overwrite",        action="store_true",                                              help="overwrite existing results?")
 argParser.add_argument("--checkOnly",        action="store_true",                                              help="check values?")
 argParser.add_argument("--createExecFile",   action="store_true",                                              help="get exec file for missing estimates?")
+argParser.add_argument("--noInclusive",      action="store_true",                                              help="do not cache inclusive region")
 argParser.add_argument('--nJobs',            action='store',  default=1,        type=int,                      help="Maximum number of simultaneous jobs.")
 argParser.add_argument('--job',              action='store',  default=0,        type=int,                      help="Run only job i")
 args = argParser.parse_args()
@@ -49,7 +50,10 @@ if not args.controlRegion:
 parameters       = allRegions[args.controlRegion]["parameters"]
 channels         = allRegions[args.controlRegion]["channels"] 
 photonSelection  = not allRegions[args.controlRegion]["noPhotonCR"]
-allPhotonRegions = allRegions[args.controlRegion]["inclRegion"] + allRegions[args.controlRegion]["regions"] if photonSelection else allRegions[args.controlRegion]["regions"]
+if args.noInclusive:
+    allPhotonRegions = allRegions[args.controlRegion]["regions"]
+else:
+    allPhotonRegions = allRegions[args.controlRegion]["inclRegion"] + allRegions[args.controlRegion]["regions"] if photonSelection else allRegions[args.controlRegion]["regions"]
 setup            = Setup( year=args.year, photonSelection=photonSelection and not "QCD" in args.selectEstimator, checkOnly=args.checkOnly, runOnLxPlus=args.runOnLxPlus ) #photonselection always false for qcd estimate
 
 # Select estimate
@@ -75,6 +79,7 @@ def wrapper(arg):
 
 estimate.initCache(setup.defaultCacheDir())
 
+#if "all" in channels: channels = ["e","mu"]
 jobs=[]
 for channel in channels:
     for (i, r) in enumerate(allPhotonRegions):
@@ -86,6 +91,7 @@ for channel in channels:
             else:
                 jobs.extend(estimate.getBkgSysJobs(r, channel, setup))
 
+print "Running %i jobs in total."%len(jobs)
 #jobs = splitList( jobs, 32)[1]
 if args.nJobs != 1:
     jobs = splitList( jobs, args.nJobs)[args.job]
