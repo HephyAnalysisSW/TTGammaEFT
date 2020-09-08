@@ -1197,22 +1197,28 @@ limitOrdering += pSR
 
 # EFT parameter ranges:
 # 30 bins from -1.5 to 1.5 + the SM value 0, calc value in the middle of the bin
-xRange       = np.linspace( -1.0, 1.0, 20, endpoint=False)
+xRange       = np.linspace( -1.5, 1.5, 30, endpoint=False)
 halfstepsize = 0.5 * ( xRange[1] - xRange[0] )
 xRange       = [ round(el + halfstepsize, 3) for el in xRange ] + [0]
 xRange.sort()
 
 
-yRange       = np.linspace( -3, 3, 30, endpoint=False)
+yRange       = np.linspace( -0.3, 0.3, 30, endpoint=False)
 halfstepsize = 0.5 * ( yRange[1] - yRange[0] )
 yRange       = [ round(el + halfstepsize, 3) for el in yRange ] + [0]
 yRange.sort()
+
+zRange       = np.linspace( -0.8, 0.8, 30, endpoint=False)
+halfstepsize = 0.5 * ( zRange[1] - zRange[0] )
+zRange       = [ round(el + halfstepsize, 3) for el in zRange ] + [0]
+zRange.sort()
 
 eftParameterRange = {}
 eftParameterRange["ctZ"]  = xRange
 eftParameterRange["ctZI"] = xRange
 eftParameterRange["ctW"]  = yRange
-eftParameterRange["ctWI"] = yRange
+eftParameterRange["ctWI"] = zRange
 
 #print xRange
 #print yRange
+#print zRange

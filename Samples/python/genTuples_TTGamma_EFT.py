@@ -154,5 +154,6 @@ EFT = [
 allSamples = EFT
 
 for s in allSamples:
+    print s.reweight_pkl
     s.isData = False
 

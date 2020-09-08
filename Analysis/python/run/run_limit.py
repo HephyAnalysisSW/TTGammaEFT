@@ -17,8 +17,9 @@ from TTGammaEFT.Tools.user               import cache_directory, combineReleaseL
 from Analysis.Tools.MergingDirDB         import MergingDirDB
 from Analysis.Tools.u_float              import u_float
 from Analysis.Tools.cardFileWriter       import cardFileWriter
-from Analysis.Tools.cardFileWriter.CombineResults       import CombineResults
+from Analysis.Tools.cardFileWriter.CombineResults      import CombineResults
 from Analysis.Tools.getPostFit           import getPrePostFitFromMLF, getFitResults
+from TTGammaEFT.Tools.cutInterpreter     import cutInterpreter
 
 # Default Parameter
 loggerChoices = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTSET"]
@@ -44,7 +45,7 @@ argParser.add_argument( "--expected",           action="store_true",            
 argParser.add_argument( "--useTxt",             action="store_true",                                                        help="Use txt based cardFiles instead of root/shape based ones?" )
 argParser.add_argument( "--skipFitDiagnostics", action="store_true",                                                        help="Don't do the fitDiagnostics (this is necessary for pre/postfit plots, but not 2D scans)?" )
 argParser.add_argument( "--year",               action="store",      default="2016",   type=str,                              help="Which year?" )
-argParser.add_argument( "--linTest",            action="store",      default=1,   type=float,                              help="linearity test: scale data by factor" )
+argParser.add_argument( "--linTest",            action="store",      default=1,   type=float,                               help="linearity test: scale data by factor" )
 argParser.add_argument( "--runOnLxPlus",        action="store_true",                                                        help="Change the global redirector of samples")
 argParser.add_argument( "--misIDPOI",           action="store_true",                                                        help="Change POI to misID SF")
 argParser.add_argument( "--dyPOI",              action="store_true",                                                        help="Change POI to misID SF")
@@ -56,8 +57,10 @@ argParser.add_argument( "--bkgOnly",            action="store_true",            
 argParser.add_argument( "--unblind",            action="store_true",                                                        help="unblind 2017/2018")
 argParser.add_argument( "--plot",               action="store_true",                                                        help="run plots?")
 argParser.add_argument( "--noMCStat",           action="store_true",                                                        help="create file without MC stat?")
-argParser.add_argument('--order',               action='store',      default=2, type=int,                                                             help='Polynomial order of weight string (e.g. 2)')
-argParser.add_argument('--parameters',          action='store',      default=[], type=str, nargs='+',                       help = "argument parameters")
+argParser.add_argument('--order',               action='store',      default=2, type=int,                                   help='Polynomial order of weight string (e.g. 2)')
+argParser.add_argument('--parameters',          action='store',      default=[],  type=str, nargs='+',                      help = "argument parameters")
+argParser.add_argument('--mode',                action='store',      default="all", type=str, choices=["mu", "e", "all"],   help="plot lepton mode" )
+argParser.add_argument('--withbkg',             action='store_true',                                                        help="reweight sample and bkg or sample only?")
 args=argParser.parse_args()
 
 if args.year != "RunII": args.year = int(args.year)
@@ -75,17 +78,6 @@ if args.useChannels and "e"    in args.useChannels: args.useChannels += ["eetigh
 if args.useChannels and "mu"   in args.useChannels: args.useChannels += ["mumutight"]
 if args.useChannels and "all"  in args.useChannels: args.useChannels  = None
 
-# read the EFT parameters
-EFTparams = []
-if args.parameters:
-    coeffs = args.parameters[::2]
-    str_vals = args.parameters[1::2]
-    for i_param, (coeff, str_val, ) in enumerate(zip(coeffs, str_vals)):
-        EFTparams.append(coeff)
-        EFTparams.append(str_val)
-
-eft =  "_".join(EFTparams)
-
 useCache = True
 if args.keepCard:
     args.overwrite = False
@@ -101,7 +93,7 @@ if not args.checkOnly:
     default_setup            = Setup( year=args.year, runOnLxPlus=args.runOnLxPlus, checkOnly=True )
     default_setup.estimators = EstimatorList( default_setup )
     default_setup.data       = default_setup.processes["Data"]
-#    default_setup.processes  = default_setup.estimators.constructProcessDict( processDict=default_processes )
+    #default_setup.processes  = default_setup.estimators.constructProcessDict( processDict=default_processes )
     default_setup.processes["Data"] = default_setup.data
     default_setup.addon      = ""
     default_setup.regions    = inclRegionsTTG if args.inclRegion else regionsTTG
@@ -109,7 +101,7 @@ if not args.checkOnly:
     default_photon_setup            = Setup( year=args.year, photonSelection=True, runOnLxPlus=args.runOnLxPlus, checkOnly=True )
     default_photon_setup.estimators = EstimatorList( default_photon_setup )
     default_photon_setup.data       = default_photon_setup.processes["Data"]
-#    default_photon_setup.processes  = default_setup.estimators.constructProcessDict( processDict=default_processes )
+    #default_photon_setup.processes  = default_setup.estimators.constructProcessDict( processDict=default_processes )
     default_photon_setup.processes["Data"] = default_photon_setup.data
     default_photon_setup.addon      = ""
     default_photon_setup.regions    = inclRegionsTTG if args.inclRegion else regionsTTG
@@ -118,6 +110,28 @@ if not args.checkOnly:
 with0pCR = False
 with1pCR = False
 setups = []
+
+if args.parameters and args.withbkg:
+    splitProcessDict = {}
+    splitProcessDict["ST_tch_gen"]    = { "process":["ST_tch_gen"] }
+    splitProcessDict["ST_tch_had"]    = { "process":["ST_tch_had"] }
+    splitProcessDict["ST_tch_misID"]  = { "process":["ST_tch_misID"] }
+    splitProcessDict["ST_sch_gen"]    = { "process":["ST_sch_gen"] }
+    splitProcessDict["ST_sch_had"]    = { "process":["ST_sch_had"] }
+    splitProcessDict["ST_sch_misID"]  = { "process":["ST_sch_misID"] }
+    splitProcessDict["ST_tW_gen"]     = { "process":["ST_tW_gen"] }
+    splitProcessDict["ST_tW_had"]     = { "process":["ST_tW_had"] }
+    splitProcessDict["ST_tW_misID"]   = { "process":["ST_tW_misID"] }
+    splitProcessDict["TT_pow_gen"]    = { "process":["TT_pow_gen"] }
+    splitProcessDict["TT_pow_had"]    = { "process":["TT_pow_had"] }
+    splitProcessDict["TT_pow_misID"]  = { "process":["TT_pow_misID"] }
+    splitProcessDict["TTG_had"]       = { "process":["TTG_had"] }
+    splitProcessDict["WG_had"]        = { "process":["WG_had"] }
+    splitProcessDict["ZG_had"]        = { "process":["ZG_had"] }
+    splitProcessDict["other_had"]     = { "process":["other_had"] }
+    splitProcessDict["WJets_had"]     = { "process":["WJets_had"] }
+    splitProcessDict["DY_LO_had"]     = { "process":["DY_LO_had"] }
+
 for key, val in allRegions.items():
     if not key in args.useRegions: continue
     if key not in limitOrdering:
@@ -142,6 +156,7 @@ for key, val in allRegions.items():
     locals()["setup"+key].processes    = estimators.constructProcessDict( processDict=val["processes"] ) if "processes" in val else default_setup.processes if val["noPhotonCR"] else default_photon_setup.processes
     locals()["setup"+key].processes["Data"] = locals()["setup"+key].data
     locals()["setup"+key].addon      = key
+    if args.parameters and args.withbkg: locals()["setup"+key].split_processes = estimators.constructProcessDict( splitProcessDict )  
 
 # sort regions accoring to ordering
 for reg in limitOrdering:
@@ -168,40 +183,59 @@ if args.useChannels:  regionNames.append("_".join([ch for ch in args.useChannels
 if args.linTest != 1: regionNames.append(str(args.linTest).replace(".","_"))
 if args.noMCStat:     regionNames.append("noMCStat")
 
-baseDir       = os.path.join( cache_directory, "analysis",  str(args.year), "limits" )
+baseDir       = os.path.join( cache_directory, "analysis",  str(args.year), "limits", "withbkg" if args.withbkg else "withoutbkg" )
 limitDir      = os.path.join( baseDir, "cardFiles", args.label, "expected" if args.expected else "observed" )
 if not os.path.exists( limitDir ): os.makedirs( limitDir )
 
 cacheDir        = os.path.join( cache_directory, "modelling",  str(args.year) )
-
 cacheFileName   = os.path.join( cacheDir, "Scale" )
 scaleUncCache   = MergingDirDB( cacheFileName )
-
 cacheFileName   = os.path.join( cacheDir, "PDF" )
 pdfUncCache     = MergingDirDB( cacheFileName )
-
 cacheFileName   = os.path.join( cacheDir, "PS" )
 psUncCache      = MergingDirDB( cacheFileName )
 
 if args.parameters:
-    # load and define the EFT sample
+    # read the EFT parameters
+    eft =  "_".join(args.parameters)
+    # load the EFT samples
     from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed  import *
-    eftSample = TTG_4WC_ref
 
-    cacheFileName = os.path.join( baseDir, "calculatednll" )
-    nllCache      = MergingDirDB( cacheFileName )
+    cacheFileName        = os.path.join( baseDir, "calculatednll" )
+    nllCache             = MergingDirDB( cacheFileName )
+    cacheFileName        = os.path.join( baseDir, "calculatedLimits" )
+    limitCache           = MergingDirDB( cacheFileName )
+    cacheFileName        = os.path.join( baseDir, "calculatedSignifs" )
+    signifCache          = MergingDirDB( cacheFileName )
 
-    baseDir       = os.path.join( cache_directory, "analysis", "eft" )
-    cacheFileName = os.path.join( baseDir, eftSample.name )
-    yieldCache    = MergingDirDB( cacheFileName )
+    # store all the different samples in different caches (signal=TTG, background=TT, tWG, tW, stg_tch, st_tch, stg_sch, st_sch)
+    baseDir              = os.path.join( cache_directory, "analysis", "eft" )
+    cacheFileName        = os.path.join( baseDir, 'TTG_4WC_ref' )
+    yieldCache_TTG       = MergingDirDB( cacheFileName )
+    cacheFileName        = os.path.join( baseDir, 'TT_4WC_ref' )
+    yieldCache_TT        = MergingDirDB( cacheFileName )
+    cacheFileName        = os.path.join( baseDir, 'tWG_4WC_ref' )
+    yieldCache_tWG       = MergingDirDB( cacheFileName )
+    cacheFileName        = os.path.join( baseDir, 'tW_4WC_ref' )
+    yieldCache_tW        = MergingDirDB( cacheFileName )
+    cacheFileName        = os.path.join( baseDir, 'stg_tch_4WC_ref' )
+    yieldCache_stg_tch   = MergingDirDB( cacheFileName )
+    cacheFileName        = os.path.join( baseDir, 'st_tch_4WC_ref' )
+    yieldCache_st_tch    = MergingDirDB( cacheFileName )
+    cacheFileName        = os.path.join( baseDir, 'stg_sch_4WC_ref' )
+    yieldCache_stg_sch   = MergingDirDB( cacheFileName )
+    cacheFileName        = os.path.join( baseDir, 'st_sch_4WC_ref' )
+    yieldCache_st_sch    = MergingDirDB( cacheFileName )
 
-    configlist = regionNames + EFTparams
+    configlist = regionNames + args.parameters
     configlist.append("incl" if args.inclRegion else "diff")
     configlist.append("expected" if args.expected else "observed")
 
     sEFTConfig = "_".join(configlist)
+    print(nllCache.get(sEFTConfig))
+    print(nllCache.contains(sEFTConfig))
     if not args.overwrite and nllCache.contains( sEFTConfig ): sys.exit(0)
-
+    print(sEFTConfig)
 
 # JEC Tags, (standard is "Total")
 jesTags = ['FlavorQCD', 'RelativeBal', 'HF', 'BBEC1', 'EC2', 'Absolute', 'Absolute_%i'%args.year, 'HF_%i'%args.year, 'EC2_%i'%args.year, 'RelativeSample_%i'%args.year, 'BBEC1_%i'%args.year]
@@ -269,14 +303,14 @@ def wrapper():
             c.addUncertainty( "Scale",         shapeString)
             c.addUncertainty( "PDF",           shapeString)
             c.addUncertainty( "Parton_Showering",            shapeString)
-#            c.addUncertainty( "ISR",           shapeString)
+            #c.addUncertainty( "ISR",           shapeString)
 
         default_TTGpT_unc = 0.05
         gammaPT_thresholds = sorted(list(set(pTG_thresh + highpTG_thresh)))
         gammaPT_thresholds = gammaPT_thresholds[1:] + [ gammaPT_thresholds[0] ]
-#        if not args.inclRegion and with1pCR:
-#            for i in range(len(gammaPT_thresholds)-1):
-#                c.addUncertainty( "TTG_pT_Bin%i"%i, shapeString )
+        # if not args.inclRegion and with1pCR:
+            #for i in range(len(gammaPT_thresholds)-1):
+            #c.addUncertainty( "TTG_pT_Bin%i"%i, shapeString )
 
         default_misIDpT_unc = 0.20
         misIDPT_thresholds = [ 20, 35, 50, 65, 80, 120, 160, -999 ]
@@ -287,7 +321,7 @@ def wrapper():
         default_QCD_unc = 0.5
         c.addUncertainty( "QCD_1b_normalization", shapeString )
         c.addUncertainty( "QCD_0b_normalization", shapeString )
-#        c.addUncertainty( "QCD_TF", shapeString )
+        #c.addUncertainty( "QCD_TF", shapeString )
 
         default_HadFakes_unc = 0.15
         c.addUncertainty( "fake_photon_normalization",      shapeString )
@@ -328,17 +362,17 @@ def wrapper():
         default_DY_unc    = 0.08
         if any( [ name in ["DY2","DY3","DY4","DY4p","DY5"] for name in args.useRegions] ) and not args.dyPOI:
             c.addFreeParameter("ZJets_normalization", '*DY*', 1, '[0.,2.]')
-#            c.addFreeParameter("DY", 'DY', 1, '[0.5,1.5]')
+            #c.addFreeParameter("DY", 'DY', 1, '[0.5,1.5]')
         elif not args.dyPOI:
             c.addUncertainty( "ZJets_normalization", shapeString )
             c.addUncertainty( "ZJets_extrapolation", shapeString )
 
         if not args.addMisIDSF and not args.misIDPOI and with1pCR:
             c.addFreeParameter("MisID_normalization_%i"%args.year, '*misID*', 1, '[0.,5.]')
-#            c.addFreeParameter("misID_%i"%args.year, 'misID', 1, '[0,5]')
+            #c.addFreeParameter("misID_%i"%args.year, 'misID', 1, '[0,5]')
         elif not args.misIDPOI and with1pCR:
             c.addFreeParameter("MisID_normalization_%i"%args.year, '*misID*', 1, '[0.,2.]')
-#            c.addFreeParameter("misID_%i"%args.year, 'misID', 1, '[0,2]')
+            #c.addFreeParameter("misID_%i"%args.year, 'misID', 1, '[0,2]')
 
         for setup in setups:
             observation = DataObservation( name="Data", process=setup.data, cacheDir=setup.defaultCacheDir() )
@@ -346,10 +380,72 @@ def wrapper():
                 if pName == "Data": continue
                 for e in pList:
                     e.initCache( setup.defaultCacheDir() )
-
+                    if args.parameters and args.withbkg:
+                        setup.split_processes['ST_tch_gen'][0].initCache( setup.defaultCacheDir() )
+                        setup.split_processes['ST_tch_had'][0].initCache( setup.defaultCacheDir() )
+                        setup.split_processes['ST_tch_misID'][0].initCache( setup.defaultCacheDir() )
+                        setup.split_processes['ST_sch_gen'][0].initCache( setup.defaultCacheDir() )
+                        setup.split_processes['ST_sch_had'][0].initCache( setup.defaultCacheDir() )
+                        setup.split_processes['ST_sch_misID'][0].initCache( setup.defaultCacheDir() )
+                        setup.split_processes['ST_tW_gen'][0].initCache( setup.defaultCacheDir() )
+                        setup.split_processes['ST_tW_had'][0].initCache( setup.defaultCacheDir() )
+                        setup.split_processes['ST_tW_misID'][0].initCache( setup.defaultCacheDir() )
+                        setup.split_processes['TT_pow_gen'][0].initCache( setup.defaultCacheDir() )
+                        setup.split_processes['TT_pow_had'][0].initCache( setup.defaultCacheDir() )
+                        setup.split_processes['TT_pow_misID'][0].initCache( setup.defaultCacheDir() )
+                        setup.split_processes['TTG_had'][0].initCache( setup.defaultCacheDir() )
+                        setup.split_processes['WG_had'][0].initCache( setup.defaultCacheDir() )
+                        setup.split_processes['ZG_had'][0].initCache( setup.defaultCacheDir() )
+                        setup.split_processes['other_had'][0].initCache( setup.defaultCacheDir() )
+                        setup.split_processes['WJets_had'][0].initCache( setup.defaultCacheDir() )
+                        setup.split_processes['DY_LO_had'][0].initCache( setup.defaultCacheDir() )
             for r in setup.regions:
                 for i_ch, channel in enumerate(setup.channels):
                     if args.useChannels and channel not in args.useChannels: continue
+                    if args.parameters:
+                        # calc the ratios for the different samples (signal and background)
+                        smyieldkey  =  (setup.name, str(r),channel, "ctZ_0_ctZI_0_ctW_0_ctWI_0")
+                        yieldkey    =  (setup.name, str(r),channel, str(eft))
+                   
+                        # signal 
+                        smyield     =  yieldCache_TTG.get(smyieldkey)["val"]
+                        ratio_TTG   =  yieldCache_TTG.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
+                        smyield     =  yieldCache_TT.get(smyieldkey)["val"]
+                        ratio_TT    =  yieldCache_TT.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
+                        # background
+                        if args.withbkg: 
+                            smyield         =  yieldCache_tW.get(smyieldkey)["val"]
+                            ratio_tW        =  yieldCache_tW.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
+                            smyield         =  yieldCache_tWG.get(smyieldkey)["val"]
+                            ratio_tWG       =  yieldCache_tWG.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
+                            smyield         =  yieldCache_st_tch.get(smyieldkey)["val"]
+                            ratio_st_tch    =  yieldCache_st_tch.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
+                            smyield         =  yieldCache_stg_tch.get(smyieldkey)["val"]
+                            ratio_stg_tch   =  yieldCache_stg_tch.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
+                            smyield         =  yieldCache_st_sch.get(smyieldkey)["val"]
+                            ratio_st_sch    =  yieldCache_st_sch.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
+                            smyield         =  yieldCache_stg_sch.get(smyieldkey)["val"]
+                            ratio_stg_sch   =  yieldCache_stg_sch.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
+   
+                            # calc the amount of each sample in the components defined in SetupHelpers
+                            yield_st_tch_gen     = setup.split_processes['ST_tch_gen'][0].cachedEstimate(r,channel,setup)
+                            yield_st_tch_had     = setup.split_processes['ST_tch_had'][0].cachedEstimate(r,channel,setup)
+                            yield_st_tch_misID   = setup.split_processes['ST_tch_misID'][0].cachedEstimate(r,channel,setup)
+                            yield_st_sch_gen     = setup.split_processes['ST_sch_gen'][0].cachedEstimate(r,channel,setup)
+                            yield_st_sch_had     = setup.split_processes['ST_sch_had'][0].cachedEstimate(r,channel,setup)
+                            yield_st_sch_misID   = setup.split_processes['ST_sch_misID'][0].cachedEstimate(r,channel,setup)
+                            yield_tW_gen         = setup.split_processes['ST_tW_gen'][0].cachedEstimate(r,channel,setup)
+                            yield_tW_had         = setup.split_processes['ST_tW_had'][0].cachedEstimate(r,channel,setup)
+                            yield_tW_misID       = setup.split_processes['ST_tW_misID'][0].cachedEstimate(r,channel,setup)
+                            yield_TT_gen         = setup.split_processes['TT_pow_gen'][0].cachedEstimate(r,channel,setup)
+                            yield_TT_had         = setup.split_processes['TT_pow_had'][0].cachedEstimate(r,channel,setup)
+                            yield_TT_misID       = setup.split_processes['TT_pow_misID'][0].cachedEstimate(r,channel,setup)
+                            yield_TTG_had        = setup.split_processes['TTG_had'][0].cachedEstimate(r,channel,setup)
+                            yield_WG_had         = setup.split_processes['WG_had'][0].cachedEstimate(r,channel,setup)
+                            yield_ZG_had         = setup.split_processes['ZG_had'][0].cachedEstimate(r,channel,setup)
+                            yield_other_had      = setup.split_processes['other_had'][0].cachedEstimate(r,channel,setup)
+                            yield_WJets_had      = setup.split_processes['WJets_had'][0].cachedEstimate(r,channel,setup)
+                            yield_DY_LO_had      = setup.split_processes['DY_LO_had'][0].cachedEstimate(r,channel,setup)
 
                     niceName      = " ".join( [ channel, str(r), setup.addon ] )
                     binname       = "Bin%i"%counter
@@ -375,20 +471,6 @@ def wrapper():
                     sigUnc = {}
                     for pName, pList in setup.processes.items():
 
-                        # calc eft ratio
-                        ratio = 1.
-                        if args.parameters:                        
-
-                            smyieldkey  =  (setup.name, str(r),channel,  "ctZ_0_ctZI_0")
-                            if yieldCache.contains( smyieldkey ): smyield =  yieldCache.get(smyieldkey)["val"]
-                            else:                                 raise Exception("yieldCache does not contain key")
-
-                            yieldkey    =  (setup.name, str(r),channel, str(eft))
-                            if yieldCache.contains( yieldkey ): eftyield =  yieldCache.get(yieldkey)["val"]
-                            else:                               raise Exception("yieldCache does not contain key")
-
-                            if smyield > 0: ratio = eftyield / smyield
-
                         if pName == "Data": continue
                         misIDPOI = "misID" in pName and args.misIDPOI
                         dyPOI    = "DY" in pName and args.dyPOI
@@ -408,10 +490,8 @@ def wrapper():
                         for e in pList:
                             exp_yield = e.cachedEstimate( r, channel, setup )
 
-                            if signal and args.parameters: exp_yield *= ratio
                             if signal and args.linTest != 1:# and setup.signalregion:
                                 exp_yield /= args.linTest
-                                
                             if signal and args.addSSM:
                                 exp_yield *= SSMSF_val["RunII"].val
                                 logger.info( "Scaling signal by %f"%(SSMSF_val["RunII"].val) )
@@ -423,31 +503,24 @@ def wrapper():
                                 if "2" in setup.name and not "2p" in setup.name:
                                     exp_yield *= DY2SF_val["RunII"].val
                                     logger.info( "Scaling DY background %s by %f"%(e.name,DY2SF_val["RunII"].val) )
-
                                 elif "3" in setup.name and not "3p" in setup.name:
                                     exp_yield *= DY3SF_val["RunII"].val
                                     logger.info( "Scaling DY background %s by %f"%(e.name,DY3SF_val["RunII"].val) )
-
                                 elif "4" in setup.name and not "4p" in setup.name:
                                     exp_yield *= DY4SF_val["RunII"].val
                                     logger.info( "Scaling DY background %s by %f"%(e.name,DY4SF_val["RunII"].val) )
-
                                 elif "5" in setup.name:
                                     exp_yield *= DY5SF_val["RunII"].val
                                     logger.info( "Scaling DY background %s by %f"%(e.name,DY5SF_val["RunII"].val) )
-
                                 elif "2p" in setup.name:
                                     exp_yield *= DY2pSF_val["RunII"].val
                                     logger.info( "Scaling DY background %s by %f"%(e.name,DY2pSF_val["RunII"].val) )
-
                                 elif "3p" in setup.name:
                                     exp_yield *= DY3pSF_val["RunII"].val
                                     logger.info( "Scaling DY background %s by %f"%(e.name,DY3pSF_val["RunII"].val) )
-
                                 elif "4p" in setup.name:
                                     exp_yield *= DY4pSF_val["RunII"].val
                                     logger.info( "Scaling DY background %s by %f"%(e.name,DY4pSF_val["RunII"].val) )
-
                                 else:
                                     exp_yield *= DYSF_val["RunII"].val
                                     logger.info( "Scaling DY background %s by %f"%(e.name,DYSF_val["RunII"].val) )
@@ -461,6 +534,40 @@ def wrapper():
                             if e.name.count( "misID" ) and args.addMisIDSF:
                                 exp_yield *= misIDSF_val[args.year].val
                                 logger.info( "Scaling misID background %s by %f"%(e.name,misIDSF_val[args.year].val) )
+                            
+                            total_exp_bkg += exp_yield.val
+                            
+                            if args.parameters:
+                                # reweight the signal(TTGamma) with the calculated ratio
+                                if e.name== 'TTG_gen': exp_yield *= ratio_TTG
+                                if e.name== 'TTG_misID': exp_yield *= ratio_TT
+                                # reweight also the background with the calculated ratio
+                                if args.withbkg:
+                                    if e.name== 'Top_misID': 
+                                        print('Top_misID:', exp_yield)
+                                        print('sum of all Top_misID-samples:', yield_st_tch_misID + yield_st_sch_misID +yield_tW_misID + yield_TT_misID)
+                                        exp_yield = ((yield_st_tch_misID)*ratio_st_tch + (yield_st_sch_misID)*ratio_st_sch + (yield_tW_misID)*ratio_tW + (yield_TT_misID)*ratio_TT) 
+                                        #exp_yield *= ((yield_st_tch_misID/exp_yield)*ratio_st_tch + (yield_st_sch_misID/exp_yield)*ratio_st_sch + (yield_tW_misID/exp_yield)*ratio_tW + (yield_TT_misID/exp_yield)*ratio_TT) 
+                                    if e.name== 'Top_gen':
+                                        print('Top_gen:', exp_yield)
+                                        print('sum of all Top_gen-samples:', yield_st_tch_gen + yield_st_sch_gen +yield_tW_gen + yield_TT_gen)
+                                        exp_yield = ((yield_st_tch_gen)*ratio_stg_tch + (yield_st_sch_gen)*ratio_stg_sch + (yield_tW_gen)*ratio_tWG + (yield_TT_gen)*ratio_TTG)
+                                        #exp_yield *= ((yield_st_tch_gen/exp_yield)*ratio_stg_tch + (yield_st_sch_gen/exp_yield)*ratio_stg_sch + (yield_tW_gen/exp_yield)*ratio_tWG + (yield_TT_gen/exp_yield)*ratio_TTG)
+                                    #if e.name=='fakes-DD' or e.name.endswith('_had'):
+                                    if e.name.endswith('_had'):
+                                        if e.name== 'TTG_had': exp_yield *= ratio_TT
+                                        if e.name== 'Top_had': 
+                                            print('Top_had:', exp_yield)
+                                            print('sum of all Top_had-samples:', yield_st_tch_had + yield_st_sch_had + yield_tW_had + yield_TT_had)
+                                            exp_yield = ((yield_st_tch_had)*ratio_st_tch + (yield_st_sch_had)*ratio_st_sch + (yield_tW_had)*ratio_tW + (yield_TT_had)*ratio_TT)
+                                            #exp_yield *= ((yield_st_tch_had/exp_yield)*ratio_st_tch + (yield_st_sch_had/exp_yield)*ratio_st_sch + (yield_tW_had/exp_yield)*ratio_tW + (yield_TT_had/exp_yield)*ratio_TT)
+                                        #if e.name== 'fakes-DD': 
+                                            #print('fakes-DD:', exp_yield)
+                                            #print('sum of all fakes-DD-samples:', yield_TTG_had + yield_st_tch_had + yield_st_sch_had + yield_tW_had + yield_TT_had + yield_WG_had + yield_ZG_had + yield_other_had + yield_WJets_had + yield_DY_LO_had)
+                                            #ratio = exp_yield/(yield_TTG_had + yield_st_tch_had + yield_st_sch_had + yield_tW_had + yield_TT_had + yield_WG_had + yield_ZG_had + yield_other_had + yield_WJets_had + yield_DY_LO_had)
+                                            #exp_yield = ((yield_TTG_had)*ratio_TT*ratio + (yield_st_tch_had)*ratio_st_tch*ratio + (yield_st_sch_had)*ratio_st_sch*ratio + (yield_tW_had)*ratio_tW*ratio + (yield_TT_had)*ratio_TT*ratio + (yield_WG_had)*ratio + (yield_ZG_had)*ratio + (yield_other_had)*ratio + (yield_WJets_had)*ratio + (yield_DY_LO_had)*ratio)
+                                            #exp_yield *= ((yield_TTG_had/exp_yield)*ratio_TT*ratio + (yield_st_tch_had/exp_yield)*ratio_st_tch*ratio + (yield_st_sch_had/exp_yield)*ratio_st_sch*ratio + (yield_tW_had/exp_yield)*ratio_tW*ratio + (yield_TT_had/exp_yield)*ratio_TT*ratio + (yield_WG_had/exp_yield)*ratio + (yield_ZG_had/exp_yield)*ratio + (yield_other_had/exp_yield)*ratio + (yield_WJets_had/exp_yield)*ratio + (yield_DY_LO_had/exp_yield)*ratio)
+
                             e.expYield = exp_yield
                             expected  += exp_yield
 
@@ -473,12 +580,11 @@ def wrapper():
                             c.specifyExpectation( binname, pName, expected.val ) #if expected.val > 0 else 0.01 )
 
                         # correct observation for eft
-                        if signal and args.parameters:
-                            total_exp_bkg += (expected.val/ratio) if ratio else 0
-                        elif signal and args.linTest != 1:# and setup.signalregion:
-                            total_exp_bkg += expected.val*args.linTest
-                        else:
-                            total_exp_bkg += expected.val
+                        #if signal and args.linTest != 1:# and setup.signalregion:
+                            #total_exp_bkg += expected.val*args.linTest
+                        #else:
+                            #total_exp_bkg += expected.val
+
                         if signal and expected.val <= 0.01: mute = True
 
                         for j in jesTags:
@@ -582,9 +688,9 @@ def wrapper():
 
                                 for j in jesTags:
                                     locals()["jec_%s"%j] = y_scale * e.JECSystematic( r, channel, setup, jes=j ).val
-#                                jec     += y_scale * e.JECSystematic(                  r, channel, setup ).val
+                                #jec     += y_scale * e.JECSystematic(                  r, channel, setup ).val
                                 jer     += y_scale * e.JERSystematic(                  r, channel, setup ).val
-                                eer     += y_scale * e.MERSystematic(                  r, channel, setup ).val
+                                eer     += y_scale * e.EERSystematic(                  r, channel, setup ).val
                                 ees     += y_scale * e.EESSystematic(                  r, channel, setup ).val
                                 mer     += y_scale * e.MERSystematic(                  r, channel, setup ).val
                                 sfb     += y_scale * e.btaggingSFbSystematic(          r, channel, setup ).val
@@ -618,8 +724,8 @@ def wrapper():
                         for j in jesTags:
                             if locals()["jec_%s"%j] > 0.0005:
                                 addUnc( c, "JEC_%s"%j,           binname, pName, locals()["jec_%s"%j],     expected.val, signal )
-#                        if jec > 0.0005:
-#                            addUnc( c, "JEC",           binname, pName, jec,     expected.val, signal )
+                        #if jec > 0.0005:
+                        #addUnc( c, "JEC",           binname, pName, jec,     expected.val, signal )
                         if jer > 0.0005:
                             addUnc( c, "JER_%i"%args.year,           binname, pName, jer,     expected.val, signal )
                         if ees > 0.0005:
@@ -655,8 +761,8 @@ def wrapper():
                                 addUnc( c, "pixelSeed_veto_%i"%args.year,       binname, pName, eVetoSF, expected.val, signal )
                         
 
-#                        if qcdTF3:
-#                            addUnc( c, "QCD_TF", binname, pName, qcdTF3, expected.val, signal )
+                        #if qcdTF3:
+                        #addUnc( c, "QCD_TF", binname, pName, qcdTF3, expected.val, signal )
 
                         if not args.inclRegion:
                             for i in range(len(gammaPT_thresholds)-1):
@@ -665,8 +771,8 @@ def wrapper():
                             for i in range(len(misIDPT_thresholds)-1):
                                 if locals()["misID_bin%i_unc"%i] > 0.0005:
                                     addUnc( c, "misID_pT_Bin%i_%i"%(i,args.year), binname, pName, locals()["misID_bin%i_unc"%i], expected.val, signal )
-#                                elif counter == 1 and not setup.signalregion and signal and not newPOI_input:
-#                                    addUnc( c, "TTG_pT_Bin%i"%i, binname, pName, 0.0005, expected.val, signal )
+                        #elif counter == 1 and not setup.signalregion and signal and not newPOI_input:
+                        #addUnc( c, "TTG_pT_Bin%i"%i, binname, pName, 0.0005, expected.val, signal )
 
                         if dyUnc > 0.0005:
                             addUnc( c, "ZJets_normalization", binname, pName, dyUnc, expected.val, signal )
@@ -708,18 +814,18 @@ def wrapper():
                                 c.specifyUncertainty( key, binname, "signal", 1 + val.sigma/sigExp.val )
 
                     if args.expected or (args.year in [2017,2018] and not args.unblind and setup.signalregion):
-#                        if args.linTest != 1:# and setup.signalregion:
-#                            c.specifyObservation( binname, int( round( total_exp_bkg*args.linTest, 0 ) ) )
-#                            logger.info( "Expected observation: %s", int( round( total_exp_bkg*args.linTest, 0 ) ) )
-#                        else:
+                        #if args.linTest != 1:# and setup.signalregion:
+                            #c.specifyObservation( binname, int( round( total_exp_bkg*args.linTest, 0 ) ) )
+                            #logger.info( "Expected observation: %s", int( round( total_exp_bkg*args.linTest, 0 ) ) )
+                        #else:
                             c.specifyObservation( binname, int( round( total_exp_bkg, 0 ) ) )
                             logger.info( "Expected observation: %s", int( round( total_exp_bkg, 0 ) ) )
                     else:
                         c.specifyObservation( binname,  int( observation.cachedObservation(r, channel, setup).val )  if not "null" in setup.name.lower() else 0 )
                         logger.info( "Observation: %s", int( observation.cachedObservation(r, channel, setup).val )  if not "null" in setup.name.lower() else 0 )
 
-#                    if mute and total_exp_bkg <= 0.01:
-#                        c.muted[binname] = True
+                    #if mute and total_exp_bkg <= 0.01:
+                        #c.muted[binname] = True
 
         # Flat luminosity uncertainty
         c.addUncertainty( "Int_Luminosity_%i"%args.year, "lnN" )
@@ -763,6 +869,7 @@ def wrapper():
         if nll_postfit is None or abs(nll_postfit) > 10000 or abs(nll_postfit) < 1e-5: nll_postfit = 999
 
         nllCache.add( sEFTConfig, NLL, overwrite=True )
+        print(NLL)
 
     else:
             res = c.calcLimit( cardFileName )
