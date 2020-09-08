@@ -13,7 +13,8 @@ from TTGammaEFT.Analysis.Setup           import Setup
 from TTGammaEFT.Analysis.regions         import m3PtlooseRegions, regionsTTGlooseFine, regionsTTG, noPhotonRegionTTG, inclRegionsTTG, regionsTTGfake, inclRegionsTTGfake, chgIso_thresh, chgIsoRegions, pTG_thresh, highpTG_thresh, mLgRegions
 from TTGammaEFT.Analysis.SetupHelpers    import *
 
-from TTGammaEFT.Tools.user               import cache_directory, combineReleaseLocation, cardfileLocation
+from TTGammaEFT.Tools.user               import combineReleaseLocation, cardfileLocation
+from TTGammaEFT.Tools.user               import cache_directory_read as cache_directory
 from Analysis.Tools.MergingDirDB         import MergingDirDB
 from Analysis.Tools.u_float              import u_float
 from Analysis.Tools.cardFileWriter       import cardFileWriter
@@ -32,6 +33,7 @@ argParser.add_argument( "--inclRegion",         action="store_true",            
 argParser.add_argument( "--overwrite",          action="store_true",                                                        help="Overwrite existing output files" )
 argParser.add_argument( "--useRegions",         action="store",      nargs='*',       type=str, choices=allRegions.keys(),  help="Which regions to use?" )
 argParser.add_argument( "--useChannels",        action="store",      nargs='*', default="all",   type=str, choices=["e", "mu", "all", "comb"], help="Which lepton channels to use?" )
+argParser.add_argument( "--addNJetUnc",         action="store_true",                                                        help="add the nJet uncertainties in the 4p channel" )
 argParser.add_argument( "--addVGSF",            action="store_true",                                                        help="add default DY scale factor" )
 argParser.add_argument( "--addZGSF",            action="store_true",                                                        help="add default DY scale factor" )
 argParser.add_argument( "--addWGSF",            action="store_true",                                                        help="add default DY scale factor" )
@@ -118,6 +120,7 @@ if not args.checkOnly:
 with0pCR = False
 with1pCR = False
 setups = []
+splitProcessDict = {"ST_tch_gen":{"process":["ST_tch_gen"]}}
 for key, val in allRegions.items():
     if not key in args.useRegions: continue
     if key not in limitOrdering:
@@ -138,6 +141,12 @@ for key, val in allRegions.items():
     locals()["setup"+key].signalregion = "SR" in key
     locals()["setup"+key].bTagged      = locals()["setup"+key].parameters["nBTag"][1] != 0
     locals()["setup"+key].regions      = val["inclRegion" if args.inclRegion else "regions"]
+
+
+#    if "SR" in key:
+#        locals()["setup"+key].regions = val["inclRegion"]
+
+
     locals()["setup"+key].data         = default_setup.data if val["noPhotonCR"] else default_photon_setup.data
     locals()["setup"+key].processes    = estimators.constructProcessDict( processDict=val["processes"] ) if "processes" in val else default_setup.processes if val["noPhotonCR"] else default_photon_setup.processes
     locals()["setup"+key].processes["Data"] = locals()["setup"+key].data
@@ -209,17 +218,20 @@ jesTags = ['FlavorQCD', 'RelativeBal', 'HF', 'BBEC1', 'EC2', 'Absolute', 'Absolu
 def getScaleUnc(name, r, channel, setup):
     key      = uniqueKey( name, r, channel, setup ) + tuple(str(args.year))
     scaleUnc = scaleUncCache.get( key )
-    return max(0.0005, scaleUnc)
+    if scaleUnc > 0.5: scaleUnc = 0.5
+    return max(0.0004, scaleUnc)
 
 def getPDFUnc(name, r, channel, setup):
     key    = uniqueKey( name, r, channel, setup ) + tuple(str(args.year))
     PDFUnc = pdfUncCache.get( key )
-    return max(0.0005, PDFUnc)
+    if PDFUnc > 0.5: PDFUnc = 0.5
+    return max(0.0004, PDFUnc)
 
 def getPSUnc(name, r, channel, setup):
     key   = uniqueKey( name, r, channel, setup ) + tuple(str(args.year))
     PSUnc = psUncCache.get( key )
-    return max(0.0005, PSUnc)
+    if PSUnc > 0.5: PSUnc = 0.5
+    return max(0.0004, PSUnc)
 
 def wrapper():
     c = cardFileWriter.cardFileWriter()
@@ -250,7 +262,7 @@ def wrapper():
         c.addUncertainty( "JER_%i"%args.year,           shapeString) #uncorrelated
         c.addUncertainty( "EGamma_Scale",           shapeString) #correlated
         c.addUncertainty( "EGamma_Resolution",       shapeString) #correlated
-        c.addUncertainty( "Muon_pT_error",           shapeString) #correlated
+#        c.addUncertainty( "Muon_pT_error",           shapeString) #correlated
         c.addUncertainty( "heavy_flavor",           shapeString) #need to check
         c.addUncertainty( "light_flavor",           shapeString) #need to check
         c.addUncertainty( "Trigger_muons_%i"%args.year,       shapeString) #uncorrelated
@@ -260,37 +272,45 @@ def wrapper():
         c.addUncertainty( "electron_ID",      shapeString) #correlated in e, split stat/syst in mu
         c.addUncertainty( "electron_reco", shapeString) #uncorrelated to e ID (non existing for mu)
         c.addUncertainty( "L1_Prefiring",     shapeString) #need to check
+        c.addUncertainty( "top_pt_reweighting",  shapeString)
         if with1pCR:
             c.addUncertainty( "photon_ID",      shapeString)
             c.addUncertainty( "pixelSeed_veto_%i"%args.year,       shapeString) #uncorrelated
             # theory (PDF, scale, ISR)
             c.addUncertainty( "Tune",          shapeString)
             c.addUncertainty( "erdOn",         shapeString)
+#            c.addUncertainty( "GluonMove",    shapeString)
+#            c.addUncertainty( "QCDbased",     shapeString)
             c.addUncertainty( "Scale",         shapeString)
             c.addUncertainty( "PDF",           shapeString)
             c.addUncertainty( "Parton_Showering",            shapeString)
 #            c.addUncertainty( "ISR",           shapeString)
 
-        default_TTGpT_unc = 0.05
-        gammaPT_thresholds = sorted(list(set(pTG_thresh + highpTG_thresh)))
-        gammaPT_thresholds = gammaPT_thresholds[1:] + [ gammaPT_thresholds[0] ]
-#        if not args.inclRegion and with1pCR:
-#            for i in range(len(gammaPT_thresholds)-1):
-#                c.addUncertainty( "TTG_pT_Bin%i"%i, shapeString )
-
         default_misIDpT_unc = 0.20
         misIDPT_thresholds = [ 20, 35, 50, 65, 80, 120, 160, -999 ]
         if not args.inclRegion and with1pCR:
-            for i in range(len(misIDPT_thresholds)-1):
+            for i in range(1, len(misIDPT_thresholds)-1):
                 c.addUncertainty( "misID_pT_Bin%i_%i"%(i,args.year), shapeString )
 
-        default_QCD_unc = 0.5
+        default_WGpT_unc = 0.20
+        WGPT_thresholds = [ 20, 65, 160, -999 ]
+        if not args.inclRegion and with1pCR:
+            for i in range(1, len(WGPT_thresholds)-1):
+                c.addUncertainty( "WGamma_pT_Bin%i"%(i), shapeString )
+                c.addUncertainty( "ZGamma_pT_Bin%i"%(i), shapeString )
+
+        default_QCD1b_unc = 0.5*0.5 #uncorrelated part, 50% correlation between 0b and 1b, generally 50%uncertainty
+        default_QCD0b_unc = 0.5*0.5 #uncorrelated part, 50% correlation between 0b and 1b, generally 50%uncertainty
+        default_QCD_unc   = 0.5*0.866025 #correlated part, 50% correlation between 0b and 1b, generally 50%uncertainty
         c.addUncertainty( "QCD_1b_normalization", shapeString )
         c.addUncertainty( "QCD_0b_normalization", shapeString )
+        c.addUncertainty( "QCD_normalization", shapeString )
 #        c.addUncertainty( "QCD_TF", shapeString )
 
-        default_HadFakes_unc = 0.15
-        c.addUncertainty( "fake_photon_normalization",      shapeString )
+        default_HadFakes_MC_unc = 0.05
+        default_HadFakes_DD_unc = 0.05
+        c.addUncertainty( "fake_photon_DD_normalization",      shapeString )
+        c.addUncertainty( "fake_photon_MC_normalization",   shapeString )
 
         default_HadFakes_2017_unc = 0.20
         if args.year == 2017:
@@ -309,20 +329,28 @@ def wrapper():
         default_Other_unc    = 0.30
         c.addUncertainty( "Other_normalization",      shapeString )
 
-        default_misID4p_unc    = 0.5
-        if any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] ):
+        default_misID4p_unc    = 0.2
+        if (any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] )) or args.addNJetUnc:
             c.addUncertainty( "MisID_nJet_dependence",      shapeString )
 
-        default_ZG4p_unc    = 0.8
-        if any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] ):
+        default_ZG4p_unc    = 0.4
+        if (any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] )) or args.addNJetUnc:
             c.addUncertainty( "ZGamma_nJet_dependence",      shapeString )
 
-        default_DY4p_unc    = 0.8
-        if any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] ):
+        default_QCD0b4p_unc    = 0.2
+        if (any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] )) or args.addNJetUnc:
+            c.addUncertainty( "QCD_0b_nJet_dependence",      shapeString )
+
+        default_QCD1b4p_unc    = 0.4
+        if (any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] )) or args.addNJetUnc:
+            c.addUncertainty( "QCD_1b_nJet_dependence",      shapeString )
+
+        default_DY4p_unc    = 0.2
+        if (any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] )) or args.addNJetUnc:
             c.addUncertainty( "ZJets_nJet_dependence",      shapeString )
     
-        default_WG4p_unc    = 0.5
-        if any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] ):
+        default_WG4p_unc    = 0.2
+        if (any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] )) or args.addNJetUnc:
             c.addUncertainty( "WGamma_nJet_dependence",      shapeString )
     
         default_DY_unc    = 0.08
@@ -379,7 +407,7 @@ def wrapper():
                         ratio = 1.
                         if args.parameters:                        
 
-                            smyieldkey  =  (setup.name, str(r),channel,  "ctZ_0_ctZI_0")
+                            smyieldkey  =  (setup.name, str(r),channel,  "ctZ_0_ctZI_0_ctW_0_ctWI_0")
                             if yieldCache.contains( smyieldkey ): smyield =  yieldCache.get(smyieldkey)["val"]
                             else:                                 raise Exception("yieldCache does not contain key")
 
@@ -483,51 +511,76 @@ def wrapper():
 
                         for j in jesTags:
                             locals()["jec_%s"%j] = 0
-                        tune, erdOn, pu, mer, eer, ees, jer, sfb, sfl, trigger_e, trigger_mu, lepSF_e, lepSF_muStat, lepSF_muSyst, lepTrSF, phSF, eVetoSF, pfSF = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                        topPt, tune, erdOn, gluonMove, qcdBased, pu, mer, eer, ees, jer, sfb, sfl, trigger_e, trigger_mu, lepSF_e, lepSF_muStat, lepSF_muSyst, lepTrSF, phSF, eVetoSF, pfSF = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                         ps, scale, pdf, isr = 0, 0, 0, 0
-                        qcdTF3, qcdTF4, wjets4p, wg4p = 0, 0, 0, 0
+                        qcdTF3, qcdTF4, wjets4p, wg4p, qcd0b4p, qcd1b4p= 0, 0, 0, 0, 0, 0
                         dyGenUnc, ttGenUnc, vgGenUnc, wjetsGenUnc, otherGenUnc, misIDUnc, lowSieieUnc, highSieieUnc, misIDPtUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0
-                        gluon, hadFakes17Unc, hadFakesUnc, wg, zg, misID4p, dy4p, zg4p, misIDUnc, qcdUnc, vgUnc, wgUnc, zgUnc, dyUnc, ttUnc, wjetsUnc, other0pUnc, otherUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-                        for i in range(len(gammaPT_thresholds)-1):
-                            locals()["ttg_bin%i_unc"%i] = 0
-                        for i in range(len(misIDPT_thresholds)-1):
+                        gluon, hadFakes17Unc, hadFakesUnc, wg, zg, misID4p, dy4p, zg4p, misIDUnc, qcdUnc, qcd0bUnc, qcd1bUnc, vgUnc, wgUnc, zgUnc, dyUnc, ttUnc, wjetsUnc, other0pUnc, otherUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                        for i in range(1,len(misIDPT_thresholds)-1):
                             locals()["misID_bin%i_unc"%i] = 0
+
+                        for i in range(1,len(WGPT_thresholds)-1):
+                            locals()["WGamma_bin%i_unc"%i] = 0
+                            locals()["ZGamma_bin%i_unc"%i] = 0
 
                         if expected.val:
                             for e in pList:
                                 y_scale   = e.expYield.val / expected.val
 
                                 if e.name.count( "QCD" ):
-                                    qcdUnc   += y_scale * default_QCD_unc
+                                    qcdUnc     += y_scale * default_QCD_unc
+                                    qcd0bUnc   += y_scale * default_QCD0b_unc
+                                    qcd1bUnc   += y_scale * default_QCD1b_unc
                                     qcdTF3   += y_scale * e.expYield.sigma / e.expYield.val
+                                    if "4" in setup.name:
+                                        qcd0b4p += y_scale * default_QCD0b4p_unc
+                                        qcd1b4p += y_scale * default_QCD1b4p_unc
                                     continue # no systematics for data-driven QCD
 
                                 if e.name.count( "DY" ):
                                     dyUnc    += y_scale * default_DY_unc
-                                if e.name.count( "TT_pow" ) or (args.ttPOI and signal):
-                                    ttUnc    += y_scale * default_TT_unc
-
-                                if not args.inclRegion and not newPOI_input and (signal and setup.signalregion):
-                                        pT_index = max( [ i_pt if ptCut.cutString() in r.cutString() else -1 for i_pt, ptCut in enumerate(regionsTTGlooseFine) ] )
-                                        if pT_index >= 0:
-                                            locals()["ttg_bin%i_unc"%pT_index] += y_scale * default_TTGpT_unc
 
                                 if not args.inclRegion and e.name.count( "misID" ):
-                                        pT_index = max( [ i_pt if ptCut.cutString() in r.cutString() else -1 for i_pt, ptCut in enumerate(regionsTTG) ] )
-                                        if pT_index == -1:
-                                            pT_index = max( [ i_pt if ptCut.cutString().replace("PhotonGood","PhotonNoChgIsoNoSieie") in r.cutString() else -1 for i_pt, ptCut in enumerate(regionsTTG) ] )
-                                            if pT_index == -1:
-                                                pT_index = max( [ i_pt if ptCut.cutString().replace("PhotonGood","PhotonNoChgIsoNoSieie") in r.cutString() else -1 for i_pt, ptCut in enumerate(regionsTTGlooseFine) ] )
-                                                if pT_index >= len(regionsTTG): pT_index = len(regionsTTG)-1
-                                        if pT_index >= 0:
+                                    if ("PhotonGood0_pt" in r.vals.keys() or "PhotonNoChgIsoNoSieie" in r.vals.keys()):
+                                        low, high = r.vals["PhotonGood0_pt" if "PhotonGood0_pt" in r.vals.keys() else "PhotonNoChgIsoNoSieie"]
+                                        pT_indices = []
+                                        for i_pt, thresh in enumerate(misIDPT_thresholds[:-1]):
+                                            if (thresh >= low and thresh < high) or (misIDPT_thresholds[i_pt+1] > low and misIDPT_thresholds[i_pt+1] <= high) or (misIDPT_thresholds[i_pt+1] == -999 and (high == -999 or high > thresh)): pT_indices.append(i_pt)
+                                    else:
+                                        pT_indices = []
+
+                                    if pT_indices:
+                                        for pT_index in pT_indices:
+                                            if pT_index == 0: continue
                                             locals()["misID_bin%i_unc"%pT_index] += y_scale * default_misIDpT_unc
+
+                                if not args.inclRegion and (e.name.count( "WG" ) or e.name.count( "ZG" )):
+                                    if ("PhotonGood0_pt" in r.vals.keys() or "PhotonNoChgIsoNoSieie" in r.vals.keys()):
+                                        low, high = r.vals["PhotonGood0_pt" if "PhotonGood0_pt" in r.vals.keys() else "PhotonNoChgIsoNoSieie"]
+                                        pT_indices = []
+                                        for i_pt, thresh in enumerate(WGPT_thresholds[:-1]):
+                                            if (thresh >= low and thresh < high) or (thresh <= low and thresh <= high and WGPT_thresholds[i_pt+1] >= low and WGPT_thresholds[i_pt+1] >= high) or (WGPT_thresholds[i_pt+1] > low and WGPT_thresholds[i_pt+1] <= high) or (WGPT_thresholds[i_pt+1] == -999 and (high == -999 or high > thresh)): pT_indices.append(i_pt)
+                                        print pT_indices, low, high
+                                    else:
+                                        pT_indices = []
+
+                                    if pT_indices:
+                                        for pT_index in pT_indices:
+                                            if pT_index == 0: continue
+                                            if e.name.count( "WG" ):
+                                                locals()["WGamma_bin%i_unc"%pT_index] += y_scale * default_WGpT_unc
+                                            if e.name.count( "ZG" ):
+                                                locals()["ZGamma_bin%i_unc"%pT_index] += y_scale * default_WGpT_unc
 
                                 if e.name.count( "other" ):
                                     otherUnc += y_scale * default_Other_unc
 
                                 if e.name.count( "_had" ) or e.name.count( "fakes-DD" ):
-                                    hadFakesUnc += y_scale * default_HadFakes_unc
-                                    if args.year == 2017:
+                                    if e.name.count( "_had" ):
+                                        hadFakesUnc += y_scale * default_HadFakes_MC_unc
+                                    elif e.name.count( "fakes-DD" ):
+                                        hadFakesUnc += y_scale * default_HadFakes_DD_unc
+                                    if args.year == 2017 and "4" in setup.name and setup.signalregion and channel == "e":
                                         hadFakes17Unc += y_scale * default_HadFakes_2017_unc
 
                                 if e.name.count( "ZG" ):
@@ -549,12 +602,18 @@ def wrapper():
                                 if e.name.count( "misID" ) and "4" in setup.name:
                                     misID4p += y_scale * default_misID4p_unc
 
-                                if signal and not newPOI_input:
-                                    tune    += y_scale * e.TuneSystematic(    r, channel, setup ).val
-                                    erdOn   += y_scale * e.ErdOnSystematic(   r, channel, setup ).val
-                                    scale   += y_scale * getScaleUnc( e.name, r, channel, setup )
-                                    pdf     += y_scale * getPDFUnc(   e.name, r, channel, setup )
-                                    ps      += y_scale * getPSUnc(    e.name, r, channel, setup )
+                                if signal and not newPOI_input and setup.signalregion:
+                                    tune      += y_scale * e.TuneSystematic(    r, channel, setup ).val
+                                    erdOn     += y_scale * e.ErdOnSystematic(   r, channel, setup ).val
+                                    qcdBased  += y_scale * e.QCDbasedSystematic(   r, channel, setup ).val
+#                                    gluonMove += y_scale * e.GluonMoveSystematic(   r, channel, setup ).val
+
+                                    uncName = e.name #.replace("Top","TT_pow").replace("fakes-DD","TT_pow_had")
+                                    scale   += y_scale * getScaleUnc( uncName, r, channel, setup )
+                                    pdf     += y_scale * getPDFUnc(   uncName, r, channel, setup )
+                                    ps      += y_scale * getPSUnc(    uncName, r, channel, setup )
+
+                                topPt  += y_scale * e.topPtSystematic( r, channel, setup ).val
 
                                 if channel == "e":
                                     trigger_e += y_scale * e.triggerSystematic(              r, channel, setup ).val
@@ -584,9 +643,14 @@ def wrapper():
                                     locals()["jec_%s"%j] = y_scale * e.JECSystematic( r, channel, setup, jes=j ).val
 #                                jec     += y_scale * e.JECSystematic(                  r, channel, setup ).val
                                 jer     += y_scale * e.JERSystematic(                  r, channel, setup ).val
-                                eer     += y_scale * e.MERSystematic(                  r, channel, setup ).val
+#                                eer     += y_scale * e.EERSystematic(                  r, channel, setup ).val
                                 ees     += y_scale * e.EESSystematic(                  r, channel, setup ).val
-                                mer     += y_scale * e.MERSystematic(                  r, channel, setup ).val
+#                                if channel == "mu":
+#                                    # mu_pt syst fails for fakes-dd in some regions with 300% uncertainties, remove those
+#                                    mer_syst = e.MERSystematic( r, channel, setup ).val
+#                                    if e.name.count( "fakes-DD" ) and mer_syst > 0.5:
+#                                        mer_syst = 0
+#                                    mer     += y_scale * mer_syst
                                 sfb     += y_scale * e.btaggingSFbSystematic(          r, channel, setup ).val
                                 sfl     += y_scale * e.btaggingSFlSystematic(          r, channel, setup ).val
                                 phSF    += y_scale * e.photonSFSystematic(             r, channel, setup ).val
@@ -602,7 +666,19 @@ def wrapper():
                                 c.specifyUncertainty( name, binname, pName, 1 + unc )
 
                         if qcdUnc > 0.0005:
-                            addUnc( c, "QCD_1b_normalization" if setup.bTagged else "QCD_0b_normalization", binname, pName, qcdUnc, expected.val, signal )
+                            addUnc( c, "QCD_normalization", binname, pName, qcdUnc, expected.val, signal )
+
+                        if qcd1bUnc > 0.0005 and setup.bTagged:
+                            addUnc( c, "QCD_1b_normalization", binname, pName, qcd1bUnc, expected.val, signal )
+
+                        if qcd0bUnc > 0.0005 and not setup.bTagged:
+                            addUnc( c, "QCD_0b_normalization", binname, pName, qcd0bUnc, expected.val, signal )
+
+                        if qcd1b4p > 0.0005 and setup.bTagged:
+                            addUnc( c, "QCD_1b_nJet_dependence", binname, pName, qcd1b4p, expected.val, signal )
+
+                        if qcd0b4p > 0.0005 and not setup.bTagged:
+                            addUnc( c, "QCD_0b_nJet_dependence", binname, pName, qcd0b4p, expected.val, signal )
 
                         if with1pCR:
                             if scale > 0.0005: # and setup.signalregion:
@@ -611,6 +687,10 @@ def wrapper():
                                 addUnc( c, "PDF",           binname, pName, pdf,     expected.val, signal )
                             if erdOn > 0.0005: # and setup.signalregion:
                                 addUnc( c, "erdOn",         binname, pName, erdOn,   expected.val, signal )
+                            if qcdBased > 0.0005: # and setup.signalregion:
+                                addUnc( c, "QCDbased",         binname, pName, qcdBased,   expected.val, signal )
+                            if gluonMove > 0.0005: # and setup.signalregion:
+                                addUnc( c, "GluonMove",         binname, pName, gluonMove,   expected.val, signal )
                             if tune > 0.0005: # and setup.signalregion:
                                 addUnc( c, "Tune",          binname, pName, tune,    expected.val, signal )
                             if ps > 0.0005: # and setup.signalregion:
@@ -626,8 +706,8 @@ def wrapper():
                             addUnc( c, "EGamma_Scale",           binname, pName, ees,     expected.val, signal )
                         if eer > 0.0005:
                             addUnc( c, "EGamma_Resolution",           binname, pName, eer,     expected.val, signal )
-                        if mer > 0.0005:
-                            addUnc( c, "Muon_pT_error",           binname, pName, mer,     expected.val, signal )
+#                        if mer > 0.0005:
+#                            addUnc( c, "Muon_pT_error",           binname, pName, mer,     expected.val, signal )
                         if pu > 0.0005:
                             addUnc( c, "PU",            binname, pName, pu,      expected.val, signal )
                         if sfb > 0.0005:
@@ -648,6 +728,9 @@ def wrapper():
                             addUnc( c, "muon_ID_syst",      binname, pName, lepSF_muSyst,   expected.val, signal )
                         if pfSF > 0.0005:
                             addUnc( c, "L1_Prefiring",     binname, pName, pfSF,    expected.val, signal )
+                        if topPt > 0.0005:
+                            addUnc( c, "top_pt_reweighting", binname, pName, topPt, expected.val, signal )
+
                         if with1pCR:
                             if phSF > 0.0005:
                                 addUnc( c, "photon_ID",      binname, pName, phSF,    expected.val, signal )
@@ -659,14 +742,15 @@ def wrapper():
 #                            addUnc( c, "QCD_TF", binname, pName, qcdTF3, expected.val, signal )
 
                         if not args.inclRegion:
-                            for i in range(len(gammaPT_thresholds)-1):
-                                if locals()["ttg_bin%i_unc"%i] > 0.0005:
-                                    addUnc( c, "TTG_pT_Bin%i"%i, binname, pName, locals()["ttg_bin%i_unc"%i], expected.val, signal )
-                            for i in range(len(misIDPT_thresholds)-1):
+                            for i in range(1, len(misIDPT_thresholds)-1):
                                 if locals()["misID_bin%i_unc"%i] > 0.0005:
                                     addUnc( c, "misID_pT_Bin%i_%i"%(i,args.year), binname, pName, locals()["misID_bin%i_unc"%i], expected.val, signal )
-#                                elif counter == 1 and not setup.signalregion and signal and not newPOI_input:
-#                                    addUnc( c, "TTG_pT_Bin%i"%i, binname, pName, 0.0005, expected.val, signal )
+
+                            for i in range(1, len(WGPT_thresholds)-1):
+                                if locals()["WGamma_bin%i_unc"%i] > 0.0005:
+                                    addUnc( c, "WGamma_pT_Bin%i"%(i), binname, pName, locals()["WGamma_bin%i_unc"%i], expected.val, signal )
+                                if locals()["ZGamma_bin%i_unc"%i] > 0.0005:
+                                    addUnc( c, "ZGamma_pT_Bin%i"%(i), binname, pName, locals()["ZGamma_bin%i_unc"%i], expected.val, signal )
 
                         if dyUnc > 0.0005:
                             addUnc( c, "ZJets_normalization", binname, pName, dyUnc, expected.val, signal )
@@ -686,12 +770,15 @@ def wrapper():
                         if gluon > 0.0005:
                             addUnc( c, "Gluon_splitting", binname, pName, gluon, expected.val, signal )
                         if hadFakesUnc > 0.0005: # and args.addFakeSF:
-                            addUnc( c, "fake_photon_normalization", binname, pName, hadFakesUnc, expected.val, signal )
+                            if setup.signalregion:
+                                addUnc( c, "fake_photon_DD_normalization", binname, pName, hadFakesUnc, expected.val, signal )
+                            else:
+                                addUnc( c, "fake_photon_MC_normalization", binname, pName, hadFakesUnc, expected.val, signal )
                         if hadFakes17Unc > 0.0005: # and args.addFakeSF:
                             addUnc( c, "fake_photon_model_2017", binname, pName, hadFakes17Unc, expected.val, signal )
 
                         # MC bkg stat (some condition to neglect the smaller ones?)
-                        if not args.noMCStat:
+                        if not args.noMCStat and not pName.count("QCD"):
                             uname = "Stat_%s_%s"%(binname, pName if not (newPOI_input and signal) else "signal")
                             if not (newPOI_input and signal):
                                 c.addUncertainty( uname, "lnN" )
@@ -792,27 +879,37 @@ def wrapper():
     if not args.useTxt and not args.skipFitDiagnostics and not args.parameters:
         # Would be a bit more complicated with the classical txt files, so only automatically extract the SF when using shape based datacards
         
-        default_QCD_unc = 0.5
-        default_HadFakes_unc = 0.15
+        default_QCD1b_unc = 0.5*0.5 #uncorrelated part, 50% correlation between 0b and 1b, generally 50%uncertainty
+        default_QCD0b_unc = 0.5*0.5 #uncorrelated part, 50% correlation between 0b and 1b, generally 50%uncertainty
+        default_QCD_unc   = 0.5*0.866025 #correlated part, 50% correlation between 0b and 1b, generally 50%uncertainty
+        default_HadFakes_DD_unc = 0.05
+        default_HadFakes_MC_unc = 0.05
         default_HadFakes_2017_unc = 0.20
         default_ZG_unc    = 0.3
         default_Other_unc    = 0.30
-        default_misID4p_unc    = 0.5
-        default_ZG4p_unc    = 0.8
-        default_DY4p_unc    = 0.8
-        default_WG4p_unc    = 0.5
+        default_misID4p_unc    = 0.2
+        default_ZG4p_unc    = 0.4
+        default_DY4p_unc    = 0.2
+        default_WG4p_unc    = 0.2
         default_DY_unc    = 0.08
+        default_QCD0b4p_unc    = 0.2
+        default_QCD1b4p_unc    = 0.4
         unc = {
                 "QCD_normalization":default_QCD_unc,
+                "QCD_0b_normalization":default_QCD0b_unc,
+                "QCD_1b_normalization":default_QCD1b_unc,
                 "ZGamma_normalization":default_ZG_unc,
                 "Other_normalization":default_Other_unc,
-                "fake_photon_normalization":default_HadFakes_unc,
+                "fake_photon_DD_normalization":default_HadFakes_DD_unc,
+                "fake_photon_MC_normalization":default_HadFakes_MC_unc,
                 "fake_photon_model_2017":default_HadFakes_2017_unc,
                 "MisID_nJet_dependence":default_misID4p_unc,
                 "ZGamma_nJet_dependence":default_ZG4p_unc,
                 "ZJets_nJet_dependence":default_DY4p_unc,
                 "WGamma_nJet_dependence":default_WG4p_unc,
                 "ZJets_normalization":default_DY_unc,
+                "QCD_0b_nJet_dependence":default_QCD0b4p_unc,
+                "QCD_1b_nJet_dependence":default_QCD1b4p_unc,
               }
         rateParam = [
                     "MisID_normalization_2016",
