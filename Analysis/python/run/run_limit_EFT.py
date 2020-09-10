@@ -13,8 +13,7 @@ from TTGammaEFT.Analysis.MCBasedEstimate import MCBasedEstimate
 from TTGammaEFT.Analysis.regions         import regionsTTG, noPhotonRegionTTG, inclRegionsTTG, regionsTTGfake, inclRegionsTTGfake, chgIso_thresh, chgIsoRegions, gammaPT_thresholds, mLgRegions
 from TTGammaEFT.Analysis.SetupHelpers    import *
 
-from TTGammaEFT.Tools.user               import combineReleaseLocation, cardfileLocation
-from TTGammaEFT.Tools.user               import cache_directory_read as cache_directory
+from TTGammaEFT.Tools.user               import combineReleaseLocation, cardfileLocation, cache_directory
 from Analysis.Tools.MergingDirDB         import MergingDirDB
 from Analysis.Tools.u_float              import u_float
 from Analysis.Tools.cardFileWriter       import cardFileWriter

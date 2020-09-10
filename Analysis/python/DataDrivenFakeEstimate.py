@@ -10,8 +10,7 @@ from TTGammaEFT.Analysis.DataObservation       import DataObservation
 from TTGammaEFT.Analysis.MCBasedEstimate       import MCBasedEstimate
 from TTGammaEFT.Analysis.DataDrivenQCDEstimate import DataDrivenQCDEstimate
 
-from TTGammaEFT.Tools.user                     import analysis_results
-from TTGammaEFT.Tools.user                     import cache_directory_read as cache_directory
+from TTGammaEFT.Tools.user                     import analysis_results, cache_directory
 from TTGammaEFT.Tools.cutInterpreter           import cutInterpreter, zMassRange
 
 from Analysis.Tools.MergingDirDB               import MergingDirDB
@@ -37,10 +36,10 @@ class DataDrivenFakeEstimate(SystematicEstimator):
 
         #Sum of all channels for "all"
         if channel == "all":
-            return sum([ self.cachedEstimate(region, c, setup, signalAddon=signalAddon) for c in lepChannels])
+            return sum([ self.cachedEstimate(region, c, setup, signalAddon=signalAddon, overwrite=overwrite) for c in lepChannels])
 
         elif channel == "SFtight":
-            return sum([ self.cachedEstimate(region, c, setup, signalAddon=signalAddon) for c in dilepChannels])
+            return sum([ self.cachedEstimate(region, c, setup, signalAddon=signalAddon, overwrite=overwrite) for c in dilepChannels])
 
         else:
             # Estimate yield in highSieie (Hs), highChgIso (Hc), lowSieie (Ls) and lowChgIso (Lc)
@@ -472,6 +471,7 @@ class DataDrivenFakeEstimate(SystematicEstimator):
             mcRatio_Ls   = mcHad_LsLc / mcHad_LsHc
             mcRatio_Hs   = mcHad_HsLc / mcHad_HsHc
 
+            print mcRatio_Ls / mcRatio_Hs
             return mcRatio_Ls / mcRatio_Hs
 
 

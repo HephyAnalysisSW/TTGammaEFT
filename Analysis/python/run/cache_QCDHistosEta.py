@@ -12,7 +12,7 @@ from math                             import isnan, ceil, pi, sqrt
 from RootTools.core.standard          import *
 
 # Internal Imports
-from TTGammaEFT.Tools.user            import cache_directory_read as cache_directory
+from TTGammaEFT.Tools.user            import cache_directory
 from TTGammaEFT.Tools.cutInterpreter  import cutInterpreter
 from TTGammaEFT.Tools.TriggerSelector import TriggerSelector
 from TTGammaEFT.Tools.Variables       import NanoVariables

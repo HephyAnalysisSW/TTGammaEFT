@@ -13,8 +13,7 @@ from TTGammaEFT.Analysis.Setup           import Setup
 from TTGammaEFT.Analysis.regions         import m3PtlooseRegions, regionsTTGlooseFine, regionsTTG, noPhotonRegionTTG, inclRegionsTTG, regionsTTGfake, inclRegionsTTGfake, chgIso_thresh, chgIsoRegions, pTG_thresh, highpTG_thresh, mLgRegions
 from TTGammaEFT.Analysis.SetupHelpers    import *
 
-from TTGammaEFT.Tools.user               import combineReleaseLocation, cardfileLocation
-from TTGammaEFT.Tools.user               import cache_directory_read as cache_directory
+from TTGammaEFT.Tools.user               import combineReleaseLocation, cardfileLocation, cache_directory
 from Analysis.Tools.MergingDirDB         import MergingDirDB
 from Analysis.Tools.u_float              import u_float
 from Analysis.Tools.cardFileWriter       import cardFileWriter
@@ -46,7 +45,8 @@ argParser.add_argument( "--keepCard",           action="store_true",            
 argParser.add_argument( "--expected",           action="store_true",                                                        help="Use sum of backgrounds instead of data." )
 argParser.add_argument( "--useTxt",             action="store_true",                                                        help="Use txt based cardFiles instead of root/shape based ones?" )
 argParser.add_argument( "--skipFitDiagnostics", action="store_true",                                                        help="Don't do the fitDiagnostics (this is necessary for pre/postfit plots, but not 2D scans)?" )
-argParser.add_argument( "--year",               action="store",      default="2016",   type=str,                              help="Which year?" )
+argParser.add_argument( "--skipTuneUnc",        action="store_true",                                                        help="Skip pdf/ps/scale/tune/color reconnection unc" )
+argParser.add_argument( "--year",               action="store",      default="2016",   type=str,                            help="Which year?" )
 argParser.add_argument( "--linTest",            action="store",      default=1,   type=float,                               help="linearity test: scale data by factor" )
 argParser.add_argument( "--runOnLxPlus",        action="store_true",                                                        help="Change the global redirector of samples")
 argParser.add_argument( "--misIDPOI",           action="store_true",                                                        help="Change POI to misID SF")
@@ -191,7 +191,9 @@ if args.useChannels:  regionNames.append("_".join([ch for ch in args.useChannels
 if args.linTest != 1: regionNames.append(str(args.linTest).replace(".","_"))
 if args.noMCStat:     regionNames.append("noMCStat")
 
-baseDir       = os.path.join( cache_directory, "analysis",  str(args.year), "limits", "withbkg" if args.withbkg else "withoutbkg" )
+baseDir       = os.path.join( cache_directory, "analysis",  str(args.year), "limits" )
+if args.parameters:
+    baseDir   = os.path.join( baseDir, "withbkg" if args.withbkg else "withoutbkg" )
 limitDir      = os.path.join( baseDir, "cardFiles", args.label, "expected" if args.expected else "observed" )
 if not os.path.exists( limitDir ): os.makedirs( limitDir )
 
@@ -363,27 +365,27 @@ def wrapper():
         c.addUncertainty( "Other_normalization",      shapeString )
 
         default_misID4p_unc    = 0.2
-        if (any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] )) or args.addNJetUnc:
+        if (any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] )) or args.addNJetUnc or any( ["3p" in name for name in args.useRegions] ):
             c.addUncertainty( "MisID_nJet_dependence",      shapeString )
 
         default_ZG4p_unc    = 0.4
-        if (any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] )) or args.addNJetUnc:
+        if (any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] )) or args.addNJetUnc or any( ["3p" in name for name in args.useRegions] ):
             c.addUncertainty( "ZGamma_nJet_dependence",      shapeString )
 
         default_QCD0b4p_unc    = 0.2
-        if (any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] )) or args.addNJetUnc:
+        if (any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] )) or args.addNJetUnc or any( ["3p" in name for name in args.useRegions] ):
             c.addUncertainty( "QCD_0b_nJet_dependence",      shapeString )
 
         default_QCD1b4p_unc    = 0.4
-        if (any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] )) or args.addNJetUnc:
+        if (any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] )) or args.addNJetUnc or any( ["3p" in name for name in args.useRegions] ):
             c.addUncertainty( "QCD_1b_nJet_dependence",      shapeString )
 
         default_DY4p_unc    = 0.2
-        if (any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] )) or args.addNJetUnc:
+        if (any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] )) or args.addNJetUnc or any( ["3p" in name for name in args.useRegions] ):
             c.addUncertainty( "ZJets_nJet_dependence",      shapeString )
     
         default_WG4p_unc    = 0.2
-        if (any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] )) or args.addNJetUnc:
+        if (any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] )) or args.addNJetUnc or any( ["3p" in name for name in args.useRegions] ):
             c.addUncertainty( "WGamma_nJet_dependence",      shapeString )
     
         default_DY_unc    = 0.08
@@ -403,6 +405,10 @@ def wrapper():
 
         for setup in setups:
             observation = DataObservation( name="Data", process=setup.data, cacheDir=setup.defaultCacheDir() )
+
+            if "3p" in setup.name:
+                setup4p = setup.sysClone( parameters={"nJet":(4,-1)} )
+
             for pName, pList in setup.processes.items():
                 if pName == "Data": continue
                 for e in pList:
@@ -516,6 +522,10 @@ def wrapper():
 
                         for e in pList:
                             exp_yield = e.cachedEstimate( r, channel, setup )
+
+                            # no MC stat uncertainty for data-driven methods
+                            if e.name.count( "fakes-DD" ) or e.name.count( "QCD" ):
+                                exp_yield.sigma = 0
 
                             if signal and args.linTest != 1:# and setup.signalregion:
                                 exp_yield /= args.linTest
@@ -632,14 +642,19 @@ def wrapper():
                             for e in pList:
                                 y_scale   = e.expYield.val / expected.val
 
+                                ratio_nJ = 1.
+#                                if "3p" in setup.name and e.expYield.val > 0:
+#                                    y_4p  = e.cachedEstimate( r, channel,   setup4p )
+#                                    ratio_nJ = y_4p.val  / e.expYield.val
+
                                 if e.name.count( "QCD" ):
                                     qcdUnc     += y_scale * default_QCD_unc
                                     qcd0bUnc   += y_scale * default_QCD0b_unc
                                     qcd1bUnc   += y_scale * default_QCD1b_unc
                                     qcdTF3   += y_scale * e.expYield.sigma / e.expYield.val
-                                    if "4" in setup.name:
-                                        qcd0b4p += y_scale * default_QCD0b4p_unc
-                                        qcd1b4p += y_scale * default_QCD1b4p_unc
+                                    if ("4" in setup.name or "3p" in setup.name):
+                                        qcd0b4p += y_scale * default_QCD0b4p_unc * ratio_nJ
+                                        qcd1b4p += y_scale * default_QCD1b4p_unc * ratio_nJ
                                     continue # no systematics for data-driven QCD
 
                                 if e.name.count( "DY" ):
@@ -665,7 +680,6 @@ def wrapper():
                                         pT_indices = []
                                         for i_pt, thresh in enumerate(WGPT_thresholds[:-1]):
                                             if (thresh >= low and thresh < high) or (thresh <= low and thresh <= high and WGPT_thresholds[i_pt+1] >= low and WGPT_thresholds[i_pt+1] >= high) or (WGPT_thresholds[i_pt+1] > low and WGPT_thresholds[i_pt+1] <= high) or (WGPT_thresholds[i_pt+1] == -999 and (high == -999 or high > thresh)): pT_indices.append(i_pt)
-                                        print pT_indices, low, high
                                     else:
                                         pT_indices = []
 
@@ -680,34 +694,44 @@ def wrapper():
                                 if e.name.count( "other" ):
                                     otherUnc += y_scale * default_Other_unc
 
+
                                 if e.name.count( "_had" ) or e.name.count( "fakes-DD" ):
                                     if e.name.count( "_had" ):
                                         hadFakesUnc += y_scale * default_HadFakes_MC_unc
                                     elif e.name.count( "fakes-DD" ):
                                         hadFakesUnc += y_scale * default_HadFakes_DD_unc
-                                    if args.year == 2017 and "4" in setup.name and setup.signalregion and channel == "e":
-                                        hadFakes17Unc += y_scale * default_HadFakes_2017_unc
+                                    if args.year == 2017 and setup.signalregion:
+                                        downscaling = 1.
+                                        if channel == "mu" or not ("4" in setup.name or "3p" in setup.name):
+                                            downscaling = 0.
+#                                        if channel == "all":
+#                                            y_e  = e.cachedEstimate( r, "e",   setup )
+#                                            downscaling *= (y_e.val  / e.expYield.val) if e.expYield.val else 1.
+#                                        downscaling *= ratio_nJ
+#                                        print downscaling
+                                        hadFakes17Unc += y_scale * default_HadFakes_2017_unc * downscaling
 
                                 if e.name.count( "ZG" ):
                                     zg += y_scale * default_ZG_unc
                                     if setup.signalregion:
                                         gluon += y_scale * default_ZG_gluon_unc
 
-                                if e.name.count( "ZG" ) and "4" in setup.name:
-                                    zg4p += y_scale * default_ZG4p_unc
+                                if e.name.count( "WG" ) and setup.signalregion:
+                                    gluon += y_scale * default_WG_gluon_unc
 
-                                if e.name.count( "DY" ) and "4" in setup.name:
-                                    dy4p += y_scale * default_DY4p_unc
+                                if e.name.count( "ZG" ) and ("4" in setup.name or "3p" in setup.name):
+                                    zg4p += y_scale * default_ZG4p_unc * ratio_nJ
 
-                                if e.name.count( "WG" ) and "4" in setup.name:
-                                    wg4p += y_scale * default_WG4p_unc
-                                    if setup.signalregion:
-                                        gluon += y_scale * default_WG_gluon_unc
+                                if e.name.count( "DY" ) and ("4" in setup.name or "3p" in setup.name):
+                                    dy4p += y_scale * default_DY4p_unc * ratio_nJ
 
-                                if e.name.count( "misID" ) and "4" in setup.name:
-                                    misID4p += y_scale * default_misID4p_unc
+                                if e.name.count( "WG" ) and ("4" in setup.name or "3p" in setup.name):
+                                    wg4p += y_scale * default_WG4p_unc * ratio_nJ
 
-                                if signal and not newPOI_input and setup.signalregion:
+                                if e.name.count( "misID" ) and ("4" in setup.name or "3p" in setup.name):
+                                    misID4p += y_scale * default_misID4p_unc * ratio_nJ
+
+                                if signal and not newPOI_input and setup.signalregion and not args.skipTuneUnc:
                                     tune      += y_scale * e.TuneSystematic(    r, channel, setup ).val
                                     erdOn     += y_scale * e.ErdOnSystematic(   r, channel, setup ).val
                                     qcdBased  += y_scale * e.QCDbasedSystematic(   r, channel, setup ).val
@@ -883,7 +907,7 @@ def wrapper():
                             addUnc( c, "fake_photon_model_2017", binname, pName, hadFakes17Unc, expected.val, signal )
 
                         # MC bkg stat (some condition to neglect the smaller ones?)
-                        if not args.noMCStat and not pName.count("QCD"):
+                        if not args.noMCStat:
                             uname = "Stat_%s_%s"%(binname, pName if not (newPOI_input and signal) else "signal")
                             if not (newPOI_input and signal):
                                 c.addUncertainty( uname, "lnN" )

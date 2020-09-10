@@ -66,7 +66,7 @@ if os.environ["USER"] in ["martina.fellinger"]: #CBE cluster
     plot_directory                      = "/mnt/hephy/cms/martina.fellinger/www/TTGammaEFT/"
 
     postprocessing_output_directory     = "/scratch/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed"
-    gridpack_directory                  = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/gridpacks/"
+    gridpack_directory                  = "/mnt/hephy/cms/lukas.lechner/gridpacks/TTGammaEFT/gridpacks/"
 
     analysis_results                    = results_directory
     cache_directory                     = "/scratch/martina.fellinger/cache/"
@@ -87,12 +87,13 @@ if os.environ["USER"] in ["lukas.lechner"]: #CBE cluster
 
     postprocessing_output_directory     = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed"
 #    postprocessing_output_directory     = "/eos/vbc/user/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/"
-    gridpack_directory                  = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/gridpacks/"
+#    gridpack_directory                  = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/gridpacks/"
+    gridpack_directory                  = "/mnt/hephy/cms/lukas.lechner/gridpacks/TTGammaEFT/gridpacks/"
 
     analysis_results                    = results_directory
-    cache_directory_read                = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/"
+    cache_directory                     = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/"
 #    cache_directory                     = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache/"
-    cache_directory                     = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache/"
+#    cache_directory                     = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache/"
     unfolding_cache_directory           = "/eos/vbc/user/lukas.lechner/TTGammaEFT/cache/"
 
     combineReleaseLocation              = "/users/lukas.lechner/public/CMSSW_10_2_18/src/tmp/"

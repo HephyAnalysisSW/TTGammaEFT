@@ -3,7 +3,7 @@ import os, copy
 from Analysis.Tools.u_float      import u_float
 
 from TTGammaEFT.Tools.user       import results_directory
-from TTGammaEFT.Tools.user       import cache_directory_read as cache_directory
+from TTGammaEFT.Tools.user       import cache_directory
 from TTGammaEFT.Analysis.regions import *
 from TTGammaEFT.Samples.color    import color
 
@@ -23,7 +23,7 @@ QCD         = ["QCD-DD"]
 fakes       = ["DY_LO_had","Top_had","TTG_had","WG_had","ZG_had","other_had","WJets_had"]
 
 default_sampleList            = ["TTG","Top","DY_LO","ZG","WG","WJets","other","QCD-DD"]
-default_systematicList        = ["TTG_TuneUp","TTG_TuneDown","TTG_erdOn","TTG_QCDbased"] #,"TTG_GluonMove"]
+default_systematicList        = ["TTG_TuneUp","TTG_TuneDown","TTG_erdOn","TTG_QCDbased","TTG_GluonMove"]
 default_photonSampleList      = signal + DY_misID + TT_misID + other_misID + WG + ZG + other + QCD + fakes + ["fakes-DD"]
 
 processes = {
@@ -159,7 +159,7 @@ signalRegions["SR3PtUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,3),
                               "regions":    regionsTTGlooseUnfolding,
                               "inclRegion": inclRegionsTTGloose,
                               "noPhotonCR": False,
-                              "processes":  processes,
+                              "processes":  processesSR,
                               "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                              }
 
@@ -177,7 +177,7 @@ signalRegions["SR4pPtUnfold"] = { "parameters": { "zWindow":"all", "nJet":(4,-1)
                               "regions":    regionsTTGlooseUnfolding,
                               "inclRegion": inclRegionsTTGloose,
                               "noPhotonCR": False,
-                              "processes":  processes,
+                              "processes":  processesSR,
                               "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                              }
 
