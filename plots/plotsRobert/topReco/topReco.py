@@ -138,10 +138,10 @@ def mc_match( event, sample ):
 
         #print l_idx, event.nGenPart
         if l_idx<event.nGenPart and l_idx<100:
-            #print l_idx, event.nGenPart, event.event, event.run, event.luminosityBlock
+            #print 'x', l_idx, event.nGenPart, event.event, event.run, event.luminosityBlock
             event.l_isPrompt           = event.GenPart_statusFlags[l_idx]&1
             event.l_isTauDecayProduct  = (event.GenPart_statusFlags[l_idx]>>2)&1
-            #print event.GenPart_statusFlags[l_idx], event.l_isPrompt, event.l_isTauDecayProduct
+            #print 'y',event.GenPart_statusFlags[l_idx], event.l_isPrompt, event.l_isTauDecayProduct
         else:
             event.l_isPrompt           = False
             event.l_isTauDecayProduct  = False
@@ -160,7 +160,7 @@ def mc_match( event, sample ):
     for strategy in strategies:
         topReco_Jet_index     = getattr( event, "topReco_%s_Jet_index"%strategy )
         b_matched = False
-        if topReco_Jet_index>=0:
+        if topReco_Jet_index>=0 and topReco_Jet_index<event.nJet:
             jet_partonFlavour = event.Jet_partonFlavour[topReco_Jet_index]
             if abs(jet_partonFlavour)==5:
                 b_matched = True
