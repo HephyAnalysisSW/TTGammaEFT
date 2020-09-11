@@ -3,7 +3,7 @@ import os, copy
 from Analysis.Tools.u_float      import u_float
 
 from TTGammaEFT.Tools.user       import results_directory
-from TTGammaEFT.Tools.user       import cache_directory_read as cache_directory
+from TTGammaEFT.Tools.user       import cache_directory
 from TTGammaEFT.Analysis.regions import *
 from TTGammaEFT.Samples.color    import color
 

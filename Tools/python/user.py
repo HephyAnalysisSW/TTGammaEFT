@@ -114,7 +114,6 @@ if os.environ["USER"] in ["robert.schoefbeck"]: #CBE cluster
 
     analysis_results                    = results_directory
     cache_directory                     = "/users/robert.schoefbeck/public/cache/"
-    cache_directory_read                = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/"
     unfolding_cache_directory           = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache/"
     combineReleaseLocation              = "/users/robert.schoefbeck/public/CMSSW_10_2_18/src/tmp/"
     cardfileLocation                    = "/mnt/hephy/cms/robert.schoefbeck/TTGammaEFT/results/cardfiles/"
