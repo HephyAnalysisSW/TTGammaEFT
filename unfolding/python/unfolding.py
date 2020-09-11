@@ -165,9 +165,9 @@ else:
 
         # Sample for this year (fix)
 
-        ttg0l = Sample.fromDirectory("ttg0l_%s"%year, directory = ["scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v45/inclusive/TTGHad_LO/".format(year=year)])
-        ttg1l = Sample.fromDirectory("ttg1l_%s"%year, directory = ["scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v45/inclusive/TTGSingleLep_LO/".format(year=year)])
-        ttg2l = Sample.fromDirectory("ttg2l_%s"%year, directory = ["scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v45/inclusive/TTGLep_LO/".format(year=year)])
+        ttg0l = Sample.fromDirectory("ttg0l_%s"%year, directory = ["/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v45/inclusive/TTGHad_LO/".format(year=year)])
+        ttg1l = Sample.fromDirectory("ttg1l_%s"%year, directory = ["/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v45/inclusive/TTGSingleLep_LO/".format(year=year)])
+        ttg2l = Sample.fromDirectory("ttg2l_%s"%year, directory = ["/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v45/inclusive/TTGLep_LO/".format(year=year)])
 
         sample = Sample.combine( "ttg_%s"%year, [ttg1l, ttg2l, ttg0l] )
 
