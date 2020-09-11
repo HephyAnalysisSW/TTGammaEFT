@@ -5,7 +5,7 @@ from Analysis.Tools.u_float           import u_float
 from Analysis.Tools.MergingDirDB             import MergingDirDB
 from TTGammaEFT.Analysis.SetupHelpers import dilepChannels, lepChannels
 from TTGammaEFT.Analysis.Region       import Region
-from TTGammaEFT.Tools.user            import cache_directory_read as cache_directory
+from TTGammaEFT.Tools.user            import cache_directory
 
 # Logging
 if __name__=="__main__":

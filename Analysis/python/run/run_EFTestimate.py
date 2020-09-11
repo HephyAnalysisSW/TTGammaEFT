@@ -9,7 +9,7 @@ from TTGammaEFT.Analysis.MCBasedEstimate import MCBasedEstimate
 from TTGammaEFT.Analysis.DataObservation import DataObservation
 from TTGammaEFT.Analysis.SetupHelpers    import *
 
-from TTGammaEFT.Tools.user               import cache_directory_read as cache_directory
+from TTGammaEFT.Tools.user               import cache_directory
 from Analysis.Tools.MergingDirDB         import MergingDirDB
 from Analysis.Tools.u_float              import u_float
 

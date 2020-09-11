@@ -5,8 +5,7 @@ from math import sqrt
 
 from TTGammaEFT.Analysis.SystematicEstimator import SystematicEstimator
 from TTGammaEFT.Analysis.SetupHelpers        import *
-from TTGammaEFT.Tools.user                   import analysis_results
-from TTGammaEFT.Tools.user                   import cache_directory_read as cache_directory
+from TTGammaEFT.Tools.user                   import analysis_results, cache_directory
 from TTGammaEFT.Tools.cutInterpreter  import cutInterpreter, zMassRange
 
 from Analysis.Tools.MergingDirDB             import MergingDirDB

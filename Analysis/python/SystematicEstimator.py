@@ -7,7 +7,7 @@ import json
 # Framework imports
 from Analysis.Tools.MergingDirDB      import MergingDirDB
 from Analysis.Tools.u_float           import u_float
-from TTGammaEFT.Tools.user            import cache_directory_read as cache_directory
+from TTGammaEFT.Tools.user            import cache_directory
 from TTGammaEFT.Analysis.SetupHelpers import allChannels
 
 # Logging
@@ -420,7 +420,7 @@ class SystematicEstimator:
             (region, channel, setup, "TuneDown"),
             (region, channel, setup, "erdOn"),
             (region, channel, setup, "QCDbased"),
-#            (region, channel, setup, "GluonMove"),
+            (region, channel, setup, "GluonMove"),
         ]
         return l
 
