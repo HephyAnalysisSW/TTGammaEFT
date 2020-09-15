@@ -119,7 +119,7 @@ if os.environ["USER"] in ["robert.schoefbeck"]: #CBE cluster
     combineReleaseLocation              = "/users/robert.schoefbeck/public/CMSSW_10_2_18/src/tmp/"
     cardfileLocation                    = "/mnt/hephy/cms/robert.schoefbeck/TTGammaEFT/results/cardfiles/"
 
-    dpm_directory                       = "/scratch/lukas.lechner/TTGammaEFT/nanoTuples/"
+    dpm_directory                       = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/"
     eos_directory                       = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/"
 
 if os.environ["USER"] in ["rosmarie.schoefbeck"]: #CBE cluster

@@ -151,10 +151,10 @@ else:
         reco_selection = setup.selection( "MC", channel="all", **setup.defaultParameters() )
 
         MET_filter_cut   = "(year==%s&&"%year+getFilterCut(isData=False, year=int(year), skipBadChargedCandidate=True)+")"
-        reco_selection_str = MET_filter_cut+"&&triggered&&pTStitching==1&&overlapRemoval==1&&"+cutInterpreter.cutString(reco_selection['prefix'])
+        reco_selection_str = MET_filter_cut+"&&triggered==1&&overlapRemoval==1&&"+cutInterpreter.cutString(reco_selection['prefix'])
 
         # fiducial seletion
-        fiducial_selection_str = cutInterpreter.cutString(settings.fiducial_selection)+"&&pTStitching==1&&overlapRemoval==1"
+        fiducial_selection_str = cutInterpreter.cutString(settings.fiducial_selection)+"&&overlapRemoval==1"
 
         ttreeFormulas = {
                     'is_fiducial': fiducial_selection_str, 
