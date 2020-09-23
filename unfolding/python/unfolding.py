@@ -155,6 +155,8 @@ else:
 
         # fiducial seletion
         fiducial_selection_str = cutInterpreter.cutString(settings.fiducial_selection)+"&&overlapRemoval==1"
+        if hasattr( settings, "extra_fiducial_selection_str" ):
+            fiducial_selection_str += ("&&("+settings.extra_fiducial_selection_str+")")
 
         ttreeFormulas = {
                     'is_fiducial': fiducial_selection_str, 
@@ -214,15 +216,19 @@ else:
             reco_variable_val       = getattr( r.event, reco_variable_name )
 
             # put reco overflow in the last bin
-            if reco_variable_val >= settings.max_reco_val and (settings.reco_overflow in ["upper","both"]):
-                reco_variable_val = settings.max_reco_bincenter 
+            if reco_variable_val   >= settings.max_reco_val and (settings.reco_overflow in ["upper","both"]):
+                reco_variable_val   = settings.max_reco_bincenter
+            #elif reco_variable_val >= settings.max_reco_val and settings.reco_overflow is None:
+            #    reco_variable_val   = settings.reco_variable_underflow 
 
             # fiducial observable 
             fiducial_variable_val   = getattr( r.event, fiducial_variable_name ) 
 
             # put fiducial overflow in the last bin
-            if fiducial_variable_val >= settings.max_fiducial_val and (settings.fiducial_overflow in ["upper", "both"] ):
-                fiducial_variable_val = settings.max_fiducial_bincenter 
+            if fiducial_variable_val   >= settings.max_fiducial_val and (settings.fiducial_overflow in ["upper", "both"] ):
+                fiducial_variable_val   = settings.max_fiducial_bincenter
+            #elif fiducial_variable_val >= settings.max_fiducial_val and settings.fiducial_overflow is None:
+            #    fiducial_variable_val   = settings.underflow_fiducial_val  
 
             # Sanity check: A fiducial event should have a fiducial_variable_val that is within the fiducial thresholds
             val_in_fiducial = ( fiducial_variable_val>=settings.fiducial_thresholds[0] and fiducial_variable_val<settings.fiducial_thresholds[-1] )
@@ -245,7 +251,8 @@ else:
 
                     matrix.Fill(reco_variable_val+shift_year, fiducial_variable_val, gen_weight_val*reco_reweight_val)
                     # inefficiency according to reco_reweight
-                    matrix.Fill(settings.reco_variable_underflow, fiducial_variable_val, gen_weight_val*(1-reco_reweight_val))
+                    if "wrong" not in args.settings:
+                        matrix.Fill(settings.reco_variable_underflow, fiducial_variable_val, gen_weight_val*(1-reco_reweight_val))
 
                 # f_out / fakes / backgrounds (signal events generated outside the fiducial region but reconstructed in the reco phase space)
                 else:
@@ -272,8 +279,19 @@ else:
     dirDB.add( loop_key, (matrix, fiducial_spectrum, reco_spectrum, reco_fout_spectrum, yield_fid, yield_fid_reco, yield_reco), overwrite=True )
 
 # Unfolding matrix
-plot_matrix = Plot2D.fromHisto("unfolding_matrix", [[matrix]], texY = settings.tex_gen, texX = settings.tex_reco + " +%i*(year-2016)"%(settings.max_reco_val-settings.min_reco_val) )
-draw2D( plot_matrix, widths = {'x_width':500*len(settings.years)} )
+delta = settings.max_reco_val-settings.min_reco_val
+if delta==int(delta):
+    s_str = " +%i*(year-2016)"%(settings.max_reco_val-settings.min_reco_val)
+else:
+    s_str = " +%3.2f*(year-2016)"%(settings.max_reco_val-settings.min_reco_val)
+
+plot_matrix = Plot2D.fromHisto("unfolding_matrix", [[matrix]], texY = settings.tex_gen, texX = settings.tex_reco + s_str )
+draw2D( plot_matrix, widths = {'x_width':500+250*(len(settings.years)-1)} )
+
+# Efficiency Histogram
+efficiency_base = matrix.ProjectionY()
+efficiency      = matrix.ProjectionY("efficiency", 1, -1)
+efficiency.Divide( efficiency_base )
 
 # checking the matrix
 logger.info( "Matrix Integral: %6.2f fiducial+reco, weighted: %6.2f <- these numbers should agree.", matrix.Integral(), yield_fid_reco )
@@ -343,8 +361,26 @@ reco_spectrum_subtracted.style = styles.lineStyle( ROOT.kRed)
 reco_fout_spectrum.style       = styles.lineStyle( ROOT.kGreen)       
 reco_spectrum.style            = styles.lineStyle( ROOT.kBlue)      
 
-for logY in [True]:
-    plot = Plot.fromHisto( name = 'fout_subtraction' + ('_log' if logY else ''),  histos = [[ reco_spectrum ], [reco_spectrum_subtracted], [reco_fout_spectrum] ], texX = "p_{T}", texY = "Events" )
+for logY in [True, False]:
+    plot = Plot.fromHisto( name = 'fout_subtraction' + ('_log' if logY else ''),  histos = [[ reco_spectrum ], [reco_spectrum_subtracted], [reco_fout_spectrum] ], texX = "p_{T}", texY = "Events")
+    plot.stack = None
+    draw(plot, logY = logY, 
+#            ratio = {'histos':[(1,0)], 
+#                    'yRange':(0.5,1.1), 
+#                    'texY':'purity'}
+        )
+
+    purity = reco_spectrum_subtracted.Clone()
+    purity.Divide(reco_spectrum)
+
+for logY in [False]:
+
+    purity     . style =  styles.lineStyle( ROOT.kRed, width = 1, errors=False)
+    efficiency . style =  styles.lineStyle( ROOT.kBlue, width = 1, errors=True)
+    purity     . legendText = "purity" 
+    efficiency . legendText = "efficiency" 
+    
+    plot = Plot.fromHisto( name = 'pur_eff' + ('_log' if logY else ''),  histos = [[ h ] for h in [efficiency, purity]], texX = "p_{T}", texY = "fraction" )
     plot.stack = None
     draw(plot, logY = logY)
 
@@ -405,12 +441,18 @@ unfolded_mc_spectrum = getOutput( reco_spectrum_subtracted, "unfolded_mc_spectru
 # closure 
 
 for logY in [True, False]:
-    unfolded_mc_spectrum  .style =  styles.lineStyle( ROOT.kRed, width = 1, errors=True)
-    fiducial_spectrum     .style =  styles.lineStyle( ROOT.kBlack, width = 2, errors=True)
-    unfolded_mc_spectrum  .legendText = "unfolded (%6.2f)" % unfolded_mc_spectrum.Integral()
-    fiducial_spectrum     .legendText = "fiducial (%6.2f)" % fiducial_spectrum.Integral()
+
+    unfolded_mc_spectrum_ = unfolded_mc_spectrum.Clone()
+    unfolded_mc_spectrum_ . Scale(1./settings.lumi_factor) 
+    fiducial_spectrum_    = fiducial_spectrum.Clone()
+    fiducial_spectrum_    . Scale(1./settings.lumi_factor) 
+
+    unfolded_mc_spectrum_ . style =  styles.lineStyle( ROOT.kRed, width = 1, errors=True)
+    fiducial_spectrum_    . style =  styles.lineStyle( ROOT.kBlack, width = 2, errors=True)
+    unfolded_mc_spectrum_ . legendText = "unfolded (%6.2f fb)" % (unfolded_mc_spectrum_.Integral())
+    fiducial_spectrum_    . legendText = "fiducial (%6.2f fb)" % (fiducial_spectrum_.Integral())
     
-    plot = Plot.fromHisto( name = 'unfolding_closure' + ('_log' if logY else ''),  histos = [[ h ] for h in [fiducial_spectrum, unfolded_mc_spectrum]], texX = "p_{T}", texY = "Events" )
+    plot = Plot.fromHisto( name = 'unfolding_closure' + ('_log' if logY else ''),  histos = [[ h ] for h in [fiducial_spectrum_, unfolded_mc_spectrum_]], texX = "p_{T}", texY = "Events" )
     plot.stack = None
     draw(plot, logY = logY)
 
@@ -430,8 +472,11 @@ for band in reversed(settings.systematic_bands):
         box.SetLineColor(band['color'])
         box.SetFillStyle(3244)
         box.SetFillColor(band['color'])
-        boxes.append(box)
-        stuff.append(box)
+        if hasattr( settings, "plot_range_x_fiducial") and band['ref'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
+            pass
+        else:
+            boxes.append(box)
+            stuff.append(box)
         if band['ref'].GetBinContent(i)!=0: 
             ratio_box = ROOT.TBox( band['ref'].GetXaxis().GetBinLowEdge(i),  
                              band['down'].GetBinContent(i)/band['ref'].GetBinContent(i),
@@ -441,8 +486,11 @@ for band in reversed(settings.systematic_bands):
             ratio_box.SetLineColor(band['color'])
             ratio_box.SetFillStyle(3244)
             ratio_box.SetFillColor(band['color'])
-            ratio_boxes.append(ratio_box)
-            stuff.append(ratio_box)
+            if hasattr( settings, "plot_range_x_fiducial") and band['ref'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
+                pass
+            else:
+                ratio_boxes.append(ratio_box)
+                stuff.append(ratio_box)
 
 settings.unfolding_data_input.style = styles.errorStyle( ROOT.kBlack )
 settings.unfolding_mc_input.style   = styles.lineStyle( ROOT.kBlue, width = 2)
@@ -450,22 +498,23 @@ settings.unfolding_mc_input.style   = styles.lineStyle( ROOT.kBlue, width = 2)
 settings.unfolding_data_input.legendText = settings.data_legendText 
 settings.unfolding_mc_input.legendText   = settings.mc_legendText
 
-plotting.draw(
-    Plot.fromHisto( "input_spectrum",
-                [[settings.unfolding_mc_input],[settings.unfolding_data_input]],
-                texX = settings.tex_reco,
-                texY = "Number of events",
-            ),
-    plot_directory = plot_directory_,
-    logX = False, logY = True, sorting = False,
-    #legend = None,
-    legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
-    yRange = settings.y_range,
-    ratio = {'yRange': (0.3, 1.7), 'texY':'Data / Sim.', 'histos':[(1,0)], 'drawObjects':ratio_boxes} ,
-    drawObjects = drawObjects()+boxes,
-    #drawObjects = boxes,
-    redrawHistos = True,
-)
+for logy in [True, False]:
+    plotting.draw(
+        Plot.fromHisto( "input_spectrum" + ('_log' if logY else ''),
+                    [[settings.unfolding_mc_input],[settings.unfolding_data_input]],
+                    texX = settings.tex_reco,
+                    texY = "Number of events",
+                ),
+        plot_directory = plot_directory_,
+        logX = False, logY = logY, sorting = False,
+        #legend = None,
+        legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
+        yRange = settings.y_range,
+        ratio = {'yRange': (0.3, 1.7), 'texY':'Data / Sim.', 'histos':[(1,0)], 'drawObjects':ratio_boxes} ,
+        drawObjects = drawObjects()+boxes,
+        #drawObjects = boxes,
+        redrawHistos = True,
+    )
 
 # input plot subtracted
 boxes = []
@@ -485,8 +534,11 @@ for band in reversed(settings.systematic_bands):
         box.SetLineColor(band['color'])
         box.SetFillStyle(3244)
         box.SetFillColor(band['color'])
-        boxes.append(box)
-        stuff.append(box)
+        if hasattr( settings, "plot_range_x_fiducial") and band['ref_subtracted'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
+            pass
+        else:
+            boxes.append(box)
+            stuff.append(box)
 
         if band['ref_subtracted'].GetBinContent(i)!=0: 
             ratio_box = ROOT.TBox( band['ref_subtracted'].GetXaxis().GetBinLowEdge(i),  
@@ -497,8 +549,11 @@ for band in reversed(settings.systematic_bands):
             ratio_box.SetLineColor(band['color'])
             ratio_box.SetFillStyle(3244)
             ratio_box.SetFillColor(band['color'])
-            ratio_boxes.append(ratio_box)
-            stuff.append(ratio_box)
+            if hasattr( settings, "plot_range_x_fiducial") and band['ref_subtracted'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
+                pass
+            else:
+                ratio_boxes.append(ratio_box)
+                stuff.append(ratio_box)
 
 unfolding_data_input_subtracted = fout_subtraction( settings.unfolding_data_input )
 unfolding_mc_input_subtracted   = fout_subtraction( settings.unfolding_mc_input )
@@ -509,22 +564,23 @@ unfolding_mc_input_subtracted.style   = styles.lineStyle( ROOT.kBlue, width = 2)
 unfolding_data_input_subtracted.legendText = settings.data_legendText 
 unfolding_mc_input_subtracted.legendText   = settings.mc_legendText
 
-plotting.draw(
-    Plot.fromHisto( "input_spectrum_subtracted",
-                [[unfolding_mc_input_subtracted],[unfolding_data_input_subtracted]],
-                texX = settings.tex_reco,
-                texY = "Number of events",
-            ),
-    plot_directory = plot_directory_,
-    logX = False, logY = True, sorting = False,
-    #legend = None,
-    legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
-    yRange = settings.y_range,
-    ratio = {'yRange': (0.3, 1.7), 'texY':'Data / Sim.', 'histos':[(1,0)], 'drawObjects':ratio_boxes} ,
-    drawObjects = drawObjects()+boxes,
-    #drawObjects = boxes,
-    redrawHistos = True,
-)
+for logY in [True, False]:
+    plotting.draw(
+        Plot.fromHisto( "input_spectrum_subtracted" + ('_log' if logY else ''),
+                    [[unfolding_mc_input_subtracted],[unfolding_data_input_subtracted]],
+                    texX = settings.tex_reco,
+                    texY = "Number of events",
+                ),
+        plot_directory = plot_directory_,
+        logX = False, logY = logY, sorting = False,
+        #legend = None,
+        legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
+        yRange = settings.y_range,
+        ratio = {'yRange': (0.3, 1.7), 'texY':'Data / Sim.', 'histos':[(1,0)], 'drawObjects':ratio_boxes} ,
+        drawObjects = drawObjects()+boxes,
+        #drawObjects = boxes,
+        redrawHistos = True,
+    )
 
 # unfolding the data
 
@@ -555,7 +611,10 @@ for band in reversed(settings.systematic_bands):
         box.SetLineColor(band['color'])
         box.SetFillStyle(3244)
         box.SetFillColor(band['color'])
-        boxes.append(box)
+        if hasattr( settings, "plot_range_x_fiducial") and band['ref_unfolded'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
+            pass
+        else:
+            boxes.append(box)
 
         if band['ref_unfolded'].GetBinContent(i)!=0: 
             ratio_box = ROOT.TBox( band['ref_unfolded'].GetXaxis().GetBinLowEdge(i),  
@@ -566,7 +625,10 @@ for band in reversed(settings.systematic_bands):
             ratio_box.SetLineColor(band['color'])
             ratio_box.SetFillStyle(3244)
             ratio_box.SetFillColor(band['color'])
-            ratio_boxes.append(ratio_box)
+            if hasattr( settings, "plot_range_x_fiducial") and band['ref_unfolded'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
+                pass
+            else:
+                ratio_boxes.append(ratio_box)
 
 
 unfolding_data_output.style = styles.errorStyle( ROOT.kBlack )
@@ -575,22 +637,28 @@ unfolding_mc_output.style   = styles.lineStyle( ROOT.kBlue, width = 2)
 unfolding_data_output.legendText = settings.data_legendText 
 unfolding_mc_output.legendText   = settings.mc_legendText
 
-plotting.draw(
-    Plot.fromHisto( "unfolded_spectrum",
-                [[unfolding_mc_output],[unfolding_data_output]],
-                texX = settings.tex_unf,
-                texY = settings.texY,
-            ),
-    plot_directory = plot_directory_,
-    logX = False, logY = True, sorting = False, 
-    #legend = None,
-    legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
-    yRange = settings.y_range,
-    ratio = {'yRange': settings.y_range_ratio, 'texY':'Data / Sim.', 'histos':[(1,0)], 'drawObjects':ratio_boxes} ,
-    drawObjects = drawObjects()+boxes,
-    #drawObjects = boxes,
-    redrawHistos = True,
-)
+for logY in [True,False]:
+    if hasattr( settings, "plot_range_x_fiducial"):
+        hist_mod = [lambda h:h.GetXaxis().SetRangeUser(*settings.plot_range_x_fiducial)]
+    else:
+        hist_mod = []
+    plotting.draw(
+        Plot.fromHisto( "unfolded_spectrum"+ ('_log' if logY else ''),
+                    [[unfolding_mc_output],[unfolding_data_output]],
+                    texX = settings.tex_unf,
+                    texY = settings.texY,
+                ),
+        plot_directory = plot_directory_,
+        logX = False, logY = logY, sorting = False, 
+        #legend = None,
+        histModifications = hist_mod,
+        legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
+        yRange = settings.y_range,
+        ratio = {'yRange': settings.y_range_ratio, 'texY':'Data / Sim.', 'histos':[(1,0)], 'drawObjects':ratio_boxes} ,
+        drawObjects = drawObjects()+boxes,
+        #drawObjects = boxes,
+        redrawHistos = True,
+    )
 
 def get_TMatrixD( histo ):
     Tmatrix = ROOT.TMatrixD(histo.GetNbinsX(),histo.GetNbinsY())

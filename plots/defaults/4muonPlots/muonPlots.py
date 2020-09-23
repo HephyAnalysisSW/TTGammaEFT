@@ -44,7 +44,7 @@ data_sample = DoubleMuon
 
 # make small
 if args.small:
-    data_sample.reduceFiles( to = 1 )
+    data_sample.reduceFiles( factor = 100 )
 
 ## 4 muon selection
 #preSelection = "Sum$(Muon_pt>20&&Muon_mediumPromptId)>=4"
@@ -53,7 +53,7 @@ preSelection = "Sum$(Muon_pt>5&&Muon_mediumPromptId)>=4"
 #
 # Read variables and sequences
 #
-read_variables = ["weight/F" , 
+read_variables = [#"weight/F" , 
                   #"met_phi/F", 
                   "nMuon/I", "Muon[pt/F,eta/F,phi/F,mediumPromptId/O,pdgId/I,pfRelIso03_all/F]", 
 ]
@@ -68,16 +68,21 @@ def makeM4l(event, sample):
     m4l2 = 0
     if len( muons ) ==4:
 
+        # these lines should be commented when running w/o --small
+        for i_m, m in enumerate(muons):
+            print i_m, "pt {pt} eta {eta} phi {phi} pdgId {pdgId}".format(**m)
+
         # select 2 positive and 2 negative charges
         pdgIds = [ p['pdgId'] for p in muons ]
         if pdgIds.count(+13) == 2 and pdgIds.count(-13)==2:
             for i in range(1,4):
                 for j in range( i ):
                     #print "indices i=%i,j=%i: adding %d to m4l2 => yiels %d" % (i,j,m4l2summand,m4l2)
-                    m4l2 += 27. #FIXME: Rosmarie. 
+                    m4l2 += 27. #FIXME: Katharina. 
 
     event.m4l = sqrt( m4l2 )
-    print "%d = invariant mass of 4 muons (2 pos, 2 neg)" % event.m4l
+    if event.m4l!=0:
+        print "%d = invariant mass of 4 muons (2 pos, 2 neg)" % event.m4l
 
 sequence = [makeM4l]
 
@@ -104,11 +109,11 @@ Plot.setDefaults(stack = stack)
 
 plots = []
 
-plots.append(Plot(name = "m4l_105_135_100",
+plots.append(Plot(name = "m4l",
   texX = 'm(4l)', texY = 'Number of Events / 3 GeV',
   attribute = lambda event, sample: event.m4l,
-  binning=[100,105,135],
-#  binning=[100,20,320],
+  #binning=[100,105,135],
+  binning=[100,20,320],
 ))
 
 plotting.fill(plots, read_variables = read_variables, sequence=sequence)
