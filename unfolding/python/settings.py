@@ -225,7 +225,7 @@ class expected_ptG_RunII:
 
     fiducial_variable   = "GenPhotonCMSUnfold0_pt"
     fiducial_selection  = "nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1"
-    fiducial_thresholds     = reco_thresholds[::2]
+    fiducial_thresholds     = [20, 35, 50, 65, 80, 120, 160, 200, 260, 320, 400]
     fiducial_overflow       = "upper"
     max_fiducial_val        = fiducial_thresholds[-1]
     max_fiducial_bincenter  = 0.5*sum(fiducial_thresholds[-2:])
@@ -236,7 +236,7 @@ class expected_ptG_RunII:
     texY     = 'Fiducial cross section (fb)'    
     y_range         = (9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.7,1.3)
-    data_legendText = "Asimov data (137/fb)"
+    data_legendText = "Data (137/fb)"
     mc_legendText =   "Simulation"
 
     unfolding_data_input      = data
