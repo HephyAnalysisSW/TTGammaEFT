@@ -83,6 +83,7 @@ class final_ptG_2016:
     tex_reco = "p^{reco}_{T}(#gamma) (GeV)"
     tex_gen  = "p^{gen}_{T}(#gamma) (GeV)"
     tex_unf  = "p^{fid.}_{T}(#gamma) (GeV)"
+    tex_pur  = "p_{T}(#gamma) (GeV)"
     texY     = 'Fiducial cross section (fb)'    
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.39,1.61)
@@ -154,6 +155,7 @@ class final_ptG_2016_wrong:
     tex_reco = "p^{reco}_{T}(#gamma) (GeV)"
     tex_gen  = "p^{gen}_{T}(#gamma) (GeV)"
     tex_unf  = "p^{fid.}_{T}(#gamma) (GeV)"
+    tex_pur  = "p_{T}(#gamma) (GeV)"
     texY     = 'Fiducial cross section (fb)'    
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.39,1.61)
@@ -233,6 +235,7 @@ class expected_ptG_RunII:
     tex_reco = "p^{reco}_{T}(#gamma) (GeV)"
     tex_gen  = "p^{gen}_{T}(#gamma) (GeV)"
     tex_unf  = "p^{fid.}_{T}(#gamma) (GeV)"
+    tex_pur  = "p_{T}(#gamma) (GeV)"
     texY     = 'Fiducial cross section (fb)'    
     y_range         = (9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.7,1.3)
@@ -313,6 +316,7 @@ class expected_absEta_RunII:
     tex_reco = "|#eta^{reco}(#gamma)|"
     tex_gen  = "|#eta^{gen}(#gamma)|"
     tex_unf  = "|#eta^{fid.}(#gamma)|"
+    tex_pur  = "|#eta(#gamma)|"
     texY     = 'Fiducial cross section (fb)'    
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.39,1.61)
@@ -382,9 +386,10 @@ class final_absEta_2016:
     #for i_year in range(1, len(years)):
     #    reco_thresholds_years += [t + i_year*max_reco_val for t in reco_thresholds]
 
-    tex_reco = "|#eta(#gamma)|^{reco}"
-    tex_gen  = "|#eta(#gamma)|^{gen}"
-    tex_unf  = "|#eta(#gamma)|^{fid.}"
+    tex_reco = "|#eta^{reco}(#gamma)|"
+    tex_gen  = "|#eta^{gen}(#gamma)|"
+    tex_unf  = "|#eta^{fid.}(#gamma)|"
+    tex_pur  = "|#eta(#gamma)|"
     texY     = 'Fiducial cross section (fb)'    
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.39,1.61)
@@ -465,6 +470,7 @@ class final_dRlg_2016:
     tex_reco = "#Delta R(#gamma, l)^{reco}"
     tex_gen  = "#Delta R(#gamma, l)^{gen}"
     tex_unf  = "#Delta R(#gamma, l)^{fid.}"
+    tex_pur  = "#Delta R(#gamma, l)"
     texY     = 'Fiducial cross section (fb)'    
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.39,1.61)
@@ -550,6 +556,7 @@ class expected_dRlg_RunII:
     tex_reco = "#Delta R(#gamma, l)^{reco}"
     tex_gen  = "#Delta R(#gamma, l)^{gen}"
     tex_unf  = "#Delta R(#gamma, l)^{fid.}"
+    tex_pur  = "#Delta R(#gamma, l)"
     texY     = 'Fiducial cross section (fb)'    
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.39,1.61)

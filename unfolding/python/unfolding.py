@@ -362,7 +362,7 @@ reco_fout_spectrum.style       = styles.lineStyle( ROOT.kGreen)
 reco_spectrum.style            = styles.lineStyle( ROOT.kBlue)      
 
 for logY in [True, False]:
-    plot = Plot.fromHisto( name = 'fout_subtraction' + ('_log' if logY else ''),  histos = [[ reco_spectrum ], [reco_spectrum_subtracted], [reco_fout_spectrum] ], texX = "p_{T}", texY = "Events")
+    plot = Plot.fromHisto( name = 'fout_subtraction' + ('_log' if logY else ''),  histos = [[ reco_spectrum ], [reco_spectrum_subtracted], [reco_fout_spectrum] ], texX = settings.tex_reco, texY = "Events")
     plot.stack = None
     draw(plot, logY = logY, 
 #            ratio = {'histos':[(1,0)], 
@@ -380,7 +380,7 @@ for logY in [False]:
     purity     . legendText = "purity" 
     efficiency . legendText = "efficiency" 
     
-    plot = Plot.fromHisto( name = 'pur_eff' + ('_log' if logY else ''),  histos = [[ h ] for h in [efficiency, purity]], texX = "p_{T}", texY = "fraction" )
+    plot = Plot.fromHisto( name = 'pur_eff' + ('_log' if logY else ''),  histos = [[ h ] for h in [efficiency, purity]], texX = settings.tex_pur, texY = "fraction" )
     plot.stack = None
     draw(plot, logY = logY)
 
