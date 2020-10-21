@@ -103,6 +103,7 @@ if options.nJobs>1:
     n_files_before = len(sample.files)
     sample = sample.split(options.nJobs)[options.job]
     n_files_after  = len(sample.files)
+    print "Running job %i/%i over %i files from a total of %i."%(options.job, options.nJobs, n_files_after, n_files_before)
     logger.info( "Running job %i/%i over %i files from a total of %i.", options.job, options.nJobs, n_files_after, n_files_before)
 
 if os.path.exists( targetPath ) and options.overwrite:
@@ -136,7 +137,6 @@ if options.addReweights:
     # Sort Ids wrt to their position in the card file
 
     weightInfo = WeightInfo( pklFile )
-
     # weights for the ntuple
     rw_vector           = TreeVariable.fromString( "rw[w/F,"+",".join(w+"/F" for w in weightInfo.variables)+"]" )
     rw_vector.nMax      = weightInfo.nid
@@ -311,6 +311,7 @@ def filterParticles( coll, vars, pdgId ):
 ##############################################
 ##############################################
 
+coeffs = []
 def filler( event ):
 
     event.run, event.luminosity, event.evt = reader.evt
@@ -325,6 +326,8 @@ def filler( event ):
         lhe_weights  = reader.products["lhe"].weights()
         weights      = []
         param_points = []
+
+#        hyperPoly.initialized = False
 
         for weight in lhe_weights:
             # Store nominal weight (First position!) 
