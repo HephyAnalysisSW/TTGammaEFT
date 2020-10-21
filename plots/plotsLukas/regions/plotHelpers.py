@@ -127,8 +127,8 @@ def convLabel( lab ):
             label += ", " + convM3Label( lab )
         if "pfRelIso" in lab:
             label += ", " + convChgIsoLabel( lab )
-        if "mLtight0Gamma" in lab:
-            label += ", " + convMlgLabel( lab )
+#        if "mLtight0Gamma" in lab:
+#            label += ", " + convMlgLabel( lab )
         return label
     elif "pt" in lab:
         label = convPTLabel( lab )
@@ -136,8 +136,8 @@ def convLabel( lab ):
             label += ", " + convM3Label( lab )
         if "pfRelIso" in lab:
             label += ", " + convChgIsoLabel( lab )
-        if "mLtight0Gamma" in lab:
-            label += ", " + convMlgLabel( lab )
+#        if "mLtight0Gamma" in lab:
+#            label += ", " + convMlgLabel( lab )
         return label
     elif "m3" in lab:
         label = convM3Label( lab )
@@ -196,7 +196,7 @@ def drawObjectsDiff( lumi_scale ):
     tex.SetNDC()
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
-    line = (0.65, 0.95, '%3.1f fb{}^{-1} (13 TeV)' % lumi_scale)
+    line = (0.60, 0.95, '%3.1f fb{}^{-1} (13 TeV)' % lumi_scale)
     lines = [
       (0.15, 0.95, 'CMS #bf{#it{Preliminary}}'),
       line
@@ -211,8 +211,8 @@ def drawObjects( nBins, isData, lumi_scale, postFit, cardfile, preliminary ):
     addon = "post-fit" if postFit else "pre-fit"
     if "incl" in cardfile: addon += ", inclusive"
     lines = [
-      (0.15, 0.945, "CMS Simulation (%s)"%addon) if not isData else ( (0.15, 0.945, "CMS (%s)"%addon) if not preliminary else (0.15, 0.945, "CMS #bf{#it{Preliminary}} #bf{(%s)}"%addon)),
-      (0.84 if nBins>25 else formatSettings(nBins)["legylower"], 0.945, "#bf{%3.1f fb^{-1} (13 TeV)}"%lumi_scale )
+      (0.15, 0.945, "CMS (%s)"%addon) if not preliminary else (0.15, 0.945, "CMS #bf{#it{Preliminary}} #bf{(%s)}"%addon),
+      (formatSettings(nBins)["legylower"], 0.945, "#bf{%3.1f fb^{-1} (13 TeV)}"%lumi_scale )
     ]
     return [tex.DrawLatex(*l) for l in lines]
 
@@ -353,23 +353,25 @@ def formatSettings( nBins ):
         settings["legcolumns"] = 6
         settings["legylower"] = 0.83
         settings["textoffset"] = 0.8
-        settings["offsetfactor"] = 8
+        settings["offsetfactor"] = 20
         settings["ptlabelsize"] = 0.015
         settings["heightFactor"] = 100
     elif nBins>25:
-        settings["textsize"] = 40
-        settings["xlabelsize"] = 20
-        settings["ylabelsize"] = 30
-        settings["padwidth"] = 2500
-        settings["padheight"] = 1200
-        settings["padratio"] = 350
-        settings["hashcode"] = 3144
-        settings["legcolumns"] = 6
-        settings["legylower"] = 0.8
-        settings["textoffset"] = 1
-        settings["offsetfactor"] = 40
-        settings["ptlabelsize"] = 0.022
-        settings["heightFactor"] = 1000
+        settings["textsize"] = 32
+        settings["xlabelsize"] = 22
+        settings["ylabelsize"] = 28
+        settings["padwidth"] = 1500
+        settings["padheight"] = 1000
+        settings["padratio"] = 300
+        settings["hashcode"] = 3244
+        settings["legcolumns"] = 4
+        settings["legylower"] = 0.75
+        settings["textoffset"] = 1.3
+#        settings["offsetfactor"] = 20 # bkg only
+        settings["offsetfactor"] = 90 # SR
+        settings["ptlabelsize"] = 0.02
+#        settings["heightFactor"] = 300 #bkg only
+        settings["heightFactor"] = 1500 #SR
     else:
         settings["textsize"] = 20
         settings["xlabelsize"] = 16

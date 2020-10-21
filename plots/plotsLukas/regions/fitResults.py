@@ -122,19 +122,34 @@ if args.substituteCard:
     del Results
     Results     = CombineResults( cardFile=subCardFile, plotDirectory=plotDirectory, year=args.year, bkgOnly=args.bkgOnly, isSearch=False, rebinnedCardFile=rebinnedCardFile )
 
+labelFormater   = lambda x: ", ".join( [x.split(" ")[3].replace("M3","").replace("VG","ZG+WG") if not "mLtight0Gamma" in x.split(" ")[2] else x.split(" ")[3].replace("VG","ZG") if "mLtight0Gamma0" in x.split(" ")[2] else x.split(" ")[3].replace("VG","WG"), x.split(" ")[1].replace("mu","#mu").replace("tight","")] )
+labels = [ ( i, label ) for i, label in enumerate(Results.getBinLabels( labelFormater=lambda x:x.split(" "))[Results.channels[0]])]
 # get list of labels
+
 if args.plotRegions:  labels = filter( lambda (i,(year, ch, lab, reg)): reg in args.plotRegions, labels )
 if args.plotChannels: labels = filter( lambda (i,(year, ch, lab, reg)): ch in args.plotChannels, labels )
-
-labelFormater   = lambda x: ", ".join( [x.split(" ")[3], x.split(" ")[1].replace("mu","#mu").replace("tight","")] )
-labels = [ ( i, label ) for i, label in enumerate(Results.getBinLabels( labelFormater=lambda x:x.split(" "))[Results.channels[0]])]
 crName    = [ cr for i, (year, lep, reg, cr) in labels ]
 plotBins  = [ i  for i, (year, lep, reg, cr) in labels ]
 crLabel   = map( lambda (i,(year, ch, lab, reg)): ", ".join( [ reg, ch.replace("mu","#mu").replace("tight","") ] ), labels )
+tmpLabels  = map( lambda (i,(year, ch, lab, reg)): lab, labels )
 ptLabels  = map( lambda (i,(year, ch, lab, reg)): convLabel(lab), labels )
+
+for key, val in enumerate(crLabel):
+#    print tmpLabels[key]
+    if "mLtight0Gamma" in tmpLabels[key]:
+        if "mLtight0Gamma0" in tmpLabels[key]:
+            crLabel[key] = val.replace("VG","ZG")
+            print crLabel[key]
+        else:
+            crLabel[key] = val.replace("VG","WG")
+
+nBins     = len(labels) #int(len(crLabel)/3.) if args.year == "combined" else len(crLabel)
+#print nBins
+#sys.exit()
+
 #print ptLabels
 #sys.exit()
-nBins     = len(crLabel) #int(len(crLabel)/3.) if args.year == "combined" else len(crLabel)
+
 
 if "misIDPOI" in args.cardfile:
     processes = processesMisIDPOI.keys()
@@ -219,7 +234,7 @@ def plotRegions( sorted=True ):
     allNuisances  = Results.getNuisancesList( addRateParameter=args.postFit )
     plotNuisances = allNuisances if args.plotNuisances and args.plotNuisances[0] == "total" else args.plotNuisances
     print allNuisances
-    print  Results.getPulls( postFit=True ).keys()
+    print Results.getPulls( postFit=True ).keys()
     print plotNuisances
     # get region histograms
     if args.year == "combined":
@@ -280,12 +295,17 @@ def plotRegions( sorted=True ):
 #            boxes_stat, ratio_boxes_stat = getUncertaintyBoxes( copy.copy(hists["total_stat"]), minMax, lineColor=ROOT.kAzure-3, fillColor=ROOT.kAzure-3, hashcode=1001 )
 
     hists["data"].style        = styles.errorStyle( ROOT.kBlack )
-    hists["data"].legendText   = "data" if not args.bkgSubstracted else "bkg-sub. data (#color[61]{stat}, #color[92]{total} error, %s)"%(ch.replace("mu","#mu") if ch != "all" else "e+#mu")
+    hists["data"].legendText   = "Observed" if not args.bkgSubstracted else "bkg-sub. data (#color[61]{stat}, #color[92]{total} error, %s)"%(ch.replace("mu","#mu") if ch != "all" else "e+#mu")
     hists["data"].legendOption = "p" if args.bkgSubstracted else "p"
+
+    uncHist = hists["data"].Clone()
+    uncHist.Scale(0)
+    uncHist.style = styles.hashStyle(hashCode=3244)
+    uncHist.legendText = "Uncertainty"
 
     if args.bkgSubstracted:
         hists["signal"].style      = styles.lineStyle( ROOT.kOrange+7, width=2, errors=False )
-        hists["signal"].legendText = "tt#gamma SM prediction"# (detector level)"
+        hists["signal"].legendText = "t#bar{t}#gamma SM prediction"# (detector level)"
 
     else:
         for h_key, h in hists.iteritems():
@@ -361,6 +381,7 @@ def plotRegions( sorted=True ):
 
     # get histo list
     plots, ratioHistos = Results.getRegionHistoList( hists, processes=processes, noData=False, sorted=sorted and not args.bkgSubstracted, bkgSubstracted=args.bkgSubstracted, directory="dc_2016" if args.year=="combined" else "Bin0" )
+    plots.append([uncHist])
     if args.plotRegionPlot:
 
         plotting.draw(
@@ -371,10 +392,10 @@ def plotRegions( sorted=True ):
             ),
             logX = False, logY = True, sorting = False, 
             plot_directory    = plotDirectory,
-            legend            = [ (0.2, 0.86 if args.bkgSubstracted else formatSettings(nBins)["legylower"], 0.9, 0.9), formatSettings(nBins)["legcolumns"] ] if not differential else (0.15,0.80,0.9,0.9),
+            legend            = [ (0.17, 0.86 if args.bkgSubstracted else formatSettings(nBins)["legylower"], 0.93, 0.9), formatSettings(nBins)["legcolumns"] ] if not differential else (0.15,0.80,0.9,0.9),
             widths            = { "x_width":formatSettings(nBins)["padwidth"], "y_width":formatSettings(nBins)["padheight"], "y_ratio_width":formatSettings(nBins)["padratio"] } if not differential else {},
-            yRange            = ( 0.7, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ) if not differential else "auto",
-            ratio             = { "yRange": (1-minMax, 1+minMax), "texY":"Data/Pred." if args.bkgSubstracted else "Data/MC", "histos":ratioHistos, "drawObjects":ratio_boxes + ratio_boxes_stat if args.bkgSubstracted else ratio_boxes, "histModifications":ratioHistModifications },
+            yRange            = ( 7, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ) if not differential else "auto",
+            ratio             = { "yRange": (1-minMax, 1+minMax), "texY":"Obs./Pred.", "histos":ratioHistos, "drawObjects":ratio_boxes + ratio_boxes_stat if args.bkgSubstracted else ratio_boxes, "histModifications":ratioHistModifications },
             drawObjects       = drawObjects_ if not differential else drawObjectsDiff(lumi_scale) + boxes + boxes_stat if args.bkgSubstracted else drawObjectsDiff(lumi_scale) + boxes,
             histModifications = histModifications,
             copyIndexPHP      = True,
@@ -383,6 +404,7 @@ def plotRegions( sorted=True ):
         )
 
     del hists
+    return
 
 # covariance matrix 2D plot
 def plotCovariance():
