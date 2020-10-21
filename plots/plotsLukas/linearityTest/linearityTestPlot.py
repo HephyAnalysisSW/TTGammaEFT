@@ -70,21 +70,15 @@ hist.style = styles.errorStyle( ROOT.kAzure-3, width=2 )
 hist.legendText = "SSM (MC Signal / Multiplier)"
 #hist.legendText = "SSM (Exp.Observation #times Multiplier)"
 
+Results = CombineResults( cardFile=cardFile, plotDirectory=plot_directory_, year=args.year, bkgOnly=args.bkgOnly, isSearch=False )
+
 for val in lintests:
-    if val != 1:
-        card = cardFile.replace(".txt","_%s.txt"%str(val).replace(".","_"))
-    else:
-        card = cardFile
-    # replace the combineResults object by the substituted card object
-    try:
-        Results = CombineResults( cardFile=card, plotDirectory=plot_directory_, year=args.year, bkgOnly=args.bkgOnly, isSearch=False )
-        postFit = Results.getPulls( postFit=True )
-    except:
-        continue
+    postFit = Results.runLinearityTest( val )
+
     bin = hist.FindBin(val)
-    print val, postFit["r"]
-    hist.SetBinContent( bin, postFit["r"].val )
-    hist.SetBinError( bin, postFit["r"].sigma/postFit["r"].val )
+    print str(val), str(postFit)
+    hist.SetBinContent( bin, postFit.val )
+    hist.SetBinError( bin, postFit.sigma/val )
 
 line = ROOT.TLine( min(lintests)-0.05, min(lintests)-0.05, max(lintests)+0.05, max(lintests)+0.05 )
 line.SetLineWidth(2)
@@ -100,7 +94,7 @@ def drawObjects( lumi_scale ):
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
     lines = [
-      (0.15, 0.95, 'CMS #bf{#it{Preliminary}} (%s)'%sr),
+      (0.15, 0.95, 'CMS #bf{#it{Preliminary}}'),
       (0.65, 0.95, '%3.1f fb{}^{-1} (13 TeV)' % lumi_scale),
     ]
     return [tex.DrawLatex(*l) for l in lines]

@@ -46,6 +46,17 @@ import RootTools.core.logger as logger_rt
 logger    = logger.get_logger(    args.logLevel, logFile=None )
 logger_rt = logger_rt.get_logger( args.logLevel, logFile=None )
 
+replaceRegionNaming = {
+    "WJets2": "0#gamma0b2j",
+    "WJets3": "0#gamma0b3j",
+    "WJets3p": "0#gamma0b3pj",
+    "WJets4p": "0#gamma0b4pj",
+    "TT2": "0#gamma1b2j",
+    "TT3": "0#gamma1b3j",
+    "TT3p": "0#gamma1b3pj",
+    "TT4p": "0#gamma1b4pj",
+}
+
 # Text on the plots
 def drawObjects( lumi_scale ):
     tex = ROOT.TLatex()
@@ -54,7 +65,7 @@ def drawObjects( lumi_scale ):
     tex.SetTextAlign(11) # align right
     line = (0.65, 0.95, "%3.1f fb{}^{-1} (13 TeV)" % lumi_scale)
     lines = [
-      (0.15, 0.95, "CMS #bf{#it{Preliminary}} (%s)"%args.selection),
+      (0.15, 0.95, "CMS #bf{#it{Preliminary}} (%s)"%replaceRegionNaming[args.selection]),
       line
     ]
     return [tex.DrawLatex(*l) for l in lines]
@@ -180,7 +191,7 @@ divHist.Divide(dataHist_SB)
 
 for i in range(divHist.GetNbinsX()):
     for j in range(divHist.GetNbinsY()):
-        if divHist.GetBinContent( i+1, j+1 ) > 0:
+        if divHist.GetBinContent( i+1, j+1 ) < 0:
             divHist.SetBinContent( i+1, j+1, 0.001 )
 
 dataHist.GetZaxis().SetTitle( "Number of Events (bkg sub)" )
@@ -191,9 +202,9 @@ Plot2D.setDefaults()
 
 mode = args.mode.replace("mu","#mu")
 plots = []
-plots.append( Plot2D.fromHisto( "data_eta_pt_bkgsub",          [[dataHist]],    texX = "p_{T}(%s)"%mode,                texY = "#eta(%s)"%mode ) )
-plots.append( Plot2D.fromHisto( "data_eta_pt_bkgsub_sideband", [[dataHist_SB]], texX = "p_{T}(%s) (QCD sideband)"%mode, texY = "#eta(%s) (QCD sideband)"%mode ) )
-plots.append( Plot2D.fromHisto( "data_eta_pt_bkgsub_ratio",    [[divHist]], texX = "p_{T}(%s)"%mode, texY = "#eta(%s)"%mode ) )
+plots.append( Plot2D.fromHisto( "data_eta_pt_bkgsub",          [[dataHist]],    texX = "p_{T}(%s) [GeV]"%mode,                texY = "#eta(%s)"%mode ) )
+plots.append( Plot2D.fromHisto( "data_eta_pt_bkgsub_sideband", [[dataHist_SB]], texX = "p_{T}(%s) [GeV] (QCD sideband)"%mode, texY = "#eta(%s) (sideband)"%mode ) )
+plots.append( Plot2D.fromHisto( "data_eta_pt_bkgsub_ratio",    [[divHist]], texX = "p_{T}(%s) [GeV]"%mode, texY = "#eta(%s)"%mode ) )
 
 for plot in plots:
 

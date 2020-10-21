@@ -123,8 +123,8 @@ plots2D     = {}
 for b in range(2):
     plots2D["%ib"%b] = Plot2D.fromHisto( "TF2D_nBTag%i"%b, [[hists2D["%ib"%b]]], texX="N_{#gamma}", texY="N_{jets}" )
     plots["%ib"%b]   = {}
-    plots["%ib"%b]["nJ"] = Plot.fromHisto( "TFnJet_nBTag%i"%(b),  [[hists["%ib"%b]["nJUsed"]]] + [[hists["%ib"%b]["nJ%iG"%p]] for p in range(2)[::-1]], texX="N_{jets}", texY="QCD Transferfactor" )
-    plots["%ib"%b]["nG"] = Plot.fromHisto( "TFnPhoton_nBTag%i"%(b), [[hists["%ib"%b]["nGUsed"]]] + [[hists["%ib"%b]["nG%iJ"%j]] for j in range(2,5)[::-1]], texX="N_{#gamma}", texY="QCD Transferfactor" )
+    plots["%ib"%b]["nJ"] = Plot.fromHisto( "TFnJet_nBTag%i"%(b),  [[hists["%ib"%b]["nJUsed"]]] + [[hists["%ib"%b]["nJ%iG"%p]] for p in range(2)[::-1]], texX="N_{jets}", texY="Multijet Transferfactor" )
+    plots["%ib"%b]["nG"] = Plot.fromHisto( "TFnPhoton_nBTag%i"%(b), [[hists["%ib"%b]["nGUsed"]]] + [[hists["%ib"%b]["nG%iJ"%j]] for j in range(2,5)[::-1]], texX="N_{#gamma}", texY="Multijet Transferfactor" )
 
 # Text on the plots
 def drawObjects( lumi_scale ):

@@ -143,7 +143,7 @@ mode = args.mode.replace("mu","#mu")
 
 plots = []
 plots.append( Plot2D.fromHisto( "data_eta_phi",          [[dataHist]],    texX = "#phi(#gamma)(%s)"%mode,                texY = "#eta(#gamma)(%s)"%mode ) )
-plots.append( Plot2D.fromHisto( "data_eta_phi_sideband", [[dataHist_SB]], texX = "#phi(#gamma)(%s) (QCD sideband)"%mode, texY = "#eta(#gamma)(%s) (QCD sideband)"%mode ) )
+plots.append( Plot2D.fromHisto( "data_eta_phi_sideband", [[dataHist_SB]], texX = "#phi(#gamma)(%s) (sideband)"%mode, texY = "#eta(#gamma)(%s) (sideband)"%mode ) )
 plots.append( Plot2D.fromHisto( "data_eta_phi_ratio",    [[divHist]],     texX = "#phi(#gamma)(%s)"%mode, texY = "#eta(#gamma)(%s)"%mode ) )
 
 for plot in plots:

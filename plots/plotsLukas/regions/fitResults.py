@@ -112,15 +112,12 @@ Results = CombineResults( cardFile=cardFile, plotDirectory=plotDirectory, year=a
 #sys.exit()
 
 # add all systematics histograms
-allNuisances  = Results.getNuisancesList( addRateParameter=args.postFit )
-#allNuisances  = Results.getNuisancesList( addRateParameter=False )
-plotNuisances = allNuisances if args.plotNuisances and args.plotNuisances[0] == "total" else args.plotNuisances
 
 if args.substituteCard:
     rebinnedCardFile = os.path.join( cache_directory, "analysis", str(args.year) if args.year != "combined" else "COMBINED", args.carddir, args.substituteCard+".txt" )
 
-    subCardFile = Results.createRebinnedResults( rebinnedCardFile )
-#    subCardFile = "/scratch/lukas.lechner/TTGammaEFT/cache/analysis/2016/limits/cardFiles/defaultSetup/observed/SR3pM3_VG3p_misDY3p_addDYSF/SR3pdRUnfold_addDYSF.txt"
+    subCardFile = Results.createRebinnedResults( rebinnedCardFile, skipStatOnly=True )
+#    subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/expected/SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF/SR3pdRUnfold_addDYSF_addMisIDSF.txt"
 #    subCardFile = "/scratch/lukas.lechner/TTGammaEFT/cache/analysis/COMBINED/limits/cardFiles/defaultSetup/expected/SR3pM3_VG3p_misDY3p_addDYSF/SR3pFine_addDYSF.txt"
     del Results
     Results     = CombineResults( cardFile=subCardFile, plotDirectory=plotDirectory, year=args.year, bkgOnly=args.bkgOnly, isSearch=False, rebinnedCardFile=rebinnedCardFile )
@@ -215,9 +212,18 @@ def replaceHistoBinning( hists ):
 
 # region plot, sorted/not sorted, w/ or w/o +-1sigma changes in one nuisance
 def plotRegions( sorted=True ):
+#    if args.postFit and not args.substituteCard and not args.bkgSubstracted:
+#        Results.plotPOIScan( rMin=0, rMax=2, points=200, addLumi=None )
+#        Results.plotPOIScan( rMin=0, rMax=2, points=200, addLumi="Luminosity" )
+
+    allNuisances  = Results.getNuisancesList( addRateParameter=args.postFit )
+    plotNuisances = allNuisances if args.plotNuisances and args.plotNuisances[0] == "total" else args.plotNuisances
+    print allNuisances
+    print  Results.getPulls( postFit=True ).keys()
+    print plotNuisances
     # get region histograms
     if args.year == "combined":
-        hists_tmp = Results.getRegionHistos( postFit=args.postFit, plotBins=plotBins, nuisances=plotNuisances, addStatOnlyHistos=True, bkgSubstracted=args.bkgSubstracted, labelFormater=labelFormater )
+        hists_tmp = Results.getRegionHistos( postFit=args.postFit, plotBins=plotBins, nuisances=plotNuisances, addStatOnlyHistos=args.bkgSubstracted, bkgSubstracted=args.bkgSubstracted, labelFormater=labelFormater )
         for i, dir in enumerate(Results.channels if not args.plotYear else [key for key, val in Results.years.iteritems() if val == args.plotYear]):
             print i, dir
             if i == 0:
@@ -238,11 +244,11 @@ def plotRegions( sorted=True ):
                         hists[key].Add(hist.Clone(str(i)+dir+key))
 
     else:
-        hists = Results.getRegionHistos( postFit=args.postFit, plotBins=plotBins, nuisances=plotNuisances, addStatOnlyHistos=True, bkgSubstracted=args.bkgSubstracted, labelFormater=labelFormater )["Bin0"]
+        hists = Results.getRegionHistos( postFit=args.postFit, plotBins=plotBins, nuisances=plotNuisances, addStatOnlyHistos=args.bkgSubstracted, bkgSubstracted=args.bkgSubstracted, labelFormater=labelFormater )["Bin0"]
 
     if args.plotNuisances and args.plotNuisances[0] == "total":
 
-        hists["totalUnc"]         = Results.sumNuisanceHistos(hists, addStatUnc=True, postFit=args.postFit)
+        hists["totalUnc"]         = Results.sumNuisanceHistos(hists, addStatUnc=args.bkgSubstracted, postFit=args.postFit)
         for i_n, ni in enumerate(plotNuisances):
             del hists[ni]
 

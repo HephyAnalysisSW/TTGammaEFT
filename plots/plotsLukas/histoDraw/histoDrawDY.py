@@ -185,14 +185,14 @@ for s in mc:
     s.hist.legendText    = s.texName
 
 dataHist.style         = styles.errorStyle( ROOT.kBlack )
-dataHist.legendText    = "data (%s)"%args.mode.replace("mu","#mu").replace("tight","")
+dataHist.legendText    = "Observed (%s)"%args.mode.replace("mu","#mu").replace("tight","")
 
 histos     = [[s.hist for s in mc], [dataHist]]
 
 Plot.setDefaults()
 
 replaceLabel = {
-    "mlltight": "m(l,l) (GeV)",
+    "mlltight": "M(l,l) [GeV]",
 }
 
 plots = []

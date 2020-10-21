@@ -240,9 +240,9 @@ else:
     dirDB.add(key, dataHist, overwrite=True)
 
 dataHist_SB.style      = styles.errorStyle( ROOT.kBlack )
-dataHist_SB.legendText = "data (%s)"%args.mode.replace("mu","#mu")
+dataHist_SB.legendText = "Observed (%s)"%args.mode.replace("mu","#mu")
 dataHist.style         = styles.errorStyle( ROOT.kBlack )
-dataHist.legendText    = "data (%s)"%args.mode.replace("mu","#mu")
+dataHist.legendText    = "Observed (%s)"%args.mode.replace("mu","#mu")
 
 oneHist = dataHist.Clone("one")
 oneHist.notInLegend = True
@@ -304,10 +304,10 @@ qcdHistAR = qcd.hist.Clone("QCDAR")
 qcdHistAR.Add(gjets.hist)
 
 qcdHistAR.style          = styles.fillStyle( color.QCD )
-qcdHistAR.legendText     = "QCD MC (%i)"%int(qcdHistAR.Integral())
+qcdHistAR.legendText     = "Multijet MC (%i)"%int(qcdHistAR.Integral())
 
 qcdHist.style          = styles.fillStyle( color.QCD )
-qcdHist.legendText     = "QCD MC (%i)"%int(qcdHist.Integral())
+qcdHist.legendText     = "Multijet MC (%i)"%int(qcdHist.Integral())
 
 histos[0].append( qcdHistAR )
 histos_SB[0].append( qcdHist )
@@ -328,7 +328,7 @@ Plot.setDefaults()
 
 plots = []
 plots.append( Plot.fromHisto( args.variable,             histos,        texX = args.variable,                   texY = "Number of Events" ) )
-plots.append( Plot.fromHisto( args.variable+"_sideband", histos_SB,     texX = args.variable+" (QCD sideband)", texY = "Number of Events" ) )
+plots.append( Plot.fromHisto( args.variable+"_sideband", histos_SB,     texX = args.variable+" (sideband)", texY = "Number of Events" ) )
 
 for plot in plots:
 

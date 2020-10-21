@@ -88,7 +88,7 @@ elif args.year == "RunII":
     import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
     from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
-mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
+mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG_NLO, mc_samples.ZG, mc_samples.rest ]
 
 read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval/I",
                      "reweightPU/F", "reweightPUDown/F", "reweightPUUp/F", "reweightPUVDown/F", "reweightPUVUp/F",
@@ -226,6 +226,9 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
 else:
     raise Exception("Region not implemented")
 
+
+print selection
+sys.exit()
 lumiString = "(35.92*(year==2016)+41.53*(year==2017)+59.74*(year==2018))"
 ws   = "(%s*weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF)"%lumiString
 ws16 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2016))" %(ws, misIDSF_val[2016].val)
@@ -348,11 +351,12 @@ genCat = [None]
 if args.photonCat:
     hists = {}
     genCat = ["noChgIsoNoSieiephotoncat0","noChgIsoNoSieiephotoncat2","noChgIsoNoSieiephotoncat1","noChgIsoNoSieiephotoncat3","noChgIsoNoSieiephotoncat4"]
-    catSettings = { "noChgIsoNoSieiephotoncat0":{"texName":"gen #gamma",  "color":color.gen  },
-                    "noChgIsoNoSieiephotoncat2":{"texName":"misID-e",     "color":color.misID},
-                    "noChgIsoNoSieiephotoncat1":{"texName":"had #gamma",  "color":color.had  },
-                    "noChgIsoNoSieiephotoncat3":{"texName":"fake #gamma", "color":color.fakes},
-                    "noChgIsoNoSieiephotoncat4":{"texName":"PU #gamma",   "color":color.PU}  }
+    catSettings = { "noChgIsoNoSieiephotoncat0":{"texName":"Genuine #gamma",  "color":color.gen  },
+                    "noChgIsoNoSieiephotoncat2":{"texName":"Misid. e",     "color":color.misID},
+                    "noChgIsoNoSieiephotoncat134":{"texName":"Hadronic #gamma/fake",  "color":color.had  },
+#                    "noChgIsoNoSieiephotoncat1":{"texName":"had #gamma",  "color":color.had  },
+#                    "noChgIsoNoSieiephotoncat3":{"texName":"fake #gamma", "color":color.fakes},
+#                    "noChgIsoNoSieiephotoncat4":{"texName":"PU #gamma",   "color":color.PU}  }
     for g in genCat:
         hists[g] = dataHist.Clone(g)
         hists[g].Scale(0)
@@ -404,9 +408,9 @@ if args.photonCat:
         hists[g].legendText = catSettings[g]["texName"]
 
 dataHist_SB.style      = styles.errorStyle( ROOT.kBlack )
-dataHist_SB.legendText = "data (%s)"%args.mode.replace("mu","#mu").replace("tight","").replace("all","e+#mu")
+dataHist_SB.legendText = "Observed (%s)"%args.mode.replace("mu","#mu").replace("tight","").replace("all","e+#mu")
 dataHist.style         = styles.errorStyle( ROOT.kBlack )
-dataHist.legendText    = "data (%s)"%args.mode.replace("mu","#mu").replace("tight","").replace("all","e+#mu")
+dataHist.legendText    = "Observed (%s)"%args.mode.replace("mu","#mu").replace("tight","").replace("all","e+#mu")
 
 oneHist = dataHist.Clone("one")
 oneHist.notInLegend = True
@@ -528,11 +532,11 @@ if setup.isPhotonSelection:
     qcdHist.Scale(QCDSF_val[args.year].val)
 
 qcdHist.style          = styles.fillStyle( color.QCD )
-qcdHist.legendText     = "QCD (data)"
+qcdHist.legendText     = "Multijet"
 
 qcdTemplate            = qcdHist.Clone("QCDTemplate")
 qcdTemplate.style      = styles.fillStyle( color.QCD )
-qcdTemplate.legendText = "QCD template (%i)"%int(sbInt)
+qcdTemplate.legendText = "Template (%i)"%int(sbInt)
 if not skipQCD:
     qcdTemplate.Scale(1./ qcdTemplate.Integral() )
 maxQCD = qcdTemplate.GetMaximum()
@@ -547,26 +551,27 @@ Plot.setDefaults()
 
 lep = args.mode.replace("mu","#mu") if args.mode != "all" else "l"
 replaceLabel = {
+    "PhotonNoChgIsoNoSieie0_r9": "R9(#gamma)",
     "PhotonNoChgIsoNoSieie0_sieie": "#sigma_{i#eta i#eta}(#gamma)",
-    "MET_pt": "E^{miss}_{T} (GeV)",
-    "mT": "M_{T} (GeV)",
-    "mLtight0Gamma": "M(#gamma,%s) (GeV)"%lep,
+    "MET_pt": "E^{miss}_{T} [GeV]",
+    "mT": "M_{T} [GeV]",
+    "mLtight0Gamma": "M(#gamma,%s) [GeV]"%lep,
     "LeptonTight0_eta": "#eta(%s)"%lep,
     "LeptonTight0_phi": "#phi(%s)"%lep,
-    "LeptonTight0_pt": "p_{T}(%s) (GeV)"%lep,
-    "m3": "M_{3} (GeV)",
-    "ht": "H_{T} (GeV)",
+    "LeptonTight0_pt": "p_{T}(%s) [GeV]"%lep,
+    "m3": "M_{3} [GeV]",
+    "ht": "H_{T} [GeV]",
     "lpTight": "L_{p}",
     "JetGood0_eta": "#eta(j_{0})",
     "JetGood0_phi": "#phi(j_{0})",
-    "JetGood0_pt": "p_{T}(j_{0})",
+    "JetGood0_pt": "p_{T}(j_{0}) [GeV]",
     "JetGood1_eta": "#eta(j_{1})",
     "JetGood1_phi": "#phi(j_{1})",
-    "JetGood1_pt": "p_{T}(j_{1})",
-    "PhotonNoChgIsoNoSieie0_pt": "p_{T}(#gamma)",
+    "JetGood1_pt": "p_{T}(j_{1}) [GeV]",
+    "PhotonNoChgIsoNoSieie0_pt": "p_{T}(#gamma) [GeV]",
     "PhotonNoChgIsoNoSieie0_eta": "#eta(#gamma)",
     "PhotonNoChgIsoNoSieie0_phi": "#phi(#gamma)",
-    "PhotonGood0_pt": "p_{T}(#gamma)",
+    "PhotonGood0_pt": "p_{T}(#gamma) [GeV]",
     "PhotonGood0_eta": "#eta(#gamma)",
     "PhotonGood0_phi": "#phi(#gamma)",
     "ltight0GammadPhi": "#Delta#phi(%s,#gamma)"%lep,

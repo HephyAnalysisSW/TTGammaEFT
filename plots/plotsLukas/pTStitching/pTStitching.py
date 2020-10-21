@@ -29,7 +29,7 @@ loggerChoices = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTS
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",           action="store",      default="INFO", nargs="?", choices=loggerChoices,                        help="Log level for logging")
-argParser.add_argument("--plot_directory",     action="store",      default="102X_TTG_ppv52_v1",                                             help="plot sub-directory")
+argParser.add_argument("--plot_directory",     action="store",      default="102X_TTG_ppv52_v2",                                             help="plot sub-directory")
 argParser.add_argument("--selection",          action="store",      default="all",    type=str,  choices=["all","dilep","semilep","had"],                     help="selection")
 argParser.add_argument("--year",               action="store",      default="2016",   type=str,  choices=["2016","2017","2018","RunII"],                     help="Which year to plot?")
 args = argParser.parse_args()
@@ -121,19 +121,19 @@ for variable, binning in variables:
     mcMed.hist = mcMed.get1DHistoFromDraw( variable, binning=binning, selectionString=selection, weightString="weight*%f"%lumi_scale )
     mcHigh.hist = mcHigh.get1DHistoFromDraw( variable, binning=binning, selectionString=selection, weightString="weight*%f"%lumi_scale )
 
-    mc.hist.style         = styles.lineStyle( ROOT.kBlack, width=2 )
+    mc.hist.style         = styles.lineStyle( ROOT.kBlack, width=2, errors=True )
     mc.hist.legendText    = "tt#gamma (incl)"
 
-    mcStitched.hist.style         = styles.lineStyle( ROOT.kOrange+1, width=2 )
+    mcStitched.hist.style         = styles.lineStyle( ROOT.kOrange+1, width=2, errors=True )
     mcStitched.hist.legendText    = "tt#gamma (total stitched)"
 
-    mcLow.hist.style         = styles.lineStyle( ROOT.kGreen+2, width=2 )
+    mcLow.hist.style         = styles.lineStyle( ROOT.kGreen+2, width=2, errors=True )
     mcLow.hist.legendText    = "tt#gamma (low p_{T})"
 
-    mcMed.hist.style         = styles.lineStyle( ROOT.kBlue, width=2 )
+    mcMed.hist.style         = styles.lineStyle( ROOT.kBlue, width=2, errors=True )
     mcMed.hist.legendText    = "tt#gamma (med p_{T})"
 
-    mcHigh.hist.style         = styles.lineStyle( ROOT.kRed, width=2 )
+    mcHigh.hist.style         = styles.lineStyle( ROOT.kRed, width=2, errors=True )
     mcHigh.hist.legendText    = "tt#gamma (high p_{T})"
 
     histos     = [[mcLow.hist], [mcMed.hist], [mcHigh.hist], [mcStitched.hist], [mc.hist]]
@@ -141,7 +141,7 @@ for variable, binning in variables:
     Plot.setDefaults()
 
     plots = []
-    plots.append( Plot.fromHisto( variable+"_"+args.selection,             histos,        texX = "p^{LHE}_{T}(#gamma)" if variable == "stitchedPt" else "p^{gen}_{T}(#gamma)",                   texY = "Number of Events" ) )
+    plots.append( Plot.fromHisto( variable+"_"+args.selection,             histos,        texX = "p^{LHE}_{T}(#gamma) [GeV]" if variable == "stitchedPt" else "p^{gen}_{T}(#gamma) [GeV]",                   texY = "Number of Events" ) )
 
     for plot in plots:
 

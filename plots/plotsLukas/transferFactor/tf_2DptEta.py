@@ -114,7 +114,7 @@ for i_pt, pt in enumerate(ptBins[:-1]):
         hists2D.SetBinContent( i_eta+1, i_pt+1, abs(transferFac.val)   )
         hists2D.SetBinError(   i_eta+1, i_pt+1, abs(transferFac.sigma) )
     
-plots2D = Plot2D.fromHisto( "TF2D", [[hists2D]], texX="|#eta(l_{0})|", texY="p_{T}(l_{0})" )
+plots2D = Plot2D.fromHisto( "TF2D", [[hists2D]], texX="|#eta(l_{0})|", texY="p_{T}(l_{0}) [GeV]" )
 
 # Text on the plots
 def drawObjects( lumi_scale ):

@@ -215,11 +215,11 @@ else:
 qcdHist     = dataHist_SB.Clone("QCD")
 
 dataHist_SB.style      = styles.errorStyle( ROOT.kBlack )
-dataHist_SB.legendText = "data (%s)"%args.mode.replace("mu","#mu")
+dataHist_SB.legendText = "Observed (%s)"%args.mode.replace("mu","#mu")
 dataHist.style         = styles.errorStyle( ROOT.kBlack )
-dataHist.legendText    = "data (%s)"%args.mode.replace("mu","#mu")
+dataHist.legendText    = "Observed (%s)"%args.mode.replace("mu","#mu")
 qcdHist.style          = styles.fillStyle( color.QCD )
-qcdHist.legendText     = "QCD"
+qcdHist.legendText     = "Multijet"
 
 oneHist = dataHist.Clone("one")
 oneHist.notInLegend = True
@@ -290,7 +290,7 @@ for i in range(qcdHist.GetNbinsX()):
 # copy template
 qcdTemplate            = qcdHist.Clone("QCDTemplate")
 qcdTemplate.style      = styles.fillStyle( color.QCD )
-qcdTemplate.legendText = "QCD template"
+qcdTemplate.legendText = "Template"
 qcdTemplate.Scale(1./ qcdTemplate.Integral() )
 maxQCD = qcdTemplate.GetMaximum()
 
@@ -312,7 +312,7 @@ hist_qcd   = qcdHist.Clone("hist_qcd")
 
 hist_other            = floatSample.hist.Clone("other")
 hist_other.style      = styles.fillStyle( ROOT.kGray )
-hist_other.legendText = "other"
+hist_other.legendText = "Other"
 hist_other.Scale(0.)
 
 for s in mc:
@@ -370,7 +370,7 @@ qcdHist.Scale(qcdTF.val)
 hist_qcd.Scale(qcdTF.val)
 hist_float.Scale(floatSF.val)
 
-hist_qcd.legendText = "QCD" + " (TF %1.3f#pm %1.3f)"%(qcdTF.val, qcdTF.sigma)
+hist_qcd.legendText = "Multijet" + " (TF %1.3f#pm %1.3f)"%(qcdTF.val, qcdTF.sigma)
 hist_qcd.style      = styles.fillStyle( color.QCD )
 
 #if args.mode == "e": # fix WGamma in photonRegions e-channel since mT is not a good handle

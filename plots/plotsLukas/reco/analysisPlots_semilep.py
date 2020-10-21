@@ -194,7 +194,7 @@ def drawPlots( plots, mode, dataMCScale ):
                 for h in plot.histos[0]:
                     if not "datadrivenQCD" in h.GetName(): continue
                     h.style      = styles.fillStyle( color.QCD )
-                    h.legendText = "QCD (data)"
+                    h.legendText = "Multijet"
 
             postFix = " (%s)"%mode.replace("mu","#mu").replace("all","e+#mu")
             if not args.noData: 
