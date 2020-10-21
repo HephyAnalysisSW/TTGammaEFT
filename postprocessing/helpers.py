@@ -14,7 +14,7 @@ def getDataDictList( filepath ):
 
     dictList = []
     for line in ppLines:
-        skim    = filterEmpty( line.split("--skim ")[1].split(" ") )[0] if "--skim" in line else "gen"
+        skim    = filterEmpty( line.split("--skim ")[1].split(" ") )[0] if "--skim" in line else "diMuGamma" if "EGamma" in line else "gen"
         year    = filterEmpty( line.split("--year ")[1].split(" ") )[0] if "--year" in line else 2016
         dir     = filterEmpty( line.split("--processingEra ")[1].split(" ") )[0]
         sample  = filterEmpty( line.split("--sample ")[1].split(" ") )[0]

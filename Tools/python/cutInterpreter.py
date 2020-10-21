@@ -15,6 +15,32 @@ lowSieieThresh  = 0.01015
 highSieieThresh = 0.011
 
 special_cuts = {
+    "dimu":              "nMuonTight==2&&nLeadMuonTight>=1",
+    "lepBarrel":         "abs(MuonTight0_eta)<1.4442&&abs(MuonTight1_eta)<1.4442",
+    "gLBarrel":           "abs(PhotonLoose0_eta)<=1.4442",
+    "gLEC":               "abs(PhotonLoose0_eta)>=1.566",
+    "gMBarrel":           "abs(PhotonMedium0_eta)<=1.4442",
+    "gMEC":               "abs(PhotonMedium0_eta)>=1.566",
+    "gTBarrel":           "abs(PhotonTight0_eta)<=1.4442",
+    "gTEC":               "abs(PhotonTight0_eta)>=1.566",
+    "gMVABarrel":           "abs(PhotonMVA0_eta)<=1.4442",
+    "gMVAEC":               "abs(PhotonMVA0_eta)>=1.566",
+
+    "gLlDRCut":           "minGLLepdR<=0.8&&minGLLepdR>=0.1",
+    "gLlDRCutWrong":      "minGLLepdR<=0.8",
+    "gMlDRlow":           "minGMLepdR<0.1",
+    "gMlDRCut":           "minGMLepdR<=0.8&&minGMLepdR>=0.1",
+    "gMlDRCutWrong":      "minGMLepdR<=0.8",
+    "gTlDRCut":           "minGTLepdR<=0.8&&minGTLepdR>=0.1",
+    "gTlDRCutWrong":      "minGTLepdR<=0.8",
+    "gMVAlDRCut":           "minGMVALepdR<=0.8&&minGMVALepdR>=0.1",
+    "gMVAlDRCutWrong":      "minGMVALepdR<=0.8",
+
+    "noPixL":            "PhotonLoose0_pixelSeed==0",
+    "noPixM":            "PhotonMedium0_pixelSeed==0",
+    "noPixT":            "PhotonTight0_pixelSeed==0",
+    "noPixMVA":          "PhotonMVA0_pixelSeed==0",
+
     "OS":                "(LeptonGood0_pdgId*LeptonGood1_pdgId)<0",
     "OStight":           "(LeptonTight0_pdgId*LeptonTight1_pdgId)<0",
     "dilep":             "nLeptonGood==2&&nLeptonGoodLead>=1",
@@ -295,12 +321,13 @@ special_cuts = {
 
   }
 
-continous_variables  = [ ("lNSeta","abs(LeptonTightNoSieie0_eta)"), ("pSieie","PhotonNoChgIsoNoSieie0_sieie"), ("pChgIso","(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)"), ("peta","abs(PhotonNoChgIsoNoSieie0_eta)"), ("pphi","abs(PhotonNoChgIsoNoSieie0_phi)"), ("ppt","PhotonNoChgIsoNoSieie0_pt"), ("glDR","ltight0GammadR"), ("gnplDR","ltight0GammaNoSieieNoChgIsodR"), ("gnpjDR","photonNoSieieNoChgIsoJetdR"), ("mT", "mT"), ("metSig", "METSig"), ("mll", "mll"), ("mllgamma", "mllgamma"), ("mlgamma", "mLtight0Gamma"), ("met", "MET_pt"), ("pTG","PhotonGood0_pt"), ("phiG","PhotonGood0_phi"), ("pTj","Jet_pt[0]"), ("etaj","abs(JetGood0_eta)"), ("etak", "abs(JetGood1_eta)"), ("sip","LeptonTight0_sip3d"), ("dxyl","abs(LeptonTight0_dxy)"), ("dzl","abs(LeptonTight0_dz)"), ("etal","abs(LeptonTight0_eta)"), ("etainvl","abs(LeptonTightInvIso0_eta)"), ("ptl","LeptonTight0_pt"), ("ptinvl","LeptonTightInvIso0_pt") ]
+continous_variables  = [ ("lNSeta","abs(LeptonTightNoSieie0_eta)"), ("pSieie","PhotonNoChgIsoNoSieie0_sieie"), ("pChgIso","(PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt)"), ("peta","abs(PhotonNoChgIsoNoSieie0_eta)"), ("pphi","abs(PhotonNoChgIsoNoSieie0_phi)"), ("ppt","PhotonNoChgIsoNoSieie0_pt"), ("glDR","ltight0GammadR"), ("gnplDR","ltight0GammaNoSieieNoChgIsodR"), ("gnpjDR","photonNoSieieNoChgIsoJetdR"), ("mT", "mT"), ("metSig", "METSig"), ("mmllLg", "(mll+mllgL)"), ("mmllMg", "(mll+mllgM)"), ("mmllTg", "(mll+mllgT)"), ("mmllMVAg", "(mll+mllgMVA)"), ("mllgamma", "mllgamma"), ("mllLgamma", "mllgL"), ("mllMgamma", "mllgM"), ("mllTgamma", "mllgT"), ("mllMVAgamma", "mllgMVA"), ("mlgamma", "mLtight0Gamma"), ("met", "MET_pt"), ("pTG","PhotonGood0_pt"),  ("pTLG","PhotonLoose0_pt"),  ("pTMG","PhotonMedium0_pt"),  ("pTTG","PhotonTight0_pt"),  ("pTMVAG","PhotonMVA0_pt"), ("phiG","PhotonGood0_phi"), ("pTj","Jet_pt[0]"), ("etaj","abs(JetGood0_eta)"), ("etak", "abs(JetGood1_eta)"), ("sip","LeptonTight0_sip3d"), ("dxyl","abs(LeptonTight0_dxy)"), ("dzl","abs(LeptonTight0_dz)"), ("etal","abs(LeptonTight0_eta)"), ("etainvl","abs(LeptonTightInvIso0_eta)"), ("ptl","LeptonTight0_pt"), ("ptinvl","LeptonTightInvIso0_pt") ]
 continous_variables += [ ("lnoIsorelIso","LeptonTightNoIso0_pfRelIso03_all") ]
 continous_variables += [ ("mt","mT"), ("lgDR","ltight0GammadR"), ("linvgDR","linvtight0GammadR") ]
 
 discrete_variables  = [ ("nAllJet", "nJet"), ("nJet", "nJetGood"), ("nBTag", "nBTagGood"), ("nLepNoCorrVeto","nLeptonVeto"), ("nLepVeto","nLeptonVetoIsoCorr"), ("nNoIsoLepTight","nLeptonTightNoIso"), ("nNoSieieLepTight","nLeptonTightNoSieie"), ("nInvLepTight","nLeptonTightInvIso"), ("nLepTight","nLeptonTight"), ("nLep","nLeptonGood"), ("nNoIsoLepVeto","nLeptonVetoNoIso"), ("nInvLeptVetoTight","nLeptonVetoNoIso") ]
 
+discrete_variables += [ ("nLPhoton", "nPhotonLoose"), ("nMPhoton", "nPhotonMedium"), ("nTPhoton", "nPhotonTight"), ("nMVAPhoton", "nPhotonMVA") ]
 discrete_variables += [ ("nPhoton",    "nPhotonGood"),          ("nHadPhoton",    "nPhotonNoChgIsoNoSieie"),          ("nSieiePhoton",    "nPhotonNoSieie"),          ("nChgIsoPhoton",    "nPhotonNoChgIso")  ]
 discrete_variables += [ ("nInvLPhoton","nPhotonGoodInvLepIso"), ("nInvLHadPhoton","nPhotonNoChgIsoNoSieieInvLepIso"), ("nInvLSieiePhoton","nPhotonNoSieieInvLepIso"), ("nInvLChgIsoPhoton","nPhotonNoChgIsoInvLepIso")  ]
 discrete_variables += [ ("nNoLPhoton", "nPhotonGoodNoLepIso"),  ("nNoLHadPhoton", "nPhotonNoChgIsoNoSieieNoLepIso"),  ("nNoLSieiePhoton", "nPhotonNoSieieNoLepIso"),  ("nNoLChgIsoPhoton", "nPhotonNoChgIsoNoLepIso")  ]
