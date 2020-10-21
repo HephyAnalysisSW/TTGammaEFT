@@ -12,7 +12,7 @@ from RootTools.core.standard           import *
 # Analysis
 from Analysis.Tools.metFilters         import getFilterCut
 from Analysis.Tools.helpers            import add_histos
-import Analysis.Tools.syncer as syncer
+#import Analysis.Tools.syncer as syncer
 
 # Internal Imports
 from TTGammaEFT.Tools.user             import plot_directory, cache_directory
@@ -224,14 +224,14 @@ data_weight_string = "weight"
 nominalPuWeight, upPUWeight, downPUWeight = "reweightPU", "reweightPUUp", "reweightPUDown"
 
 # Text on the plots
-def drawObjects( lumi_scale ):
+def drawObjects( lumi_scale, log=False ):
     tex = ROOT.TLatex()
     tex.SetNDC()
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
     line = (0.65, 0.95, "%3.1f fb{}^{-1} (13 TeV)" % lumi_scale)
     lines = [
-      (0.235 if args.selection.startswith("WJets") or args.selection.startswith("TT") else 0.15, 0.95, "CMS #bf{#it{Preliminary}}%s"%(" (%s)"%(replaceRegionNaming[args.selection.replace("fake","SR")] if args.selection.replace("fake","SR") in replaceRegionNaming.keys() else args.selection.replace("fake","SR")) if not args.paperPlot else "" )),
+      (0.235 if not log and (args.selection.startswith("WJets") or args.selection.startswith("TT")) else 0.15, 0.95, "CMS #bf{#it{Preliminary}}%s"%(" (%s)"%(replaceRegionNaming[args.selection.replace("fake","SR")] if args.selection.replace("fake","SR") in replaceRegionNaming.keys() else args.selection.replace("fake","SR")) if not args.paperPlot else "" )),
       line
     ]
     return [tex.DrawLatex(*l) for l in lines]
@@ -584,6 +584,7 @@ if args.variation == "central":
                     if setup.isBTagged:
 #                        qcdHist_tmp.Scale(estimate._nJetScaleFactor("mu", setup, qcdUpdates=nJetUpdates))
                         qcdHist_tmp.Scale(estimate._nJetScaleFactor(mode.replace("Inv",""), setup, qcdUpdates=nJetUpdates))
+#                        qcdHist_tmp.Scale(estimate._nJetScaleFactor("mu", setup, qcdUpdates=nJetUpdates))
                         print "njet", estimate._nJetScaleFactor(mode.replace("Inv",""), setup, qcdUpdates=nJetUpdates)
 
                     qcdHist.Add(qcdHist_tmp)
@@ -821,9 +822,9 @@ for i_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
 
     box = ROOT.TBox( 
             total_mc_histo["central"].GetXaxis().GetBinLowEdge(i_b),
-            max([0.03, (1-sigma_rel)*total_central_mc_yield]),
+            max([7, (1-sigma_rel)*total_central_mc_yield]),
             total_mc_histo["central"].GetXaxis().GetBinUpEdge(i_b), 
-            max([0.03, (1+sigma_rel)*total_central_mc_yield]) )
+            max([7, (1+sigma_rel)*total_central_mc_yield]) )
     box.SetLineColor(ROOT.kGray+2)
     box.SetFillStyle(3644)
     box.SetLineWidth(1)
@@ -832,28 +833,35 @@ for i_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
 
     r_box = ROOT.TBox( 
         total_mc_histo["central"].GetXaxis().GetBinLowEdge(i_b),  
-        max(0.1, 1-sigma_rel), 
+        max(0.51 if args.selection.startswith("TT") or args.selection.startswith("WJets") or args.selection.startswith("misDY") else 0.76, 1-sigma_rel), 
         total_mc_histo["central"].GetXaxis().GetBinUpEdge(i_b), 
-        min(1.9, 1+sigma_rel) )
+        min(1.49 if args.selection.startswith("TT") or args.selection.startswith("WJets") or args.selection.startswith("misDY") else 1.24, 1+sigma_rel) )
     r_box.SetLineColor(ROOT.kGray+2)
     r_box.SetLineWidth(1)
     r_box.SetFillStyle(3644)
     r_box.SetFillColor(ROOT.kGray+2)
     ratio_boxes.append(r_box)
 
-histModifications  = []
-histModifications += [lambda h: h.GetYaxis().SetTitleOffset(2.0)]
-
-ratioHistModifications  = []
-ratioHistModifications += [lambda h: h.GetYaxis().SetTitleOffset(2.0)]
-
 legend = [ (0.2,0.9-0.025*sum(map(len, plot.histos)),0.9,0.9), 3 ]
 #ratio = {'yRange':(0.1,1.9), "drawObjects":ratio_boxes}
 #ratio = {'yRange':(0.51,1.49), "drawObjects":ratio_boxes}
 #ratio = {'yRange':(0.99,1.01), "drawObjects":ratio_boxes}
-ratio = {'yRange':(0.76,1.24), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
 for log in [True, False]:
 
+        histModifications  = []
+        histModifications += [lambda h: h.GetYaxis().SetTitleOffset(2. if log else 2.3)]
+
+        ratioHistModifications  = []
+        ratioHistModifications += [lambda h: h.GetYaxis().SetTitleOffset(2. if log else 2.3)]
+
+
+        if args.selection.startswith("TT") or args.selection.startswith("WJets") or args.selection.startswith("misDY"):
+            ratio = {'yRange':(0.51,1.49), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
+        else:
+            ratio = {'yRange':(0.76,1.24), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
+
+        print args.selection
+        print ratio
         selDir = args.selection
         if args.addCut: selDir += "-" + args.addCut
         modeAddon = ""
@@ -862,11 +870,11 @@ for log in [True, False]:
         plot_directory_ = os.path.join( plot_directory, "systematics", str(args.year), args.plot_directory, selDir, "postfit" if args.postfit else "prefit", args.mode+modeAddon, "log" if log else "lin" )
         plotting.draw( plot,
                        plot_directory = plot_directory_,
-                       logX = False, logY = log, sorting = not (plot.name == "mLtight0Gamma" and args.paperPlot and args.photonCat) ,
-                       yRange = (0.3, "auto"),
+                       logX = False, logY = log, sorting = not (args.mode == "e" and plot.name == "mLtight0Gamma" and args.photonCat) ,
+                       yRange = (7, 1e5) if plot.name == "PhotonGood0_pt" and args.mode =="all" and args.year == 2016 and args.selection == "SR3p" else (7,"auto"),
                        ratio = ratio,
 #                       drawObjects = drawObjects( lumi_scale ),
-                       drawObjects = drawObjects( lumi_scale ) + boxes,
+                       drawObjects = drawObjects( lumi_scale, log=log ) + boxes,
                        legend = legend,
                        histModifications = histModifications,
                        copyIndexPHP = True,

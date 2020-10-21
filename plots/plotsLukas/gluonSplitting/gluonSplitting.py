@@ -29,7 +29,7 @@ loggerChoices = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTS
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",           action="store",      default="INFO", nargs="?", choices=loggerChoices,                        help="Log level for logging")
-argParser.add_argument("--plot_directory",     action="store",      default="102X_TTG_ppv41_v2",                                             help="plot sub-directory")
+argParser.add_argument("--plot_directory",     action="store",      default="102X_TTG_ppv45_v2",                                             help="plot sub-directory")
 argParser.add_argument("--year",               action="store",      default="2016",   type=str,  choices=["2016","2017","2018","RunII"],                     help="Which year to plot?")
 argParser.add_argument("--selection",          action="store",      default="SR3p", type=str,                                              help="reco region")
 argParser.add_argument("--addCut",             action="store",      default=None, type=str,                                                  help="additional cuts")
@@ -147,11 +147,15 @@ plots.append( Plot.fromHisto( sample.name + "_" + variable,             histos, 
 
 selDir = args.selection
 if args.addCut: selDir += "-" + args.addCut
+
 for plot in plots:
 
     legend = [ (0.2,0.9-0.025*sum(map(len, plot.histos)),0.9,0.9), 3 ]
 
     for log in [True, False]:
+
+        histModifications  = []
+        histModifications += [lambda h: h.GetYaxis().SetTitleOffset(1.6)]
 
         plot_directory_ = os.path.join( plot_directory, "gluonSplitting", str(args.year), args.plot_directory, selDir, args.mode, "log" if log else "lin" )
         plotting.draw( plot,
@@ -161,6 +165,7 @@ for plot in plots:
 #                       ratio = {'histos':[(2,1)], 'texY': 'stitched/incl'},
                        drawObjects = drawObjects( lumi_scale ),
                        legend = legend,
+                       histModifications = histModifications,
                        copyIndexPHP = True,
                        )
 
