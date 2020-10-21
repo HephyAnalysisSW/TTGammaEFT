@@ -41,6 +41,7 @@ dirs = {}
 #dirs["ttGamma_incl_4WC"] = [ "ttGamma_incl_restrict_MadSpin_4WC_order2_ref_rwgt" ]
 
 dirs["ttGamma_1l_2WC"]      = [ "ttGamma_SemiLept_restrict_ref_rwgt_2WC" ]
+dirs["ttGamma_2l_2WC"]      = [ "ttGamma_Dilept_restrict_ref_rwgt_2WC" ]
 dirs["ttGamma_1l_ctZ2"]     = [ "ttGamma_SemiLept_restrict_ctZ2" ]
 #dirs["ttGamma_1l_ctW2"]     = [ "ttGamma_SemiLept_restrict_ctW2" ]
 dirs["ttGamma_1l_ctZI2"]    = [ "ttGamma_SemiLept_restrict_ctZI2" ]
@@ -50,6 +51,12 @@ dirs["ttGamma_1l_ctZm1"]    = [ "ttGamma_SemiLept_restrict_ctZm1" ]
 dirs["ttGamma_1l_ctZIm1"]   = [ "ttGamma_SemiLept_restrict_ctZIm1" ]
 #dirs["ttGamma_1l_ctWIm1"]   = [ "ttGamma_SemiLept_restrict_ctWIm1" ]
 dirs["ttGamma_1l_SM"]       = [ "ttGamma_SemiLept_restrict_SM" ]
+
+dirs["ttGamma_2WC"]      = [ "ttGamma_SemiLept_restrict_ref_rwgt_2WC", "ttGamma_Dilept_restrict_ref_rwgt_2WC" ]
+
+dirs["tWGamma_2WC"]      = [ "tWG_restrict_ref_rwgt_2WC" ]
+dirs["stGamma_tch_2WC"]  = [ "stg_tch_restrict_ref_rwgt_2WC" ]
+dirs["stGamma_sch_2WC"]  = [ "stg_sch_restrict_ref_rwgt_2WC" ]
 
 #dirs["ttGamma_1l_old"]   = [ "ttGamma_SemiLept_restrict_4WC_order2_ref_rwgt" ]
 #dirs["ttGamma_1l_dim2"]   = [ "ttGamma_SemiLept_restrict_4WC_medRef_rwgt_dim2" ]
@@ -130,8 +137,24 @@ directories = { key : [ os.path.join( data_directory_, postprocessing_directory_
 
 #ctZ
 
+TTG_2WC_ref                = Sample.fromDirectory( name="TTG_2WC_ref", treeName="Events", isData=False, color=color.TTG, texName="tt#gamma", directory=directories["ttGamma_2WC"])
+TTG_2WC_ref.reweight_pkl   = os.path.join( gridpack_directory, "EFT", "dipoles", "singleOp", "ttGamma_SemiLept_restrict_rwgt_2WC", "ttGamma_SemiLept_restrict_rwgt_2WC_slc7_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
+
 TTG_SemiLep_2WC_ref                = Sample.fromDirectory( name="TTG_SemiLep_2WC_ref", treeName="Events", isData=False, color=color.TTG, texName="tt#gamma", directory=directories["ttGamma_1l_2WC"])
 TTG_SemiLep_2WC_ref.reweight_pkl   = os.path.join( gridpack_directory, "EFT", "dipoles", "singleOp", "ttGamma_SemiLept_restrict_rwgt_2WC", "ttGamma_SemiLept_restrict_rwgt_2WC_slc7_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
+
+TTG_Dilep_2WC_ref                = Sample.fromDirectory( name="TTG_Dilep_2WC_ref", treeName="Events", isData=False, color=color.TTG, texName="tt#gamma", directory=directories["ttGamma_2l_2WC"])
+TTG_Dilep_2WC_ref.reweight_pkl   = os.path.join( gridpack_directory, "EFT", "dipoles", "singleOp", "ttGamma_Dilept_restrict_rwgt_2WC", "ttGamma_Dilept_restrict_rwgt_slc7_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
+
+stg_sch_2WC_ref                = Sample.fromDirectory( name="stg_sch_2WC_ref", treeName="Events", isData=False, color=color.TGamma, texName="t#gamma (s-ch)", directory=directories["stGamma_sch_2WC"])
+stg_sch_2WC_ref.reweight_pkl   = os.path.join( gridpack_directory, "EFT", "dipoles", "singleOp", "stg_sch_rwgt", "stg_sch_rwgt_slc7_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
+
+stg_tch_2WC_ref                = Sample.fromDirectory( name="stg_tch_2WC_ref", treeName="Events", isData=False, color=color.TGamma, texName="t#gamma (s-ch)", directory=directories["stGamma_tch_2WC"])
+stg_tch_2WC_ref.reweight_pkl   = os.path.join( gridpack_directory, "EFT", "dipoles", "singleOp", "stg_tch_rwgt", "stg_tch_rwgt_slc7_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
+
+tWG_2WC_ref                = Sample.fromDirectory( name="tWG_2WC_ref", treeName="Events", isData=False, color=color.TGamma, texName="t#gamma (s-ch)", directory=directories["tWGamma_2WC"])
+tWG_2WC_ref.reweight_pkl   = os.path.join( gridpack_directory, "EFT", "dipoles", "singleOp", "tWG_rwgt", "tWG_rwgt_slc7_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
+
 
 TTG_SemiLep_ctZ2 = Sample.fromDirectory( name="TTG_SemiLep_ctZ2", treeName="Events", isData=False, color=color.TTG, texName="tt#gamma", directory=directories["ttGamma_1l_ctZ2"])
 #TTG_SemiLep_ctW2 = Sample.fromDirectory( name="TTG_SemiLep_ctW2", treeName="Events", isData=False, color=color.TTG, texName="tt#gamma", directory=directories["ttGamma_1l_ctW2"])
@@ -144,7 +167,7 @@ TTG_SemiLep_ctZIm1 = Sample.fromDirectory( name="TTG_SemiLep_ctZIm1", treeName="
 TTG_SemiLep_SM = Sample.fromDirectory( name="TTG_SemiLep_SM", treeName="Events", isData=False, color=color.TTG, texName="tt#gamma", directory=directories["ttGamma_1l_SM"])
 
 all = [
-#    TTG_4WC_ref,
+#    TTG_2WC_ref,
 #    TTG_Had_4WC_ref,
 #    TTG_SemiLep_4WC_ref,
 #    TTG_Dilep_4WC_ref,
@@ -162,7 +185,9 @@ all = [
 #    TT_SemiLep_4WC_ref,
 #    TT_Dilep_4WC_ref,
 
+    TTG_2WC_ref,
     TTG_SemiLep_2WC_ref,
+    TTG_Dilep_2WC_ref,
     TTG_SemiLep_ctZ2,
     TTG_SemiLep_ctZI2,
 #    TTG_SemiLep_ctW2,
@@ -172,6 +197,11 @@ all = [
 #    TTG_SemiLep_ctWm1,
 #    TTG_SemiLep_ctWIm1,
     TTG_SemiLep_SM,
+
+    tWG_2WC_ref,
+    stg_tch_2WC_ref,
+    stg_sch_2WC_ref,
+
 ]
 
 #for s in all: print os.path.exists(s.reweight_pkl), s.reweight_pkl
