@@ -27,8 +27,7 @@ try:
 except:
     fromDPM = not "clip" in os.getenv("HOSTNAME").lower()
 
-if "gammaSkim" in os.environ and os.environ["gammaSkim"] == "True":
-    postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
+postprocessing_directory_ = postprocessing_directory_.replace("/semilep/", "/semilepGamma/")
 
 print postprocessing_directory_
 # Redirector
@@ -185,7 +184,7 @@ ST_tch           = getMCSample(name="ST_tch",           redirector=redirector, c
 ST_sch           = getMCSample(name="ST_sch",           redirector=redirector, color=color.T,               texName="t (s-ch)",          directory=directories["st_sch"], noCheckProxy=True, fromDPM=fromDPM)
 #TTG_NLO         = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_NLO"], noCheckProxy=True, fromDPM=fromDPM)
 TTG             = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG"], noCheckProxy=True, fromDPM=fromDPM)
-TTG_sys_incl    = getMCSample(name="TTG_sys",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_sys_incl"], noCheckProxy=True, fromDPM=fromDPM)
+TTG_sys_incl    = getMCSample(name="TTG_sys_incl",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_sys_incl"], noCheckProxy=True, fromDPM=fromDPM)
 #TTG_med    = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_med"], noCheckProxy=True, fromDPM=fromDPM)
 #TTG_high    = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_high"], noCheckProxy=True, fromDPM=fromDPM)
 #TTG_stitched    = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_stitched"], noCheckProxy=True, fromDPM=fromDPM)
@@ -225,6 +224,18 @@ all_noTT        = getMCSample(name="all_noTT",         redirector=redirector, co
 all_noOther_noTT = getMCSample(name="all_noOther_noTT", redirector=redirector, color=color.TT,              texName="all_noOther_noTT", directory=directories["all_noOther_noTT"], noCheckProxy=True, fromDPM=fromDPM)
 
 signals = []
+
+#print TTG.getYieldFromDraw(selectionString="nLeptonTight==1&&pTStitching==1", weightString="weight")
+#print TTG_sys_incl.getYieldFromDraw(selectionString="nLeptonTight==1&&1", weightString="weight")
+#print TTG_erdOn.getYieldFromDraw(selectionString="nLeptonTight==1&&1", weightString="weight")
+#print TTG_GluonMove.getYieldFromDraw(selectionString="nLeptonTight==1&&1", weightString="weight")
+#print TTG_QCDbased.getYieldFromDraw(selectionString="nLeptonTight==1&&1", weightString="weight")
+
+print TTG.getYieldFromDraw(selectionString="PhotonNoChgIsoNoSieie0_pt>=20&&nLeptonTight==1&&nElectronTight==1&&nLeptonVetoIsoCorr==1&&nJetGood>=4&&nBTagGood>=1&&nPhotonGood>=1&&nPhotonGood<=1&&nPhotonNoChgIsoNoSieie>=1&&nPhotonNoChgIsoNoSieie<=1&&PhotonGood0_photonCatMagic==0&&triggered==1&&reweightHEM>0&&overlapRemoval==1&&pTStitching==1&&Flag_goodVertices&&Flag_globalSuperTightHalo2016Filter&&Flag_HBHENoiseFilter&&Flag_HBHENoiseIsoFilter&&Flag_EcalDeadCellTriggerPrimitiveFilter&&Flag_ecalBadCalibFilter&&Flag_BadPFMuonFilter&&PV_ndof>4&&sqrt(PV_x*PV_x+PV_y*PV_y)<=2&&abs(PV_z)<=24&&pTStitching==1", weightString="weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF*(35.92*(year==2016)+41.53*(year==2017)+59.74*(year==2018))")
+print TTG_sys_incl.getYieldFromDraw(selectionString="PhotonNoChgIsoNoSieie0_pt>=20&&nLeptonTight==1&&nElectronTight==1&&nLeptonVetoIsoCorr==1&&nJetGood>=4&&nBTagGood>=1&&nPhotonGood>=1&&nPhotonGood<=1&&nPhotonNoChgIsoNoSieie>=1&&nPhotonNoChgIsoNoSieie<=1&&PhotonGood0_photonCatMagic==0&&triggered==1&&reweightHEM>0&&overlapRemoval==1&&pTStitching==1&&Flag_goodVertices&&Flag_globalSuperTightHalo2016Filter&&Flag_HBHENoiseFilter&&Flag_HBHENoiseIsoFilter&&Flag_EcalDeadCellTriggerPrimitiveFilter&&Flag_ecalBadCalibFilter&&Flag_BadPFMuonFilter&&PV_ndof>4&&sqrt(PV_x*PV_x+PV_y*PV_y)<=2&&abs(PV_z)<=24&&1", weightString="weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF*(35.92*(year==2016)+41.53*(year==2017)+59.74*(year==2018))")
+print TTG_erdOn.getYieldFromDraw(selectionString="PhotonNoChgIsoNoSieie0_pt>=20&&nLeptonTight==1&&nElectronTight==1&&nLeptonVetoIsoCorr==1&&nJetGood>=4&&nBTagGood>=1&&nPhotonGood>=1&&nPhotonGood<=1&&nPhotonNoChgIsoNoSieie>=1&&nPhotonNoChgIsoNoSieie<=1&&PhotonGood0_photonCatMagic==0&&triggered==1&&reweightHEM>0&&overlapRemoval==1&&pTStitching==1&&Flag_goodVertices&&Flag_globalSuperTightHalo2016Filter&&Flag_HBHENoiseFilter&&Flag_HBHENoiseIsoFilter&&Flag_EcalDeadCellTriggerPrimitiveFilter&&Flag_ecalBadCalibFilter&&Flag_BadPFMuonFilter&&PV_ndof>4&&sqrt(PV_x*PV_x+PV_y*PV_y)<=2&&abs(PV_z)<=24&&1", weightString="weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF*(35.92*(year==2016)+41.53*(year==2017)+59.74*(year==2018))")
+print TTG_GluonMove.getYieldFromDraw(selectionString="PhotonNoChgIsoNoSieie0_pt>=20&&nLeptonTight==1&&nElectronTight==1&&nLeptonVetoIsoCorr==1&&nJetGood>=4&&nBTagGood>=1&&nPhotonGood>=1&&nPhotonGood<=1&&nPhotonNoChgIsoNoSieie>=1&&nPhotonNoChgIsoNoSieie<=1&&PhotonGood0_photonCatMagic==0&&triggered==1&&reweightHEM>0&&overlapRemoval==1&&pTStitching==1&&Flag_goodVertices&&Flag_globalSuperTightHalo2016Filter&&Flag_HBHENoiseFilter&&Flag_HBHENoiseIsoFilter&&Flag_EcalDeadCellTriggerPrimitiveFilter&&Flag_ecalBadCalibFilter&&Flag_BadPFMuonFilter&&PV_ndof>4&&sqrt(PV_x*PV_x+PV_y*PV_y)<=2&&abs(PV_z)<=24&&1", weightString="weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF*(35.92*(year==2016)+41.53*(year==2017)+59.74*(year==2018))")
+print TTG_QCDbased.getYieldFromDraw(selectionString="PhotonNoChgIsoNoSieie0_pt>=20&&nLeptonTight==1&&nElectronTight==1&&nLeptonVetoIsoCorr==1&&nJetGood>=4&&nBTagGood>=1&&nPhotonGood>=1&&nPhotonGood<=1&&nPhotonNoChgIsoNoSieie>=1&&nPhotonNoChgIsoNoSieie<=1&&PhotonGood0_photonCatMagic==0&&triggered==1&&reweightHEM>0&&overlapRemoval==1&&pTStitching==1&&Flag_goodVertices&&Flag_globalSuperTightHalo2016Filter&&Flag_HBHENoiseFilter&&Flag_HBHENoiseIsoFilter&&Flag_EcalDeadCellTriggerPrimitiveFilter&&Flag_ecalBadCalibFilter&&Flag_BadPFMuonFilter&&PV_ndof>4&&sqrt(PV_x*PV_x+PV_y*PV_y)<=2&&abs(PV_z)<=24&&1", weightString="weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF*(35.92*(year==2016)+41.53*(year==2017)+59.74*(year==2018))")
 
 if __name__ == "__main__":
 

@@ -25,5 +25,15 @@ class postprocessing_locations:
     MC2017_incl  = "TTGammaEFT_PP_2017_TTG_private_v45/incl/"
     MC2018_incl  = "TTGammaEFT_PP_2018_TTG_private_v45/incl/"
 
-    EFT             = "TTGammaEFT_PP_EFT_TTG_v7/gen/"
+    EFT             = "TTGammaEFT_PP_EFT_TTG_v12/gen/"
+#    EFT             = "TTGammaEFT_PP_EFT_TTG_v7/gen/"
     MCSync_semilep  = "TTGammaEFT_PP_Sync_TTG_private_v41/incl/"
+
+    MC2016_diMuGamma  = "EGamma_PP_2016_MC_v4/diMuGamma/"
+    MC2017_diMuGamma  = "EGamma_PP_2017_MC_v4/diMuGamma/"
+    MC2018_diMuGamma  = "EGamma_PP_2018_MC_v4/diMuGamma/"
+
+    Run2016_diMuGamma = "EGamma_PP_2016_Data_v4/diMuGamma/"
+    Run2017_diMuGamma = "EGamma_PP_2017_Data_v4/diMuGamma/"
+    Run2018_diMuGamma = "EGamma_PP_2018_Data_v4/diMuGamma/"
+

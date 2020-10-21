@@ -63,7 +63,7 @@ TT_sync_16          = getMCSample(name="TT_pow",           redirector=redirector
 TT_sync_16.normalization = TTSingleLep_pow_CP5_sync.normalization
 TTG_sync_16         = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG"], noCheckProxy=True, fromDPM=fromDPM)
 TTG_sync_16.normalization = TTGSingleLep_LO_sync.normalization
-DY_LO_sync_16       = getMCSample(name="DY_LO",            redirector=redirector, color=color.DY,              texName="DY",                directory=directories["DY_LO"], noCheckProxy=False, fromDPM=fromDPM)
+DY_LO_sync_16       = getMCSample(name="DY_LO",            redirector=redirector, color=color.DY,              texName="Drell-Yan",                directory=directories["DY_LO"], noCheckProxy=False, fromDPM=fromDPM)
 DY_LO_sync_16.normalization = DYJetsToLL_M50_LO_ext1_sync.normalization
 
 signals = []
