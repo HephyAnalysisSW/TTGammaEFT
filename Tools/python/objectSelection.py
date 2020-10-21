@@ -553,6 +553,14 @@ def genPhotonSelector( photon_selection=None ):
             return True
         return func
 
+    elif photon_selection == 'overlapZGamma':
+        # Remove events from DY, keep Zgamma lowGPt
+        def func(g):
+            if g["pt"]       < 9:  return False
+            if abs(g["eta"]) > 2.6: return False
+            return True
+        return func
+
     elif photon_selection == 'overlapSingleTopTch':
         # Remove events from single top t-channel sample, keep single top + photon events
         def func(g):

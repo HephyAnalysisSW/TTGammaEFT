@@ -12,9 +12,11 @@ g16_keys = [( "g2016_ScalingFactors_80X_Summer16.root", "Scaling_Factors_HasPix_
 
 g17_keys = [( "g2017_PixelSeed_ScaleFactors_2017.root", "Medium_ID" )]
 
-g18_keys = [( "g2018_HasPix_2018.root", "eleVeto_SF"   )]
+#g18_keys = [( "g2018_HasPix_2018.root", "eleVeto_SF"   )]
+g18_keys = [( "g2018_HasPix_2018_private.root", "scalefactor"   )]
 
-g18_keys_unc = [( "g2018_HasPix_2018.root", "eleVeto_Unc"   )]
+#g18_keys_unc = [( "g2018_HasPix_2018.root", "eleVeto_Unc"   )]
+g18_keys_unc = [( "g2018_HasPix_2018_private.root", "uncertainty"   )]
 
 class PhotonElectronVetoEfficiency:
     def __init__( self, year ):
@@ -71,20 +73,20 @@ class PhotonElectronVetoEfficiency:
         else:
             sf = self.mult( [ self.getPartialSF( effMap, pt, abs(eta) ) for effMap in self.g_sf ] )
 
-        return (1+sf.sigma*sigma)*sf.val
+        return sf.val + sigma*sf.sigma
 
 
 if __name__ == "__main__":
 
-    sigma = 0
+    sigma = 1
     #print "2016"
     LSF = PhotonElectronVetoEfficiency(year=2016)
-    #print LSF.getSF(20, 1, sigma=sigma)
+    print LSF.getSF(20, 1, sigma=sigma)
     #print LSF.getSF(20, -1, sigma=sigma)
     #print LSF.getSF(20, 1, sigma=sigma)
     #print LSF.getSF(20, -1, sigma=sigma)
 
-    #print LSF.getSF(200, 1, sigma=sigma)
+    print LSF.getSF(200, 1, sigma=sigma)
     #print LSF.getSF(200, -1, sigma=sigma)
     #print LSF.getSF(200, 1, sigma=sigma)
     #print LSF.getSF(200, -1, sigma=sigma)
@@ -123,17 +125,17 @@ if __name__ == "__main__":
 
     #print "2018"
     LSF = PhotonElectronVetoEfficiency(year=2018)
-    print LSF.getSF(19, 0, sigma=-1) / LSF.getSF(19, 0, sigma=0)
-    print LSF.getSF(19, 0, sigma=0)
-    print LSF.getSF(19, 0, sigma=1) / LSF.getSF(19, 0, sigma=0)
-    print LSF.getSF(19, -0.5, sigma=-1) / LSF.getSF(19, 0.5, sigma=0)
-    print LSF.getSF(19, -0.5, sigma=0)
-    print LSF.getSF(19, -0.5, sigma=1) / LSF.getSF(19, 0.5, sigma=0)
+#    print LSF.getSF(19, 0, sigma=-1) / LSF.getSF(19, 0, sigma=0)
+#    print LSF.getSF(19, 0, sigma=0)
+#    print LSF.getSF(19, 0, sigma=1) / LSF.getSF(19, 0, sigma=0)
+#    print LSF.getSF(19, -0.5, sigma=-1) / LSF.getSF(19, 0.5, sigma=0)
+#    print LSF.getSF(19, -0.5, sigma=0)
+#    print LSF.getSF(19, -0.5, sigma=1) / LSF.getSF(19, 0.5, sigma=0)
 
-    #print LSF.getSF(20, 1, sigma=sigma)
+    print LSF.getSF(20, 1, sigma=sigma)
     #print LSF.getSF(20, -1, sigma=sigma)
 
-    #print LSF.getSF(200, 1, sigma=sigma)
+    print LSF.getSF(200, 1, sigma=sigma)
     #print LSF.getSF(200, -1, sigma=sigma)
     #print LSF.getSF(200, 1, sigma=sigma)
     #print LSF.getSF(200, -1, sigma=sigma)
