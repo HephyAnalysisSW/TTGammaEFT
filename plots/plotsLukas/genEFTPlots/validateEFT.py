@@ -271,7 +271,7 @@ ptBins = Binning.fromThresholds( pTG_thresh )
 #photon
 plotList.append( Plot(
     name      = 'GenPhotonCMSUnfold0_pt_fit', # name of the plot file
-    texX      = 'gen p_{T}(#gamma_{0}) (GeV)', # x axis label
+    texX      = 'gen p_{T}(#gamma) [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenPhotonCMSUnfold0_pt, # variable to plot
     binning   = ptBins,
@@ -279,7 +279,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenPhotonCMSUnfold0_pt_low', # name of the plot file
-    texX      = 'gen p_{T}(#gamma_{0}) (GeV)', # x axis label
+    texX      = 'gen p_{T}(#gamma) [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenPhotonCMSUnfold0_pt, # variable to plot
     binning   = [ 20, 20, 120 ], # 20 bins from 20 to 120
@@ -287,7 +287,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenPhotonCMSUnfold0_pt', # name of the plot file
-    texX      = 'gen p_{T}(#gamma_{0}) (GeV)', # x axis label
+    texX      = 'gen p_{T}(#gamma) [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenPhotonCMSUnfold0_pt, # variable to plot
     binning   = [ 20, 20, 520 ], # 20 bins from 20 to 120
@@ -295,7 +295,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenPhotonCMSUnfold0_eta',
-    texX      = 'gen #eta(#gamma_{0})',
+    texX      = 'gen #eta(#gamma)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenPhotonCMSUnfold0_eta,
     binning   = [ 10, -1.5 , 1.5 ],
@@ -303,7 +303,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenPhotonCMSUnfold0_phi',
-    texX      = 'gen #phi(#gamma_{0})',
+    texX      = 'gen #phi(#gamma)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenPhotonCMSUnfold0_phi,
     binning   = [ 10, -pi, pi ],
@@ -312,7 +312,7 @@ plotList.append( Plot(
 #Lepton
 plotList.append( Plot(
     name      = 'GenLeptonCMSUnfold0_pt', # name of the plot file
-    texX      = 'gen p_{T}(#Lepton_{0}) (GeV)', # x axis label
+    texX      = 'gen p_{T}(l) [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenLeptonCMSUnfold0_pt, # variable to plot
     binning   = [ 20, 20, 600 ], # 20 bins from 20 to 120
@@ -320,7 +320,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenLeptonCMSUnfold0_eta',
-    texX      = 'gen #eta(#Lepton_{0})',
+    texX      = 'gen #eta(l)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenLeptonCMSUnfold0_eta,
     binning   = [ 10, -2.4, 2.4 ],
@@ -328,7 +328,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenLeptonCMSUnfold0_phi',
-    texX      = 'gen #phi(#Lepton_{0})',
+    texX      = 'gen #phi(l)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenLeptonCMSUnfold0_phi,
     binning   = [ 10, -pi, pi ],
@@ -337,7 +337,7 @@ plotList.append( Plot(
 #Jets
 plotList.append( Plot(
     name      = 'GenJetsCMSUnfold0_pt', # name of the plot file
-    texX      = 'gen p_{T}(#JetsCMSUnfold_{0}) (GeV)', # x axis label
+    texX      = 'gen p_{T}(j_{0}) [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenJetsCMSUnfold0_pt, # variable to plot
     binning   = [ 20, 20, 1100 ], # 20 bins from 20 to 120
@@ -345,7 +345,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenJetsCMSUnfold0_eta',
-    texX      = 'gen #eta(#JetsCMSUnfold_{0})',
+    texX      = 'gen #eta(j_{0})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenJetsCMSUnfold0_eta,
     binning   = [ 10, -2.4, 2.4 ],
@@ -353,7 +353,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenJetsCMSUnfold0_phi',
-    texX      = 'gen #phi(#JetsCMSUnfold_{0})',
+    texX      = 'gen #phi(j_{0})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenJetsCMSUnfold0_phi,
     binning   = [ 10, -pi, pi ],
@@ -361,7 +361,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenJetsCMSUnfold1_pt', # name of the plot file
-    texX      = 'gen p_{T}(#JetsCMSUnfold_{1}) (GeV)', # x axis label
+    texX      = 'gen p_{T}(j_{1}) [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenJetsCMSUnfold1_pt, # variable to plot
     binning   = [ 20, 20, 700 ], # 20 bins from 20 to 120
@@ -369,7 +369,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenJetsCMSUnfold1_eta',
-    texX      = 'gen #eta(#JetsCMSUnfold_{1})',
+    texX      = 'gen #eta(j_{1})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenJetsCMSUnfold1_eta,
     binning   = [ 10, -2.4, 2.4 ],
@@ -377,7 +377,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenJetsCMSUnfold1_phi',
-    texX      = 'gen #phi(#JetsCMSUnfold_{1})',
+    texX      = 'gen #phi(j_{1})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenJetsCMSUnfold1_phi,
     binning   = [ 10, -pi, pi ],
@@ -385,7 +385,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenJetsCMSUnfold2_pt', # name of the plot file
-    texX      = 'gen p_{T}(#JetsCMSUnfold_{2}) (GeV)', # x axis label
+    texX      = 'gen p_{T}(j_{2}) [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenJetsCMSUnfold2_pt, # variable to plot
     binning   = [ 20, 20, 500 ], # 20 bins from 20 to 120
@@ -393,7 +393,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenJetsCMSUnfold2_eta',
-    texX      = 'gen #eta(#JetsCMSUnfold_{2})',
+    texX      = 'gen #eta(j_{2})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenJetsCMSUnfold2_eta,
     binning   = [ 10, -2.4, 2.4 ],
@@ -401,7 +401,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenJetsCMSUnfold2_phi',
-    texX      = 'gen #phi(#JetsCMSUnfold_{2})',
+    texX      = 'gen #phi(j_{2})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenJetsCMSUnfold2_phi,
     binning   = [ 10, -pi, pi ],
@@ -410,7 +410,7 @@ plotList.append( Plot(
 #BJets
 plotList.append( Plot(
     name      = 'GenBJetCMSUnfold0_pt', # name of the plot file
-    texX      = 'gen p_{T}(#BJetCMSUnfold_{0}) (GeV)', # x axis label
+    texX      = 'gen p_{T}(b_{0}) [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenBJetCMSUnfold0_pt, # variable to plot
     binning   = [ 20, 20, 520 ], # 20 bins from 20 to 120
@@ -418,7 +418,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenBJetCMSUnfold0_eta',
-    texX      = 'gen #eta(#BJetCMSUnfold_{0})',
+    texX      = 'gen #eta(b_{0})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenBJetCMSUnfold0_eta,
     binning   = [ 10, -2.4, 2.4 ],
@@ -426,7 +426,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenBJetCMSUnfold0_phi',
-    texX      = 'gen #phi(#BJetCMSUnfold_{0})',
+    texX      = 'gen #phi(b_{0})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenBJetCMSUnfold0_phi,
     binning   = [ 10, -pi, pi ],
@@ -434,7 +434,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenBJetCMSUnfold1_pt', # name of the plot file
-    texX      = 'gen p_{T}(#BJetCMSUnfold_{1}) (GeV)', # x axis label
+    texX      = 'gen p_{T}(b_{1}) [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenBJetCMSUnfold1_pt, # variable to plot
     binning   = [ 20, 20, 650 ], # 20 bins from 20 to 120
@@ -442,7 +442,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenBJetCMSUnfold1_eta',
-    texX      = 'gen #eta(#BJetCMSUnfold_{1})',
+    texX      = 'gen #eta(#b_{1})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenBJetCMSUnfold1_eta if event.nGenBJetCMSUnfold > 1 else -999 ,
     binning   = [ 10, -2.4, 2.4 ],
@@ -450,7 +450,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenBJetCMSUnfold1_phi',
-    texX      = 'gen #phi(#BJetCMSUnfold_{1})',
+    texX      = 'gen #phi(b_{1})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenBJetCMSUnfold1_phi if event.nGenBJetCMSUnfold > 1 else -999 ,
     binning   = [ 10, -pi, pi ],
@@ -460,7 +460,7 @@ plotList.append( Plot(
 #GenTop
 plotList.append( Plot(
     name      = 'GenTop_pt[0]', # name of the plot file
-    texX      = 'gen p_{T}(#GenTop_{0}) (GeV)', # x axis label
+    texX      = 'gen p_{T}(top_{0}) [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenTop_pt[0], # variable to plot
     binning   = [ 20, 20, 900 ], # 20 bins from 20 to 120
@@ -468,7 +468,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenTop_eta',
-    texX      = 'gen #eta(#GenTop_{0})',
+    texX      = 'gen #eta(top_{0})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenTop_eta[0],
     binning   = [ 10, -2.4, 2.4 ],
@@ -476,7 +476,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenTop_phi',
-    texX      = 'gen #phi(#GenTop_{0})',
+    texX      = 'gen #phi(top_{0})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenTop_phi[0],
     binning   = [ 10, -pi, pi ],
@@ -484,7 +484,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenTopLep_pt[0]', # name of the plot file
-    texX      = 'gen p_{T}(#GenTopLep_{0}) (GeV)', # x axis label
+    texX      = 'gen p_{T}(lept. top) [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenTopLep_pt[0], # variable to plot
     binning   = [ 20, 20, 900 ], # 20 bins from 20 to 120
@@ -492,7 +492,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenTopLep_eta',
-    texX      = 'gen #eta(#GenTopLep_{0})',
+    texX      = 'gen #eta(lept. top)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenTopLep_eta[0],
     binning   = [ 20, -6, 6 ],
@@ -500,39 +500,15 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenTopLep_phi',
-    texX      = 'gen #phi(#GenTopLep_{0})',
+    texX      = 'gen #phi(lept. top)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenTopLep_phi[0],
     binning   = [ 15, -pi, pi ],
 ))
 
 plotList.append( Plot(
-    name      = 'GenTopLep_pt[1]', # name of the plot file
-    texX      = 'gen p_{T}(#GenTopLep_{1}) (GeV)', # x axis label
-    texY      = 'Number of Events', # y axis label
-    attribute = lambda event, sample: event.GenTopLep_pt[1], # variable to plot
-    binning   = [ 20, 20, 900 ], # 20 bins from 20 to 120
-))
-
-plotList.append( Plot(
-    name      = 'GenTopLep_eta[1]',
-    texX      = 'gen #eta(#GenTopLep_{1})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.GenTopLep_eta[1],
-    binning   = [ 20, -6, 6 ],
-))
-
-plotList.append( Plot(
-    name      = 'GenTopLep_phi[1]',
-    texX      = 'gen #phi(#GenTopLep_{1})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.GenTopLep_phi[1],
-    binning   = [ 15, -pi, pi ],
-))
-
-plotList.append( Plot(
     name      = 'GenTopHad_pt[0]', # name of the plot file
-    texX      = 'gen p_{T}(#GenTopHad_{0}) (GeV)', # x axis label
+    texX      = 'gen p_{T}(hadr. top_{0}) [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenTopHad_pt[0], # variable to plot
     binning   = [ 20, 20, 1100 ], # 20 bins from 20 to 120
@@ -540,7 +516,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenTopHad_eta[0]',
-    texX      = 'gen #eta(#GenTopHad_{0})',
+    texX      = 'gen #eta(hadr. top_{0})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenTopHad_eta[0],
     binning   = [ 20, -5, 5 ],
@@ -548,39 +524,15 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenTopHad_phi[0]',
-    texX      = 'gen #phi(#GenTopHad_{0})',
+    texX      = 'gen #phi(hadr. top_{0})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenTopHad_phi[0],
     binning   = [ 15, -pi, pi ],
 ))
 
 plotList.append( Plot(
-    name      = 'GenTopHad_pt[1]', # name of the plot file
-    texX      = 'gen p_{T}(#GenTopHad_{1}) (GeV)', # x axis label
-    texY      = 'Number of Events', # y axis label
-    attribute = lambda event, sample: event.GenTopHad_pt[1], # variable to plot
-    binning   = [ 20, 20, 600 ], # 20 bins from 20 to 120
-))
-
-plotList.append( Plot(
-    name      = 'GenTopHad_eta[1]',
-    texX      = 'gen #eta(#GenTopHad_{1})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.GenTopHad_eta[1],
-    binning   = [ 20, -3, 3 ],
-))
-
-plotList.append( Plot(
-    name      = 'GenTopHad_phi[1]',
-    texX      = 'gen #phi(#GenTopHad_{1})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.GenTopHad_phi[1],
-    binning   = [ 15, -pi, pi ],
-))
-
-plotList.append( Plot(
     name      = 'GenW_pt[0]', # name of the plot file
-    texX      = 'gen p_{T}(#GenW_{0}) (GeV)', # x axis label
+    texX      = 'gen p_{T}(W_{0}) [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenW_pt[0], # variable to plot
     binning   = [ 20, 20, 520 ], # 20 bins from 20 to 120
@@ -588,7 +540,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenW_eta[0]',
-    texX      = 'gen #eta(#GenW_{0})',
+    texX      = 'gen #eta(W_{0})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenW_eta[0],
     binning   = [ 20, -5, 5 ],
@@ -596,7 +548,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenW_phi[0]',
-    texX      = 'gen #phi(#GenW_{0})',
+    texX      = 'gen #phi(W_{0})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenW_phi[0],
     binning   = [ 10, -pi, pi ],
@@ -604,7 +556,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenW_pt[1]', # name of the plot file
-    texX      = 'gen p_{T}(#GenW_{1}) (GeV)', # x axis label
+    texX      = 'gen p_{T}(W_{1}) [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenW_pt[1], # variable to plot
     binning   = [ 20, 20, 700 ], # 20 bins from 20 to 120
@@ -612,7 +564,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenW_eta[1]',
-    texX      = 'gen #eta(#GenW_{1})',
+    texX      = 'gen #eta(W_{1})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenW_eta[1],
     binning   = [ 20, -5, 5 ],
@@ -620,7 +572,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenW_phi[1]',
-    texX      = 'gen #phi(#GenW_{1})',
+    texX      = 'gen #phi(W_{1})',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenW_phi[1],
     binning   = [ 10, -pi, pi ],
@@ -628,7 +580,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenWLep_pt[0]', # name of the plot file
-    texX      = 'gen p_{T}(#GenWLep_{0}) (GeV)', # x axis label
+    texX      = 'gen p_{T}(lept. W) [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenWLep_pt[0], # variable to plot
     binning   = [ 20, 20, 520 ], # 20 bins from 20 to 120
@@ -636,7 +588,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenWLep_eta[0]',
-    texX      = 'gen #eta(#GenWLep_{0})',
+    texX      = 'gen #eta(lept. W)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenWLep_eta[0],
     binning   = [ 20, -5, 5 ],
@@ -644,39 +596,15 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenWLep_phi[0]',
-    texX      = 'gen #phi(#GenWLep_{0})',
+    texX      = 'gen #phi(lept. W)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenWLep_phi[0],
     binning   = [ 10, -pi, pi ],
 ))
 
 plotList.append( Plot(
-    name      = 'GenWLep_pt[1]', # name of the plot file
-    texX      = 'gen p_{T}(#GenWLep_{1}) (GeV)', # x axis label
-    texY      = 'Number of Events', # y axis label
-    attribute = lambda event, sample: event.GenWLep_pt[1], # variable to plot
-    binning   = [ 20, 20, 700 ], # 20 bins from 20 to 120
-))
-
-plotList.append( Plot(
-    name      = 'GenWLep_eta[1]',
-    texX      = 'gen #eta(#GenWLep_{1})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.GenWLep_eta[1],
-    binning   = [ 20, -5, 5 ],
-))
-
-plotList.append( Plot(
-    name      = 'GenWLep_phi[1]',
-    texX      = 'gen #phi(#GenWLep_{1})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.GenWLep_phi[1],
-    binning   = [ 15, -pi, pi ],
-))
-
-plotList.append( Plot(
     name      = 'GenWHad_pt[0]', # name of the plot file
-    texX      = 'gen p_{T}(#GenWHad_{0}) (GeV)', # x axis label
+    texX      = 'gen p_{T}(hadr. W) [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenWHad_pt[0], # variable to plot
     binning   = [ 20, 20, 520 ], # 20 bins from 20 to 120
@@ -684,7 +612,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenWHad_eta[0]',
-    texX      = 'gen #eta(#GenWHad_{0})',
+    texX      = 'gen #eta(hadr. W)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenWHad_eta[0],
     binning   = [ 20, -5, 5 ],
@@ -692,40 +620,15 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenWHad_phi[0]',
-    texX      = 'gen #phi(#GenWHad_{0})',
+    texX      = 'gen #phi(hadr. W)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenWHad_phi[0],
     binning   = [ 15, -pi, pi ],
 ))
 
 plotList.append( Plot(
-    name      = 'GenWHad_pt[1]', # name of the plot file
-    texX      = 'gen p_{T}(#GenWHad_{1}) (GeV)', # x axis label
-    texY      = 'Number of Events', # y axis label
-    attribute = lambda event, sample: event.GenWHad_pt[1], # variable to plot
-    binning   = [ 20, 20, 500 ], # 20 bins from 20 to 120
-))
-
-plotList.append( Plot(
-    name      = 'GenWHad_eta[1]',
-    texX      = 'gen #eta(#GenWHad_{1})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.GenWHad_eta[1],
-    binning   = [ 20, -4, 4 ],
-))
-
-plotList.append( Plot(
-    name      = 'GenWHad_phi[1]',
-    texX      = 'gen #phi(#GenWHad_{1})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.GenWHad_phi[1],
-    binning   = [ 15, -pi, pi ],
-))
-
-#B
-plotList.append( Plot(
     name      = 'GenBLep_pt[0]', # name of the plot file
-    texX      = 'gen p_{T}(#GenBLep_{0}) (GeV)', # x axis label
+    texX      = 'gen p_{T}(lept. b) [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenBLep_pt[0], # variable to plot
     binning   = [ 20, 20, 600 ], # 20 bins from 20 to 120
@@ -733,7 +636,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenBLep_eta[0]',
-    texX      = 'gen #eta(#GenBLep_{0})',
+    texX      = 'gen #eta(lept. b)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenBLep_eta[0],
     binning   = [ 20, -5, 5 ],
@@ -741,39 +644,15 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenBLep_phi[0]',
-    texX      = 'gen #phi(#GenBLep_{0})',
+    texX      = 'gen #phi(lept. b)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenBLep_phi[0],
     binning   = [ 15, -pi, pi ],
 ))
 
 plotList.append( Plot(
-    name      = 'GenBLep_pt[1]', # name of the plot file
-    texX      = 'gen p_{T} (GeV)(#GenBLep_{1})', # x axis label
-    texY      = 'Number of Events', # y axis label
-    attribute = lambda event, sample: event.GenBLep_pt[1], # variable to plot
-    binning   = [ 20, 20, 500 ], # 20 bins from 20 to 120
-))
-
-plotList.append( Plot(
-    name      = 'GenBLep_eta[1]',
-    texX      = 'gen #eta(#GenBLep_{1})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.GenBLep_eta[1],
-    binning   = [ 20, -5, 5 ],
-))
-
-plotList.append( Plot(
-    name      = 'GenBLep_phi[1]',
-    texX      = 'gen #phi(#GenBLep_{1})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.GenBLep_phi[1],
-    binning   = [ 15, -pi, pi ],
-))
-
-plotList.append( Plot(
     name      = 'GenBHad_pt[0]', # name of the plot file
-    texX      = 'gen p_{T}(#GenBHad_{0}) (GeV)', # x axis label
+    texX      = 'gen p_{T}(hadr. b) [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenBHad_pt[0], # variable to plot
     binning   = [ 20, 20, 600 ], # 20 bins from 20 to 120
@@ -781,7 +660,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenBHad_eta[0]',
-    texX      = 'gen #eta(#GenBHad_{0})',
+    texX      = 'gen #eta(hadr. b)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenBHad_eta[0],
     binning   = [ 20, -5, 5 ],
@@ -789,41 +668,17 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'GenBHad_phi[0]',
-    texX      = 'gen #phi(#GenBHad_{0})',
+    texX      = 'gen #phi(hadr. b)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.GenBHad_phi[0],
     binning   = [ 10, -pi, pi ],
-))
-
-plotList.append( Plot(
-    name      = 'GenBHad_pt[1]', # name of the plot file
-    texX      = 'gen p_{T}(#GenBHad_{1}) (GeV)', # x axis label
-    texY      = 'Number of Events', # y axis label
-    attribute = lambda event, sample: event.GenBHad_pt[1], # variable to plot
-    binning   = [ 20, 20, 300 ], # 20 bins from 20 to 120
-))
-
-plotList.append( Plot(
-    name      = 'GenBHad_eta[1]',
-    texX      = 'gen #eta(#GenBHad_{1})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.GenBHad_eta[1],
-    binning   = [ 20, -3, 3 ],
-))
-
-plotList.append( Plot(
-    name      = 'GenBHad_phi[1]',
-    texX      = 'gen #phi(#GenBHad_{1})',
-    texY      = 'Number of Events',
-    attribute = lambda event, sample: event.GenBHad_phi[1],
-    binning   = [ 15, -pi, pi ],
 ))
 
 #missing E 
 #"GenMET_pt/F", "GenMET_phi/F"
 plotList.append( Plot(
     name      = 'GenMET_pt', # name of the plot file
-    texX      = 'gen p_{T}(#GenMET) (GeV)', # x axis label
+    texX      = 'gen E_{T}^{miss} [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenMET_pt, # variable to plot
     binning   = [ 20, 20, 520 ], # 20 bins from 20 to 120
@@ -831,7 +686,7 @@ plotList.append( Plot(
   
 plotList.append( Plot(
     name      = 'GenMET_phi', # name of the plot file
-    texX      = 'gen #phi(#GenMET)', # x axis label
+    texX      = 'gen #phi(MET)', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.GenMET_phi, # variable to plot
     binning   = [ 10, -pi, pi ], # 20 bins from 20 to 120
@@ -840,7 +695,7 @@ plotList.append( Plot(
 #other
 plotList.append( Plot(
     name      = 'mT', # name of the plot file
-    texX      = 'mT (GeV)', # x axis label
+    texX      = 'M_{T} [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.mT, # variable to plot
     binning   = [ 20, 20, 300 ], # 20 bins from 20 to 120
@@ -848,7 +703,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'm3', # name of the plot file
-    texX      = 'm3 (GeV)', # x axis label
+    texX      = 'M_{3} [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.m3, # variable to plot
     binning   = [ 20, 20, 400 ], # 20 bins from 20 to 120
@@ -856,7 +711,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'ht', # name of the plot file
-    texX      = 'h (GeV)', # x axis label
+    texX      = 'H_{T} [GeV]', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.ht, # variable to plot
     binning   = [ 20, 20, 500 ], # 20 bins from 20 to 120
@@ -866,7 +721,7 @@ plotList.append( Plot(
 #phi
 plotList.append( Plot(
     name      = 'dPhiLepGamma', # name of the plot file
-    texX      = 'd #phi(#LepGamma)', # x axis label
+    texX      = '#Delta#phi(l,#gamma)', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.dPhiLepGamma, # variable to plot
     binning   = [ 20, 0, pi ], # 20 bins from 20 to 120
@@ -874,7 +729,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dPhiTopHadGamma', # name of the plot file
-    texX      = 'd #phi(#TopHadGamma)', # x axis label
+    texX      = '#Delta#phi(hadr. top, #gamma)', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.dPhiTopHadGamma, 
     binning   = [ 20, 0, pi ], # 20 bins from 20 to 120
@@ -882,7 +737,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dPhiWHadGamma', # name of the plot file
-    texX      = 'd #phi(#WHadGamma)', # x axis label
+    texX      = '#Delta#phi(hadr. W, #gamma)', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.dPhiWHadGamma, 
     binning   = [ 20, 0, pi ], # 20 bins from 20 to 120
@@ -890,7 +745,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dPhiTopLepGamma', # name of the plot file
-    texX      = 'd #phi(#TopLepGamma)', # x axis label
+    texX      = '#Delta#phi(lept. top, #gamma)', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.dPhiTopLepGamma, # variable to plot
     binning   = [ 20, 0, pi ], # 20 bins from 20 to 120
@@ -898,7 +753,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dPhiWLepGamma', # name of the plot file
-    texX      = 'd #phi(#WLepGamma)', # x axis label
+    texX      = '#Delta#phi(lept. W, #gamma)', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.dPhiWLepGamma, # variable to plot
     binning   = [ 20, 0, pi ], # 20 bins from 20 to 120
@@ -906,21 +761,21 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dPhiBHadGamma', # name of the plot file
-    texX      = 'd #phi(#BHadGamma)', # x axis label
+    texX      = '#Delta#phi(hadr. b, #gamma)', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.dPhiBHadGamma, 
     binning   = [ 20, 0, pi ], # 20 bins from 20 to 120
 ))
 plotList.append( Plot(
     name      = 'dPhiBLepGamma', # name of the plot file
-    texX      = 'd #phi(#BLepGamma)', # x axis label
+    texX      = '#Delta#phi(lept. b, #gamma)', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.dPhiBLepGamma, 
     binning   = [ 20, 0, pi ], # 20 bins from 20 to 120
 ))
 plotList.append( Plot(
     name      = 'dPhiBLepWLep', # name of the plot file
-    texX      = 'd #phi(#BLeptWLep)', # x axis label
+    texX      = '#Delta#phi(lept. b, lept. W)', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.dPhiBLepWLep, 
     binning   = [ 20, 0, pi ], # 20 bins from 20 to 120
@@ -928,7 +783,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dPhiWLepWHad', # name of the plot file
-    texX      = 'd #phi(#WLepWHad)', # x axis label
+    texX      = '#Delta#phi(W,W)', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.dPhiWLepWHad,
     binning   = [ 20, 0, pi ], # 20 bins from 20 to 120
@@ -936,7 +791,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dPhiBHadWHad', # name of the plot file
-    texX      = 'd #phi(#BHadWHad)', # x axis label
+    texX      = '#Delta#phi(hadr. b, hadr. W)', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.dPhiBHadWHad,
     binning   = [ 20, 0, pi ], # 20 bins from 20 to 120
@@ -944,7 +799,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dPhiBLepBHad', # name of the plot file
-    texX      = 'd #phi(#BLepBHad)', # x axis label
+    texX      = '#Delat#phi(b, b)', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.dPhiBLepBHad, 
     binning   = [ 20, 0, pi ], # 20 bins from 20 to 120
@@ -952,7 +807,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dPhiTopLepTopHad', # name of the plot file
-    texX      = 'd #phi(#TopLepTopHad)', # x axis label
+    texX      = '#Delta#phi(top, top)', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.dPhiTopLepTopHad, 
     binning   = [ 20, 0, pi ], # 20 bins from 20 to 120
@@ -960,7 +815,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dPhiLepMET', # name of the plot file
-    texX      = 'd #phi(#LepMET)', # x axis label
+    texX      = '#Delta#phi(l, MET)', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.dPhiLepMET, # variable to plot
     binning   = [ 20, 0, pi ], # 20 bins from 20 to 120
@@ -970,7 +825,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dRLepGamma',
-    texX      = 'deltaR(#LepGamma)',
+    texX      = '#Delta R(l, #gamma)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.dRLepGamma,
     binning   = [ 20, 0, 4.5 ],
@@ -978,7 +833,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dRTopHadGamma',
-    texX      = 'deltaR(#TopHadGamma)',
+    texX      = '#Delta R(hadr. top, #gamma)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.dRTopHadGamma,
     binning   = [ 20, 0, 8 ],
@@ -986,7 +841,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dRWHadGamma',
-    texX      = 'deltaR(#WHadGamma)',
+    texX      = '#Delta R(hadr. W, #gamma)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.dRWHadGamma,
     binning   = [ 20, 0, 8 ],
@@ -994,7 +849,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dRTopLepGamma',
-    texX      = 'deltaR(#TopLepGamma)',
+    texX      = '#Delta R(lept. top, #gamma)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.dRTopLepGamma,
     binning   = [ 20, 0, 8 ],
@@ -1002,7 +857,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dRWLepGamma',
-    texX      = 'deltaR(#WLepGamma)',
+    texX      = '#Delta R(lept. W, #gamma)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.dRWLepGamma,
     binning   = [ 20, 0, 7 ],
@@ -1010,7 +865,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dRBHadGamma',
-    texX      = 'deltaR(#BHadGamma)',
+    texX      = '#Delta R(hadr. b, #gamma)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.dRBHadGamma,
     binning   = [ 20, 0, 7 ],
@@ -1018,7 +873,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dRBLepGamma',
-    texX      = 'deltaR(#BLepGamma)',
+    texX      = '#Delta R(lept. b, #gamma)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.dRBLepGamma,
     binning   = [ 20, 0, 7 ],
@@ -1026,7 +881,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dRBLepWLep',
-    texX      = 'deltaR(#BLepWLep)',
+    texX      = '#Delta R(lept. b, lept. W)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.dRBLepWLep,
     binning   = [ 20, 0, 7 ],
@@ -1034,7 +889,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dRWLepWHad',
-    texX      = 'deltaR(#WLepWHad)',
+    texX      = '#Delta R(W, W)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.dRWLepWHad,
     binning   = [ 20, 0, 8 ],
@@ -1042,7 +897,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dRBHadWHad',
-    texX      = 'deltaR(#BHadWHad)',
+    texX      = '#Delta R(hadr. b, hadr. W)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.dRBHadWHad,
     binning   = [ 20, 0, 7 ],
@@ -1050,7 +905,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dRBLepBHad',
-    texX      = 'deltaR(#BLepBHad)',
+    texX      = '#Delta R(b, b)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.dRBLepBHad,
     binning   = [ 20, 0, 8 ],
@@ -1058,7 +913,7 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'dRTopLepTopHad',
-    texX      = 'deltaR(#TopLepTopHad)',
+    texX      = '#Delta R(top, top)',
     texY      = 'Number of Events',
     attribute = lambda event, sample: event.dRTopLepTopHad,
     binning   = [ 20, 0, 8 ],
@@ -1066,28 +921,28 @@ plotList.append( Plot(
 
 plotList.append( Plot(
     name      = 'nGenJetsCMSUnfold', # name of the plot file
-    texX      = 'Number of Jets', # x axis label
+    texX      = 'N_{jets}', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.nGenJetsCMSUnfold, # variable to plot
     binning   = [ 10, 0, 10 ],
 ))
 plotList.append( Plot(
     name      = 'nGenBJetCMSUnfold', # name of the plot file
-    texX      = 'Number of BJets', # x axis label
+    texX      = 'N_{b}', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.nGenBJetCMSUnfold, # variable to plot
     binning   = [ 4, 0, 4 ],
 ))
 plotList.append( Plot(
     name      = 'nGenLeptonCMSUnfold', # name of the plot file
-    texX      = 'Number of Leptons', # x axis label
+    texX      = 'N_{l}', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.nGenLeptonCMSUnfold, # variable to plot
     binning   = [ 4, 0, 4 ],
 ))
 plotList.append( Plot(
     name      = 'nGenPhotonCMSUnfold', # name of the plot file
-    texX      = 'Number of Photons', # x axis label
+    texX      = 'N_{#gamma}', # x axis label
     texY      = 'Number of Events', # y axis label
     attribute = lambda event, sample: event.nGenPhotonCMSUnfold, # variable to plot
     binning   = [ 4, 0, 4 ],

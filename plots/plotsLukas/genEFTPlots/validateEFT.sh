@@ -1,0 +1,2 @@
+python validateEFT.py --year 2016 --selection nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1 --order 2 --parameter ctZ --plot_directory genEFTPlots_ppv12_v1 --sample TTG_SemiLep_2WC_ref --mode all
+python validateEFT.py --year 2016 --selection nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1 --order 2 --parameter ctZI --plot_directory genEFTPlots_ppv12_v1 --sample TTG_SemiLep_2WC_ref --mode all
