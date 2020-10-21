@@ -33,6 +33,8 @@ argParser.add_argument( "--inclRegion",         action="store_true",            
 argParser.add_argument( "--overwrite",          action="store_true",                                                        help="Overwrite existing output files" )
 argParser.add_argument( "--useRegions",         action="store",      nargs='*',       type=str, choices=allRegions.keys(),  help="Which regions to use?" )
 argParser.add_argument( "--useChannels",        action="store",      nargs='*', default="all",   type=str, choices=["e", "mu", "all", "comb"], help="Which lepton channels to use?" )
+argParser.add_argument( "--noMCStat",           action="store_true",                                                        help="create file without MC stat?")
+argParser.add_argument( "--noFakeStat"  ,       action="store_true",                                                        help="skip the fake stat uncertainty" )
 argParser.add_argument( "--addVGSF",            action="store_true",                                                        help="add default DY scale factor" )
 argParser.add_argument( "--addZGSF",            action="store_true",                                                        help="add default DY scale factor" )
 argParser.add_argument( "--addWGSF",            action="store_true",                                                        help="add default DY scale factor" )
@@ -154,6 +156,8 @@ if args.wJetsPOI:    regionNames.append("wJetsPOI")
 if args.ttPOI:       regionNames.append("ttPOI")
 if args.useChannels: regionNames.append("_".join([ch for ch in args.useChannels if not "tight" in ch]))
 if args.linTest != 1: regionNames.append(str(args.linTest).replace(".","_"))
+if args.noMCStat:     regionNames.append("noMCStat")
+if args.noFakeStat:   regionNames.append("noFakeStat")
 
 if args.parameters:
     # load and define the EFT sample
@@ -241,7 +245,7 @@ def wrapper():
     else:
         sConfig = "_".join(regionNames)
         res = c.calcLimit( cardFileName )
-        c.calcNuisances( cardFileName, bonly=args.bkgOnly )
+        c.calcNuisances( cardFileName, bonly=args.bkgOnly, options="--customStartingPoint --setParameters r=1" )
 
     if args.plot and not args.parameters:
         path  = os.environ["CMSSW_BASE"]

@@ -26,126 +26,131 @@
 ####python run_limit.py --overwrite --year 2018 --plot --inclRegion --wgPOI --useRegions misDY4p VG4p misDY3 VG3 --addDYSF
 
 
-##python run_limit.py --overwrite --year 2016 --plot --useRegions SR3pEtaUnfold --addDYSF
-##python run_limit.py --overwrite --year 2016 --plot --useRegions SR3pEtaUnfold --addDYSF --useChannels e
-##python run_limit.py --overwrite --year 2016 --plot --useRegions SR3pEtaUnfold --addDYSF --useChannels mu
-##python run_limit.py --overwrite --expected --year 2016 --plot --useRegions SR3pEtaUnfold --addDYSF
-##python run_limit.py --overwrite --expected --year 2016 --plot --useRegions SR3pEtaUnfold --addDYSF --useChannels e
-##python run_limit.py --overwrite --expected --year 2016 --plot --useRegions SR3pEtaUnfold --addDYSF --useChannels mu
-##python run_limit.py --overwrite --expected --year 2017 --plot --useRegions SR3pEtaUnfold --addDYSF
-##python run_limit.py --overwrite --expected --year 2017 --plot --useRegions SR3pEtaUnfold --addDYSF --useChannels e
-##python run_limit.py --overwrite --expected --year 2017 --plot --useRegions SR3pEtaUnfold --addDYSF --useChannels mu
+##python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pEtaUnfold --addDYSF
+##python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pEtaUnfold --addDYSF --useChannels e
+##python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pEtaUnfold --addDYSF --useChannels mu
+##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pEtaUnfold --addDYSF
+##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pEtaUnfold --addDYSF --useChannels e
+##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pEtaUnfold --addDYSF --useChannels mu
+##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pEtaUnfold --addDYSF
+##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pEtaUnfold --addDYSF --useChannels e
+##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pEtaUnfold --addDYSF --useChannels mu
 ##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pEtaUnfold --addDYSF
 ##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pEtaUnfold --addDYSF --useChannels e
 ##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pEtaUnfold --addDYSF --useChannels mu
 
-##python run_limit.py --overwrite --year 2016 --plot --useRegions SR3pFine --addDYSF
-##python run_limit.py --overwrite --year 2016 --plot --useRegions SR3pFine --addDYSF --useChannels e
-##python run_limit.py --overwrite --year 2016 --plot --useRegions SR3pFine --addDYSF --useChannels mu
-##python run_limit.py --overwrite --expected --year 2016 --plot --useRegions SR3pFine --addDYSF
-##python run_limit.py --overwrite --expected --year 2016 --plot --useRegions SR3pFine --addDYSF --useChannels e
-##python run_limit.py --overwrite --expected --year 2016 --plot --useRegions SR3pFine --addDYSF --useChannels mu
-##python run_limit.py --overwrite --expected --year 2017 --plot --useRegions SR3pFine --addDYSF
-##python run_limit.py --overwrite --expected --year 2017 --plot --useRegions SR3pFine --addDYSF --useChannels e
-##python run_limit.py --overwrite --expected --year 2017 --plot --useRegions SR3pFine --addDYSF --useChannels mu
+##python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pFine --addDYSF
+##python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pFine --addDYSF --useChannels e
+##python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pFine --addDYSF --useChannels mu
+##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pFine --addDYSF
+##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pFine --addDYSF --useChannels e
+##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pFine --addDYSF --useChannels mu
+##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pFine --addDYSF
+##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pFine --addDYSF --useChannels e
+##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pFine --addDYSF --useChannels mu
 ##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pFine --addDYSF
 ##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pFine --addDYSF --useChannels e
 ##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pFine --addDYSF --useChannels mu
 
-#python run_limit.py --overwrite --expected --year 2016 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
-#python run_limit.py --overwrite --expected --year 2017 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
+#python run_limit.py --overwrite --expected --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
+#python run_limit.py --overwrite --expected --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
 #python run_limit.py --overwrite --expected --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
 
-#python run_limit.py --overwrite --expected --year 2016 --plot --useRegions SR3pFine --addDYSF
-#python run_limit.py --overwrite --expected --year 2017 --plot --useRegions SR3pFine --addDYSF
 #python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pFine --addDYSF
-python run_limit.py --overwrite --expected --year 2016 --plot --useRegions SR3pEtaUnfold --addDYSF
-#python run_limit.py --overwrite --expected --year 2017 --plot --useRegions SR3pEtaUnfold --addDYSF
+#python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pFine --addDYSF
+#python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pFine --addDYSF
 #python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pEtaUnfold --addDYSF
-#python run_limit.py --overwrite --expected --year 2016 --plot --useRegions SR3pdRUnfold --addDYSF
-#python run_limit.py --overwrite --expected --year 2017 --plot --useRegions SR3pdRUnfold --addDYSF
+#python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pEtaUnfold --addDYSF
+##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pEtaUnfold --addDYSF
 #python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pdRUnfold --addDYSF
-#python run_limit.py --overwrite --expected --year 2016 --plot --useRegions SR3pdPhiUnfold --addDYSF
-#python run_limit.py --overwrite --expected --year 2017 --plot --useRegions SR3pdPhiUnfold --addDYSF
+#python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pdRUnfold --addDYSF
+#python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pdRUnfold --addDYSF
+#python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pdPhiUnfold --addDYSF
+#python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pdPhiUnfold --addDYSF
 #python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pdPhiUnfold --addDYSF
 
-#python run_limit.py --overwrite --expected --year 2016 --plot --useRegions misDY3p VG3p SR3pM3 --addMisIDSF --addDYSF
-#python run_limit.py --overwrite --expected --year 2017 --plot --useRegions misDY3p VG3p SR3pM3 --addMisIDSF --addDYSF
+#python run_limit.py --overwrite --expected --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addMisIDSF --addDYSF
+#python run_limit.py --overwrite --expected --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addMisIDSF --addDYSF
 #python run_limit.py --overwrite --expected --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addMisIDSF --addDYSF
 
-#python run_limit.py --overwrite --expected --year 2016 --plot --useRegions SR3pFine --addMisIDSF --addDYSF
-#python run_limit.py --overwrite --expected --year 2017 --plot --useRegions SR3pFine --addMisIDSF --addDYSF
 #python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pFine --addMisIDSF --addDYSF
-#python run_limit.py --overwrite --expected --year 2016 --plot --useRegions SR3pEtaUnfold --addMisIDSF --addDYSF
-#python run_limit.py --overwrite --expected --year 2017 --plot --useRegions SR3pEtaUnfold --addMisIDSF --addDYSF
+#python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pFine --addMisIDSF --addDYSF
+#python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pFine --addMisIDSF --addDYSF
 #python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pEtaUnfold --addMisIDSF --addDYSF
-#python run_limit.py --overwrite --expected --year 2016 --plot --useRegions SR3pdRUnfold --addMisIDSF --addDYSF
-#python run_limit.py --overwrite --expected --year 2017 --plot --useRegions SR3pdRUnfold --addMisIDSF --addDYSF
+#python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pEtaUnfold --addMisIDSF --addDYSF
+#python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pEtaUnfold --addMisIDSF --addDYSF
 #python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pdRUnfold --addMisIDSF --addDYSF
-#python run_limit.py --overwrite --expected --year 2016 --plot --useRegions SR3pdPhiUnfold --addMisIDSF --addDYSF
-#python run_limit.py --overwrite --expected --year 2017 --plot --useRegions SR3pdPhiUnfold --addMisIDSF --addDYSF
+#python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pdRUnfold --addMisIDSF --addDYSF
+#python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pdRUnfold --addMisIDSF --addDYSF
+#python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pdPhiUnfold --addMisIDSF --addDYSF
+#python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pdPhiUnfold --addMisIDSF --addDYSF
 #python run_limit.py --overwrite --expected --year 2018 --plot --useRegions SR3pdPhiUnfold --addMisIDSF --addDYSF
 
-#python run_limit.py --overwrite --year 2016 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
-#python run_limit.py --overwrite --year 2017 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
+#python run_limit.py --overwrite --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
+#python run_limit.py --overwrite --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
 #python run_limit.py --overwrite --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
 
-#python run_limit.py --overwrite --year 2016 --plot --useRegions SR3pFine --addDYSF
-#python run_limit.py --overwrite --year 2017 --plot --useRegions SR3pFine --addDYSF
 #python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pFine --addDYSF
-python run_limit.py --overwrite --year 2016 --plot --useRegions SR3pEtaUnfold --addDYSF
-#python run_limit.py --overwrite --year 2017 --plot --useRegions SR3pEtaUnfold --addDYSF
+#python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pFine --addDYSF
+#python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pFine --addDYSF
 #python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pEtaUnfold --addDYSF
-#python run_limit.py --overwrite --year 2016 --plot --useRegions SR3pdRUnfold --addDYSF
-#python run_limit.py --overwrite --year 2017 --plot --useRegions SR3pdRUnfold --addDYSF
+#python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pEtaUnfold --addDYSF
+#python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pEtaUnfold --addDYSF
 #python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pdRUnfold --addDYSF
-#python run_limit.py --overwrite --year 2016 --plot --useRegions SR3pdPhiUnfold --addDYSF
-#python run_limit.py --overwrite --year 2017 --plot --useRegions SR3pdPhiUnfold --addDYSF
+#python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pdRUnfold --addDYSF
+#python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pdRUnfold --addDYSF
+#python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pdPhiUnfold --addDYSF
+#python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pdPhiUnfold --addDYSF
 #python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pdPhiUnfold --addDYSF
 
-##python run_limit.py --overwrite --year 2016 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
-##python run_limit.py --overwrite --year 2016 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
-##python run_limit.py --overwrite --year 2016 --plot --useRegions SR3pFine --addDYSF
-##python run_limit.py --overwrite --year 2016 --plot --useRegions SR3pFine --addDYSF --useChannels e
-##python run_limit.py --overwrite --year 2016 --plot --useRegions SR3pFine --addDYSF --useChannels mu
-##python run_limit.py --overwrite --year 2016 --plot --useRegions misDYNull VGNull SR3pFine --addDYSF
+##python run_limit.py --overwrite --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
+##python run_limit.py --overwrite --year 2018 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
+##python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pFine --addDYSF
+##python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pFine --addDYSF --useChannels e
+##python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pFine --addDYSF --useChannels mu
+##python run_limit.py --overwrite --year 2018 --plot --useRegions misDYNull VGNull SR3pFine --addDYSF
 
-##python run_limit.py --overwrite --year 2016 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF --noMCStat
-##python run_limit.py --overwrite --year 2016 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF --noMCStat
-##python run_limit.py --overwrite --year 2016 --plot --useRegions SR3pFine --addDYSF --noMCStat
-##python run_limit.py --overwrite --year 2016 --plot --useRegions SR3pFine --addDYSF --noMCStat --useChannels e
-##python run_limit.py --overwrite --year 2016 --plot --useRegions SR3pFine --addDYSF --noMCStat --useChannels mu
-##python run_limit.py --overwrite --year 2016 --plot --useRegions misDYNull VGNull SR3pFine --addDYSF --noMCStat
+##python run_limit.py --overwrite --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF --noMCStat
+##python run_limit.py --overwrite --year 2018 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF --noMCStat
+##python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pFine --addDYSF --noMCStat
+##python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pFine --addDYSF --noMCStat --useChannels e
+##python run_limit.py --overwrite --year 2018 --plot --useRegions SR3pFine --addDYSF --noMCStat --useChannels mu
+##python run_limit.py --overwrite --year 2018 --plot --useRegions misDYNull VGNull SR3pFine --addDYSF --noMCStat
 
-##python run_limit.py --overwrite --year 2017 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
+##python run_limit.py --overwrite --year 2018 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
 ##python run_limit.py --overwrite --year 2018 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
 
-##python run_limit.py --overwrite --year 2016 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
-##python run_limit.py --overwrite --year 2017 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
+python run_limit.py --overwrite --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
+python run_limit.py --overwrite --year 2018 --plot --useRegions misDY4p VG4p SR4pM3 --addDYSF
+python run_limit.py --overwrite --year 2018 --plot --useRegions misDY3 VG3 SR3M3 --addDYSF
+python run_limit.py --overwrite --inclRegion --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
+python run_limit.py --overwrite --inclRegion --year 2018 --plot --useRegions misDY4p VG4p SR4pM3 --addDYSF
+python run_limit.py --overwrite --inclRegion --year 2018 --plot --useRegions misDY3 VG3 SR3M3 --addDYSF
+##python run_limit.py --overwrite --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
 ##python run_limit.py --overwrite --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
 
-##python run_limit.py --overwrite --expected --year 2016 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
-##python run_limit.py --overwrite --expected --year 2017 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
+##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
+##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
 ##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
 
-##python run_limit.py --overwrite --expected --year 2016 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
-##python run_limit.py --overwrite --expected --year 2017 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
+##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
+##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
 ##python run_limit.py --overwrite --expected --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
 
-##python run_limit.py --overwrite --inclRegion --year 2016 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
-##python run_limit.py --overwrite --inclRegion --year 2017 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
+##python run_limit.py --overwrite --inclRegion --year 2018 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
+##python run_limit.py --overwrite --inclRegion --year 2018 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
 ##python run_limit.py --overwrite --inclRegion --year 2018 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
 
-##python run_limit.py --overwrite --expected --inclRegion --year 2016 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
-##python run_limit.py --overwrite --expected --inclRegion --year 2017 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
+##python run_limit.py --overwrite --expected --inclRegion --year 2018 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
+##python run_limit.py --overwrite --expected --inclRegion --year 2018 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
 ##python run_limit.py --overwrite --expected --inclRegion --year 2018 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
 
-##python run_limit.py --overwrite --inclRegion --year 2016 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
-##python run_limit.py --overwrite --inclRegion --year 2017 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
+##python run_limit.py --overwrite --inclRegion --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
+##python run_limit.py --overwrite --inclRegion --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
 ##python run_limit.py --overwrite --inclRegion --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
 
-##python run_limit.py --overwrite --expected --inclRegion --year 2016 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
-##python run_limit.py --overwrite --expected --inclRegion --year 2017 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
+##python run_limit.py --overwrite --expected --inclRegion --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
+##python run_limit.py --overwrite --expected --inclRegion --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
 ##python run_limit.py --overwrite --expected --inclRegion --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
 
 ####python run_limit.py --overwrite --year 2018 --plot --inclRegion --useRegions misDY3 VG3 SR3M3 --addDYSF
@@ -153,7 +158,7 @@ python run_limit.py --overwrite --year 2016 --plot --useRegions SR3pEtaUnfold --
 ####python run_limit.py --overwrite --year 2018 --plot --inclRegion --useRegions misDY4p VG4p SR4pM3 --addDYSF
 ####python run_limit.py --overwrite --year 2018 --plot --inclRegion --useRegions misDY3 misDY4p VG3 VG4p SR3M3 SR4pM3 --addDYSF
 
-####python run_limit.py --overwrite --year 2016 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
+####python run_limit.py --overwrite --year 2018 --plot --useRegions misDY3p VG3p SR3pFine --addDYSF
 
 ####python run_limit.py --overwrite --year 2018 --plot --useRegions misDY3 VG3 SR3M3 --addDYSF
 ####python run_limit.py --overwrite --year 2018 --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF

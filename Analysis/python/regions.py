@@ -54,7 +54,8 @@ regionsTTG         = getRegionsFromThresholds( "PhotonGood0_pt", pTG_thresh )
 regionsTTGEta      = getRegionsFromThresholds( "PhotonGood0_eta", etaG_thresh )
 inclRegionsTTG     = [Region( "PhotonGood0_pt", (20,-999) )]
 
-regionsTTGloose         = getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", pTG_thresh )
+#200, 260, 320,
+regionsTTGloose         = getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", [20, 35, 50, 65, 80, 120, 160, 200, 260, 320, -999] )
 regionsTTGlooseEta      = getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_eta", etaG_thresh )
 inclRegionsTTGloose     = [Region( "PhotonNoChgIsoNoSieie0_pt", (20,-999) )]
 
@@ -77,7 +78,7 @@ regionsTTG120To220 = getRegionsFromThresholds( "PhotonGood0_pt", ( 120,  220 ) )
 regionsTTG220      = getRegionsFromThresholds( "PhotonGood0_pt", ( 220, -999 ) )
 
 pTG_thresh_fine = [ 20, 35, 50, 65, 80, 120, 160, 200, 260, 320, -999 ]
-etaG_thresh_fine   = [ -1.5, -0.9, -0.3, 0.3, 0.9, 1.5 ]
+etaG_thresh_fine   = [ -1.4442, -0.9, -0.3, 0.3, 0.9, 1.4442 ]
 regionsTTGFine     = getRegionsFromThresholds( "PhotonGood0_pt", pTG_thresh_fine )
 regionsTTGEtaFine  = getRegionsFromThresholds( "PhotonGood0_eta", etaG_thresh_fine )
 regionsTTGlooseFine     = getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", pTG_thresh_fine )
@@ -85,6 +86,14 @@ regionsTTGlooseEtaFine  = getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_eta"
 
 pTG_thresh = [ 20, 65, 160 ]
 highpTG_thresh = [ 160, -999 ]
+mlg_tresh = [ mLgThresh, -999 ]
+highmLgPtRegions = getRegions2D( "PhotonGood0_pt", pTG_thresh, "mLtight0Gamma", mlg_tresh ) + getRegionsFromThresholds( "PhotonGood0_pt", highpTG_thresh )
+highmLgRegions   = getRegionsFromThresholds( "mLtight0Gamma", mlg_tresh )
+
+mlg_tresh = [ 0, mLgThresh ]
+lowmLgPtRegions = getRegions2D( "PhotonGood0_pt", pTG_thresh, "mLtight0Gamma", mlg_tresh ) + getRegionsFromThresholds( "PhotonGood0_pt", highpTG_thresh )
+lowmLgRegions   = getRegionsFromThresholds( "mLtight0Gamma", mlg_tresh )
+
 mlg_tresh = [ 0, mLgThresh, -999 ]
 mLgPtRegions = getRegions2D( "PhotonGood0_pt", pTG_thresh, "mLtight0Gamma", mlg_tresh ) + getRegionsFromThresholds( "PhotonGood0_pt", highpTG_thresh )
 mLgRegions   = getRegionsFromThresholds( "mLtight0Gamma", mlg_tresh )
@@ -111,20 +120,20 @@ chgIsoNoSRPtRegions = getRegions2D( "PhotonNoChgIsoNoSieie0_pt", pTG_thresh, "(P
 finepTG_thresh         = [ 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 150, 180, 210, -999 ]
 photonBinRegions   = getRegionsFromThresholds( "PhotonGood0_pt", finepTG_thresh )
 
-unfoldpTG_thresh          = list(np.linspace(start=20, stop=320, num=31)) + [-999]
+unfoldpTG_thresh = [ 20, 35, 50, 65, 80, 100, 120, 140, 160, 180, 200, 230, 260, 290, 320, -999 ]
 regionsTTGUnfolding = getRegionsFromThresholds( "PhotonGood0_pt", unfoldpTG_thresh )
 regionsTTGlooseUnfolding = getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", unfoldpTG_thresh )
 
-etaG_thresh            = list(np.linspace(start=-1.5, stop=1.5, num=16))
+etaG_thresh            = [-1.4442] + list(np.linspace(start=-1.35, stop=1.35, num=13)) + [1.4442]
 regionsTTGEtaUnfolding = getRegionsFromThresholds( "PhotonGood0_eta", etaG_thresh )
 regionsTTGlooseEtaUnfolding = getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_eta", etaG_thresh )
 
-absetaG_thresh            = list(np.linspace(start=0, stop=1.5, num=16))
+absetaG_thresh            = list(np.linspace(start=0, stop=1.35, num=10)) + [1.4442]
 regionsTTGAbsEtaUnfolding = getRegionsFromThresholds( "abs(PhotonGood0_eta)", absetaG_thresh )
 regionsTTGlooseAbsEtaUnfolding = getRegionsFromThresholds( "abs(PhotonNoChgIsoNoSieie0_eta)", absetaG_thresh )
 
-dRG_thresh            = [ 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4 ]
-#dRG_thresh            = [ 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 4.2, -999 ]
+dRG_thresh            = [ 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, -999 ]
+#dRG_thresh            = [ 0.4, 0.7, 1.0, 1.3, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 4.2, -999 ]
 regionsTTGdRUnfolding = getRegionsFromThresholds( "ltight0GammadR", dRG_thresh )
 regionsTTGloosedRUnfolding = getRegionsFromThresholds( "ltight0GammaNoSieieNoChgIsodR", dRG_thresh )
 
@@ -132,8 +141,14 @@ dPhiG_thresh            = list(np.linspace(start=0, stop=3.2, num=17))
 regionsTTGdPhiUnfolding = getRegionsFromThresholds( "ltight0GammadPhi", dPhiG_thresh )
 regionsTTGloosedPhiUnfolding = getRegionsFromThresholds( "ltight0GammaNoSieieNoChgIsodPhi", dPhiG_thresh )
 
+regionsTTGdRJetUnfolding = getRegionsFromThresholds( "photonJetdR", dRG_thresh )
+regionsTTGloosedRJetUnfolding = getRegionsFromThresholds( "photonNoSieieNoChgIsoJetdR", dRG_thresh )
+
 
 noRegions = [Region("nPhotonGood", (0, -999))]
 
+regionsTTGtable = getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", [20, 120, 220, -999] )
+
 if __name__ == "__main__":
     for p in mLgPtRegions: print p.vals, str(p), p.cutString( selectionModifier="jesFlavorQCDUp")
+

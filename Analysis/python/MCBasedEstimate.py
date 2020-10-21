@@ -40,11 +40,11 @@ class MCBasedEstimate(SystematicEstimator):
 
         if channel=='all':
             # 'all' is the total of all contributions
-            return sum([self.cachedEstimate(region, c, setup, signalAddon=signalAddon) for c in lepChannels])
+            return sum([self.cachedEstimate(region, c, setup, signalAddon=signalAddon, overwrite=overwrite) for c in lepChannels])
 
         elif channel=='SFtight':
             # 'SFtight' is the total of mumutight and eetight contributions
-            return sum([self.cachedEstimate(region, c, setup, signalAddon=signalAddon) for c in dilepChannels])
+            return sum([self.cachedEstimate(region, c, setup, signalAddon=signalAddon, overwrite=overwrite) for c in dilepChannels])
 
         else:
             # change the sample processed if there is a signal addon like TuneUp
@@ -54,6 +54,7 @@ class MCBasedEstimate(SystematicEstimator):
                 else:
                     name = "_".join( [self.name, signalAddon] )
                 setattr(self, "process"+signalAddon, setup.processes[name])
+#            preSelection = setup.preselection('MC' if not signalAddon else "MCpTincl", channel=channel, processCut=self.processCut)
             preSelection = setup.preselection('MC', channel=channel, processCut=self.processCut)
             cuts         = [ region.cutString( setup.sys['selectionModifier'] ), preSelection['cut'] ]
 #            if setup.parameters["photonIso"] and setup.parameters["photonIso"] != "lowChgIsolowSieie":
@@ -67,6 +68,7 @@ class MCBasedEstimate(SystematicEstimator):
             logger.debug( "Using cut %s and weight %s"%(cut, weight) )
 
 #            return setup.lumi/1000.*u_float(**getattr(self,"".join(["process",signalAddon if signalAddon else ""])).getYieldFromDraw(selectionString = cut, weightString = weight) )
+#            print cut, weight
             return u_float(**getattr(self,"".join(["process",signalAddon if signalAddon else ""])).getYieldFromDraw(selectionString = cut, weightString = weight) )
 
 

@@ -1,4 +1,4 @@
-#Standard import
+##Standard import
 import copy
 import os
 
@@ -88,15 +88,15 @@ class Setup:
 
         if checkOnly:
             self.processes = {}
-            self.processes.update( { sample:           None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "GJets", "QCD", "all_mc" ] } )
-            self.processes.update( { sample+"_gen":    None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "GJets", "QCD", "all_mc" ] } )
-            self.processes.update( { sample+"_misID":  None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "GJets", "QCD", "all_mc" ] } )
-            self.processes.update( { sample+"_had":    None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "GJets", "QCD", "all_mc" ] } )
-            self.processes.update( { sample+"_prompt": None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "GJets", "QCD", "all_mc" ] } )
-            self.processes.update( { sample+"_hp":     None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "GJets", "QCD", "all_mc" ] } )
-            self.processes.update( { sample+"_fake":   None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "GJets", "QCD", "all_mc" ] } )
-            self.processes.update( { sample+"_PU":     None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "GJets", "QCD", "all_mc" ] } )
-            self.processes.update( { sample+"_np":     None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "GJets", "QCD", "all_mc" ] } )
+            self.processes.update( { sample:           None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "WG", "WG_NLO", "GJets", "QCD", "GQCD", "QCD_e", "QCD_mu", "all_mc", "all_mc_mu", "all_mc_e", "all_noQCD" ] } )
+            self.processes.update( { sample+"_gen":    None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "WG", "WG_NLO", "GJets", "QCD", "GQCD", "QCD_e", "QCD_mu", "all_mc", "all_mc_mu", "all_mc_e", "all_noQCD" ] } )
+            self.processes.update( { sample+"_misID":  None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "WG", "WG_NLO", "GJets", "QCD", "GQCD", "QCD_e", "QCD_mu", "all_mc", "all_mc_mu", "all_mc_e", "all_noQCD" ] } )
+            self.processes.update( { sample+"_had":    None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "WG", "WG_NLO", "GJets", "QCD", "GQCD", "QCD_e", "QCD_mu", "all_mc", "all_mc_mu", "all_mc_e", "all_noQCD" ] } )
+            self.processes.update( { sample+"_prompt": None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "WG", "WG_NLO", "GJets", "QCD", "GQCD", "QCD_e", "QCD_mu", "all_mc", "all_mc_mu", "all_mc_e", "all_noQCD" ] } )
+            self.processes.update( { sample+"_hp":     None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "WG", "WG_NLO", "GJets", "QCD", "GQCD", "QCD_e", "QCD_mu", "all_mc", "all_mc_mu", "all_mc_e", "all_noQCD" ] } )
+            self.processes.update( { sample+"_fake":   None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "WG", "WG_NLO", "GJets", "QCD", "GQCD", "QCD_e", "QCD_mu", "all_mc", "all_mc_mu", "all_mc_e", "all_noQCD" ] } )
+            self.processes.update( { sample+"_PU":     None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "WG", "WG_NLO", "GJets", "QCD", "GQCD", "QCD_e", "QCD_mu", "all_mc", "all_mc_mu", "all_mc_e", "all_noQCD" ] } )
+            self.processes.update( { sample+"_np":     None for sample in default_sampleList + default_systematicList + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "WG", "WG_NLO", "GJets", "QCD", "GQCD", "QCD_e", "QCD_mu", "all_mc", "all_mc_mu", "all_mc_e", "all_noQCD" ] } )
             self.processes["Data"] = "Run%i"%self.year if self.year != "RunII" else "RunII"
 
             if year == 2016:
@@ -121,25 +121,33 @@ class Setup:
                 ttg_TuneDown  = mc_samples.TTG_TuneDown
                 ttg_erdOn     = mc_samples.TTG_erdOn
                 ttg_QCDbased  = mc_samples.TTG_QCDbased
-#                ttg_GluonMove = mc_samples.TTG_GluonMove
+                ttg_GluonMove = mc_samples.TTG_GluonMove
+                ttg_sys_incl = mc_samples.TTG_sys_incl
                 top          = mc_samples.Top
                 DY           = mc_samples.DY_LO
                 zg           = mc_samples.ZG
                 wg           = mc_samples.WG
+                wg_NLO       = mc_samples.WG_NLO
                 wjets        = mc_samples.WJets
                 other        = mc_samples.rest #other
+                gqcd         = mc_samples.GQCD
                 qcd          = mc_samples.QCD
+                qcd_e        = mc_samples.QCD_e
+                qcd_mu       = mc_samples.QCD_mu
                 gjets        = mc_samples.GJets
                 tW           = mc_samples.ST_tW
                 st_tch       = mc_samples.ST_tch
                 st_sch       = mc_samples.ST_sch
                 all          = mc_samples.all_mc
+                all_noQCD    = mc_samples.all_noQCD
+                all_e        = mc_samples.all_mc_e
+                all_mu       = mc_samples.all_mc_mu
 
             if private:
                 mc           = [ ttg, tt ]
             else:
-                mc           = [ ttg, top, DY, zg, wjets, wg, other, qcd, gjets, all ]
-                mc          += [ ttg_TuneUp, ttg_TuneDown, ttg_erdOn, ttg_QCDbased] #, ttg_GluonMove ]
+                mc           = [ ttg, top, DY, zg, wjets, wg, wg_NLO, other, qcd, gqcd, qcd_e, qcd_mu, gjets, all, all_e, all_mu, all_noQCD ]
+                mc          += [ ttg_TuneUp, ttg_TuneDown, ttg_erdOn, ttg_QCDbased, ttg_GluonMove, ttg_sys_incl ]
                 mc          += [ tt, tW, st_tch, st_sch ]
             self.processes = {}
             self.processes.update( { sample.name:           sample for sample in mc } )
@@ -192,6 +200,7 @@ class Setup:
                         if "reweightLeptonTightSFStat"+upOrDown     in res.sys[k]: res.sys[k].remove("reweightLeptonTightSF")
                         if "reweightLeptonTrackingTightSF"+upOrDown in res.sys[k]: res.sys[k].remove("reweightLeptonTrackingTightSF")
                         if "reweightPhotonSF"+upOrDown              in res.sys[k]: res.sys[k].remove("reweightPhotonSF")
+                        if "reweightPhotonAltSigSF"+upOrDown        in res.sys[k]: res.sys[k].remove("reweightPhotonSF")
                         if "reweightPhotonElectronVetoSF"+upOrDown  in res.sys[k]: res.sys[k].remove("reweightPhotonElectronVetoSF")
                         if 'reweightBTag_SF_b_'+upOrDown            in res.sys[k]: res.sys[k].remove('reweightBTag_SF')
                         if 'reweightBTag_SF_l_'+upOrDown            in res.sys[k]: res.sys[k].remove('reweightBTag_SF')
@@ -244,7 +253,7 @@ class Setup:
         if   dataMC == "DataMC": return _weightString
 
         if   dataMC == "Data": _weightString = _weightString["Data"]
-        elif dataMC == "MC":   _weightString = _weightString["MC"]
+        elif (dataMC == "MC" or dataMC == "MCpTincl"):   _weightString = _weightString["MC"]
         logger.debug("Using weight-string: %s", _weightString)
 
         return _weightString
@@ -265,7 +274,7 @@ class Setup:
                         photonIso=None, processCut=None,
                         channel="all"):
         """Define full selection
-           dataMC: "Data" or "MC"
+           dataMC: "Data" or "MC" or "MCptincl
            channel: all, e or mu, eetight, mumutight, SFtight
            zWindow: offZeg, onZeg, onZSFllTight, onZSFllgTight, onZSFlloffZSFllg or all
            m3Window: offM3, onM3 or all
@@ -285,7 +294,7 @@ class Setup:
         if not photonIso:    photonIso    = self.parameters["photonIso"]
 
         #Consistency checks
-        assert dataMC in ["Data","MC","DataMC"], "dataMC = Data or MC or DataMC, got %r."%dataMC
+        assert dataMC in ["Data","MC","DataMC","MCpTincl"], "dataMC = Data or MC or DataMC, got %r."%dataMC
         assert channel in allChannels, "channel must be one of "+",".join(allChannels)+". Got %r."%channel
         assert zWindow in ["offZeg", "onZeg", "onZSFllTight", "onZSFllgTight", "onZSFlloffZSFllg", "all"], "zWindow must be one of onZeg, offZeg, onZSFllTight, onZSFllgTight, all. Got %r"%zWindow
         assert m3Window in ["offM3", "onM3", "all"], "m3Window must be one of onM3, offM3, all. Got %r"%m3Window
@@ -398,17 +407,17 @@ class Setup:
 
         #Postfix for variables (only for MC and if we have a jme variation)
         jSysStr = ""
-        if dataMC == "MC" and self.sys['selectionModifier'] in jmeVariations + metVariations:
+        if (dataMC == "MC" or dataMC == "MCpTincl") and self.sys['selectionModifier'] in jmeVariations + metVariations:
             jSysStr = "_" + self.sys['selectionModifier']
         pSysStr = ""
         lSysStr = ""
         isEVar  = False
         isMuVar = False
-        if dataMC == "MC" and self.sys['selectionModifier'] in muVariations:
+        if (dataMC == "MC" or dataMC == "MCpTincl") and self.sys['selectionModifier'] in muVariations:
             lSysStr = "_" + self.sys['selectionModifier']
 #            leptonPtCutVar += "_totalUp" if "up" in self.sys['selectionModifier'].lower() else "_totalDown"
             isMuVar = True
-        if dataMC == "MC" and self.sys['selectionModifier'] in eVariations:
+        if (dataMC == "MC" or dataMC == "MCpTincl") and self.sys['selectionModifier'] in eVariations:
             lSysStr = "_" + self.sys['selectionModifier']
             pSysStr = "_" + self.sys['selectionModifier']
             isEVar = True
@@ -559,6 +568,9 @@ class Setup:
         if dataMC == "MC":
             res["cuts"].append( "overlapRemoval==1" )
             res["cuts"].append( "pTStitching==1" )
+
+        if dataMC == "MCpTincl":
+            res["cuts"].append( "overlapRemoval==1" )
 
         if dataMC != "DataMC":
             res["cuts"].append( getFilterCut(isData=(dataMC=="Data"), year=self.year, skipBadChargedCandidate=True) )

@@ -48,15 +48,46 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         weight_MC_SR = selection_MC_SR["weightStr"]
         weight_MC_CR = selection_MC_SR["weightStr"].replace("reweightTrigger","reweightInvIsoTrigger").replace("reweightLeptonTrackingTightSF","reweightLeptonTrackingTightSFInvIso").replace("reweightLeptonTightSF","reweightLeptonTightSFInvIso") # w/ misID SF
 
+        print
+        print
+        print channel, qcdUpdates
+        print weight_MC_SR
+        print cut_MC_SR
+        print cut_MC_CR
         # The QCD yield in the CR with SR weight (sic)
-        yield_QCD_CR     = self.yieldFromCache(setup, "QCD",    channel, cut_MC_CR,   weight_MC_CR,   overwrite=overwrite)#*setup.dataLumi/1000.
-        yield_QCD_CR    += self.yieldFromCache(setup, "GJets",  channel, cut_MC_CR,   weight_MC_CR,   overwrite=overwrite)#*setup.dataLumi/1000.
+        yield_QCD_CR = self.yieldFromCache(setup, "GJets",  channel, cut_MC_CR,   weight_MC_CR,   overwrite=overwrite)#*setup.dataLumi/1000.
 
+        print "GJets CR", yield_QCD_CR
+
+        if channel == "e":
+            yield_QCD_CR     += self.yieldFromCache(setup, "QCD_e",    channel, cut_MC_CR,   weight_MC_CR,   overwrite=overwrite)#*setup.dataLumi/1000.
+        elif channel == "mu":
+            yield_QCD_CR     += self.yieldFromCache(setup, "QCD_mu",    channel, cut_MC_CR,   weight_MC_CR,   overwrite=overwrite)#*setup.dataLumi/1000.
+        else:
+            raise Exception("No QCD MC known for MC based TF and channel %s!"%channel)
+
+        print "GJets + QCD CR", yield_QCD_CR
         # The QCD yield in the signal regions
-        yield_QCD_SR     = self.yieldFromCache(setup, "QCD",    channel, cut_MC_SR,   weight_MC_SR,  overwrite=overwrite)#*setup.lumi/1000.
-        yield_QCD_SR    += self.yieldFromCache(setup, "GJets",  channel, cut_MC_SR,   weight_MC_SR,  overwrite=overwrite)#*setup.lumi/1000.
+        yield_QCD_SR    = self.yieldFromCache(setup, "GJets",  channel, cut_MC_SR,   weight_MC_SR,  overwrite=overwrite)#*setup.lumi/1000.
+
+        print "GJets SR", yield_QCD_SR
+
+        if channel == "e":
+            yield_QCD_SR     += self.yieldFromCache(setup, "QCD_e",    channel, cut_MC_SR,   weight_MC_SR,  overwrite=overwrite)#*setup.lumi/1000.
+        elif channel == "mu":
+            yield_QCD_SR     += self.yieldFromCache(setup, "QCD_mu",    channel, cut_MC_SR,   weight_MC_SR,  overwrite=overwrite)#*setup.lumi/1000.
+        else:
+            raise Exception("No QCD MC known for MC based TF and channel %s!"%channel)
+
+        print "GJets + QCD SR", yield_QCD_SR
 
         transferFac = yield_QCD_SR/yield_QCD_CR if yield_QCD_CR > 0 else u_float(0, 0)
+
+        print "transfer factor", transferFac
+        print
+        print
+        print
+        print
 
         logger.info("yield QCD + GJets CR:         " + str(yield_QCD_CR))
         logger.info("yield QCD + GJets SR:         " + str(yield_QCD_SR))
@@ -145,7 +176,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         yield_other_CR = 0
         yield_other_SR = 0
         for s in default_sampleList:
-            if s in ["QCD-DD", "QCD", "GJets", "Data"]: continue
+            if s in ["QCD-DD", "QCD", "QCD_e", "QCD_mu", "GJets", "Data"]: continue
             y_CR = self.yieldFromCache( setup, s, channel, cut_MC_CR, weight_MC_CR, overwrite=overwrite )
             y_SR = self.yieldFromCache( setup, s, channel, cut_MC_SR, weight_MC_SR, overwrite=overwrite )
             print "without SF", s, "CR", y_CR, "SR", y_SR
@@ -175,7 +206,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         # TF from full QCD CR to full SR
         transRatio   = qcd_est_SR / qcd_est_CR if qcd_est_CR > 0 else u_float(0, 0)
         # scale the TF for subregions in e.g. m(l,gamma) or m3 (region cuts)
-        transferFac = transRatio# * fractionalSR
+        transferFac = transRatio # * fractionalSR
 
         print("Calculating data-driven QCD TF normalization in channel " + channel + " using lumi " + str(setup.dataLumi) + ":")
         print("TF CR yield data:                " + str(yield_data_CR))
@@ -265,7 +296,6 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         # safe some memory, you don't need the CR data hist, only for estimating the qcd hist
         qcdHist   = self.histoFromCache( invVar, binning, setup, "Data", channel, cut_Data_CR, weight_Data_CR, overwrite=overwriteHistos)
 
-        print "data", dataHist.Integral(), qcdHist.Integral()
         fixedHist = dataHist.Clone("fixed") # sum of contributions that stay fixed
         fixedHist.Scale(0.)
 
@@ -301,11 +331,9 @@ class DataDrivenQCDEstimate(SystematicEstimator):
 
         # Calculate mTs for MC (normalized to data lumi)
         for s in default_sampleList:
-            if s in ["QCD-DD", "QCD", "GJets", "Data"]: continue
+            if s in ["QCD-DD", "QCD", "QCD_e", "QCD_mu", "GJets", "Data"]: continue
             tmp_SR = self.histoFromCache( var,    binning, setup, s, channel, cut_MC_SR, weight_MC_SR, overwrite=overwriteHistos )
             tmp_CR = self.histoFromCache( invVar, binning, setup, s, channel, cut_MC_CR, weight_MC_CR, overwrite=overwriteHistos )
-            print s, tmp_SR.Integral(), tmp_CR.Integral()
-
             # apply SF after histo caching
             if addSF:
                 if "DY" in s:
@@ -365,7 +393,6 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         nFixedScale = fixedHist.Integral() / nTotal
         nQCDScale   = qcdHist.Integral()   / nTotal
 
-        print nTotal, floatHist.Integral(), fixedHist.Integral(), qcdHist.Integral()
         if not all([nTotal,nFloatScale,nFixedScale,nQCDScale]):
             raise Exception("Something is wrong with the cached histograms for the QCD TF!")
 
@@ -465,12 +492,12 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         qcdUpdate = copy.deepcopy(qcdUpdates) if qcdUpdates else QCDTF_updates
         qcdUpdate["CR"]["nJet"] = setup.parameters["nJet"]
         qcdUpdate["SR"]["nJet"] = setup.parameters["nJet"]
-        tfnjet = self.cachedQCDMCTransferFactor( channel, setup, qcdUpdates=qcdUpdate ).val
+        tfnjet = self.cachedQCDMCTransferFactor( channel, setup, qcdUpdates=qcdUpdate, overwrite=overwrite ).val
 
         # inclusive 2 jet qcd mc tf if not otherwise stated
         qcdUpdate["CR"]["nJet"] = (2,2)
         qcdUpdate["SR"]["nJet"] = (2,2)
-        tf2jet = self.cachedQCDMCTransferFactor( channel, setup, qcdUpdates=qcdUpdate ).val
+        tf2jet = self.cachedQCDMCTransferFactor( channel, setup, qcdUpdates=qcdUpdate, overwrite=overwrite ).val
         return tfnjet / tf2jet if tf2jet > 0 else 1.
 
     #Concrete implementation of abstract method "estimate" as defined in Systematic
@@ -630,7 +657,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
 
                     yield_other = 0
                     for s in default_sampleList:
-                        if s in ["QCD-DD", "QCD", "GJets", "Data"]: continue
+                        if s in ["QCD-DD", "QCD", "QCD_e", "QCD_mu", "GJets", "Data"]: continue
                         y  = self.yieldFromCache( setup, s, channel, cut_MC_CR, weight_MC_CR, overwrite=overwrite )
 
                         if addSF:

@@ -85,7 +85,7 @@ def wrapper(arg):
         res = {"val":-1, "sigma":0}
     else:
         selection = setup.genSelection( "MC", channel=channel, **setup.defaultParameters())["cut"]
-        selection = "&&".join( [ selection, r.cutString() ] )
+        selection = "&&".join( [ selection, r.cutString(), "abs(ref_weight)<100" ] )
         weightString = "ref_weight*(" + get_weight_string(params) + ")"
         res = eftSample.getYieldFromDraw( selectionString=selection, weightString=weightString )
         cache.add( key, res, overwrite=True )
@@ -116,6 +116,7 @@ if args.nJobs != 1:
     jobs = splitList( jobs, args.nJobs)[args.job]
     logger.info("Calculating %i of total %i points"%(len(jobs), total))
 
+print "Running over %i jobs"%len(jobs)
 logger.info( "%i points to calculate" %(len(jobs)) )
 
 if args.cores==1:
