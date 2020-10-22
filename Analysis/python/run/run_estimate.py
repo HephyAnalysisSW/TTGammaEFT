@@ -11,6 +11,9 @@ from TTGammaEFT.Analysis.SetupHelpers    import dilepChannels, lepChannels, allP
 
 from helpers                             import splitList
 
+from Analysis.Tools.u_float              import u_float
+from TTGammaEFT.Analysis.regions         import *
+
 loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET']
 CRChoices     = allRegions.keys()
 # Arguments
@@ -47,6 +50,17 @@ if not args.controlRegion:
     logger.warning("ControlRegion not known")
     sys.exit(0)
 
+additionalRegions = [None]
+if "Unfold" in args.controlRegion and not "Pt" in args.controlRegion:
+    args.noInclusive = True
+#    misIDPT_thresholds = [ 20, 35, 50, 65, 80, 120, 160, -999 ]
+    misIDPT_thresholds = [ 35, 50, 65, 80, 120, 160, -999 ]
+    additionalRegions += getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", misIDPT_thresholds )
+
+#    WGPT_thresholds = [ 20, 65, 160, -999 ]
+    WGPT_thresholds = [ 65, 160 ]
+    additionalRegions += getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", WGPT_thresholds )
+
 parameters       = allRegions[args.controlRegion]["parameters"]
 channels         = allRegions[args.controlRegion]["channels"] 
 photonSelection  = not allRegions[args.controlRegion]["noPhotonCR"]
@@ -82,14 +96,14 @@ estimate.initCache(setup.defaultCacheDir())
 #if "all" in channels: channels = ["e","mu"]
 jobs=[]
 for channel in channels:
-    for (i, r) in enumerate(allPhotonRegions):
-#        if args.selectRegion != i: continue
-        jobs.append((r, channel, setup, None))
-        if not estimate.isData and not args.noSystematics:
-            if "TTG" in args.selectEstimator:
-                jobs.extend(estimate.getSigSysJobs(r, channel, setup))
-            else:
-                jobs.extend(estimate.getBkgSysJobs(r, channel, setup))
+    for (ai, ar) in enumerate(additionalRegions):
+        for (i, r) in enumerate(allPhotonRegions):
+            jobs.append((r if not ar else r+ar, channel, setup, None))
+            if not estimate.isData and not args.noSystematics:
+                if "TTG" in args.selectEstimator:
+                    jobs.extend(estimate.getSigSysJobs(r if not ar else r+ar, channel, setup))
+                else:
+                    jobs.extend(estimate.getBkgSysJobs(r if not ar else r+ar, channel, setup))
 
 print "Running %i jobs in total."%len(jobs)
 #jobs = splitList( jobs, 32)[1]

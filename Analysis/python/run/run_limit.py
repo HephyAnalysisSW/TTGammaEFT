@@ -329,12 +329,14 @@ def wrapper():
 
         default_misIDpT_unc = 0.40
         misIDPT_thresholds = [ 20, 35, 50, 65, 80, 120, 160, -999 ]
+        misIDPT_regions = getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", misIDPT_thresholds )
         if not args.inclRegion and with1pCR:
             for i in range(1, len(misIDPT_thresholds)-1):
                 c.addUncertainty( "misID_pT_Bin%i_%i"%(i,args.year), shapeString )
 
         default_WGpT_unc = 0.20
         WGPT_thresholds = [ 20, 65, 160, -999 ]
+        WGPT_regions = getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", WGPT_thresholds )
         if not args.inclRegion and with1pCR:
             for i in range(1, len(WGPT_thresholds)-1):
                 c.addUncertainty( "WGamma_pT_Bin%i"%(i), shapeString )
@@ -723,6 +725,29 @@ def wrapper():
                                                 locals()["WGamma_bin%i_unc"%pT_index] += y_scale * default_WGpT_unc
                                             if e.name.count( "ZG" ):
                                                 locals()["ZGamma_bin%i_unc"%pT_index] += y_scale * default_WGpT_unc
+
+                                if any( ["Unfold" in cardRegions and not "Pt" in cardRegions for cardRegions in args.useRegions] ):
+                                    # add fractional pt dependent uncertainties to eta/dR unfolding distributions
+                                    # misIDPT_thresholds = [ 20, 35, 50, 65, 80, 120, 160, -999 ]
+                                    # exp_yield = e.cachedEstimate( r, channel, setup )
+                                    if not args.inclRegion and e.name.count( "misID" ):
+                                        for i_pt, thresh in enumerate(misIDPT_thresholds[:-1]):
+                                            if i_pt == 0: continue
+                                            eMisID = e.cachedEstimate( r+misIDPT_regions[i_pt], channel, setup )
+                                            misIDFraction = eMisID.val / e.expYield.val
+                                            locals()["misID_bin%i_unc"%i_pt] += y_scale * misIDFraction * default_misIDpT_unc
+
+                                    if not args.inclRegion and (e.name.count( "WG" ) or e.name.count( "ZG" )):
+                                        for i_pt, thresh in enumerate(WGPT_thresholds[:-1]):
+                                            if i_pt == 0: continue
+                                            eWG = e.cachedEstimate( r+WGPT_regions[i_pt], channel, setup )
+                                            wgFraction = eWG.val / e.expYield.val
+                                            if e.name.count( "WG" ):
+                                                locals()["WGamma_bin%i_unc"%pT_index] += y_scale * wgFraction * default_WGpT_unc
+                                            if e.name.count( "ZG" ):
+                                                locals()["ZGamma_bin%i_unc"%pT_index] += y_scale * wgFraction * default_WGpT_unc
+
+
 
                                 if e.name.count( "other" ):
                                     otherUnc += y_scale * default_Other_unc
