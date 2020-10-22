@@ -745,6 +745,14 @@ qcdHist = dirDB.get(key)
 if addSF and setup.isPhotonSelection:
     qcdHist.Scale(QCDSF_val[args.year].val)
 
+# remove MC stat error from qcd hist
+for i in range(qcdHist.GetNbinsX()):
+    qcdHist.SetBinError(i+1, 0)
+
+# add QCD error
+#for i in range(qcdHist.GetNbinsX()):
+#    qcdHist.SetBinError(i+1, qcdHist.GetBinContent(i+1)*0.5)
+
 qcdHist.style          = styles.fillStyle( color.QCD )
 qcdHist.legendText     = "Multijet"
 
@@ -774,7 +782,7 @@ data_histo_list[0].legendText = "Observed (%s)"%args.mode.replace("mu","#mu").re
 
 uncHist = data_histo_list[0].Clone()
 uncHist.Scale(0)
-uncHist.style = styles.hashStyle()
+#uncHist.style = styles.hashStyle()
 uncHist.legendText = "Uncertainty"
 
 Plot.setDefaults()
@@ -791,6 +799,7 @@ total_mc_histo   = {variation:add_histos( mc_histo_list[variation]) for variatio
 for i_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
 # Only positive yields
     total_central_mc_yield = total_mc_histo["central"].GetBinContent(i_b)
+    total_central_mc_error = total_mc_histo["central"].GetBinError(i_b)
     if total_central_mc_yield<=0: continue
     variance = 0.
     for systematic in systematics:
@@ -801,6 +810,37 @@ for i_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
             factor = 0.5
         # sum in quadrature
         variance += ( factor*(total_mc_histo[systematic["pair"][0]].GetBinContent(i_b) - total_mc_histo[systematic["pair"][1]].GetBinContent(i_b)) )**2
+
+    # add MC stat unc
+    variance += total_central_mc_error**2
+
+    # In case one wants to add uncertainties to specific backgrounds (like x-sec), that can be done here
+    lumiUnc = {2016:0.025, 2017:0.023, 2018:0.025, "RunII":0.018}
+    if args.mode == "mu":  muonExtrapolation = 0.005
+    elif args.mode == "e": muonExtrapolation = 0.
+    else:                  muonExtrapolation = 0.0025
+
+    if True:
+        gammaCat = genCat if args.photonCat else ["all"]
+        for g in gammaCat:
+            variance += (0.05*mc_samples.Top.hist["central"][g].GetBinContent(i_b))**2 # TT normalization
+            if not args.photonCat: # DY is highly anti correlated with misID
+                variance += (0.08*mc_samples.DY_LO.hist["central"][g].GetBinContent(i_b))**2 # DY normalization
+                if args.selection.startswith("SR"):
+                    variance += (0.08*mc_samples.DY_LO.hist["central"][g].GetBinContent(i_b))**2 # DY extrapolation
+            variance += (0.08*mc_samples.WG.hist["central"][g].GetBinContent(i_b))**2 # WG normalization
+            variance += (0.10*mc_samples.ZG.hist["central"][g].GetBinContent(i_b))**2 # ZG normalization
+            variance += (0.30*mc_samples.rest.hist["central"][g].GetBinContent(i_b))**2 # other normalization
+            variance += (0.01*mc_samples.TTG.hist["central"][g].GetBinContent(i_b))**2 # mockup for PDF
+            variance += (0.005*mc_samples.TTG.hist["central"][g].GetBinContent(i_b))**2 # mockup for Scale
+            variance += (0.01*mc_samples.TTG.hist["central"][g].GetBinContent(i_b))**2 # mockup for color reconnection
+            variance += (muonExtrapolation*total_central_mc_yield)**2 # muon ID extrapolation unc
+            variance += (lumiUnc[args.year]*total_central_mc_yield)**2 # lumi
+        if args.photonCat:
+            for s in mc:
+                variance += (0.12*s.hist["central"]["noChgIsoNoSieiephotoncat2"].GetBinContent(i_b))**2 # misID normalization
+                variance += (0.05*s.hist["central"]["noChgIsoNoSieiephotoncat134"].GetBinContent(i_b))**2 # fake normalization
+
 
     sigma     = sqrt(variance)
     sigma_rel = sigma/total_central_mc_yield 
