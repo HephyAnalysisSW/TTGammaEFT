@@ -239,7 +239,6 @@ def filler( event ):
 
     event.run, event.luminosity, event.evt = reader.evt
     event.weight                           = lumiweight
-
     if reader.position % 100 == 0:
         logger.info( "At event %i/%i", reader.position, reader.nEvents )
 

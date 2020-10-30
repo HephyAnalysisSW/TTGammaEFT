@@ -86,7 +86,7 @@ options = get_parser().parse_args()
 
 stitching = False
 # combine ttg samples is they are nominal
-if "TTG" in options.samples[0] and not "Tune" in options.samples[0] and not "erd" in options.samples[0] and not "ptG" in options.samples[0]:
+if "TTG" in options.samples[0] and not "Tune" in options.samples[0] and not "erd" in options.samples[0] and not "QCDbased" in options.samples[0] and not "GluonMove" in options.samples[0] and not "ptG" in options.samples[0]:
     stitching = True
 
 # B-Tagger
@@ -164,11 +164,13 @@ if options.year == 2016:
 #    from Samples.nanoAOD.Run2016_17Jul2018_private  import *
 #    from TTGammaEFT.Samples.Summer16_nanoAODv5      import *
     from TTGammaEFT.Samples.Summer16_nanoAODv6      import *
+#    from TTGammaEFT.Samples.Summer16_private_nanoAODv6      import *
     from Samples.nanoAOD.Run2016_nanoAODv6          import *
 elif options.year == 2017:
 #    from Samples.nanoAOD.Fall17_private_legacy_v1   import *
 #    from Samples.nanoAOD.Run2017_31Mar2018_private  import *
     from TTGammaEFT.Samples.Fall17_nanoAODv6        import *
+#    from TTGammaEFT.Samples.Fall17_private_nanoAODv6        import *
     from Samples.nanoAOD.Run2017_nanoAODv6          import *
 #    from Samples.nanoAOD.Run2017_UL                 import *
     runOnUL = "UL" in options.samples[0]
@@ -176,6 +178,7 @@ elif options.year == 2018:
 #    from Samples.nanoAOD.Autumn18_private_legacy_v1 import *
 #    from Samples.nanoAOD.Run2018_17Sep2018_private  import *
     from TTGammaEFT.Samples.Autumn18_nanoAODv6      import *
+#    from TTGammaEFT.Samples.Autumn18_private_nanoAODv6      import *
     from Samples.nanoAOD.Run2018_nanoAODv6          import *
 
 # Load all samples to be post processed
@@ -368,7 +371,7 @@ if not options.skipSF:
     from Analysis.Tools.LeptonTrackingEfficiency import LeptonTrackingEfficiency
     LeptonTrackingSF = LeptonTrackingEfficiency( year=options.year )
 
-    from Analysis.Tools.PhotonSF import PhotonSF as PhotonSF_
+    from TTGammaEFT.Tools.PhotonSF import PhotonSF as PhotonSF_
     PhotonSF = PhotonSF_( year=options.year )
 
     from TTGammaEFT.Tools.EcalPtUncertainty          import EcalPtUncertainty
@@ -538,6 +541,8 @@ if isMC:
                         VectorTreeVariable.fromString('LHEPart[%s]'%'phi/F,pt/F,pdgId/I,eta/F', nMax = 1000) ]
     read_variables += [ TreeVariable.fromString('nGenJet/I'),
                         VectorTreeVariable.fromString('GenJet[%s]'%readGenJetVarString) ]
+    read_variables += [ TreeVariable.fromString('nGenDressedLepton/I'),
+                        VectorTreeVariable.fromString('GenDressedLepton[pt/F,eta/F,phi/F,pdgId/I]', nMax = 100) ] # all needed for genMatching
 
 # Write Variables
 new_variables  = []
@@ -757,8 +762,8 @@ if isMC:
         new_variables += [ 'reweightInvIsoTrigger/F', 'reweightInvIsoTriggerUp/F', 'reweightInvIsoTriggerDown/F' ]
         new_variables += [ 'reweightNoIsoTrigger/F', 'reweightNoIsoTriggerUp/F', 'reweightNoIsoTriggerDown/F' ]
 
-        new_variables += [ 'reweightPhotonSF/F', 'reweightPhotonSFUp/F', 'reweightPhotonSFDown/F' ]
-        new_variables += [ 'reweightPhotonSFInvIso/F', 'reweightPhotonSFInvIsoUp/F', 'reweightPhotonSFInvIsoDown/F' ]
+        new_variables += [ 'reweightPhotonSF/F', 'reweightPhotonSFUp/F', 'reweightPhotonSFDown/F', 'reweightPhotonSFAltSigUp/F', 'reweightPhotonSFAltSigDown/F' ]
+        new_variables += [ 'reweightPhotonSFInvIso/F', 'reweightPhotonSFInvIsoUp/F', 'reweightPhotonSFInvIsoDown/F', 'reweightPhotonSFAltSigInvIsoUp/F', 'reweightPhotonSFAltSigInvIsoDown/F' ]
         new_variables += [ 'reweightPhotonElectronVetoSF/F', 'reweightPhotonElectronVetoSFUp/F', 'reweightPhotonElectronVetoSFDown/F' ]
         new_variables += [ 'reweightPhotonElectronVetoSFInvIso/F', 'reweightPhotonElectronVetoSFInvIsoUp/F', 'reweightPhotonElectronVetoSFInvIsoDown/F' ]
 #        new_variables += [ 'reweightPhotonReconstructionSF/F' ]
@@ -920,7 +925,6 @@ def filler( event ):
 
         # weight
         event.weight = lumiScaleFactor*r.genWeight if lumiScaleFactor is not None else 0
-        #print event.weight, lumiScaleFactor*r.genWeight, sample.xSection, sample.normalization
 
         # GEN Particles
         gPart = getParticles( r, collVars=readGenVarList,    coll="GenPart" )
@@ -1058,6 +1062,23 @@ def filler( event ):
 
         # CMS Unfolding
         GenLeptonCMSUnfold = filter( lambda l: not hasMesonMother( getParentIds( l, gPart ) ), GenLepton )
+        #pre-filter them to get rid of all the junk where there are no matching dressed leptons
+        GenLeptonCMSUnfold = filter( lambda l: l["pt"]>20 and abs(l["eta"])<2.6, GenLeptonCMSUnfold )
+        # replace pt/eta/phi of gen leptons with dressed lepton definition before the pt/eta cut
+        dressedLeptons = getParticles( r, collVars=["pt","eta","phi","pdgId"], coll="GenDressedLepton" )
+        for l in GenLeptonCMSUnfold:
+            minDR = 999
+            matchedDressedLepton = None
+            for dl in dressedLeptons:
+                dr = deltaR( dl, l )
+                if dr < 0.3 and dr<minDR:
+                    minDR = dr
+                    matchedDressedLepton = dl
+            if matchedDressedLepton:
+                l["pt"]  = matchedDressedLepton["pt"]
+                l["eta"] = matchedDressedLepton["eta"]
+                l["phi"] = matchedDressedLepton["phi"]
+
         GenLeptonCMSUnfold = filter( lambda l: genLeptonSel_CMSUnfold(l), GenLeptonCMSUnfold )
 
         # Isolated in CMS
@@ -1677,7 +1698,6 @@ def filler( event ):
     # l+jets topreco
     if lt0:
         for top_reco_strategy in top_reco_strategies:
-            #print ",",[{'pt':event.MET_pt, 'phi':event.MET_phi},  lt0, bJets, nonBJets]
             topReco = TopRecoLeptonJets( met = {'pt':event.MET_pt, 'phi':event.MET_phi},
                                lepton = lt0, bJets = bJets, nonBJets = nonBJets, strategy = top_reco_strategy)
             if topReco.solution:
@@ -2073,10 +2093,14 @@ def filler( event ):
         event.reweightPhotonSF     = reduce( mul, [ PhotonSF.getSF( pt=p['pt'], eta=p['eta']             ) for p in mediumPhotonsNoChgIsoNoSieie ], 1 )
         event.reweightPhotonSFUp   = reduce( mul, [ PhotonSF.getSF( pt=p['pt'], eta=p['eta'], sigma = +1 ) for p in mediumPhotonsNoChgIsoNoSieie ], 1 )
         event.reweightPhotonSFDown = reduce( mul, [ PhotonSF.getSF( pt=p['pt'], eta=p['eta'], sigma = -1 ) for p in mediumPhotonsNoChgIsoNoSieie ], 1 )
+        event.reweightPhotonSFAltSigUp   = reduce( mul, [ PhotonSF.getSF( pt=p['pt'], eta=p['eta'], sigma = +1, altSig=True ) for p in mediumPhotonsNoChgIsoNoSieie ], 1 )
+        event.reweightPhotonSFAltSigDown = reduce( mul, [ PhotonSF.getSF( pt=p['pt'], eta=p['eta'], sigma = -1, altSig=True ) for p in mediumPhotonsNoChgIsoNoSieie ], 1 )
 
         event.reweightPhotonSFInvIso     = reduce( mul, [ PhotonSF.getSF( pt=p['pt'], eta=p['eta']             ) for p in mediumPhotonsNoChgIsoNoSieieInvLepIso ], 1 )
         event.reweightPhotonSFInvIsoUp   = reduce( mul, [ PhotonSF.getSF( pt=p['pt'], eta=p['eta'], sigma = +1 ) for p in mediumPhotonsNoChgIsoNoSieieInvLepIso ], 1 )
         event.reweightPhotonSFInvIsoDown = reduce( mul, [ PhotonSF.getSF( pt=p['pt'], eta=p['eta'], sigma = -1 ) for p in mediumPhotonsNoChgIsoNoSieieInvLepIso ], 1 )
+        event.reweightPhotonSFAltSigInvIsoUp   = reduce( mul, [ PhotonSF.getSF( pt=p['pt'], eta=p['eta'], sigma = +1, altSig=True ) for p in mediumPhotonsNoChgIsoNoSieieInvLepIso ], 1 )
+        event.reweightPhotonSFAltSigInvIsoDown = reduce( mul, [ PhotonSF.getSF( pt=p['pt'], eta=p['eta'], sigma = -1, altSig=True ) for p in mediumPhotonsNoChgIsoNoSieieInvLepIso ], 1 )
 
         event.reweightPhotonElectronVetoSF     = reduce( mul, [ PhotonElectronVetoSF.getSF( pt=p['pt'], eta=p['eta']             ) for p in mediumPhotonsNoChgIsoNoSieie ], 1 )
         event.reweightPhotonElectronVetoSFUp   = reduce( mul, [ PhotonElectronVetoSF.getSF( pt=p['pt'], eta=p['eta'], sigma = +1 ) for p in mediumPhotonsNoChgIsoNoSieie ], 1 )

@@ -142,9 +142,9 @@ Plot2D.setDefaults()
 mode = args.mode.replace("mu","#mu")
 
 plots = []
-plots.append( Plot2D.fromHisto( "data_jet_eta_pt",          [[dataHist]],    texX = "p_{T}(%s)"%mode,                texY = "#eta(%s)"%mode ) )
-plots.append( Plot2D.fromHisto( "data_jet_eta_pt_sideband", [[dataHist_SB]], texX = "p_{T}(%s) (QCD sideband)"%mode, texY = "#eta(%s) (QCD sideband)"%mode ) )
-plots.append( Plot2D.fromHisto( "data_jet_eta_pt_ratio",    [[divHist]],     texX = "p_{T}(%s)"%mode, texY = "#eta(%s)"%mode ) )
+plots.append( Plot2D.fromHisto( "data_jet_eta_pt",          [[dataHist]],    texX = "p_{T}(%s) [GeV]"%mode,                texY = "#eta(%s)"%mode ) )
+plots.append( Plot2D.fromHisto( "data_jet_eta_pt_sideband", [[dataHist_SB]], texX = "p_{T}(%s) [GeV] (sideband)"%mode, texY = "#eta(%s) (sideband)"%mode ) )
+plots.append( Plot2D.fromHisto( "data_jet_eta_pt_ratio",    [[divHist]],     texX = "p_{T}(%s) [GeV]"%mode, texY = "#eta(%s)"%mode ) )
 
 for plot in plots:
 

@@ -189,16 +189,16 @@ divHist.Divide(dataHist_SB)
 
 dataHist.GetZaxis().SetTitle( "Number of Events (bkg sub)" )
 dataHist_SB.GetZaxis().SetTitle( "Number of Events (bkg sub)" )
-divHist.GetZaxis().SetTitle( "QCD Transfer Factor" )
+divHist.GetZaxis().SetTitle( "Multijet Transfer Factor" )
 
 Plot2D.setDefaults()
 
 mode = args.mode.replace("mu","#mu")
 
 plots = []
-plots.append( Plot2D.fromHisto( "data_jet_eta_pt_bkgsub",          [[dataHist]],    texX = "p_{T}(%s)"%mode,                texY = "#eta(%s)"%mode ) )
-plots.append( Plot2D.fromHisto( "data_jet_eta_pt_bkgsub_sideband", [[dataHist_SB]], texX = "p_{T}(%s) (QCD sideband)"%mode, texY = "#eta(%s) (QCD sideband)"%mode ) )
-plots.append( Plot2D.fromHisto( "data_jet_eta_pt_bkgsub_ratio",    [[divHist]], texX = "p_{T}(%s)"%mode, texY = "#eta(%s)"%mode ) )
+plots.append( Plot2D.fromHisto( "data_jet_eta_pt_bkgsub",          [[dataHist]],    texX = "p_{T}(%s) [GeV]"%mode,                texY = "#eta(%s)"%mode ) )
+plots.append( Plot2D.fromHisto( "data_jet_eta_pt_bkgsub_sideband", [[dataHist_SB]], texX = "p_{T}(%s) [GeV] (sideband)"%mode, texY = "#eta(%s) (sideband)"%mode ) )
+plots.append( Plot2D.fromHisto( "data_jet_eta_pt_bkgsub_ratio",    [[divHist]], texX = "p_{T}(%s) [GeV]"%mode, texY = "#eta(%s)"%mode ) )
 
 for plot in plots:
 

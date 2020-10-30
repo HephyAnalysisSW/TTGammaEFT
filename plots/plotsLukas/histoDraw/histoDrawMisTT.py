@@ -239,7 +239,7 @@ for s in mc:
     s.hist.GetXaxis().SetBinLabel( 2, "e" )
 
 dataHist.style         = styles.errorStyle( ROOT.kBlack )
-dataHist.legendText    = "data (%s)"%args.mode.replace("mu","#mu")
+dataHist.legendText    = "Observed (%s)"%args.mode.replace("mu","#mu")
 dataHist.GetXaxis().SetBinLabel( 1, "#mu" )
 dataHist.GetXaxis().SetBinLabel( 2, "e" )
 

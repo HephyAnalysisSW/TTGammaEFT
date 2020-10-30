@@ -263,7 +263,7 @@ for i_eta, eta in enumerate(etaBins[:-1] + ["incl"]):
 #            addon += "#geq1 b-tag" if b==1 else "0 b-tag"
             if pt != "incl":
                 addon += ", "
-                addon += "%s #leq p_{T} < %s"%(ptLow, ptHigh) if ptHigh and float(ptHigh) >= 0 else "p_{T} #geq %s"%ptLow
+                addon += "%s #leq p_{T} < %s GeV"%(ptLow, ptHigh) if ptHigh and float(ptHigh) >= 0 else "p_{T} #geq %s GeV"%ptLow
             if eta != "incl":
                 addon += ", "
                 addon += "%s #leq |#eta| < %s"%(etaLow, etaHigh) if etaHigh and float(etaHigh) >= 0 else "|#eta| #geq %s"%etaLow
@@ -315,9 +315,9 @@ for i_eta, eta in enumerate(etaBins[:-1] + ["incl"]):
             print hists["%ib"%b]["nJ0G"]
             print hists["%ib"%b]["nJ1G"]
             print range(2)[::-1]
-            plots["%ib"%b]["nJ"] = Plot.fromHisto( "QCDTFnJet_"+label,    [ [hists["%ib"%b]["nJUsed"]], [hists["%ib"%b]["nJ0G"]] ], texX="N_{jets}", texY="QCD Transferfactor" )
-            plots["%ib"%b]["nJ"] = Plot.fromHisto( "QCDTFwPnJet_"+label,    [[hists["%ib"%b]["nJUsed"]]] + [[hists["%ib"%b]["nJ%iG"%p]] for p in range(2)[::-1]], texX="N_{jets}", texY="QCD Transferfactor" )
-            plots["%ib"%b]["nG"] = Plot.fromHisto( "QCDTFnPhoton_"+label, [[hists["%ib"%b]["nGUsed"]]] + [[hists["%ib"%b]["nG%iJ"%j]] for j in range(2,5)[::-1]], texX="N_{#gamma}", texY="QCD Transferfactor" )
+            plots["%ib"%b]["nJ"] = Plot.fromHisto( "QCDTFnJet_"+label,    [ [hists["%ib"%b]["nJUsed"]], [hists["%ib"%b]["nJ0G"]] ], texX="N_{jets}", texY="Multijet Transferfactor" )
+            plots["%ib"%b]["nJ"] = Plot.fromHisto( "QCDTFwPnJet_"+label,    [[hists["%ib"%b]["nJUsed"]]] + [[hists["%ib"%b]["nJ%iG"%p]] for p in range(2)[::-1]], texX="N_{jets}", texY="Multijet Transferfactor" )
+            plots["%ib"%b]["nG"] = Plot.fromHisto( "QCDTFnPhoton_"+label, [[hists["%ib"%b]["nGUsed"]]] + [[hists["%ib"%b]["nG%iJ"%j]] for j in range(2,5)[::-1]], texX="N_{#gamma}", texY="Multijet Transferfactor" )
 
         for b in range(2):
             draw2DPlots( plots2D["%ib"%b], b )

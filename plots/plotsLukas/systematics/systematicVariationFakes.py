@@ -12,7 +12,7 @@ from RootTools.core.standard           import *
 # Analysis
 from Analysis.Tools.metFilters         import getFilterCut
 from Analysis.Tools.helpers            import add_histos
-import Analysis.Tools.syncer as syncer
+#import Analysis.Tools.syncer as syncer
 
 # Internal Imports
 from TTGammaEFT.Tools.user             import plot_directory, cache_directory
@@ -48,6 +48,7 @@ argParser.add_argument("--overwrite",          action="store_true",             
 argParser.add_argument("--postfit",            action="store_true",                                                                          help="overwrite cache?")
 argParser.add_argument("--photonCat",          action="store_true",                                                                          help="all plots in one directory?")
 argParser.add_argument("--inclQCDTF",          action="store_true",                                                                          help="run with incl QCD TF?")
+argParser.add_argument("--paperPlot",          action="store_true",                                                                          help="change labeling for paper")
 args = argParser.parse_args()
 
 addSF = args.postfit
@@ -62,7 +63,7 @@ logger_rt = logger_rt.get_logger( args.logLevel, logFile=None )
 
 def jetSelectionModifier( sys, returntype = "func"):
     # Need to make sure all jet variations of the following observables are in the ntuple
-    variiedJetObservables = ["nJetGoodInvSieie", "nBTagGoodInvSieie", "&m3", "&ht"]
+    variiedJetObservables = ["nJetGoodNoChgIsoNoSieie", "nBTagGoodNoChgIsoNoSieie", "&m3", "&ht"]
     if returntype == "func":
         def changeCut_( string ):
             for s in variiedJetObservables:
@@ -74,12 +75,11 @@ def jetSelectionModifier( sys, returntype = "func"):
 
 def muonSelectionModifier( sys, returntype = "func"):
     # Need to make sure all muon variations of the following observables are in the ntuple
-    variiedMuonObservables = ['nMuonVeto','nMuonTight','nLeptonVetoIsoCorr','nLeptonTight','mllgammatight','mLtight0GammaNoSieieNoChgIso','mLtight0Gamma','mlltight']
+    variiedMuonObservables = ['triggered','nMuonTight','nLeptonVetoIsoCorr','nLeptonTight','mllgammatight','mLtight0GammaNoSieieNoChgIso','mLtight0Gamma','mlltight']
     if returntype == "func":
         def changeCut_( string ):
             for s in variiedMuonObservables:
                 string = string.replace(s, s+"_"+sys)
-            string = string.replace("triggered", "triggered"+"_"+sys)
             return string
         return changeCut_
     elif returntype == "list":
@@ -87,8 +87,7 @@ def muonSelectionModifier( sys, returntype = "func"):
 
 def eleSelectionModifier( sys, returntype = "func"):
     # Need to make sure all Ele variations of the following observables are in the ntuple
-    variiedEleObservables = ['nPhotonGood', 'nPhotonNoChgIsoNoSieie','nElectronVeto', 'nElectronVetoIsoCorr', 'nElectronTight', 'nLeptonVetoIsoCorr','nLeptonTight','mllgammatight','mLtight0GammaNoSieieNoChgIso','mLtight0Gamma','mlltight']
-#    variiedEleObservables = ['nElectronVeto', 'nElectronVetoIsoCorr', 'nElectronTight', 'nLeptonVetoIsoCorr','nLeptonTight','mllgammatight','mLtight0GammaNoSieieNoChgIso','mLtight0Gamma','mlltight']
+    variiedEleObservables = ['triggered','nPhotonGood', 'nPhotonNoChgIsoNoSieie', 'nElectronVetoIsoCorr', 'nElectronTight','nLeptonVetoIsoCorr','nLeptonTight','mllgammatight','mLtight0GammaNoSieieNoChgIso','mLtight0Gamma','mlltight']
     if returntype == "func":
         def changeCut_( string ):
             for s in variiedEleObservables:
@@ -99,7 +98,6 @@ def eleSelectionModifier( sys, returntype = "func"):
                 string = string.replace(pt, "0.5*(%s+%s)"%(pt+"_eScaleUp",pt+"_eScaleDown"))
             if "Res" in sys:
                 string = string.replace(pt, "0.5*(%s+%s)"%(pt+"_eResUp",pt+"_eResDown"))
-            string = string.replace("triggered", "triggered"+"_"+sys)
             return string
         return changeCut_
     elif returntype == "list":
@@ -107,7 +105,7 @@ def eleSelectionModifier( sys, returntype = "func"):
 
 def metSelectionModifier( sys, returntype = 'func'):
     #Need to make sure all MET variations of the following observables are in the ntuple
-    variiedMetObservables = ["nJetGoodInvSieie", "nBTagGoodInvSieie", "mT", "MET_pt"]
+    variiedMetObservables = ["mT", "MET_pt"]
     if returntype == "func":
         def changeCut_( string ):
             for s in variiedMetObservables:
@@ -118,8 +116,8 @@ def metSelectionModifier( sys, returntype = 'func'):
         return [ v+'_'+sys for v in variiedMetObservables ]
 
 # these are the nominal MC weights we always apply
-nominalMCWeights = ["weight", "reweightTrigger", "reweightL1Prefire", "reweightPU", "reweightLeptonTightSF", "reweightLeptonTrackingTightSF", "reweightPhotonSF", "reweightPhotonElectronVetoSF", "reweightBTag_SF"]
-genCat = ["noChgIsoNoSieiephotoncat0","noChgIsoNoSieiephotoncat2","noChgIsoNoSieiephotoncat1","noChgIsoNoSieiephotoncat3","noChgIsoNoSieiephotoncat4"] if args.photonCat else [None]
+nominalMCWeights = ["weight", "reweightHEM", "reweightTrigger", "reweightL1Prefire", "reweightPU", "reweightLeptonTightSF", "reweightLeptonTrackingTightSF", "reweightPhotonSF", "reweightPhotonElectronVetoSF", "reweightBTag_SF"]
+genCat = ["noChgIsoNoSieiephotoncat0","noChgIsoNoSieiephotoncat2","noChgIsoNoSieiephotoncat134"] if args.photonCat else [None]
 
 
 if "2" in args.selection and not "2p" in args.selection:
@@ -227,7 +225,7 @@ def drawObjects( lumi_scale ):
     tex.SetTextAlign(11) # align right
     line = (0.65, 0.95, "%3.1f fb{}^{-1} (13 TeV)" % lumi_scale)
     lines = [
-      (0.15, 0.95, "CMS #bf{#it{Preliminary}} (%s)"%args.selection.replace("fake","SR")),
+      (0.15, 0.95, "CMS #bf{#it{Preliminary}}" if args.paperPlot else "CMS #bf{#it{Preliminary}} (%s)"%args.selection.replace("fake","SR")),
       line
     ]
     return [tex.DrawLatex(*l) for l in lines]
@@ -253,12 +251,12 @@ variations = {
     "eScaleDown"                : {"selectionModifier":eleSelectionModifier("eScaleDown"),                                "read_variables" : [ "%s/F"%v for v in nominalMCWeights + eleSelectionModifier("eScaleDown","list")]},
     "eResUp"                  : {"selectionModifier":eleSelectionModifier("eResUp"),                                  "read_variables" : [ "%s/F"%v for v in nominalMCWeights + eleSelectionModifier("eResUp","list")]},
     "eResDown"                : {"selectionModifier":eleSelectionModifier("eResDown"),                                "read_variables" : [ "%s/F"%v for v in nominalMCWeights + eleSelectionModifier("eResDown","list")]},
-    "muTotalUp"                 : {"selectionModifier":muonSelectionModifier("muTotalUp"),                                "read_variables" : [ "%s/F"%v for v in nominalMCWeights + muonSelectionModifier("muTotalUp","list")]},
-    "muTotalDown"               : {"selectionModifier":muonSelectionModifier("muTotalDown"),                              "read_variables" : [ "%s/F"%v for v in nominalMCWeights + muonSelectionModifier("muTotalDown","list")]},
+#    "muTotalUp"                 : {"selectionModifier":muonSelectionModifier("muTotalUp"),                                "read_variables" : [ "%s/F"%v for v in nominalMCWeights + muonSelectionModifier("muTotalUp","list")]},
+#    "muTotalDown"               : {"selectionModifier":muonSelectionModifier("muTotalDown"),                              "read_variables" : [ "%s/F"%v for v in nominalMCWeights + muonSelectionModifier("muTotalDown","list")]},
     "jerUp"                     : {"selectionModifier":jetSelectionModifier("jerUp"),                                     "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jerUp","list")]},
     "jerDown"                   : {"selectionModifier":jetSelectionModifier("jerDown"),                                   "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jerDown","list")]},
-#    "jesTotalUp"                : {"selectionModifier":jetSelectionModifier("jesTotalUp"),                                "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jesTotalUp","list")]},
-#    "jesTotalDown"              : {"selectionModifier":jetSelectionModifier("jesTotalDown"),                              "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jesTotalDown","list")]},
+    "jesTotalUp"                : {"selectionModifier":jetSelectionModifier("jesTotalUp"),                                "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jesTotalUp","list")]},
+    "jesTotalDown"              : {"selectionModifier":jetSelectionModifier("jesTotalDown"),                              "read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier("jesTotalDown","list")]},
 #    "unclustEnUp"               : {"selectionModifier":metSelectionModifier("unclustEnUp"),                               "read_variables" : [ "%s/F"%v for v in nominalMCWeights]},
 #    "unclustEnDown"             : {"selectionModifier":metSelectionModifier("unclustEnDown"),                             "read_variables" : [ "%s/F"%v for v in nominalMCWeights]},
     "BTag_SF_b_Down"            : {"replaceWeight":("reweightBTag_SF","reweightBTag_SF_b_Down"),                          "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightBTag_SF_b_Down"]]},  
@@ -266,13 +264,11 @@ variations = {
     "BTag_SF_l_Down"            : {"replaceWeight":("reweightBTag_SF","reweightBTag_SF_l_Down"),                          "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightBTag_SF_l_Down"]]},
     "BTag_SF_l_Up"              : {"replaceWeight":("reweightBTag_SF","reweightBTag_SF_l_Up"),                            "read_variables" : [ "%s/F"%v for v in nominalMCWeights + ["reweightBTag_SF_l_Up"] ]},
 }
-jesTags = ['FlavorQCD', 'RelativeBal', 'HF', 'BBEC1', 'EC2', 'Absolute', 'Absolute_%i'%args.year, 'HF_%i'%args.year, 'EC2_%i'%args.year, 'RelativeSample_%i'%args.year, 'BBEC1_%i'%args.year]
-jesVariations = ["jes"+j+"Up" for j in jesTags] + ["jes"+j+"Down" for j in jesTags]
-for j in jesVariations:
-    variations[j] = {"selectionModifier":jetSelectionModifier(j),"read_variables" : [ "%s/F"%v for v in nominalMCWeights + jetSelectionModifier(j,"list")]}
 
+jesTags = ['Total']
+jesVariations = ["jes"+j+"Up" for j in jesTags] + ["jes"+j+"Down" for j in jesTags]
 selection_systematics = [ "jerUp", "jerDown" ] + jesVariations
-variables_with_selection_systematics = [ "nJetGoodInvSieie", "nBTagGoodInvSieie", "ht", "m3" ]
+variables_with_selection_systematics = [ "nJetGoodNoChgIsoNoSieie", "nBTagGoodNoChgIsoNoSieie", "ht", "m3" ]
 metselection_systematics = [ "unclustEnUp", "unclustEnDown" ]
 metvariables_with_selection_systematics = [ "MET_pt", "mT" ]
 eleselection_systematics = [ "eResUp", "eResDown", "eScaleUp", "eScaleDown",  "muTotalUp", "muTotalDown" ]
@@ -376,7 +372,7 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
     selection     = cutInterpreter.cutString( selection )
     if args.addCut:
         selection += "&&" + cutInterpreter.cutString( args.addCut )
-    selection += "&&triggered==1"
+    selection += "&&triggered==1&&reweightHEM>0"
     print( "Using selection string: %s"%selection )
 
     preSelection  = setup.selection("MC",   channel="all", **setup.defaultParameters(update=QCD_updates))["prefix"]
@@ -387,37 +383,34 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
         for iso, invIso in replaceSelection.iteritems():
             addSel = addSel.replace(iso,invIso)
         preSelection += "&&" + addSel
-    preSelection += "&&triggeredInvIso==1"
-    print
-    print preSelection
-    print
+    preSelection += "&&triggeredInvIso==1&&reweightHEM>0"
 else:
     raise Exception("Region not implemented")
 
 lep = args.mode.replace("mu","#mu") if args.mode != "all" else "l"
 replaceLabel = {
-    "PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt": "chg.Iso(#gamma)",
+    "PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt": "chg.Iso(#gamma) [GeV]",
     "PhotonNoChgIsoNoSieie0_sieie": "#sigma_{i#eta i#eta}(#gamma)",
-    "MET_pt": "E^{miss}_{T} (GeV)",
-    "mlltight": "m(l,l) (GeV)",
-    "mT": "M_{T} (GeV)",
-    "mLtight0Gamma": "M(#gamma,%s) (GeV)"%lep,
+    "MET_pt": "E^{miss}_{T} [GeV]",
+    "mlltight": "M(l,l) [GeV]",
+    "mT": "M_{T} [GeV]",
+    "mLtight0Gamma": "M(#gamma,%s) [GeV]"%lep,
     "LeptonTight0_eta": "#eta(%s)"%lep,
     "LeptonTight0_phi": "#phi(%s)"%lep,
-    "LeptonTight0_pt": "p_{T}(%s) (GeV)"%lep,
-    "m3": "M_{3} (GeV)",
-    "ht": "H_{T} (GeV)",
+    "LeptonTight0_pt": "p_{T}(%s) [GeV]"%lep,
+    "m3": "M_{3} [GeV]",
+    "ht": "H_{T} [GeV]",
     "lpTight": "L_{p}",
     "JetGood0_eta": "#eta(j_{0})",
     "JetGood0_phi": "#phi(j_{0})",
-    "JetGood0_pt": "p_{T}(j_{0})",
+    "JetGood0_pt": "p_{T}(j_{0}) [GeV]",
     "JetGood1_eta": "#eta(j_{1})",
     "JetGood1_phi": "#phi(j_{1})",
-    "JetGood1_pt": "p_{T}(j_{1})",
-    "PhotonNoChgIsoNoSieie0_pt": "p_{T}(#gamma)",
+    "JetGood1_pt": "p_{T}(j_{1}) [GeV]",
+    "PhotonNoChgIsoNoSieie0_pt": "p_{T}(#gamma) [GeV]",
     "PhotonNoChgIsoNoSieie0_eta": "#eta(#gamma)",
     "PhotonNoChgIsoNoSieie0_phi": "#phi(#gamma)",
-    "PhotonGood0_pt": "p_{T}(#gamma)",
+    "PhotonGood0_pt": "p_{T}(#gamma) [GeV]",
     "PhotonGood0_eta": "#eta(#gamma)",
     "PhotonGood0_phi": "#phi(#gamma)",
     "ltight0GammadPhi": "#Delta#phi(%s,#gamma)"%lep,
@@ -464,7 +457,7 @@ if args.variation == "central":
     # histo data
     key = (data_sample.name, "AR", args.variable, "_".join(map(str,args.binning)), data_sample.weightString, data_sample.selectionString, selection)
     if not dirDB.contains(key) or args.overwrite:
-        dataHist = data_sample.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=selection, addOverFlowBin="upper" )
+        dataHist = data_sample.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=selection) #, addOverFlowBin="upper" )
         dirDB.add(key, dataHist.Clone("dataAR"), overwrite=True)
     else:
         dataHist = dirDB.get(key)
@@ -479,7 +472,7 @@ if args.variation == "central":
         s.setWeightString( mc_normalization_weight_string )
         key = (s.name, "AR", args.variable, "_".join(map(str,args.binning)), s.weightString, s.selectionString, normalization_selection_string, args.variation)
         if not dirDB.contains(key) or args.overwrite:
-            mcHist = s.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=normalization_selection_string, addOverFlowBin="upper" )
+            mcHist = s.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=normalization_selection_string) #, addOverFlowBin="upper" )
             dirDB.add(key, mcHist.Clone(s.name+"AR"+g if g else s.name+"AR"), overwrite=True)
 
     key = ("QCD-DD", "ARincl" if args.inclQCDTF else "AR", args.variable, "_".join(map(str,args.binning)), selection)
@@ -516,14 +509,13 @@ if args.variation == "central":
                     leptonPtEtaCut = "&&".join( [preSel] + leptonPtEtaCut )
     
                     print "Running histograms for qcd selection:"
-                    print leptonPtEtaCut
 
                     # histos
                     key = (data_sample.name, "SB", args.variable, "_".join(map(str,args.binning)), data_sample.weightString, data_sample.selectionString, leptonPtEtaCut)
                     if dirDB.contains(key) and not args.overwrite:
                         dataHist_SB_tmp = dirDB.get(key).Clone("dataSB"+mode)
                     else:
-                        dataHist_SB_tmp = data_sample.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=leptonPtEtaCut, addOverFlowBin="upper" )
+                        dataHist_SB_tmp = data_sample.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=leptonPtEtaCut) #, addOverFlowBin="upper" )
                         dirDB.add(key, dataHist_SB_tmp.Clone("dataSB"+mode))
 
                     qcdHist_tmp = dataHist_SB_tmp.Clone("qcdtmp_%i_%i"%(i_pt,i_eta))
@@ -534,7 +526,7 @@ if args.variation == "central":
                         if dirDB.contains(key) and not args.overwrite:
                             s.hist_SB_tmp = dirDB.get(key).Clone(s.name+"SB"+mode)
                         else:
-                            s.hist_SB_tmp = s.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=leptonPtEtaCut, addOverFlowBin="upper" )
+                            s.hist_SB_tmp = s.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=leptonPtEtaCut) #, addOverFlowBin="upper" )
                             dirDB.add(key, s.hist_SB_tmp.Clone(s.name+"SB"+mode))
     
                         # apply SF after histo caching
@@ -578,8 +570,6 @@ if args.variation == "central":
                     qcdUpdates  = { "CR":QCDTF_updates_2J["CR"], "SR":QCDTF_updates_2J["SR"] }
                     transferFac = estimate.cachedTransferFactor( mode.replace("Inv",""), setup, qcdUpdates=qcdUpdates, overwrite=False, checkOnly=False )
         
-                    print "pt", ptLow, ptHigh, "eta", etaLow, etaHigh, "TF:", transferFac
-
                     # remove negative bins
                     for i in range(qcdHist_tmp.GetNbinsX()):
                         if qcdHist_tmp.GetBinContent(i+1) < 0: qcdHist_tmp.SetBinContent(i+1, 0)
@@ -609,20 +599,19 @@ if args.variation:
     if args.variable in metvariables_with_selection_systematics and args.variation in metselection_systematics:
         var = args.variable + "_" + args.variation
     # if we"re running a variation specify
-    print args.variation
     selectionModifier = variations[args.variation]["selectionModifier"]
     normalization_selection_string = selectionModifier(selection)
     mc_normalization_weight_string = MC_WEIGHT(variations[args.variation], lumi_scale, returntype="string")
+
+    print normalization_selection_string
+    print var
+
     for s in mc:
-        print
-        print s.selectionString
-        print normalization_selection_string
-        print
         # Calculate the normalisation yield for mt2ll<100
         s.setWeightString( mc_normalization_weight_string )
         key = (s.name, "AR", var, "_".join(map(str,args.binning)), s.weightString, s.selectionString, normalization_selection_string, args.variation)
         if not dirDB.contains(key) or args.overwrite:
-            s.hist = s.get1DHistoFromDraw( var, binning=args.binning, selectionString=normalization_selection_string, addOverFlowBin="upper" )
+            s.hist = s.get1DHistoFromDraw( var, binning=args.binning, selectionString=normalization_selection_string) #, addOverFlowBin="upper" )
             dirDB.add(key, s.hist.Clone(s.name+var), overwrite=True)
 
         print( "Done with %s in channel %s.", args.variation, args.mode)
@@ -632,11 +621,11 @@ if args.variation:
 
 
 systematics = [\
-    {"name":"MER",              "pair":("muTotalDown", "muTotalUp"),},
+#    {"name":"MER",              "pair":("muTotalDown", "muTotalUp"),},
     {"name":"EER",              "pair":("eResDown", "eResUp"),},
     {"name":"EES",              "pair":("eScaleDown", "eScaleUp"),},
     {"name":"JER",              "pair":("jerDown", "jerUp"),},
-#    {"name":"JEC",              "pair":("jesTotalDown", "jesTotalUp")},
+    {"name":"JEC",              "pair":("jesTotalDown", "jesTotalUp")},
 #    {"name":"Unclustered",      "pair":("unclustEnDown", "unclustEnUp") },
     {"name":"PU",               "pair":("PUDown", "PUUp")},
     {"name":"BTag_b",           "pair":("BTag_SF_b_Down", "BTag_SF_b_Up" )},
@@ -648,9 +637,6 @@ systematics = [\
     {"name":"evetoSF",          "pair":("PhotonElectronVetoSFDown", "PhotonElectronVetoSFUp")},
     {"name":"prefireSF",        "pair":("L1PrefireDown", "L1PrefireUp")},
 ]
-
-for j in jesTags:
-    systematics.append( {"name":j, "pair":("jes%sDown"%j, "jes%sUp"%j)} )
 
 missing_cmds   = []
 variation_data = {}
@@ -672,7 +658,6 @@ for s in mc:
 
             if dirDB.contains(key) and not args.overwrite:
                 s.hist[variation][g]               = dirDB.get(key).Clone(s.name+"_"+variation+g)
-                if variation == "central": print g, s.name, s.hist[variation][g].Integral()
                 s.hist[variation][g].style         = styles.fillStyle( s.color )
                 s.hist[variation][g].legendText    = s.texName
 
@@ -736,8 +721,8 @@ else:
     if args.inclQCDTF: cmd.append("--inclQCDTF")
 
     cmd_string = " ".join( cmd )
-    missing_cmds.append( cmd_string )
-    print("Missing variation %s, year %s in mode %s in cache. Need to run: \n%s", "central", str(args.year), args.mode, cmd_string)
+#    missing_cmds.append( cmd_string )
+#    print("Missing variation %s, year %s in mode %s in cache. Need to run: \n%s", "central", str(args.year), args.mode, cmd_string)
 
 
 # write missing cmds
@@ -755,14 +740,21 @@ if missing_cmds:
 
 
 key = ("QCD-DD", "ARincl" if args.inclQCDTF else "AR", args.variable, "_".join(map(str,args.binning)), selection)
-print dirDB.contains(key)
 qcdHist = dirDB.get(key)
 
 if addSF and setup.isPhotonSelection:
     qcdHist.Scale(QCDSF_val[args.year].val)
 
+# remove MC stat error from qcd hist
+for i in range(qcdHist.GetNbinsX()):
+    qcdHist.SetBinError(i+1, 0)
+
+# add QCD error
+#for i in range(qcdHist.GetNbinsX()):
+#    qcdHist.SetBinError(i+1, qcdHist.GetBinContent(i+1)*0.5)
+
 qcdHist.style          = styles.fillStyle( color.QCD )
-qcdHist.legendText     = "QCD (data)"
+qcdHist.legendText     = "Multijet"
 
 # for central (=no variation), we store plot_data_1, plot_mc_1, plot_data_2, plot_mc_2, ...
 data_histo_list = [data_sample.hist]
@@ -771,11 +763,12 @@ mc_histo_list   = {variation:[s.hist[variation]["all" if variation != "central" 
 # for central (=no variation), we store plot_data_1, plot_mc_1, plot_data_2, plot_mc_2, ...
 if args.photonCat:
     catHists = [mc[0].hist["central"][g] for g in genCat]
-    catSettings = { "noChgIsoNoSieiephotoncat0":{"texName":"gen #gamma",  "color":color.gen  },
-                    "noChgIsoNoSieiephotoncat2":{"texName":"misID-e",     "color":color.misID},
-                    "noChgIsoNoSieiephotoncat1":{"texName":"had #gamma",  "color":color.had  },
-                    "noChgIsoNoSieiephotoncat3":{"texName":"fake #gamma", "color":color.fakes},
-                    "noChgIsoNoSieiephotoncat4":{"texName":"PU #gamma",   "color":color.PU}  }
+    catSettings = { "noChgIsoNoSieiephotoncat0":{"texName":"Genuine #gamma",  "color":color.gen  },
+                    "noChgIsoNoSieiephotoncat2":{"texName":"Misid. e",     "color":color.misID},
+                    "noChgIsoNoSieiephotoncat134":{"texName":"Hadronic #gamma/fake",  "color":color.fakes  }}
+#                    "noChgIsoNoSieiephotoncat1":{"texName":"had #gamma",  "color":color.had  },
+#                    "noChgIsoNoSieiephotoncat3":{"texName":"fake #gamma", "color":color.fakes},
+#                    "noChgIsoNoSieiephotoncat4":{"texName":"PU #gamma",   "color":color.PU}  }
     for i, g in enumerate(genCat):
         catHists[i].style = styles.fillStyle( catSettings[g]["color"] )
         catHists[i].legendText = catSettings[g]["texName"]
@@ -785,11 +778,16 @@ if args.photonCat:
 
 # copy styles and tex
 data_histo_list[0].style = styles.errorStyle( ROOT.kBlack )
-data_histo_list[0].legendText = "data (%s)"%args.mode.replace("mu","#mu").replace("all","e+#mu")
+data_histo_list[0].legendText = "Observed (%s)"%args.mode.replace("mu","#mu").replace("all","e+#mu")
+
+uncHist = data_histo_list[0].Clone()
+uncHist.Scale(0)
+#uncHist.style = styles.hashStyle()
+uncHist.legendText = "Uncertainty"
 
 Plot.setDefaults()
-plot        = Plot.fromHisto( args.variable, [mc_histo_list["central"]] + [data_histo_list], texX = replaceLabel[args.variable], texY = "Number of Events" )
-plot.stack  = Stack( mc + [qcd], [data_sample] ) 
+plot        = Plot.fromHisto( args.variable, [mc_histo_list["central"]] + [data_histo_list] + [[uncHist]], texX = replaceLabel[args.variable], texY = "Number of Events" )
+plot.stack  = Stack( mc + [qcd], [data_sample], [data_sample] ) 
 
 # Make boxes and ratio boxes
 boxes           = []
@@ -801,6 +799,7 @@ total_mc_histo   = {variation:add_histos( mc_histo_list[variation]) for variatio
 for i_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
 # Only positive yields
     total_central_mc_yield = total_mc_histo["central"].GetBinContent(i_b)
+    total_central_mc_error = total_mc_histo["central"].GetBinError(i_b)
     if total_central_mc_yield<=0: continue
     variance = 0.
     for systematic in systematics:
@@ -811,6 +810,37 @@ for i_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
             factor = 0.5
         # sum in quadrature
         variance += ( factor*(total_mc_histo[systematic["pair"][0]].GetBinContent(i_b) - total_mc_histo[systematic["pair"][1]].GetBinContent(i_b)) )**2
+
+    # add MC stat unc
+    variance += total_central_mc_error**2
+
+    # In case one wants to add uncertainties to specific backgrounds (like x-sec), that can be done here
+    lumiUnc = {2016:0.025, 2017:0.023, 2018:0.025, "RunII":0.018}
+    if args.mode == "mu":  muonExtrapolation = 0.005
+    elif args.mode == "e": muonExtrapolation = 0.
+    else:                  muonExtrapolation = 0.0025
+
+    if True:
+        gammaCat = genCat if args.photonCat else ["all"]
+        for g in gammaCat:
+            variance += (0.05*mc_samples.Top.hist["central"][g].GetBinContent(i_b))**2 # TT normalization
+            if not args.photonCat: # DY is highly anti correlated with misID
+                variance += (0.08*mc_samples.DY_LO.hist["central"][g].GetBinContent(i_b))**2 # DY normalization
+                if args.selection.startswith("SR"):
+                    variance += (0.08*mc_samples.DY_LO.hist["central"][g].GetBinContent(i_b))**2 # DY extrapolation
+            variance += (0.08*mc_samples.WG.hist["central"][g].GetBinContent(i_b))**2 # WG normalization
+            variance += (0.10*mc_samples.ZG.hist["central"][g].GetBinContent(i_b))**2 # ZG normalization
+            variance += (0.30*mc_samples.rest.hist["central"][g].GetBinContent(i_b))**2 # other normalization
+            variance += (0.01*mc_samples.TTG.hist["central"][g].GetBinContent(i_b))**2 # mockup for PDF
+            variance += (0.005*mc_samples.TTG.hist["central"][g].GetBinContent(i_b))**2 # mockup for Scale
+            variance += (0.01*mc_samples.TTG.hist["central"][g].GetBinContent(i_b))**2 # mockup for color reconnection
+            variance += (muonExtrapolation*total_central_mc_yield)**2 # muon ID extrapolation unc
+            variance += (lumiUnc[args.year]*total_central_mc_yield)**2 # lumi
+        if args.photonCat:
+            for s in mc:
+                variance += (0.12*s.hist["central"]["noChgIsoNoSieiephotoncat2"].GetBinContent(i_b))**2 # misID normalization
+                variance += (0.05*s.hist["central"]["noChgIsoNoSieiephotoncat134"].GetBinContent(i_b))**2 # fake normalization
+
 
     sigma     = sqrt(variance)
     sigma_rel = sigma/total_central_mc_yield 
@@ -837,10 +867,18 @@ for i_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
     r_box.SetFillColor(ROOT.kGray+2)
     ratio_boxes.append(r_box)
 
+
+histModifications  = []
+histModifications += [lambda h: h.GetYaxis().SetTitleOffset(2.0)]
+
+ratioHistModifications  = []
+ratioHistModifications += [lambda h: h.GetYaxis().SetTitleOffset(2.0)]
+
+
 legend = [ (0.2,0.9-0.025*sum(map(len, plot.histos)),0.9,0.9), 3 ]
-#ratio = {'yRange':(0.81,1.19), "drawObjects":ratio_boxes}
+ratio = {'yRange':(0.76,1.24), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
 #ratio = {'yRange':(0.65,1.35), "drawObjects":ratio_boxes}
-ratio = {'yRange':(0.51,1.49), "drawObjects":ratio_boxes}
+#ratio = {'yRange':(0.51,1.49), "drawObjects":ratio_boxes}
 for log in [True, False]:
 
         selDir = args.selection
@@ -857,8 +895,6 @@ for log in [True, False]:
 #                       drawObjects = drawObjects( lumi_scale ),
                        drawObjects = drawObjects( lumi_scale ) + boxes,
                        legend = legend,
+                       histModifications = histModifications,
                        copyIndexPHP = True,
                        )
-
-
-

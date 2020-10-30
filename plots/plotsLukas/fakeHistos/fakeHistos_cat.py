@@ -431,11 +431,11 @@ sbInt = qcdHist.Integral()
 qcdHist.Scale(QCDSF_val[args.year].val)
 
 qcdHist.style          = styles.fillStyle( color.QCD )
-qcdHist.legendText     = "QCD (%i)"%int(qcdHist.Integral())
+qcdHist.legendText     = "Multijet"
 
 qcdTemplate            = qcdHist.Clone("QCDTemplate")
 qcdTemplate.style      = styles.fillStyle( color.QCD )
-qcdTemplate.legendText = "QCD template (%i)"%int(sbInt)
+qcdTemplate.legendText = "Multijet Template"
 qcdTemplate.Scale(1./ qcdTemplate.Integral() if qcdTemplate.Integral() else 0. )
 maxQCD = qcdTemplate.GetMaximum()
 
@@ -445,12 +445,12 @@ histos_SB  = [[s.hist_SB for s in mc],             [dataHist_SB], [qcdTemplate],
 Plot.setDefaults()
 replaceLabel = {
     "PhotonNoChgIsoNoSieie0_sieie": "#sigma_{i#eta i#eta}(#gamma)",
-    "PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt": "chg.Iso(#gamma)"
+    "PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt": "chg.Iso(#gamma) [GeV]"
 }
 
 plots = []
 plots.append( Plot.fromHisto( args.variable + "_" + args.addCut if args.survey else args.variable,             histos,        texX = replaceLabel[args.variable],                   texY = "Number of Events" ) )
-#plots.append( Plot.fromHisto( args.variable+"_sideband", histos_SB,     texX = args.variable+" (QCD sideband)", texY = "Number of Events" ) )
+#plots.append( Plot.fromHisto( args.variable+"_sideband", histos_SB,     texX = args.variable+" (sideband)", texY = "Number of Events" ) )
 
 for plot in plots:
 

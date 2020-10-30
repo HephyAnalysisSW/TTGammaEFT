@@ -7,9 +7,9 @@
 import os
 import ROOT
 ROOT.gROOT.SetBatch(True)
-from math import sqrt, cos, sin, pi, cosh
+from math import sqrt, cos, sin, pi, cosh, sinh
 from RootTools.core.standard import *
-
+import numpy as np
 # StopsDilepton
 from TTGammaEFT.Tools.user            import plot_directory
 from TTGammaEFT.Tools.objectSelection import getGoodMuons, alwaysTrue
@@ -59,6 +59,7 @@ read_variables = [#"weight/F" ,
 ]
 muVars = ["pt", "eta", "phi", "mediumPromptId", 'pdgId', "pfRelIso03_all"]
 
+
 def makeM4l(event, sample):
 
     # Get muons
@@ -78,11 +79,18 @@ def makeM4l(event, sample):
             for i in range(1,4):
                 for j in range( i ):
                     #print "indices i=%i,j=%i: adding %d to m4l2 => yiels %d" % (i,j,m4l2summand,m4l2)
-                    m4l2 += 27. #FIXME: Katharina. 
+                     e = m['eta']
+                     P = m['phi']
+                     pp = m['pt']
+                     x = np.array([cosh(e), cos(P), sin(P), sinh(e)])
+                     X = x.T
+                     ia = abs(pp)
+                     impulse = np.dot(pp, X)
+                     m4l2 += np.dot(impulse, impulse)  #FIXME: Katharina. 
 
     event.m4l = sqrt( m4l2 )
     if event.m4l!=0:
-        print "%d = invariant mass of 4 muons (2 pos, 2 neg)" % event.m4l
+        print "%f = invariant mass of 4 muons (2 pos, 2 neg)" % event.m4l
 
 sequence = [makeM4l]
 
@@ -113,7 +121,7 @@ plots.append(Plot(name = "m4l",
   texX = 'm(4l)', texY = 'Number of Events / 3 GeV',
   attribute = lambda event, sample: event.m4l,
   #binning=[100,105,135],
-  binning=[100,20,320],
+  binning=[30,20,320],
 ))
 
 plotting.fill(plots, read_variables = read_variables, sequence=sequence)

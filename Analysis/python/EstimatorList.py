@@ -21,6 +21,8 @@ class EstimatorList:
                 setattr( self, p, DataDrivenQCDEstimate( name=p ) )
             elif p == "fakes-DD":
                 setattr( self, p, DataDrivenFakeEstimate( name=p ) )
+            elif p == "fakes-DDMC":
+                setattr( self, p, DataDrivenFakeEstimate( name=p, expected=True ) )
             else:
                 setattr( self, p, MCBasedEstimate( name=p, process=setup.processes[p] ) )
 

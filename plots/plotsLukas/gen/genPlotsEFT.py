@@ -34,10 +34,10 @@ argParser.add_argument('--parameters',         action='store',      default=['ct
 args = argParser.parse_args()
 
 # Samples
-from TTGammaEFT.Samples.genTuples_TTGamma_postProcessed      import *
+from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed      import *
 
 #signalSample = TTG_SingleLeptFromT_1L_test_EFT
-signalSample = TTG_DiLept_1L_EFT
+signalSample = TTG_SemiLep_4WC_ref
 subdir       = signalSample.name
 
 # Logger

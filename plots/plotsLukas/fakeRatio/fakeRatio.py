@@ -239,7 +239,7 @@ addPlots = []
 
 addPlots.append( Plot(
     name      = 'PhotonNoChgIsoNoSieie00_pt',
-    texX      = 'p_{T}(#gamma_{0}) (GeV)',
+    texX      = 'p_{T}(#gamma_{0}) [GeV]',
     texY      = 'Number of Events',
     attribute = TreeVariable.fromString( "PhotonNoChgIsoNoSieie0_pt/F" ),
     binning   = [ 19, 20, 115 ],

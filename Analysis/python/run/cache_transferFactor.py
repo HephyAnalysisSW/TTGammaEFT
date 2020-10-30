@@ -86,7 +86,8 @@ def wrapper(arg):
 #            QCDTF["CR"]["leptonEta"] = ( 0, 1.479 )
 
         qcdUpdates  = { "CR":QCDTF["CR"], "SR":QCDTF["SR"] }
-        transferFac = estimate.cachedTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=False, checkOnly=args.checkOnly )
+#        print channel, qcdUpdates
+        transferFac = estimate.cachedTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=args.overwrite, checkOnly=args.checkOnly )
         tfQCDMC = estimate.cachedQCDMCTransferFactor( channel, setup, qcdUpdates=qcdUpdates, overwrite=args.overwrite, checkOnly=args.checkOnly )
         print "ratio", tfQCDMC
         print "fitted", transferFac

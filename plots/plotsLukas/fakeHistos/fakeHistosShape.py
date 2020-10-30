@@ -232,12 +232,12 @@ histos     = [[s.hist    for s in mc], [dataHist]]
 Plot.setDefaults()
 replaceLabel = {
     "PhotonNoChgIsoNoSieie0_sieie": "#sigma_{i#eta i#eta}(#gamma)",
-    "PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt": "chg.Iso(#gamma)"
+    "PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt": "chg.Iso(#gamma) [GeV]"
 }
 
 plots = []
 plots.append( Plot.fromHisto( args.variable + "_" + args.addCut if args.survey else args.variable,             histos,        texX = replaceLabel[args.variable],                   texY = "a.u." ) )
-#plots.append( Plot.fromHisto( args.variable+"_sideband", histos_SB,     texX = args.variable+" (QCD sideband)", texY = "Number of Events" ) )
+#plots.append( Plot.fromHisto( args.variable+"_sideband", histos_SB,     texX = args.variable+" (sideband)", texY = "Number of Events" ) )
 
 for plot in plots:
 

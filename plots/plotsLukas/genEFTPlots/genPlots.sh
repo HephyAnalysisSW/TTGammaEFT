@@ -1,0 +1,11 @@
+python genPlots.py --year 2016 --selection nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1 --plot_directory genEFTPlots_ppv1_v1 --sample TTG_4WC_ref --mode all
+python genPlots.py --year 2016 --selection nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1 --plot_directory genEFTPlots_ppv1_v1 --sample TTG_Had_4WC_ref --mode all
+python genPlots.py --year 2016 --selection nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1 --plot_directory genEFTPlots_ppv1_v1 --sample TTG_SemiLep_4WC_ref --mode all
+python genPlots.py --year 2016 --selection nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1 --plot_directory genEFTPlots_ppv1_v1 --sample TTG_Dilep_4WC_ref --mode all
+python genPlots.py --year 2016 --selection nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1 --plot_directory genEFTPlots_ppv1_v1 --sample st_tch_4WC_ref --mode all
+python genPlots.py --year 2016 --selection nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1 --plot_directory genEFTPlots_ppv1_v1 --sample stg_tch_4WC_ref --mode all
+python genPlots.py --year 2016 --selection nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1 --plot_directory genEFTPlots_ppv1_v1 --sample st_sch_4WC_ref --mode all
+python genPlots.py --year 2016 --selection nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1 --plot_directory genEFTPlots_ppv1_v1 --sample stg_sch_4WC_ref --mode all
+python genPlots.py --year 2016 --selection nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1 --plot_directory genEFTPlots_ppv1_v1 --sample TT_4WC_ref --mode all
+python genPlots.py --year 2016 --selection nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1 --plot_directory genEFTPlots_ppv1_v1 --sample tW_4WC_ref --mode all
+python genPlots.py --year 2016 --selection nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1 --plot_directory genEFTPlots_ppv1_v1 --sample tWG_4WC_ref --mode all
