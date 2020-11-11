@@ -37,9 +37,12 @@ def merge_x( histos, bin_threshold_years):
         
     return output
 
+#default_cache_directory = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache_read/"
+default_cache_directory = "/eos/vbc/user/lukas.lechner/TTGammaEFT/cache_read/"
+
 class observed_ptG_2016:
     expected        = False
-    cache_directory = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache_read/"
+    cache_directory = default_cache_directory 
     data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_data"
     signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal"
     signal_stat_key = "bkgSubtracted_SR3pPtUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal_stat"
@@ -111,7 +114,7 @@ class observed_ptG_2016:
 
 class observed_ptG_2016_wrong:
     expected        = False
-    cache_directory = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache_read/"
+    cache_directory = default_cache_directory 
     data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_data"
     signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal"
     signal_stat_key = "bkgSubtracted_SR3pPtUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal_stat"
@@ -182,7 +185,7 @@ class observed_ptG_2016_wrong:
         ]
 
 class expected_ptG_RunII:
-    cache_directory = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache_read/"
+    cache_directory = default_cache_directory 
     data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_data_%s"
     signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_signal_%s"
     signal_stat_key = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_signal_stat_%s"
@@ -263,7 +266,7 @@ class expected_ptG_RunII:
 
 class expected_absEta_RunII:
     expected        = True
-    cache_directory = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/"
+    cache_directory = default_cache_directory 
     data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_data_%s"
     signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_signal_%s"
     signal_stat_key = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_signal_stat_%s"
@@ -344,7 +347,7 @@ class expected_absEta_RunII:
 
 class observed_absEta_2016:
     expected        = False
-    cache_directory = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache_read"
+    cache_directory = default_cache_directory 
     data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_data"
     signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal"
     signal_stat_key = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal_stat"
@@ -417,7 +420,7 @@ class observed_absEta_2016:
 
 class observed_dRlg_2016:
     expected        = False
-    cache_directory = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache_read"
+    cache_directory = default_cache_directory 
     data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_data"
     signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal"
     signal_stat_key = "bkgSubtracted_SR3pdRUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal_stat"
@@ -497,7 +500,7 @@ class observed_dRlg_2016:
 
 class expected_dRlg_RunII:
     expected        = True
-    cache_directory = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/"
+    cache_directory = default_cache_directory 
     data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_data_%s"
     signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_signal_%s"
     signal_stat_key = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_signal_stat_%s"

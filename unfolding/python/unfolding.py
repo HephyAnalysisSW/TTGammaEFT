@@ -125,7 +125,7 @@ if args.systematic is None:
     sys_matrix = {}
     for systematic in all_systematics:
         loop_key = ( cfg_key, systematic )
-        if dirDB.contains( loop_key ):
+        if dirDB.contains( loop_key ) and not args.overwrite:
             sys_matrix[systematic],_,_,_,_,_,_  = dirDB.get( loop_key )
             # load the nominal if args.systematic is None:
             if systematic =='nominal':
@@ -135,7 +135,7 @@ if args.systematic is None:
             missing.append( ['python', 'unfolding.py', '--settings', args.settings, '--systematic', systematic] )
     if len(missing)>0:
         with open("missing.sh", "a") as file_object:
-            file_object.write("#!/bin/sh\n") 
+            #file_object.write("#!/bin/sh\n") 
             # Append 'hello' at the end of file
             for m in missing:
                 file_object.write(" ".join(m)+'\n') 
@@ -146,6 +146,7 @@ if args.systematic is None:
 loop_key = ( cfg_key, args.systematic )
 if not args.systematic is None and dirDB.contains( loop_key ) and not args.overwrite:
     matrix, fiducial_spectrum, reco_spectrum, reco_fout_spectrum, yield_fid, yield_fid_reco, yield_reco = dirDB.get( loop_key )
+    logger.info("Foung results for systematic %s in cache.", args.systematic)
 elif not args.systematic is None:
     # spectrum in fiducial region 
     fiducial_spectrum = ROOT.TH1D("fiducial_spectrum", "fiducial_spectrum", len(settings.fiducial_thresholds)-1, array.array('d', settings.fiducial_thresholds) )
@@ -349,7 +350,7 @@ elif not args.systematic is None:
 
     dirDB.add( loop_key, (matrix, fiducial_spectrum, reco_spectrum, reco_fout_spectrum, yield_fid, yield_fid_reco, yield_reco), overwrite=True )
 # Exit here if you were only doing a systematic variation
-elif not args.systematic is None:
+if not args.systematic is None:
     sys.exit()
 
 # Unfolding matrix
@@ -475,10 +476,10 @@ def getOutput( unfold, input_spectrum, name = "unfolded_spectrum", tau = 0.):
     return unfolded_spectrum
 
 # regularization
-#regMode = ROOT.TUnfold.kRegModeNone
+regMode = ROOT.TUnfold.kRegModeNone
 #regMode = ROOT.TUnfold.kRegModeSize
 #regMode = ROOT.TUnfold.kRegModeDerivative
-regMode = ROOT.TUnfold.kRegModeCurvature
+#regMode = ROOT.TUnfold.kRegModeCurvature
 #regMode = ROOT.TUnfold.kRegModeMixed
 
 # extra contrains
@@ -488,37 +489,19 @@ constraintMode = ROOT.TUnfold.kEConstraintNone
 mapping = ROOT.TUnfold.kHistMapOutputVert
 #mapping = ROOT.TUnfold.kHistMapOutputHoriz
 
-#unfold = ROOT.TUnfoldDensity( matrix, mapping, regMode, constraintMode, densityFlags)
-unfold = {key:ROOT.TUnfold( sys_matrix[key], mapping, regMode, constraintMode) for key in all_systematics}
-
+unfold               = {key:ROOT.TUnfold( sys_matrix[key], mapping, regMode, constraintMode) for key in all_systematics}
 unfolded_mc_spectrum = getOutput( unfold['nominal'], reco_spectrum_subtracted, "unfolded_mc_spectrum_subtracted", tau=0)
 
-### L Curve scanning
-#lCurveScanner = scanner.LCurveScanner()
-#unfold.SetInput( reco_spectrum_subtracted )
-#lCurveScanner.scan_L( unfold, 50, 10**-6, 1)
-#lCurveScanner.plot_scan_L_curve(plot_directory_)
-#lCurveScanner.plot_scan_L_curvature(plot_directory_)
-#
-#best_logtau = log(lCurveScanner.tau, 10)
-#
-#hs = []
-#for i_factor, factor in enumerate( reversed([  0, 0.5, 1, 1.5, 2 ]) ):
-#    h = getOutput(reco_spectrum_subtracted, tau=10**(best_logtau)*factor)
-#    h.legendText = ( "log(#tau) = %6.4f" % (best_logtau + log(factor,10)) + ("(best)" if factor==1 else "") if factor > 0 else  "log(#tau) = -#infty" )
-#    h.style = styles.lineStyle( 1+ i_factor)
-#    hs.append( h )
-#for logY in [True]:
-#    plot = Plot.fromHisto( name = 'unfolding_comparison' + ('_log' if logY else ''),  histos = [[ h ] for h in hs], texX = "p_{T}", texY = "Events" )
-#    plot.stack = None
-#    draw(plot, logY = logY)
 
 # tau scan (on foot)
+unfold_nom_sys = ROOT.TUnfold( sys_matrix['nominal'], mapping, ROOT.TUnfold.kRegModeCurvature, constraintMode)
 list_logtau, list_rho = [], []
 for ilogtau in range(-50,1):
+    #print ilogtau
     logtau = ilogtau/10.
-    unfold['nominal'].DoUnfold(10**(logtau))
-    rho_avg = unfold['nominal'].GetRhoAvg()
+    #unfold_nom_sys.DoUnfold(10**(logtau))
+    getOutput( unfold_nom_sys, reco_spectrum_subtracted, "unfolded_mc_spectrum_subtracted", tau=10**(logtau)) 
+    rho_avg = unfold_nom_sys.GetRhoAvg()
     list_logtau.append( logtau )
     list_rho.append( rho_avg )
 
@@ -554,7 +537,7 @@ for ext in ['pdf','png','root']:
 hs = []
 colors = [ROOT.kBlue, ROOT.kRed, ROOT.kGreen]
 for i_tau, tau in enumerate( [  0, 10**best_logtau, 10**-1] ):
-    h = getOutput(unfold['nominal'], reco_spectrum_subtracted, tau=tau)
+    h = getOutput(unfold_nom_sys, reco_spectrum_subtracted, tau=tau)
     h.legendText = ( "log(#tau) = %6.4f" % log(tau,10) if tau > 0 else  "log(#tau) = -#infty" )
     h.style = styles.lineStyle( colors[i_tau] )
     hs.append( h )
@@ -564,6 +547,7 @@ for logY in [True]:
     draw(plot, logY = logY,
          ratio = {'yRange': (0.92, 1.08), 'texY':'wrt #tau=0', 'histos':[(1,0)]},
         )
+
 # closure 
 for logY in [True, False]:
 
@@ -732,7 +716,7 @@ for pair in systematic_pairs:
             sqrt( unfolding_systematic.GetBinError(i_bin)**2 # what it was before
                  +(0.5*(unfolding_mc_output_systematic_up.GetBinContent(i_bin)-unfolding_mc_output_systematic_down.GetBinContent(i_bin)))**2 # contribution from pair
                 ))
-        print pair, unfolding_systematic.GetBinError(i_bin), 0.5*(unfolding_mc_output_systematic_up.GetBinContent(i_bin)-unfolding_mc_output_systematic_down.GetBinContent(i_bin))
+        #print pair, unfolding_systematic.GetBinError(i_bin), 0.5*(unfolding_mc_output_systematic_up.GetBinContent(i_bin)-unfolding_mc_output_systematic_down.GetBinContent(i_bin))
 # Make a plot of the unfolding systematics on the unfolded MC spectrum
 for logY in [True, False]:
     plotting.draw(
@@ -767,7 +751,7 @@ for band in reversed(settings.systematic_bands):
         if band['name'] == 'total':
             total_uncertainty = sqrt( (0.5*(band['up_unfolded'].GetBinContent(i)-band['down_unfolded'].GetBinContent(i)))**2
                                      + unfolding_systematic.GetBinError(i)**2 )
-            print "main", total_uncertainty, unfolding_systematic.GetBinError(i), 0.5*(band['up_unfolded'].GetBinContent(i)-band['down_unfolded'].GetBinContent(i))
+            #print "main", total_uncertainty, unfolding_systematic.GetBinError(i), 0.5*(band['up_unfolded'].GetBinContent(i)-band['down_unfolded'].GetBinContent(i))
             box = ROOT.TBox( band['ref_unfolded'].GetXaxis().GetBinLowEdge(i),  
                              max(0, band['ref_unfolded'].GetBinContent(i) - total_uncertainty),
                              band['ref_unfolded'].GetXaxis().GetBinUpEdge(i),
@@ -792,7 +776,7 @@ for band in reversed(settings.systematic_bands):
             if band['name'] == 'total':
                 total_uncertainty = sqrt( (0.5*(band['up_unfolded'].GetBinContent(i)-band['down_unfolded'].GetBinContent(i)))**2
                                          + unfolding_systematic.GetBinError(i)**2 )
-                print "ratio", total_uncertainty, unfolding_systematic.GetBinError(i), 0.5*(band['up_unfolded'].GetBinContent(i)-band['down_unfolded'].GetBinContent(i))
+                #print "ratio", total_uncertainty, unfolding_systematic.GetBinError(i), 0.5*(band['up_unfolded'].GetBinContent(i)-band['down_unfolded'].GetBinContent(i))
                 ratio_box = ROOT.TBox( 
                                  band['ref_unfolded'].GetXaxis().GetBinLowEdge(i),  
                                  max(0, band['ref_unfolded'].GetBinContent(i) - total_uncertainty)/band['ref_unfolded'].GetBinContent(i),
@@ -914,6 +898,12 @@ for i in range( 1, input_correlation_matrix.GetNbinsX()+1 ):
 plot_input_correlation_matrix = Plot2D.fromHisto("input_correlation_matrix", [[input_correlation_matrix]], texY = settings.tex_reco, texX = settings.tex_reco )
 draw2D( plot_input_correlation_matrix )
 
+# check condition number # https://www.youtube.com/watch?v=AULOC--qUOI
+
+matrix_TMatrix  = get_TMatrixD( matrix )
+svd             = ROOT.TDecompSVD( matrix_TMatrix )
+singulars       = svd.GetSig()
+singulars.Print()
 
 ##Vxx_Inv = ROOT.TMatrixD( ROOT.TMatrixD(probability_TMatrix, ROOT.TMatrixD.kMult, input_inverse_covariance_TMatrix), ROOT.TMatrixD.kMult, ROOT.TMatrixD(ROOT.TMatrixD.kTransposed,probability_TMatrix) )
 #Vxx_Inv = ROOT.TMatrixD( ROOT.TMatrixD(ROOT.TMatrixD(ROOT.TMatrixD.kTransposed,probability_TMatrix), ROOT.TMatrixD.kMult, input_inverse_covariance_TMatrix), ROOT.TMatrixD.kMult, probability_TMatrix )
