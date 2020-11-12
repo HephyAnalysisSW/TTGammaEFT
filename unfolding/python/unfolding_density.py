@@ -433,7 +433,7 @@ unfolding_mc_output.Scale(1./settings.lumi_factor)
 # unfolding the error bands
 boxes = []
 ratio_boxes = []
-for band in reversed(settings.systematic_bands):
+for band in reversed(settings.unfolding_mc_input_systematic_bands):
     band['up_unfolded']   = getOutput(band['up'], "band_%s_up_unfolded"%band['name'])
     band['down_unfolded'] = getOutput(band['down'], "band_%s_down_unfolded"%band['name'])
     band['ref_unfolded']  = getOutput(band['ref'], "band_%s_ref_unfolded"%band['name'])
