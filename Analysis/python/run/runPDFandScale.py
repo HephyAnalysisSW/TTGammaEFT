@@ -132,23 +132,31 @@ logger.info( "Using PDF type: %s"%PDFType )
 #https://indico.cern.ch/event/860492/contributions/3624049/attachments/1957483/3252108/SystematicIssues.pdf
 if args.runOnTopNanoAOD:
     # other range of Scale variations for TopNanoAODv6
-    scale_indices       = [0,1,3,5,7,8] #4 central?
+    if "TTG" in inclEstimate:
+        scale_indices       = [0,5,15,24,34,39] #20 central?
+    else:
+        scale_indices       = [0,1,3,5,7,8] #4 central?
     pdf_indices         = range(100)
     aS_variations       = []
+    #https://indico.cern.ch/event/947115/contributions/3979526/attachments/2088737/3509365/200818_topNano.pdf
     ps_indices          = [6,7,8,9]
     PS_variations       = [ "abs(PSWeight[%i])"%i for i in ps_indices ]
 else:
-    scale_indices       = [0,5,15,24,34,39] #20 central?
+    if "TTG" in inclEstimate:
+        scale_indices       = [0,5,15,24,34,39] #20 central?
+    else:
+        scale_indices       = [0,1,3,5,7,8] #4 central?
     pdf_indices         = range(30)
     aS_variations       = ["abs(LHEPdfWeight[31])", "abs(LHEPdfWeight[32])"]
     ps_indices          = range(4)
+    # wrong PS weights in samples, need to be rescaled by LHEWeight_originalXWGTUP/Generator_weight
     PS_variations       = [ "abs(PSWeight[%i])*LHEWeight_originalXWGTUP/Generator_weight"%i for i in ps_indices ]
 
 scale_variations    = [ "abs(LHEScaleWeight[%i])"%i for i in scale_indices ]
 PDF_variations      = [ "abs(LHEPdfWeight[%i])"%i for i in pdf_indices ]
 
-# wrong PS weights in samples, need to be rescaled by LHEWeight_originalXWGTUP/Generator_weight
-variations          = scale_variations + PDF_variations + aS_variations + PS_variations
+variations          = PDF_variations + scale_variations + PS_variations + aS_variations
+
 results             = {}
 scale_systematics   = {}
 
