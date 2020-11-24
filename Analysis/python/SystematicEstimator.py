@@ -276,9 +276,16 @@ class SystematicEstimator:
 
     def JECSystematic(self, region, channel, setup, jes="Total"):
         ref  = self.cachedEstimate(region, channel, setup)
+        if ref == 0: return u_float(0,0)
         up   = self.cachedEstimate(region, channel, setup.sysClone({"selectionModifier":"jes%sUp"%jes}))
         down = self.cachedEstimate(region, channel, setup.sysClone({"selectionModifier":"jes%sDown"%jes}))
-        return abs(0.5*(up-down)/ref) if ref > 0 else u_float(0,0)
+        unc  = abs(0.5*(up-down)/ref)
+        if unc.val == 0:
+            uncUp    = abs((ref-up)/ref)
+            uncDown  = abs((ref-down)/ref)
+            unc      = uncUp if uncUp.val >= uncDown.val else uncDown
+            if unc.val == 0: return u_float(0,0)
+        return unc
 
     def unclusteredSystematic(self, region, channel, setup):
         ref  = self.cachedEstimate(region, channel, setup)
@@ -354,57 +361,60 @@ class SystematicEstimator:
 
     def getBkgSysJobs(self, region, channel, setup):
         l = [
-#            (region, channel, setup.sysClone({"reweight":["reweightTopPt"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightTopPt"]}), None),
 
-#            (region, channel, setup.sysClone({"reweight":["reweightPUUp"]}), None),
-#            (region, channel, setup.sysClone({"reweight":["reweightPUDown"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightPUUp"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightPUDown"]}), None),
 
-#            (region, channel, setup.sysClone({"selectionModifier":"eScaleUp"}), None),
-#            (region, channel, setup.sysClone({"selectionModifier":"eScaleDown"}), None),
+            (region, channel, setup.sysClone({"selectionModifier":"eScaleUp"}), None),
+            (region, channel, setup.sysClone({"selectionModifier":"eScaleDown"}), None),
 
-#            (region, channel, setup.sysClone({"selectionModifier":"eResUp"}), None),
-#            (region, channel, setup.sysClone({"selectionModifier":"eResDown"}), None),
+            (region, channel, setup.sysClone({"selectionModifier":"eResUp"}), None),
+            (region, channel, setup.sysClone({"selectionModifier":"eResDown"}), None),
 
-##            (region, channel, setup.sysClone({"selectionModifier":"muTotalUp"}), None),
-##            (region, channel, setup.sysClone({"selectionModifier":"muTotalDown"}), None),
+#            (region, channel, setup.sysClone({"selectionModifier":"muTotalUp"}), None),
+#            (region, channel, setup.sysClone({"selectionModifier":"muTotalDown"}), None),
 
-#            (region, channel, setup.sysClone({"selectionModifier":"jerUp"}), None),
-#            (region, channel, setup.sysClone({"selectionModifier":"jerDown"}), None),
+            (region, channel, setup.sysClone({"selectionModifier":"jerUp"}), None),
+            (region, channel, setup.sysClone({"selectionModifier":"jerDown"}), None),
 
-##            (region, channel, setup.sysClone({"selectionModifier":"jesTotalUp"}), None),
-##            (region, channel, setup.sysClone({"selectionModifier":"jesTotalDown"}), None),
+#            (region, channel, setup.sysClone({"selectionModifier":"jesTotalUp"}), None),
+#            (region, channel, setup.sysClone({"selectionModifier":"jesTotalDown"}), None),
 
-##            (region, channel, setup.sysClone({"selectionModifier":"unclustEnUp"}), None),
-##            (region, channel, setup.sysClone({"selectionModifier":"unclustEnDown"}), None),
+#            (region, channel, setup.sysClone({"selectionModifier":"unclustEnUp"}), None),
+#            (region, channel, setup.sysClone({"selectionModifier":"unclustEnDown"}), None),
 
-#            (region, channel, setup.sysClone({"reweight":["reweightL1PrefireUp"]}), None),
-#            (region, channel, setup.sysClone({"reweight":["reweightL1PrefireDown"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightL1PrefireUp"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightL1PrefireDown"]}), None),
 
-#            (region, channel, setup.sysClone({"reweight":["reweightBTag_SF_b_Up"]}), None),
-#            (region, channel, setup.sysClone({"reweight":["reweightBTag_SF_b_Down"]}), None),
-#            (region, channel, setup.sysClone({"reweight":["reweightBTag_SF_l_Up"]}), None),
-#            (region, channel, setup.sysClone({"reweight":["reweightBTag_SF_l_Down"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightBTag_SF_b_Up"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightBTag_SF_b_Down"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightBTag_SF_l_Up"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightBTag_SF_l_Down"]}), None),
 
-#            (region, channel, setup.sysClone({"reweight":["reweightLeptonTrackingTightSFUp"]}), None),
-#            (region, channel, setup.sysClone({"reweight":["reweightLeptonTrackingTightSFDown"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightLeptonTrackingTightSFUp"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightLeptonTrackingTightSFDown"]}), None),
 
             (region, channel, setup.sysClone({"reweight":["reweightPhotonSFUp"]}), None),
             (region, channel, setup.sysClone({"reweight":["reweightPhotonSFDown"]}), None),
 
-#            (region, channel, setup.sysClone({"reweight":["reweightPhotonElectronVetoSFUp"]}), None),
-#            (region, channel, setup.sysClone({"reweight":["reweightPhotonElectronVetoSFDown"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightPhotonSFAltSigUp"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightPhotonSFAltSigDown"]}), None),
 
-#            (region, channel, setup.sysClone({"reweight":["reweightTriggerUp"]}), None),
-#            (region, channel, setup.sysClone({"reweight":["reweightTriggerDown"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightPhotonElectronVetoSFUp"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightPhotonElectronVetoSFDown"]}), None),
 
-#            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFStatUp"]}), None),
-#            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFStatDown"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightTriggerUp"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightTriggerDown"]}), None),
 
-#            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFSystUp"]}), None),
-#            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFSystDown"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFStatUp"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFStatDown"]}), None),
 
-#            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFUp"]}), None),
-#            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFDown"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFSystUp"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFSystDown"]}), None),
+
+            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFUp"]}), None),
+            (region, channel, setup.sysClone({"reweight":["reweightLeptonTightSFDown"]}), None),
         ]
 
 
@@ -412,8 +422,8 @@ class SystematicEstimator:
         jesTags = ['FlavorQCD', 'RelativeBal', 'HF', 'BBEC1', 'EC2', 'Absolute', 'Absolute_%i'%setup.year, 'HF_%i'%setup.year, 'EC2_%i'%setup.year, 'RelativeSample_%i'%setup.year, 'BBEC1_%i'%setup.year]
         for jes in jesTags:
             l += [
-#                   (region, channel, setup.sysClone({"selectionModifier":"jes%sUp"%jes}), None),
-#                   (region, channel, setup.sysClone({"selectionModifier":"jes%sDown"%jes}), None),
+                   (region, channel, setup.sysClone({"selectionModifier":"jes%sUp"%jes}), None),
+                   (region, channel, setup.sysClone({"selectionModifier":"jes%sDown"%jes}), None),
                  ]
 
 
