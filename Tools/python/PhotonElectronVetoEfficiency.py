@@ -14,9 +14,12 @@ g17_keys = [( "g2017_PixelSeed_ScaleFactors_2017.root", "Medium_ID" )]
 
 #g18_keys = [( "g2018_HasPix_2018.root", "eleVeto_SF"   )]
 g18_keys = [( "g2018_HasPix_2018_private.root", "scalefactor"   )]
+#g18_keys = [( "g2018_2018_HasPix_SF_DY_MADGRAPH_asNominal.root", "eleVeto_SF"   )]
 
 #g18_keys_unc = [( "g2018_HasPix_2018.root", "eleVeto_Unc"   )]
 g18_keys_unc = [( "g2018_HasPix_2018_private.root", "uncertainty"   )]
+#g18_keys_unc = [( "g2018_2018_HasPix_SF_DY_MADGRAPH_asNominal.root", "eleVeto_StatUnc"   )]
+#g18_keys_unc = [( "g2018_2018_HasPix_SF_DY_MADGRAPH_asNominal.root", "eleVeto_PuUnc"   )]
 
 class PhotonElectronVetoEfficiency:
     def __init__( self, year ):

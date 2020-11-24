@@ -18,19 +18,20 @@ class PhotonSF:
         self.dataDir = "$CMSSW_BASE/src/Analysis/Tools/data/photonSFData/"
 
         if year == 2016:
-            g_file = 'g2016_Fall17V2_2016_Medium_photons_private.root'
+#            g_file = 'g2016_Fall17V2_2016_Medium_photons_private.root'
+            g_file = 'g2016_egammaPlots_MWP_PhoSFs_2016_LegacyReReco_New_private.root'
             g_key  = "EGamma_SF2D"
-            g_key_altSig  = "EGamma_SF2D_altSigModel"
+            g_key_altSig  = "EGamma_SF2D_altModel"
 
         elif year == 2017:
-            g_file = 'g2017_PhotonsMedium_private.root'
+            g_file = 'g2017_PhotonsMedium_mod_private_BostonAdded.root'
             g_key  = "EGamma_SF2D"
-            g_key_altSig  = "EGamma_SF2D"
+            g_key_altSig  = "EGamma_SF2D_altModel"
 
         elif year == 2018:
-            g_file = 'g2018_PhotonsMedium_private.root'
+            g_file = 'g2018_PhotonsMedium_mod_private_BostonAdded.root'
             g_key  = "EGamma_SF2D"
-            g_key_altSig  = "EGamma_SF2D"
+            g_key_altSig  = "EGamma_SF2D_altModel"
 
         self.g_sf = getObjFromFile( os.path.expandvars( os.path.join( self.dataDir, g_file ) ), g_key )
         self.g_sf_altSig = getObjFromFile( os.path.expandvars( os.path.join( self.dataDir, g_file ) ), g_key_altSig )
@@ -63,8 +64,7 @@ class PhotonSF:
 
         val    = self.g_sf.GetBinContent( self.g_sf.FindBin(eta, pt) )
         if altSig:
-            if self.year == 2016: valErr = self.g_sf_altSig.GetBinError(   self.g_sf_altSig.FindBin(eta, pt) )
-            else:                 valErr = 0
+            valErr = self.g_sf_altSig.GetBinError(   self.g_sf_altSig.FindBin(eta, pt) )
         else:
             valErr = self.g_sf.GetBinError(   self.g_sf.FindBin(eta, pt) )
 
@@ -75,69 +75,69 @@ if __name__ == "__main__":
     sigma = 0
     print "2016"
     LSF = PhotonSF(year=2016)
-    LSF.getSF(25, 1.4442, sigma=sigma)
-    LSF.getSF(25, -1.4442, sigma=sigma)
-    LSF.getSF(25, 1, sigma=sigma)
-    LSF.getSF(25, -1, sigma=sigma)
-    LSF.getSF(25, 0.3, sigma=sigma)
-    LSF.getSF(25, -0.3, sigma=sigma)
+    LSF.getSF(25, 1.4442, sigma=sigma, altSig=True)
+    LSF.getSF(25, -1.4442, sigma=sigma, altSig=True)
+    LSF.getSF(25, 1, sigma=sigma, altSig=True)
+    LSF.getSF(25, -1, sigma=sigma, altSig=True)
+    LSF.getSF(25, 0.3, sigma=sigma, altSig=True)
+    LSF.getSF(25, -0.3, sigma=sigma, altSig=True)
 
-    LSF.getSF(150, 1.4442, sigma=sigma)
-    LSF.getSF(150, -1.4442, sigma=sigma)
-    LSF.getSF(150, 1, sigma=sigma)
-    LSF.getSF(150, -1, sigma=sigma)
-    LSF.getSF(150, 0.3, sigma=sigma)
-    LSF.getSF(150, -0.3, sigma=sigma)
+    LSF.getSF(150, 1.4442, sigma=sigma, altSig=True)
+    LSF.getSF(150, -1.4442, sigma=sigma, altSig=True)
+    LSF.getSF(150, 1, sigma=sigma, altSig=True)
+    LSF.getSF(150, -1, sigma=sigma, altSig=True)
+    LSF.getSF(150, 0.3, sigma=sigma, altSig=True)
+    LSF.getSF(150, -0.3, sigma=sigma, altSig=True)
 
-    LSF.getSF(220, 1.4442, sigma=sigma)
-    LSF.getSF(220, -1.4442, sigma=sigma)
-    LSF.getSF(220, 1, sigma=sigma)
-    LSF.getSF(220, -1, sigma=sigma)
-    LSF.getSF(220, 0.3, sigma=sigma)
-    LSF.getSF(220, -0.3, sigma=sigma)
+    LSF.getSF(220, 1.4442, sigma=sigma, altSig=True)
+    LSF.getSF(220, -1.4442, sigma=sigma, altSig=True)
+    LSF.getSF(220, 1, sigma=sigma, altSig=True)
+    LSF.getSF(220, -1, sigma=sigma, altSig=True)
+    LSF.getSF(220, 0.3, sigma=sigma, altSig=True)
+    LSF.getSF(220, -0.3, sigma=sigma, altSig=True)
 
     print "2017"
     LSF = PhotonSF(year=2017)
-    LSF.getSF(25, 1.4442, sigma=sigma)
-    LSF.getSF(25, -1.4442, sigma=sigma)
-    LSF.getSF(25, 1, sigma=sigma)
-    LSF.getSF(25, -1, sigma=sigma)
-    LSF.getSF(25, 0.3, sigma=sigma)
-    LSF.getSF(25, -0.3, sigma=sigma)
+    LSF.getSF(25, 1.4442, sigma=sigma, altSig=True)
+    LSF.getSF(25, -1.4442, sigma=sigma, altSig=True)
+    LSF.getSF(25, 1, sigma=sigma, altSig=True)
+    LSF.getSF(25, -1, sigma=sigma, altSig=True)
+    LSF.getSF(25, 0.3, sigma=sigma, altSig=True)
+    LSF.getSF(25, -0.3, sigma=sigma, altSig=True)
 
-    LSF.getSF(150, 1.4442, sigma=sigma)
-    LSF.getSF(150, -1.4442, sigma=sigma)
-    LSF.getSF(150, 1, sigma=sigma)
-    LSF.getSF(150, -1, sigma=sigma)
-    LSF.getSF(150, 0.3, sigma=sigma)
-    LSF.getSF(150, -0.3, sigma=sigma)
+    LSF.getSF(150, 1.4442, sigma=sigma, altSig=True)
+    LSF.getSF(150, -1.4442, sigma=sigma, altSig=True)
+    LSF.getSF(150, 1, sigma=sigma, altSig=True)
+    LSF.getSF(150, -1, sigma=sigma, altSig=True)
+    LSF.getSF(150, 0.3, sigma=sigma, altSig=True)
+    LSF.getSF(150, -0.3, sigma=sigma, altSig=True)
 
-    LSF.getSF(220, 1.4442, sigma=sigma)
-    LSF.getSF(220, -1.4442, sigma=sigma)
-    LSF.getSF(220, 1, sigma=sigma)
-    LSF.getSF(220, -1, sigma=sigma)
-    LSF.getSF(220, 0.3, sigma=sigma)
-    LSF.getSF(220, -0.3, sigma=sigma)
+    LSF.getSF(220, 1.4442, sigma=sigma, altSig=True)
+    LSF.getSF(220, -1.4442, sigma=sigma, altSig=True)
+    LSF.getSF(220, 1, sigma=sigma, altSig=True)
+    LSF.getSF(220, -1, sigma=sigma, altSig=True)
+    LSF.getSF(220, 0.3, sigma=sigma, altSig=True)
+    LSF.getSF(220, -0.3, sigma=sigma, altSig=True)
 
     print "2018"
     LSF = PhotonSF(year=2018)
-    LSF.getSF(25, 1.4442, sigma=sigma)
-    LSF.getSF(25, -1.4442, sigma=sigma)
-    LSF.getSF(25, 1, sigma=sigma)
-    LSF.getSF(25, -1, sigma=sigma)
-    LSF.getSF(25, 0.3, sigma=sigma)
-    LSF.getSF(25, -0.3, sigma=sigma)
+    LSF.getSF(25, 1.4442, sigma=sigma, altSig=True)
+    LSF.getSF(25, -1.4442, sigma=sigma, altSig=True)
+    LSF.getSF(25, 1, sigma=sigma, altSig=True)
+    LSF.getSF(25, -1, sigma=sigma, altSig=True)
+    LSF.getSF(25, 0.3, sigma=sigma, altSig=True)
+    LSF.getSF(25, -0.3, sigma=sigma, altSig=True)
 
-    LSF.getSF(150, 1.4442, sigma=sigma)
-    LSF.getSF(150, -1.4442, sigma=sigma)
-    LSF.getSF(150, 1, sigma=sigma)
-    LSF.getSF(150, -1, sigma=sigma)
-    LSF.getSF(150, 0.3, sigma=sigma)
-    LSF.getSF(150, -0.3, sigma=sigma)
+    LSF.getSF(150, 1.4442, sigma=sigma, altSig=True)
+    LSF.getSF(150, -1.4442, sigma=sigma, altSig=True)
+    LSF.getSF(150, 1, sigma=sigma, altSig=True)
+    LSF.getSF(150, -1, sigma=sigma, altSig=True)
+    LSF.getSF(150, 0.3, sigma=sigma, altSig=True)
+    LSF.getSF(150, -0.3, sigma=sigma, altSig=True)
 
-    LSF.getSF(220, 1.4442, sigma=sigma)
-    LSF.getSF(220, -1.4442, sigma=sigma)
-    LSF.getSF(220, 1, sigma=sigma)
-    LSF.getSF(220, -1, sigma=sigma)
-    LSF.getSF(220, 0.3, sigma=sigma)
-    LSF.getSF(220, -0.3, sigma=sigma)
+    LSF.getSF(220, 1.4442, sigma=sigma, altSig=True)
+    LSF.getSF(220, -1.4442, sigma=sigma, altSig=True)
+    LSF.getSF(220, 1, sigma=sigma, altSig=True)
+    LSF.getSF(220, -1, sigma=sigma, altSig=True)
+    LSF.getSF(220, 0.3, sigma=sigma, altSig=True)
+    LSF.getSF(220, -0.3, sigma=sigma, altSig=True)
