@@ -8,7 +8,6 @@ from Analysis.Tools.MergingDirDB      import MergingDirDB
 # hard coded to remove dependency
 lumi_year = {2016: 35920.0, 2017: 41530.0, 2018: 59740.0}
 
-
 def add_sigmas( h, sigmas):
     res = h.Clone()
     for i in range(0, h.GetNbinsX()+2):
@@ -37,16 +36,19 @@ def merge_x( histos, bin_threshold_years):
     # Note: Leave overflows empty 
         
     return output
-   
- 
-class final_ptG_2016:
+
+#default_cache_directory = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache_read/"
+#default_cache_directory = "/eos/vbc/user/lukas.lechner/TTGammaEFT/cache_read/"
+default_cache_directory = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/"
+
+class observed_ptG_2016:
     expected        = False
-    cache_directory = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache_read/"
+    cache_directory = default_cache_directory 
     data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_data"
     signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal"
     signal_stat_key = "bkgSubtracted_SR3pPtUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal_stat"
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed")
+    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit")
     dirDB           = MergingDirDB(cache_dir)
 
     data            = dirDB.get( data_key )
@@ -90,11 +92,19 @@ class final_ptG_2016:
     data_legendText = "Data (36/fb)"
     mc_legendText =   "Simulation"
 
-    unfolding_data_input      = data
     lumi_factor               = lumi_year[2016]/1000.
+    unfolding_data_input      = data
+    unfolding_data_input_systematic_bands          = [
+       {'name' : 'total',
+        'label': "\pm 1#sigma (sys.)",
+        'ref': data,
+        'up':  dirDB.get( data_key+'Up' ),
+        'down':dirDB.get( data_key+'Down' ),
+        'color':ROOT.kBlue,
+        } ]
 
     unfolding_mc_input        = signal
-    systematic_bands          = [
+    unfolding_mc_input_systematic_bands          = [
        {'name' : 'stat',
         'label': "\pm 1#sigma (stat.)",
         'ref': signal,
@@ -111,14 +121,14 @@ class final_ptG_2016:
         }
         ]
 
-class final_ptG_2016_wrong:
+class observed_ptG_2016_wrong:
     expected        = False
-    cache_directory = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache_read/"
+    cache_directory = default_cache_directory 
     data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_data"
     signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal"
     signal_stat_key = "bkgSubtracted_SR3pPtUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal_stat"
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed")
+    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit")
     dirDB           = MergingDirDB(cache_dir)
 
     data            = dirDB.get( data_key )
@@ -162,11 +172,19 @@ class final_ptG_2016_wrong:
     data_legendText = "Data (36/fb)"
     mc_legendText =   "Simulation"
 
-    unfolding_data_input      = data
     lumi_factor               = lumi_year[2016]/1000.
+    unfolding_data_input      = data
+    unfolding_data_input_systematic_bands          = [
+       {'name' : 'total',
+        'label': "\pm 1#sigma (sys.)",
+        'ref': data,
+        'up':  dirDB.get( data_key+'Up' ),
+        'down':dirDB.get( data_key+'Down' ),
+        'color':ROOT.kBlue,
+        } ]
 
     unfolding_mc_input        = signal
-    systematic_bands          = [
+    unfolding_mc_input_systematic_bands          = [
        {'name' : 'stat',
         'label': "\pm 1#sigma (stat.)",
         'ref': signal,
@@ -184,12 +202,12 @@ class final_ptG_2016_wrong:
         ]
 
 class expected_ptG_RunII:
-    cache_directory = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache_read/"
+    cache_directory = default_cache_directory 
     data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_data_%s"
     signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_signal_%s"
     signal_stat_key = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_signal_stat_%s"
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected")
+    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected", "postFit")
     dirDB           = MergingDirDB(cache_dir)
 
     years           = ["2016", "2017", "2018"]
@@ -242,11 +260,19 @@ class expected_ptG_RunII:
     data_legendText = "Data (137/fb)"
     mc_legendText =   "Simulation"
 
-    unfolding_data_input      = data
     lumi_factor               = (lumi_year[2016]+lumi_year[2017]+lumi_year[2018])/1000.
+    unfolding_data_input      = data
+    unfolding_data_input_systematic_bands          = [
+       {'name' : 'total',
+        'label': "\pm 1#sigma (sys.)",
+        'ref': data,
+        'up':  dirDB.get( data_key+'Up' ),
+        'down':dirDB.get( data_key+'Down' ),
+        'color':ROOT.kBlue,
+        } ]
 
     unfolding_mc_input        = signal
-    systematic_bands          = [
+    unfolding_mc_input_systematic_bands          = [
        {'name' : 'stat',
         'label': "\pm 1#sigma (stat.)",
         'ref': signal,
@@ -265,12 +291,12 @@ class expected_ptG_RunII:
 
 class expected_absEta_RunII:
     expected        = True
-    cache_directory = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/"
+    cache_directory = default_cache_directory 
     data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_data_%s"
     signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_signal_%s"
     signal_stat_key = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_signal_stat_%s"
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed")
+    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit")
     dirDB           = MergingDirDB(cache_dir)
 
     years           = ["2016", "2017", "2018"]
@@ -323,11 +349,19 @@ class expected_absEta_RunII:
     data_legendText = "Data (137/fb)"
     mc_legendText =   "Simulation"
 
-    unfolding_data_input      = data
     lumi_factor               = (lumi_year[2016]+lumi_year[2017]+lumi_year[2018])/1000.
+    unfolding_data_input      = data
+    unfolding_data_input_systematic_bands          = [
+       {'name' : 'total',
+        'label': "\pm 1#sigma (sys.)",
+        'ref': data,
+        'up':  dirDB.get( data_key+'Up' ),
+        'down':dirDB.get( data_key+'Down' ),
+        'color':ROOT.kBlue,
+        } ]
 
     unfolding_mc_input        = signal
-    systematic_bands          = [
+    unfolding_mc_input_systematic_bands          = [
        {'name' : 'stat',
         'label': "\pm 1#sigma (stat.)",
         'ref': signal,
@@ -344,14 +378,14 @@ class expected_absEta_RunII:
         }
         ]
 
-class final_absEta_2016:
+class observed_absEta_2016:
     expected        = False
-    cache_directory = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache_read"
+    cache_directory = default_cache_directory 
     data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_data"
     signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal"
     signal_stat_key = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal_stat"
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed")
+    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit")
     dirDB           = MergingDirDB(cache_dir)
 
     data            = dirDB.get( data_key )
@@ -396,11 +430,19 @@ class final_absEta_2016:
     data_legendText = "Data (36/fb)"
     mc_legendText =   "Simulation"
 
-    unfolding_data_input      = data
     lumi_factor               = lumi_year[2016]/1000.
+    unfolding_data_input      = data
+    unfolding_data_input_systematic_bands          = [
+       {'name' : 'total',
+        'label': "\pm 1#sigma (sys.)",
+        'ref': data,
+        'up':  dirDB.get( data_key+'Up' ),
+        'down':dirDB.get( data_key+'Down' ),
+        'color':ROOT.kBlue,
+        } ]
 
     unfolding_mc_input        = signal
-    systematic_bands          = [
+    unfolding_mc_input_systematic_bands          = [
        {'name' : 'stat',
         'label': "\pm 1#sigma (stat.)",
         'ref': signal,
@@ -417,14 +459,17 @@ class final_absEta_2016:
         }
         ]
 
-class final_dRlg_2016:
+class observed_absEta_coarse_2016(observed_absEta_2016):
+    fiducial_thresholds = [0, 0.4, 0.8, 1.2, 1.45]
+
+class observed_dRlg_2016:
     expected        = False
-    cache_directory = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache_read"
+    cache_directory = default_cache_directory 
     data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_data"
     signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal"
     signal_stat_key = "bkgSubtracted_SR3pdRUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal_stat"
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed")
+    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit")
     dirDB           = MergingDirDB(cache_dir)
 
     data            = dirDB.get( data_key )
@@ -443,7 +488,6 @@ class final_dRlg_2016:
 
     fiducial_variable   = "genLCMStight0GammadR"
     fiducial_selection  = "nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1"
-    #extra_fiducial_selection_str = "genLCMStight0GammadR<3.4"
     fiducial_thresholds     = (0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8, 3.2, 3.4)
     #plot_range_x_fiducial   = (0.4, 3.2)
     #fiducial_thresholds     = reco_thresholds[::2]
@@ -477,11 +521,19 @@ class final_dRlg_2016:
     data_legendText = "Data (36/fb)"
     mc_legendText =   "Simulation"
 
-    unfolding_data_input      = data
     lumi_factor               = lumi_year[2016]/1000.
+    unfolding_data_input      = data
+    unfolding_data_input_systematic_bands          = [
+       {'name' : 'total',
+        'label': "\pm 1#sigma (sys.)",
+        'ref': data,
+        'up':  dirDB.get( data_key+'Up' ),
+        'down':dirDB.get( data_key+'Down' ),
+        'color':ROOT.kBlue,
+        } ]
 
     unfolding_mc_input        = signal
-    systematic_bands          = [
+    unfolding_mc_input_systematic_bands          = [
        {'name' : 'stat',
         'label': "\pm 1#sigma (stat.)",
         'ref': signal,
@@ -500,12 +552,12 @@ class final_dRlg_2016:
 
 class expected_dRlg_RunII:
     expected        = True
-    cache_directory = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/"
+    cache_directory = default_cache_directory 
     data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_data_%s"
     signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_signal_%s"
     signal_stat_key = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_signal_stat_%s"
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed")
+    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit")
     dirDB           = MergingDirDB(cache_dir)
 
     years           = ["2016", "2017", "2018"]
@@ -541,7 +593,6 @@ class expected_dRlg_RunII:
 
     fiducial_variable   = "genLCMStight0GammadR"
     fiducial_selection  = "nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1"
-    #extra_fiducial_selection_str = "sqrt((PhotonGood0_eta-LeptonTight0_eta)**2+acos(cos(PhotonGood0_phi-LeptonTight0_phi))**2)<3.4"
     fiducial_thresholds     = (0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8, 3.2, 3.4)
     #plot_range_x_fiducial   = (0.4, 3.2)
     #if fiducial_thresholds[-1]!=reco_thresholds[-1]:
@@ -563,11 +614,19 @@ class expected_dRlg_RunII:
     data_legendText = "Data (137/fb)"
     mc_legendText =   "Simulation"
 
-    unfolding_data_input      = data
     lumi_factor               = (lumi_year[2016]+lumi_year[2017]+lumi_year[2018])/1000.
+    unfolding_data_input      = data
+    unfolding_data_input_systematic_bands          = [
+       {'name' : 'total',
+        'label': "\pm 1#sigma (sys.)",
+        'ref': data,
+        'up':  dirDB.get( data_key+'Up' ),
+        'down':dirDB.get( data_key+'Down' ),
+        'color':ROOT.kBlue,
+        } ]
 
     unfolding_mc_input        = signal
-    systematic_bands          = [
+    unfolding_mc_input_systematic_bands          = [
        {'name' : 'stat',
         'label': "\pm 1#sigma (stat.)",
         'ref': signal,
