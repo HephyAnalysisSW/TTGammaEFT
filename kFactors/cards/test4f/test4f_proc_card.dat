@@ -1,0 +1,16 @@
+set group_subprocesses False
+set ignore_six_quark_processes False
+set loop_optimized_output True
+set loop_color_flows False
+set gauge unitary
+set complex_mass_scheme False
+set max_npoint_for_channel 0
+import model loop_qcd_qed_sm-with_b_mass
+
+#define p = g u c d s u~ c~ d~ s~
+#define j = g u c d s u~ c~ d~ s~
+#define part =  ve e- ve~ e+
+generate p p > t t~ > b e+ ve b~ e- ve~ a [virt=QCD QED] @0
+
+output test4f
+ninja noinstall
