@@ -75,20 +75,21 @@ setup            = setup.sysClone( parameters=parameters )
 
 def wrapper(arg):
     r,channel,setup,(ctZ,ctZI,ctW,ctWI) = arg
-    EFTparams = [  "ctZ", str(ctZ), "ctZI", str(ctZI), "ctW", str(ctW), "ctWI", str(ctWI) ]
-    params    = { "ctZ":ctZ, "ctZI":ctZI,  "ctW":ctW, "ctWI":ctWI }
+    EFTparams = [  "ctZ", str(ctZ), "ctZI", str(ctZI) ] #, "ctW", str(ctW), "ctWI", str(ctWI) ]
+    params    = { "ctZ":ctZ, "ctZI":ctZI } #,  "ctW":ctW, "ctWI":ctWI }
     key = (args.controlRegion, str(r),channel, "_".join(EFTparams))
-
+    print key
     if cache.contains( key ) and not args.overwrite:
         res = cache.get( key )
     elif not cache.contains( key ) and args.checkOnly:
         res = {"val":-1, "sigma":0}
     else:
         selection = setup.genSelection( "MC", channel=channel, **setup.defaultParameters())["cut"]
-        selection = "&&".join( [ selection, r.cutString(), "abs(ref_weight)<100" ] )
+        selection = "&&".join( [ selection, r.cutString() ] )
         weightString = "ref_weight*(" + get_weight_string(params) + ")"
         res = eftSample.getYieldFromDraw( selectionString=selection, weightString=weightString )
         cache.add( key, res, overwrite=True )
+    print "done", res
     return ( key, res )
 
 jobs=[]
@@ -97,9 +98,9 @@ for channel in channels:
         for ctZ in eftParameterRange["ctZ"]:
             for ctZI in eftParameterRange["ctZI"]:
                 jobs.append((r, channel, setup, (ctZ, ctZI, 0, 0)))
-        for ctW in eftParameterRange["ctW"]:
-            for ctWI in eftParameterRange["ctWI"]:
-                jobs.append((r, channel, setup, (0, 0, ctW, ctWI)))
+#        for ctW in eftParameterRange["ctW"]:
+#            for ctWI in eftParameterRange["ctWI"]:
+#                jobs.append((r, channel, setup, (0, 0, ctW, ctWI)))
 
 if args.nJobs > len(jobs):
     logger.info("Batch mode job splitting larger than number of points. Setting nJobs to %i"%len(jobs))

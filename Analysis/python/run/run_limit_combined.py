@@ -58,6 +58,7 @@ argParser.add_argument( "--significanceScan",   action="store_true",            
 argParser.add_argument( "--linTest",            action="store",      default=1,   type=float,                              help="linearity test: scale data by factor" )
 argParser.add_argument('--order',               action='store',      default=2, type=int,                                                             help='Polynomial order of weight string (e.g. 2)')
 argParser.add_argument('--parameters',          action='store',      default=[], type=str, nargs='+',                       help = "argument parameters")
+argParser.add_argument('--withbkg',             action='store_true',                                                        help="reweight sample and bkg or sample only?")
 args=argParser.parse_args()
 
 if args.linTest != 1: args.expected = True
@@ -162,9 +163,10 @@ if args.noFakeStat:   regionNames.append("noFakeStat")
 if args.parameters:
     # load and define the EFT sample
     from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed  import *
-    eftSample = TTG_4WC_ref
+    eftSample = TTG_2WC_ref
 
     baseDir       = os.path.join( cache_directory, "analysis",  "COMBINED", "limits" )
+    baseDir       = os.path.join( baseDir, "withbkg" if args.withbkg else "withoutbkg" )
     cacheFileName = os.path.join( baseDir, "calculatednll" )
     nllCache      = MergingDirDB( cacheFileName )
 
@@ -177,7 +179,7 @@ if args.parameters:
     configlist.append("expected" if args.expected else "observed")
 
     sEFTConfig = "_".join(configlist)
-    if not args.overwrite and nllCache.contains( sEFTConfig ): sys.exit(0)
+#    if not args.overwrite and nllCache.contains( sEFTConfig ): sys.exit(0)
 
 
 years = [2016,2017,2018]
@@ -192,6 +194,8 @@ def wrapper():
     # get the seperated cards
     for year in years:
         baseDir       = os.path.join( cache_directory, "analysis",  str(year), "limits" )
+        if args.parameters:
+            baseDir       = os.path.join( baseDir, "withbkg" if args.withbkg else "withoutbkg" )
         limitDir      = os.path.join( baseDir, "cardFiles", args.label, "expected" if args.expected else "observed" )
 
         if args.parameters:
@@ -233,14 +237,7 @@ def wrapper():
     
     if args.parameters:
         nll          = c.calcNLL( cardFileName )
-        nll_prefit   = nll['nll0']
-        nll_postfit  = nll['nll_abs']
-        NLL = nll['nll']
-
-        if nll_prefit  is None or abs(nll_prefit) > 10000 or abs(nll_prefit) < 1e-5:   nll_prefit  = 999
-        if nll_postfit is None or abs(nll_postfit) > 10000 or abs(nll_postfit) < 1e-5: nll_postfit = 999
-
-        nllCache.add( sEFTConfig, NLL, overwrite=True )
+        nllCache.add( sEFTConfig, nll, overwrite=True )
 
     else:
         sConfig = "_".join(regionNames)

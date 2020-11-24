@@ -92,18 +92,17 @@ def wrapper(arg):
         return (estimate.uniqueKey(r, channel, setup), res )
 
 estimate.initCache(setup.defaultCacheDir())
-
 #if "all" in channels: channels = ["e","mu"]
 jobs=[]
 for channel in channels:
     for (ai, ar) in enumerate(additionalRegions):
         for (i, r) in enumerate(allPhotonRegions):
             jobs.append((r if not ar else r+ar, channel, setup, None))
-            if not estimate.isData and not args.noSystematics:
+            if not estimate.isData and not args.noSystematics and not ar:
                 if "TTG" in args.selectEstimator:
-                    jobs.extend(estimate.getSigSysJobs(r if not ar else r+ar, channel, setup))
+                    jobs.extend(estimate.getSigSysJobs(r, channel, setup))
                 else:
-                    jobs.extend(estimate.getBkgSysJobs(r if not ar else r+ar, channel, setup))
+                    jobs.extend(estimate.getBkgSysJobs(r, channel, setup))
 
 print "Running %i jobs in total."%len(jobs)
 #jobs = splitList( jobs, 32)[1]
@@ -122,7 +121,7 @@ else:
 
 if args.checkOnly:
     for res in results:
-        print args.selectEstimator, res[0][0], res[0][1], args.controlRegion, res[1].val
+        print args.selectEstimator, res[0][0], res[0][1], args.controlRegion, str(res[1])
     if not args.createExecFile:
         sys.exit(0)
 
