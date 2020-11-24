@@ -38,6 +38,8 @@ argParser.add_argument('--tag',                 action='store',      default="co
 argParser.add_argument('--variables',           action='store',      default='ctZI', type=str, nargs=1, choices=["ctZ","ctZI"],                      help="argument plotting variables")
 argParser.add_argument( "--expected",           action="store_true",                                                        help="Use sum of backgrounds instead of data." )
 argParser.add_argument( "--useRegions",         action="store",      nargs='*',       type=str, choices=allRegions.keys(),  help="Which regions to use?" )
+argParser.add_argument('--withbkg',             action='store_true',                                                                                  help='with bkg?')
+argParser.add_argument('--withEFTUnc',             action='store_true',                                                        help="add EFT uncertainty?")
 args = argParser.parse_args()
 
 if args.year != "RunII": args.year = int(args.year)
@@ -52,7 +54,7 @@ args.variables = args.variables[0]
 
 # load and define the EFT sample
 from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed  import *
-eftSample = TTG_4WC_ref
+eftSample = TTG_2WC_ref
 
 regionNames = []
 for reg in allRegions.keys():
@@ -67,7 +69,8 @@ if args.addMisIDSF:  regionNames.append("addMisIDSF")
 regionNamesIncl = copy.deepcopy(regionNames)
 regionNamesIncl.append("incl")
 
-baseDir       = os.path.join( cache_directory, "analysis",  str(args.year) if args.year != "RunII" else "COMBINED", "limits" )
+baseDir       = os.path.join( cache_directory, "analysis",  str(args.year) if args.year != "RunII" else "COMBINED", "limits", "withbkg" if args.withbkg else "withoutbkg" )
+if args.withEFTUnc: baseDir = os.path.join( baseDir, "withEFTUnc" )
 cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
 
@@ -109,7 +112,8 @@ def getNllData( var1):
     if nllCache.contains(sConfigIncl): nllIncl = nllCache.get(sConfigIncl)
     else:                              nllIncl = -999
 
-    return float(nll), float(nllIncl)
+    return float(nll["nll"]), float(nllIncl["nll"])
+#    return float(nll), float(nllIncl)
 
 
 logger.info("Loading cache data" )
@@ -121,8 +125,8 @@ print nllData
 sm_nll, sm_nllIncl   = getNllData(0)
 print getNllData(0)
 
-nllDataIncl  = [ (x, -2*(nll[1] - sm_nllIncl)) for x, nll in nllData  if nll[1] > -998 ]
-nllData  = [ (x, -2*(nll[0] - sm_nll)) for x, nll in nllData  if nll[0] > -998 ]
+nllDataIncl  = [ (x, 2*(nll[1] - sm_nllIncl)) for x, nll in nllData  if nll[1] > -998 ]
+nllData  = [ (x, 2*(nll[0] - sm_nll)) for x, nll in nllData  if nll[0] > -998 ]
 
 xNLL     = [ (x, nll) for x, nll in nllData if nll >= 0 ]
 xNLLIncl = [ (x, nll) for x, nll in nllDataIncl if nll >= 0 ]
@@ -143,7 +147,7 @@ def toGraph( name, title, data ):
     #res = ROOT.TGraphDelaunay(result)
     return result
 
-polString = "[0]*x**2+[1]*x**3+[2]*x**4+[3]*x**5+[4]*x**6"#+[5]*x**7+[6]*x**8"#+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
+polString = "[0]*x**2+[1]*x**3+[2]*x**4+[3]*x**5+[4]*x**6" #+[5]*x**7+[6]*x**8"#+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
 xPlotLow, xPlotHigh = args.xRange
 
 def plot1D( dat, datIncl, var, xmin, xmax ):
@@ -276,7 +280,7 @@ def plot1D( dat, datIncl, var, xmin, xmax ):
     leg.Draw()
 
     xTitle = var.replace("c", "C_{").replace("I", "}^{[Im]").replace('p','#phi') + '}'
-    xhist.GetXaxis().SetTitle( xTitle + ' (#Lambda/TeV)^{2}' )
+    xhist.GetXaxis().SetTitle( xTitle + ' [(#Lambda/TeV^{2})]' )
 
     xhist.GetXaxis().SetTitleFont(42)
     xhist.GetYaxis().SetTitleFont(42)
@@ -305,6 +309,8 @@ def plot1D( dat, datIncl, var, xmin, xmax ):
     cans.RedrawAxis()
 
     plotname = "%s%s%s_wIncl"%(var, "", "_%s"%args.tag if args.tag != "combined" else "")
+    if args.withbkg: plotname += "_wBkg"
+    if args.withEFTUnc: plotname += "_wEFTUnc"
     for e in [".png",".pdf",".root"]:
         cans.Print( plot_directory_ + "/%s%s"%(plotname, e) )
 

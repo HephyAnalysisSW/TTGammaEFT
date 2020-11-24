@@ -88,7 +88,8 @@ elif args.year == "RunII":
     import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
     from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
-mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG_NLO, mc_samples.ZG, mc_samples.rest ]
+#mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG_NLO, mc_samples.ZG, mc_samples.rest ]
+mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.ZG, mc_samples.rest ]
 
 read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval/I",
                      "reweightPU/F", "reweightPUDown/F", "reweightPUUp/F", "reweightPUVDown/F", "reweightPUVUp/F",
@@ -168,7 +169,10 @@ if args.small:
 print data_sample.selectionString
 
 for s in mc:
-    s.setSelectionString( [ filterCutMc, "pTStitching==1", "overlapRemoval==1" ] )
+    if "WJets" in s.name:
+        s.setSelectionString( [ filterCutMc, "pTStitching==1" ] )
+    else:
+        s.setSelectionString( [ filterCutMc, "pTStitching==1", "overlapRemoval==1" ] )
     s.read_variables = read_variables_MC
     sampleWeight     = "1"
     if args.small:           
@@ -227,8 +231,6 @@ else:
     raise Exception("Region not implemented")
 
 
-print selection
-sys.exit()
 lumiString = "(35.92*(year==2016)+41.53*(year==2017)+59.74*(year==2018))"
 ws   = "(%s*weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF)"%lumiString
 ws16 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2016))" %(ws, misIDSF_val[2016].val)
@@ -353,7 +355,7 @@ if args.photonCat:
     genCat = ["noChgIsoNoSieiephotoncat0","noChgIsoNoSieiephotoncat2","noChgIsoNoSieiephotoncat1","noChgIsoNoSieiephotoncat3","noChgIsoNoSieiephotoncat4"]
     catSettings = { "noChgIsoNoSieiephotoncat0":{"texName":"Genuine #gamma",  "color":color.gen  },
                     "noChgIsoNoSieiephotoncat2":{"texName":"Misid. e",     "color":color.misID},
-                    "noChgIsoNoSieiephotoncat134":{"texName":"Hadronic #gamma/fake",  "color":color.had  },
+                    "noChgIsoNoSieiephotoncat134":{"texName":"Hadronic #gamma/fake",  "color":color.had  }, }
 #                    "noChgIsoNoSieiephotoncat1":{"texName":"had #gamma",  "color":color.had  },
 #                    "noChgIsoNoSieiephotoncat3":{"texName":"fake #gamma", "color":color.fakes},
 #                    "noChgIsoNoSieiephotoncat4":{"texName":"PU #gamma",   "color":color.PU}  }
@@ -551,6 +553,7 @@ Plot.setDefaults()
 
 lep = args.mode.replace("mu","#mu") if args.mode != "all" else "l"
 replaceLabel = {
+    "nJetGood":           "N_{jet}",
     "PhotonNoChgIsoNoSieie0_r9": "R9(#gamma)",
     "PhotonNoChgIsoNoSieie0_sieie": "#sigma_{i#eta i#eta}(#gamma)",
     "MET_pt": "E^{miss}_{T} [GeV]",

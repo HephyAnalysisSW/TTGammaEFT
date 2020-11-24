@@ -12,7 +12,7 @@ from RootTools.core.standard           import *
 # Analysis
 from Analysis.Tools.metFilters         import getFilterCut
 from Analysis.Tools.helpers            import add_histos
-#import Analysis.Tools.syncer as syncer
+import Analysis.Tools.syncer as syncer
 
 # Internal Imports
 from TTGammaEFT.Tools.user             import plot_directory, cache_directory
@@ -287,7 +287,7 @@ if args.variation is not None and args.variation not in variations.keys():
     raise RuntimeError( "Variation %s not among the known: %s", args.variation, ",".join( variation.keys() ) )
 
 # Sample definition
-os.environ["gammaSkim"]="False" #always false for QCD estimate
+os.environ["gammaSkim"]=str(args.variation and args.variation != "central") #"False" #always false for QCD estimate
 if args.year == 2016:
     import TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed as mc_samples
     from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import Run2016 as data_sample
@@ -301,7 +301,7 @@ elif args.year == "RunII":
     import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
     from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
-mc  = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
+mc  = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG_NLO, mc_samples.ZG, mc_samples.rest ]
 qcd = mc_samples.QCD
 
 read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval/I",
@@ -463,6 +463,8 @@ if args.variation == "central":
         dataHist = dirDB.get(key)
 
     for s in mc:
+      if "TTG" in s.name: args.overwrite = True
+      else: args.overwrite = False
       for g in genCat:
         selectionString = selection
         selectionModifier = variations[args.variation]["selectionModifier"]
@@ -475,8 +477,10 @@ if args.variation == "central":
             mcHist = s.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=normalization_selection_string) #, addOverFlowBin="upper" )
             dirDB.add(key, mcHist.Clone(s.name+"AR"+g if g else s.name+"AR"), overwrite=True)
 
+    args.overwrite = False
+
     key = ("QCD-DD", "ARincl" if args.inclQCDTF else "AR", args.variable, "_".join(map(str,args.binning)), selection)
-    if not dirDB.contains(key) or args.overwrite:
+    if not dirDB.contains(key) or args.overwrite or True:
         qcdHist = dataHist.Clone("qcd")
         qcdHist.Scale(0)
 
@@ -521,6 +525,8 @@ if args.variation == "central":
                     qcdHist_tmp = dataHist_SB_tmp.Clone("qcdtmp_%i_%i"%(i_pt,i_eta))
     
                     for s in mc:
+#                        if "TTG" in s.name: args.overwrite = True
+#                        else: args.overwrite = False
                         s.setWeightString( mc_normalization_weight_string )
                         key = (s.name, "SB", args.variable, "_".join(map(str,args.binning)), s.weightString, s.selectionString, leptonPtEtaCut)
                         if dirDB.contains(key) and not args.overwrite:
@@ -548,6 +554,7 @@ if args.variation == "central":
 
                         qcdHist_tmp.Add(s.hist_SB_tmp, -1)
 
+#                    args.overwrite = False
 
                     # Transfer Factor, get the QCD histograms always in barrel regions
                     if args.inclQCDTF:
@@ -607,6 +614,8 @@ if args.variation:
     print var
 
     for s in mc:
+#        if "TTG" in s.name: args.overwrite = True
+#        else: args.overwrite = False
         # Calculate the normalisation yield for mt2ll<100
         s.setWeightString( mc_normalization_weight_string )
         key = (s.name, "AR", var, "_".join(map(str,args.binning)), s.weightString, s.selectionString, normalization_selection_string, args.variation)
@@ -655,6 +664,9 @@ for s in mc:
             if variation.startswith("eRes") or variation.startswith("eScale"):
                 var = args.variable.replace("PhotonNoChgIsoNoSieie0_","PhotonNoChgIsoNoSieie0_"+variation+"_")
             key = (s.name, "AR", var, "_".join(map(str,args.binning)), s.weightString, s.selectionString, normalization_selection_string, variation)
+
+#            args.overwrite = True
+
 
             if dirDB.contains(key) and not args.overwrite:
                 s.hist[variation][g]               = dirDB.get(key).Clone(s.name+"_"+variation+g)
@@ -782,7 +794,7 @@ data_histo_list[0].legendText = "Observed (%s)"%args.mode.replace("mu","#mu").re
 
 uncHist = data_histo_list[0].Clone()
 uncHist.Scale(0)
-#uncHist.style = styles.hashStyle()
+uncHist.style = styles.hashStyle()
 uncHist.legendText = "Uncertainty"
 
 Plot.setDefaults()
@@ -828,7 +840,7 @@ for i_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
                 variance += (0.08*mc_samples.DY_LO.hist["central"][g].GetBinContent(i_b))**2 # DY normalization
                 if args.selection.startswith("SR"):
                     variance += (0.08*mc_samples.DY_LO.hist["central"][g].GetBinContent(i_b))**2 # DY extrapolation
-            variance += (0.08*mc_samples.WG.hist["central"][g].GetBinContent(i_b))**2 # WG normalization
+            variance += (0.07*mc_samples.WG_NLO.hist["central"][g].GetBinContent(i_b))**2 # WG normalization
             variance += (0.10*mc_samples.ZG.hist["central"][g].GetBinContent(i_b))**2 # ZG normalization
             variance += (0.30*mc_samples.rest.hist["central"][g].GetBinContent(i_b))**2 # other normalization
             variance += (0.01*mc_samples.TTG.hist["central"][g].GetBinContent(i_b))**2 # mockup for PDF
@@ -876,7 +888,7 @@ ratioHistModifications += [lambda h: h.GetYaxis().SetTitleOffset(2.0)]
 
 
 legend = [ (0.2,0.9-0.025*sum(map(len, plot.histos)),0.9,0.9), 3 ]
-ratio = {'yRange':(0.76,1.24), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
+ratio = {'yRange':(0.51,1.49), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
 #ratio = {'yRange':(0.65,1.35), "drawObjects":ratio_boxes}
 #ratio = {'yRange':(0.51,1.49), "drawObjects":ratio_boxes}
 for log in [True, False]:

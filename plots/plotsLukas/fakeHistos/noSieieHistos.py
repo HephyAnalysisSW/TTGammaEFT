@@ -83,7 +83,7 @@ elif args.year == 2018:
     import TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed as mc_samples
     from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import Run2018 as data_sample
 
-mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
+mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG_NLO, mc_samples.ZG, mc_samples.rest ]
 
 read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval/I",
                      "reweightPU/F", "reweightPUDown/F", "reweightPUUp/F", "reweightPUVDown/F", "reweightPUVUp/F",
@@ -250,7 +250,7 @@ for s in mc:
         selectionString = selection + "&&" + cutInterpreter.cutString( g ) if g else selection
         s.setWeightString( weightStringAR + "*" + sampleWeight )
         key = (s.name, "AR", args.variable, "_".join(map(str,args.binning)), s.weightString, s.selectionString, selectionString)
-        if dirDB.contains(key) and not args.overwrite and s.name != "WG":
+        if dirDB.contains(key) and not args.overwrite:
             s.hist = copy.deepcopy(dirDB.get(key).Clone(s.name))
         else:
             s.hist = s.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=selectionString )

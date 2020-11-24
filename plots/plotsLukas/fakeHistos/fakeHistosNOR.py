@@ -319,7 +319,7 @@ for s in mc:
         selectionString = selection + "&&" + cutInterpreter.cutString( g ) if g else selection
         s.setWeightString( weightStringAR + "*" + sampleWeight )
         key = (s.name, "AR", args.variable, "_".join(map(str,args.binning)), s.weightString, s.selectionString, selectionString)
-        if dirDB.contains(key) and not args.overwrite and s.name != "WG":
+        if dirDB.contains(key) and not args.overwrite:
             s.hist = copy.deepcopy(dirDB.get(key).Clone(s.name))
         else:
             s.hist = s.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=selectionString )

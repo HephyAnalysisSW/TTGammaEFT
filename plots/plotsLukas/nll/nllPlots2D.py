@@ -41,6 +41,8 @@ argParser.add_argument( "--inclRegion",         action="store_true",            
 argParser.add_argument( "--useRegions",         action="store",      nargs='*',       type=str, choices=allRegions.keys(),  help="Which regions to use?" )
 argParser.add_argument('--contours',           action='store_true',                                                                                  help='draw 1sigma and 2sigma contour line?')
 argParser.add_argument('--smooth',             action='store_true',                                                                                  help='smooth histogram?')
+argParser.add_argument('--withbkg',             action='store_true',                                                                                  help='with bkg?')
+argParser.add_argument('--withEFTUnc',             action='store_true',                                                        help="add EFT uncertainty?")
 argParser.add_argument('--binMultiplier',      action='store',      default=3,                 type=int,                                             help='bin multiplication factor')
 args = argParser.parse_args()
 
@@ -54,7 +56,7 @@ logger_rt = logger_rt.get_logger( args.logLevel, logFile = None)
 
 # load and define the EFT sample
 from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed  import *
-eftSample = TTG_4WC_ref
+eftSample = TTG_2WC_ref
 
 regionNames = []
 for reg in allRegions.keys():
@@ -67,10 +69,10 @@ if args.addDYSF:     regionNames.append("addDYSF")
 if args.addMisIDSF:  regionNames.append("addMisIDSF")
 if args.inclRegion:  regionNames.append("incl")
 
-baseDir       = os.path.join( cache_directory, "analysis",  str(args.year) if args.year != "RunII" else "COMBINED", "limits" )
+baseDir       = os.path.join( cache_directory, "analysis",  str(args.year) if args.year != "RunII" else "COMBINED", "limits", "withbkg" if args.withbkg else "withoutbkg" )
+if args.withEFTUnc: baseDir = os.path.join( baseDir, "withEFTUnc" )
 cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
-
 print cacheFileName
 
 directory = os.path.join( plot_directory, "nllPlots", str(args.year), "_".join( regionNames ))
@@ -104,7 +106,8 @@ def getNllData( varx, vary ):
     else:                          nll = -999
     print nll
     print sConfig
-    return float(nll)
+    return float(nll["nll"])
+#    return float(nll)
 
 
 logger.info("Loading cache data" )
@@ -116,7 +119,7 @@ points += [ (varX, varY) for varY in yRange for varX in xRange] #2D plots
 nllData  = [ (varx, vary, getNllData( varx, vary )) for (varx, vary) in points ]
 sm_nll   = getNllData(0,0)
 
-nllData  = [ (x, y, -2*(nll - sm_nll)) for x, y, nll in nllData if nll != 0]
+nllData  = [ (x, y, 2*(nll - sm_nll)) for x, y, nll in nllData if nll != 0]
 
 tmp = nllData
 tmp.sort( key = lambda res: (res[0], res[1]) )
@@ -203,8 +206,8 @@ if not None in args.xyRange[2:]:
 
 xTitle = args.variables[0].replace("c", "C_{").replace("I", "}^{[Im]").replace('p','#phi') + '}'
 yTitle = args.variables[1].replace("c", "C_{").replace("I", "}^{[Im]").replace('p','#phi') + '}'
-hist.GetXaxis().SetTitle( xTitle + ' (#Lambda/TeV)^{2}' )
-hist.GetYaxis().SetTitle( yTitle + ' (#Lambda/TeV)^{2}' )
+hist.GetXaxis().SetTitle( xTitle + ' [(#Lambda/TeV)^{2}]' )
+hist.GetYaxis().SetTitle( yTitle + ' [(#Lambda/TeV)^{2}]' )
 
 hist.GetXaxis().SetTitleFont(42)
 hist.GetYaxis().SetTitleFont(42)
@@ -214,7 +217,7 @@ hist.GetYaxis().SetLabelFont(42)
 hist.GetZaxis().SetLabelFont(42)
 
 #hist.GetXaxis().SetTitleOffset(1.05)
-hist.GetYaxis().SetTitleOffset(1.25)
+hist.GetYaxis().SetTitleOffset(1.45)
 
 hist.GetXaxis().SetTitleSize(0.042)
 hist.GetYaxis().SetTitleSize(0.042)
@@ -245,6 +248,8 @@ l.DrawLine(cans.GetUxmin(), cans.GetUymax(), cans.GetUxmax(), cans.GetUymax());
 l.DrawLine(cans.GetUxmax(), cans.GetUymin(), cans.GetUxmax(), cans.GetUymax());
 
 plotname = "_".join(args.variables)
+if args.withbkg: plotname += "_wBkg"
+if args.withEFTUnc: plotname += "_wEFTUnc"
 for e in [".png",".pdf",".root"]:
     cans.Print( plot_directory_ + "/%s%s"%(plotname, e) )
 

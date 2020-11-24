@@ -67,6 +67,166 @@ logger.info("Plotting from cardfile %s"%cardFile)
 
 # replace the combineResults object by the substituted card object
 Results = CombineResults( cardFile=cardFile, plotDirectory=plotDirectory, year=args.year, isSearch=False )
+nuisances = [ p for p in Results.getPulls().keys() if p !="r" and not "prop" in p ]
+plotBins = [10,11,12,13,14,15,16,17,18,19,20,21]
+
+# get region histograms
+if args.year == "combined":
+        hists = Results.getRegionHistos( postFit=args.postFit, nuisances=nuisances, plotBins=plotBins )
+        channels = ["dc_2016","dc_2017","dc_2018"]
+#        hists_tmp = Results.getRegionHistos( postFit=args.postFit, nuisances=nuisances, plotBins=plotBins )
+#        for i, dir in enumerate(Results.channels):
+#            print i, dir
+#            if i == 0:
+#                hists = {key:hist.Clone(str(i)+dir+key) for key, hist in hists_tmp[dir].iteritems() if key not in nuisances}
+#                for n in nuisances:
+#                        hists.update( { n:{"up":hists_tmp[dir][n]["up"].Clone(str(i)+dir+n+"up"), "down":copy.deepcopy(hists_tmp[dir][n]["down"].Clone(str(i)+dir+n+"down"))} } )
+#            else:
+#               for key, hist in hists_tmp[dir].iteritems():
+#                    if key in nuisances:
+#                        hists[key]["up"].Add(hist["up"].Clone(str(i)+dir+key+"up"))
+#                        hists[key]["down"].Add(hist["down"].Clone(str(i)+dir+key+"down"))
+#                    else:
+#                        hists[key].Add(hist.Clone(str(i)+dir+key))
+else:
+        hists = Results.getRegionHistos( postFit=args.postFit, nuisances=nuisances, plotBins=plotBins )
+        channels = ["Bin0"]
+
+for i_c, c in enumerate(channels):
+        if i_c == 0:
+            hists["total"] = hists[c]["total"].Clone()
+            hists["signal"] = hists[c]["signal"].Clone()
+            hists["total_background"] = hists[c]["total_background"].Clone()
+        else:
+            hists["total"].Add( hists[c]["total"] )
+            hists["signal"].Add( hists[c]["signal"] )
+            hists["total_background"].Add( hists[c]["total_background"] )
+
+for c in channels:
+    for n in nuisances:
+        hists[c][n]["sys"] = hists[c]["total"].Clone()
+        for i in range(hists[c]["total"].GetNbinsX()):
+            hists[c][n]["sys"].SetBinError(i+1, hists[c][n]["up"].GetBinContent(i+1)-hists[c]["total"].GetBinContent(i+1) )
+
+for i_c, c in enumerate(channels):
+    for n in nuisances:
+        if i_c == 0:
+            hists[n] = {}
+            hists[n]["sys"] = hists[c][n]["sys"].Clone()
+        else:
+            hists[n]["sys"].Add( hists[c][n]["sys"] )
+        if "JEC" in n:
+            if not "JEC" in hists.keys():
+                hists["JEC"] = {}
+                hists["JEC"]["sys"] = hists[c][n]["sys"].Clone()
+            else:
+                hists["JEC"]["sys"].Add(hists[c][n]["sys"] )
+        if "JER" in n:
+            if not "JER" in hists.keys():
+                hists["JER"] = {}
+                hists["JER"]["sys"] = hists[c][n]["sys"].Clone()
+            else:
+                hists["JER"]["sys"].Add(hists[c][n]["sys"] )
+        if "QCD_" in n:
+            if not "QCD" in hists.keys():
+                hists["QCD"] = {}
+                hists["QCD"]["sys"] = hists[c][n]["sys"].Clone()
+            else:
+                hists["QCD"]["sys"].Add(hists[c][n]["sys"] )
+        if "Luminosity" in n:
+            if not "Luminosity" in hists.keys():
+                hists["Luminosity"] = {}
+                hists["Luminosity"]["sys"] = hists[c][n]["sys"].Clone()
+            else:
+                hists["Luminosity"]["sys"].Add(hists[c][n]["sys"] )
+        if "MisID" in n:
+            if not "MisID" in hists.keys():
+                hists["MisID"] = {}
+                hists["MisID"]["sys"] = hists[c][n]["sys"].Clone()
+            else:
+                hists["MisID"]["sys"].Add(hists[c][n]["sys"] )
+        if "WGamma" in n:
+            if not "WGamma" in hists.keys():
+                hists["WGamma"] = {}
+                hists["WGamma"]["sys"] = hists[c][n]["sys"].Clone()
+            else:
+                hists["WGamma"]["sys"].Add(hists[c][n]["sys"] )
+        if "ZGamma" in n:
+            if not "ZGamma" in hists.keys():
+                hists["ZGamma"] = {}
+                hists["ZGamma"]["sys"] = hists[c][n]["sys"].Clone()
+            else:
+                hists["ZGamma"]["sys"].Add(hists[c][n]["sys"] )
+        if "muon_ID" in n:
+            if not "muon_ID" in hists.keys():
+                hists["muon_ID"] = {}
+                hists["muon_ID"]["sys"] = hists[c][n]["sys"].Clone()
+            else:
+                hists["muon_ID"]["sys"].Add(hists[c][n]["sys"] )
+        if "Trigger" in n:
+            if not "Trigger" in hists.keys():
+                hists["Trigger"] = {}
+                hists["Trigger"]["sys"] = hists[c][n]["sys"].Clone()
+            else:
+                hists["Trigger"]["sys"].Add(hists[c][n]["sys"] )
+        if "pixelSeed" in n:
+            if not "pixelSeed" in hists.keys():
+                hists["pixelSeed"] = {}
+                hists["pixelSeed"]["sys"] = hists[c][n]["sys"].Clone()
+            else:
+                hists["pixelSeed"]["sys"].Add(hists[c][n]["sys"] )
+        if "flavor" in n:
+            if not "flavor" in hists.keys():
+                hists["flavor"] = {}
+                hists["flavor"]["sys"] = hists[c][n]["sys"].Clone()
+            else:
+                hists["flavor"]["sys"].Add(hists[c][n]["sys"] )
+
+        if "fake_photon" in n:
+            if not "fake_photon" in hists.keys():
+                hists["fake_photon"] = {}
+                hists["fake_photon"]["sys"] = hists[c][n]["sys"].Clone()
+            else:
+                hists["fake_photon"]["sys"].Add(hists[c][n]["sys"] )
+
+        if "erdOn" in n or "QCDbased" in n or  "GluonMove" in n:
+            if not "color" in hists.keys():
+                hists["color"] = {}
+                hists["color"]["sys"] = hists[c][n]["sys"].Clone()
+            else:
+                hists["color"]["sys"].Add(hists[c][n]["sys"] )
+
+
+nuisances += ["JEC","JER","Luminosity","MisID","WGamma","ZGamma","muon_ID","Trigger","pixelSeed","flavor","fake_photon","color","QCD"]
+
+for n in nuisances:
+    for i in range( hists[n]["sys"].GetNbinsX() ):
+        y = hists["total"].GetBinContent(i+1)
+        hists[n]["sys"].SetBinContent(i+1, y + hists[n]["sys"].GetBinError(i+1) )
+
+for n in nuisances:
+        hists[n]["sys"].Add( hists["total"], -1 )
+        t = hists[n]["sys"].Clone()
+        s = hists[n]["sys"].Clone()
+        b = hists[n]["sys"].Clone()
+        t.Divide( hists["total"] )
+        s.Divide( hists["signal"] )
+        b.Divide( hists["total_background"] )
+        print n, (t.GetMinimum(), t.GetMaximum()), (s.GetMinimum(), s.GetMaximum()), (b.GetMinimum(), b.GetMaximum())
+        tl = [t.GetBinContent(i+1) for i in range(t.GetNbinsX())]
+        sl = [s.GetBinContent(i+1) for i in range(s.GetNbinsX())]
+        bl = [b.GetBinContent(i+1) for i in range(b.GetNbinsX())]
+        tl = filter( lambda x: x>0, tl )
+        sl = filter( lambda x: x>0, sl )
+        bl = filter( lambda x: x>0, bl )
+        print tl, min(tl + [999])
+        print sl, min(sl + [999])
+        print bl, min(bl + [999])
+        print
+
+print hists.keys()
+sys.exit()
+
 #Results.htmlNuisanceReport()
 #Results.tableNuisanceReport()
 

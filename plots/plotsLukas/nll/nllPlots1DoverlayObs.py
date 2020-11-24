@@ -36,7 +36,6 @@ argParser.add_argument('--addDYSF',             action='store_true',            
 argParser.add_argument( "--addMisIDSF",         action="store_true",                                                        help="add default misID scale factor" )
 argParser.add_argument('--tag',                 action='store',      default="combined",        type=str,                                             help='tag for unc studies')
 argParser.add_argument('--variables',           action='store',      default='ctZI', type=str, nargs=1, choices=["ctZ","ctZI"],                      help="argument plotting variables")
-argParser.add_argument( "--expected",           action="store_true",                                                        help="Use sum of backgrounds instead of data." )
 argParser.add_argument( "--inclRegion",         action="store_true",                                                        help="use inclusive photon pt region" )
 argParser.add_argument( "--useRegions",         action="store",      nargs='*',       type=str, choices=allRegions.keys(),  help="Which regions to use?" )
 argParser.add_argument('--withbkg',             action='store_true',                                                                                  help='with bkg?')
@@ -66,17 +65,17 @@ for reg in allRegions.keys():
 regionNames.sort()
 if args.addDYSF:     regionNames.append("addDYSF")
 if args.addMisIDSF:  regionNames.append("addMisIDSF")
-if args.inclRegion:  regionNames.append("incl")
+
+regionNamesExp = copy.deepcopy(regionNames)
+#regionNamesExp.append("incl")
 
 baseDir       = os.path.join( cache_directory, "analysis",  str(args.year) if args.year != "RunII" else "COMBINED", "limits", "withbkg" if args.withbkg else "withoutbkg" )
 if args.withEFTUnc: baseDir = os.path.join( baseDir, "withEFTUnc" )
 cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
 
-print cacheFileName
-
 directory = os.path.join( plot_directory, "nllPlots", str(args.year), "_".join( regionNames ))
-addon = "expected" if args.expected else "observed"
+addon = "comb"
 if args.plotData: addon += "_check"
 plot_directory_ = os.path.join( directory, addon )
 
@@ -91,26 +90,30 @@ elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
 
 #binning range
 xRange = eftParameterRange[args.variables] 
-xRange = [ x for x in xRange if abs(x) < 0.55]
 print xRange
 def getNllData( var1):
     dict = {"ctZI":0, "ctZ":0}
     dict[args.variables] = var1
     EFTparams = ["ctZ", str(dict["ctZ"]), "ctZI", str(dict["ctZI"])]
+
     configlist = regionNames + EFTparams
     configlist.append("incl" if args.inclRegion else "diff")
-    configlist.append("expected" if args.expected else "observed")
+    configlist.append("observed")
     sConfig = "_".join(configlist)
-    nll = nllCache.get(sConfig)
-#    if nllCache.contains(sConfig): nll = nllCache.get(sConfig)
-#    else:                          nll = -999
-#    print nll
 
-#    print sConfig
-    print var1, float(nll["nll"])
-#    return float(nll["nll0"]+nll["nll"])
-#    return float(nll["nll0"]+nll["bestfit"])
-    return float(nll["nll"])
+    configlistExp = regionNamesExp + EFTparams
+    configlistExp.append("incl" if args.inclRegion else "diff")
+    configlistExp.append("expected")
+    sConfigExp = "_".join(configlistExp)
+
+    if nllCache.contains(sConfig): nll = nllCache.get(sConfig)
+    else:                          nll = -999
+
+    if nllCache.contains(sConfigExp): nllExp = nllCache.get(sConfigExp)
+    else:                              nllExp = -999
+
+    return float(nll["nll"]), float(nllExp["nll"])
+#    return float(nll), float(nllExp)
 
 
 logger.info("Loading cache data" )
@@ -118,34 +121,18 @@ points = [ (0) ] #SM point
 points += [ (varX) for varX in xRange] #1D plots
 
 nllData  = [ (var1, getNllData( var1 )) for var1 in points ]
+print nllData
+sm_nll, sm_nllExp   = getNllData(0)
+print getNllData(0)
 
-allResults = sorted([y for y in nllData if abs(y[0])<0.35], key=lambda x:-x[1])
-print
-print
-for x in allResults: print x
-print
-print
-sm_nll   = allResults[0][1]
-xm   = allResults[0][0]
-print xm
-#xm = -0.3 if not args.expected else -0.1
-#sm_nll   = getNllData(xm)
-#sm_nll   = min( [ x[1] for x in nllData if abs(x[1]) < 998 ] )
-print sm_nll
-
-nllData  = [ (x, -2*(nll - sm_nll)) for x, nll in nllData if -2*(nll-sm_nll) < 6 ]
-
-for x in nllData:
-    print x
-#length = len(nllData)
-#for i in range(length):
- #   nllData[i][2] = 2*(nllData[i][2]-sm_nll)
-  #  nllData[i] = tuple(nllData[i])
+nllDataExp  = [ (x, 2*(nll[1] - sm_nllExp)) for x, nll in nllData  if nll[1] > -998 ]
+nllData  = [ (x, 2*(nll[0] - sm_nll)) for x, nll in nllData  if nll[0] > -998 ]
 
 xNLL     = [ (x, nll) for x, nll in nllData if nll >= 0 ]
+xNLLExp = [ (x, nll) for x, nll in nllDataExp if nll >= 0 ]
 
-tmp = nllData
-tmp.sort( key = lambda res: (res[0], res[1]) )
+print xNLLExp
+print xNLL
 
 def toGraph( name, title, data ):
     result  = ROOT.TGraph( len(data) )
@@ -160,39 +147,20 @@ def toGraph( name, title, data ):
     #res = ROOT.TGraphDelaunay(result)
     return result
 
-if args.expected:
-    polString = "[2]*x**2+[3]*x**3+[4]*x**4+[5]*x**5+[6]*x**6" #+[7]*x**7+[8]*x**8" #+[5]*x**7+[6]*x**8"#+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
-else:
-    polString = "[0]+[1]*x+[2]*x**2+[3]*x**3+[4]*x**4+[5]*x**5+[6]*x**6" #+[7]*x**7+[8]*x**8" #+[5]*x**7+[6]*x**8"#+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
-polString = "[0]+[1]*x+[2]*x**2+[3]*x**3+[4]*x**4+[5]*x**5+[6]*x**6+[7]*x**7+[8]*x**8" #+[7]*x**7+[8]*x**8" #+[5]*x**7+[6]*x**8"#+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
-polString = "[2]*(x-%f)**2+[3]*(x-%f)**3+[4]*(x-%f)**4+[6]*(x-%f)**6+[8]*(x-%f)**8"%(xm,xm,xm,xm,xm) #+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
+polString = "[0]*x**2+[1]*x**3+[2]*x**4+[3]*x**5+[4]*x**6" #+[5]*x**7+[6]*x**8"#+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
 xPlotLow, xPlotHigh = args.xRange
 
-def plot1D( dat, var, xmin, xmax ):
+def plot1D( dat, datExp, var, xmin, xmax ):
     # get TGraph from results data list
     xhist = toGraph( var, var, dat )
-#    polString = "[0]+[1]*x+[2]*x**2+[3]*x**3+[4]*x**4+[5]*x**5+[6]*x**6" #+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
+    xhistExp = toGraph( var+"Exp", var, datExp )
+
     func  = ROOT.TF1("func", polString, xmin, xmax )
     xhist.Fit(func,"NO")
-#    ym = func.GetMinimum(-0.1,0.3)
-#    xm = func.GetX(ym, -0.3, 0.3 )
-#    print dat
-#    print ym, xm
-#    nDat = []
-#    for (x,d) in dat: nDat.append((x,d-ym))
-#    print nDat
-#    print ym, xm
-#    del xhist
-#    xhist = toGraph( var, var, nDat )
-#    polString = "[0]*(x-%f)**2+[1]*(x-%f)**3+[2]*(x-%f)**4+[3]*(x-%f)**5+[4]*(x-%f)**6"%(xm,xm,xm,xm,xm) #+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
-#    del func
-#    func  = ROOT.TF1("func", polString, xmin, xmax )
-#    xhist.Fit(func,"NO")
-
-    x68min = func.GetX( 0.989, xmin, xm )
-    x68max = func.GetX( 0.989, xm, xmax )
-    x95min = func.GetX( 3.84, xmin, xm )
-    x95max = func.GetX( 3.84, xm, xmax )
+    x68min = func.GetX( 0.989, xmin, 0 )
+    x68max = func.GetX( 0.989, 0, xmax )
+    x95min = func.GetX( 3.84, xmin, 0 )
+    x95max = func.GetX( 3.84, 0, xmax )
 
     xhist.SetLineWidth(0)
 
@@ -201,6 +169,23 @@ def plot1D( dat, var, xmin, xmax ):
     func.SetLineWidth(3)
     func.SetLineColor(ROOT.kBlack)
     func.SetNpx(1000)
+
+    funcExp  = ROOT.TF1("funcExp", polString, xmin, xmax )
+    xhistExp.Fit(funcExp,"NO")
+    x68minExp = funcExp.GetX( 0.989, xmin, 0 )
+    x68maxExp = funcExp.GetX( 0.989, 0, xmax )
+    x95minExp = funcExp.GetX( 3.84, xmin, 0 )
+    x95maxExp = funcExp.GetX( 3.84, 0, xmax )
+
+    xhistExp.SetLineWidth(0)
+
+    funcExp.SetFillColor(ROOT.kWhite)
+    funcExp.SetFillStyle(1001)
+    funcExp.SetLineWidth(3)
+#    funcExp.SetLineStyle(11)
+    funcExp.SetLineColor(ROOT.kGray+1)
+    funcExp.SetNpx(1000)
+
 
     ROOT.gStyle.SetPadLeftMargin(0.14)
     ROOT.gStyle.SetPadRightMargin(0.1)
@@ -213,7 +198,7 @@ def plot1D( dat, var, xmin, xmax ):
     #if not None in args.zRange:
     xhist.GetYaxis().SetRangeUser( 0, 5.5 )
     xhist.GetXaxis().SetRangeUser( xmin, xmax )
-    xhist.GetXaxis().SetLimits(xmin, xmax)
+
 
     func95 = ROOT.TF1("func95",polString, x95min,x95max )
     xhist.Fit(func95,"NO")
@@ -233,11 +218,33 @@ def plot1D( dat, var, xmin, xmax ):
     func68.GetXaxis().SetRangeUser( xmin, xmax )
     func95.GetXaxis().SetRangeUser( xmin, xmax )
 
+
+    func95Exp = ROOT.TF1("func95Exp",polString, x95minExp,x95maxExp )
+    xhistExp.Fit(func95Exp,"NO")
+    func95Exp.SetFillColor(ROOT.kGray+2)
+    func95Exp.SetFillStyle(1001)
+    func95Exp.SetLineWidth(0)
+    func95Exp.SetNpx(1000)
+
+    func68Exp = ROOT.TF1("func68Exp",polString, x68minExp,x68maxExp )
+    xhistExp.Fit(func68Exp,"NO")
+    func68Exp.SetFillColor(ROOT.kGray+1)
+    func68Exp.SetFillStyle(1001)
+    func68Exp.SetLineWidth(0)
+    func68Exp.SetNpx(1000)
+
+    funcExp.GetXaxis().SetRangeUser( xmin, xmax )
+    func68Exp.GetXaxis().SetRangeUser( xmin, xmax )
+    func95Exp.GetXaxis().SetRangeUser( xmin, xmax )
+
     xhist.Draw("ALO")
+#    func95Exp.Draw("FOSAME")
+#    func68Exp.Draw("FOSAME")
     func.Draw("COSAME")
     func95.Draw("FOSAME")
     func68.Draw("FOSAME")
 #    xhist.Draw("LSAME")
+    funcExp.Draw("COSAME")
     func.Draw("COSAME")
     if args.plotData: xhist.Draw("*SAME")
 
@@ -264,13 +271,16 @@ def plot1D( dat, var, xmin, xmax ):
     leg = ROOT.TLegend(0.3,0.7,0.7,0.87)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.035)
-    leg.AddEntry( func, funcName ,"l")
-    leg.AddEntry( func68, "68%s CL [%.2f, %.2f]"%("%",x68min, x68max), "f")
-    leg.AddEntry( func95, "95%s CL [%.2f, %.2f]"%("%",x95min, x95max), "f")
+    leg.AddEntry( func, funcName + " (observed)" ,"l")
+    leg.AddEntry( funcExp, funcName + " (expected)" ,"l")
+    leg.AddEntry( func68, "68%s CL (observed) [%.2f, %.2f]"%("%",x68min, x68max), "f")
+    leg.AddEntry( func95, "95%s CL (observed) [%.2f, %.2f]"%("%",x95min, x95max), "f")
+#    leg.AddEntry( func68Exp, "68%s CL (Exp) [%.2f, %.2f]"%("%",x68minExp, x68maxExp), "f")
+#    leg.AddEntry( func95Exp, "95%s CL (Exp) [%.2f, %.2f]"%("%",x95minExp, x95maxExp), "f")
     leg.Draw()
 
     xTitle = var.replace("c", "C_{").replace("I", "}^{[Im]").replace('p','#phi') + '}'
-    xhist.GetXaxis().SetTitle( xTitle + ' [(#Lambda/TeV)^{2}]' )
+    xhist.GetXaxis().SetTitle( xTitle + ' [(#Lambda/TeV^{2})]' )
 
     xhist.GetXaxis().SetTitleFont(42)
     xhist.GetYaxis().SetTitleFont(42)
@@ -292,16 +302,13 @@ def plot1D( dat, var, xmin, xmax ):
     latex1.SetTextAlign(11)
 
     addon = ""
-    if args.expected:
-        latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Simulation Preliminary} ' + addon),
-    else:
-        latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Preliminary} ' + addon),
+    latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Simulation Preliminary} ' + addon),
     latex1.DrawLatex(0.64, 0.91, '#bf{%3.1f fb{}^{-1} (13 TeV)}' % lumi_scale)
 
     # Redraw axis, otherwise the filled graphes overlay
     cans.RedrawAxis()
 
-    plotname = "%s%s%s"%(var, "", "_%s"%args.tag if args.tag != "combined" else "")
+    plotname = "%s%s%s_wExp"%(var, "", "_%s"%args.tag if args.tag != "combined" else "")
     if args.withbkg: plotname += "_wBkg"
     if args.withEFTUnc: plotname += "_wEFTUnc"
     for e in [".png",".pdf",".root"]:
@@ -314,5 +321,5 @@ def plot1D( dat, var, xmin, xmax ):
 
 xmin = xPlotLow  if xPlotLow  else -1.49
 xmax = xPlotHigh if xPlotHigh else 1.49
-plot1D( xNLL, args.variables, xmin, xmax )
+plot1D( xNLL, xNLLExp, args.variables, xmin, xmax )
 

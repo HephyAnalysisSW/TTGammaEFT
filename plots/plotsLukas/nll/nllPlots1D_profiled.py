@@ -41,6 +41,8 @@ argParser.add_argument('--variables',           action='store',      default='ct
 argParser.add_argument( "--expected",           action="store_true",                                                        help="Use sum of backgrounds instead of data." )
 argParser.add_argument( "--inclRegion",         action="store_true",                                                        help="use inclusive photon pt region" )
 argParser.add_argument( "--useRegions",         action="store",      nargs='*',       type=str, choices=allRegions.keys(),  help="Which regions to use?" )
+argParser.add_argument('--withbkg',             action='store_true',                                                                                  help='with bkg?')
+argParser.add_argument('--withEFTUnc',             action='store_true',                                                        help="add EFT uncertainty?")
 args = argParser.parse_args()
 
 if args.year != "RunII": args.year = int(args.year)
@@ -55,7 +57,7 @@ args.variables = args.variables[0]
 
 # load and define the EFT sample
 from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed  import *
-eftSample = TTG_4WC_ref
+eftSample = TTG_2WC_ref
 
 regionNames = []
 for reg in allRegions.keys():
@@ -73,7 +75,8 @@ elif args.year == 2017: lumi_scale = 41.53
 elif args.year == 2018: lumi_scale = 59.74
 elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
 
-baseDir       = os.path.join( cache_directory, "analysis",  str(args.year) if args.year != "RunII" else "COMBINED", "limits" )
+baseDir       = os.path.join( cache_directory, "analysis",  str(args.year) if args.year != "RunII" else "COMBINED", "limits", "withbkg" if args.withbkg else "withoutbkg" )
+if args.withEFTUnc: baseDir = os.path.join( baseDir, "withEFTUnc" )
 cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
 
@@ -101,7 +104,8 @@ def getNllData( varx, vary ):
     sConfig = "_".join(configlist)
     if nllCache.contains(sConfig): nll = nllCache.get(sConfig)
     else:                          nll = -999
-    return float(nll)
+    return float(nll["nll"])
+#    return float(nll)
 
 
 logger.info("Loading cache data" )
@@ -113,7 +117,7 @@ points += [ (varX, varY) for varY in yRange for varX in xRange] #2D plots
 nllData  = [ (varx, vary, getNllData( varx, vary )) for (varx, vary) in points ]
 sm_nll   = getNllData(0,0)
 
-nllData  = [ (x, y, -2*(nll - sm_nll)) for x, y, nll in nllData if -2*(nll - sm_nll) >= 0]
+nllData  = [ (x, y, 2*(nll - sm_nll)) for x, y, nll in nllData if 2*(nll - sm_nll) >= 0]
 nllData.sort( key = lambda res: (res[0 if args.variables=="ctZ" else 1], res[2]) )
 
 xNLL = []
@@ -134,7 +138,7 @@ def toGraph( name, title, data ):
     #res = ROOT.TGraphDelaunay(result)
     return result
 
-polString = "[0]*x**2+[1]*x**3+[2]*x**4"#+[3]*x**5"#+[4]*x**6"#+[5]*x**7+[6]*x**8+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
+polString = "[0]*x**2+[1]*x**3+[2]*x**4+[3]*x**5+[4]*x**6" #+[5]*x**7+[6]*x**8+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
 xPlotLow, xPlotHigh = args.xRange
 
 def plot1D( dat, var, xmin, xmax, lumi_scale ):
@@ -223,7 +227,7 @@ def plot1D( dat, var, xmin, xmax, lumi_scale ):
     leg.Draw()
 
     xTitle = var.replace("c", "C_{").replace("I", "}^{[Im]").replace('p','#phi') + '}'
-    xhist.GetXaxis().SetTitle( xTitle + ' (#Lambda/TeV)^{2}' )
+    xhist.GetXaxis().SetTitle( xTitle + ' [(#Lambda/TeV)^{2}]' )
 
     xhist.GetXaxis().SetTitleFont(42)
     xhist.GetYaxis().SetTitleFont(42)
@@ -252,6 +256,8 @@ def plot1D( dat, var, xmin, xmax, lumi_scale ):
     cans.RedrawAxis()
 
     plotname = "%s%s%s_profiled"%(var, "", "_%s"%args.tag if args.tag != "combined" else "")
+    if args.withbkg: plotname += "_wBkg"
+    if args.withEFTUnc: plotname += "_wEFTUnc"
     for e in [".png",".pdf",".root"]:
         cans.Print( plot_directory_ + "/%s%s"%(plotname, e) )
 

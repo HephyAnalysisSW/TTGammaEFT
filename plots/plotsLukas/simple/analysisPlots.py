@@ -164,7 +164,7 @@ filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=T
 # Trigger cuts for MC (already applied for Data)
 
 # Sample definition
-mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
+mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG_NLO, mc_samples.ZG, mc_samples.rest ]
 
 if args.noData:
     # Scale the histograms by the luminosity taken by CMS in each year

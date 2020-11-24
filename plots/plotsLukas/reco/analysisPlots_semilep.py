@@ -678,9 +678,9 @@ elif args.leptonCategory:
     TTG      = mc_samples.TTG
 else:
     if args.replaceZG:
-        mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.rest ]
+        mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG_NLO, mc_samples.rest ]
     else:
-        mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
+        mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG_NLO, mc_samples.ZG, mc_samples.rest ]
     if not (args.invLeptonIso):
         mc += [ mc_samples.QCD ]
         if args.noQCDDD or "NoIso" in args.mode: mc += [ mc_samples.GJets ]

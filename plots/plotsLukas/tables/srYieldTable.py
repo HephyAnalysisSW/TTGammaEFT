@@ -52,7 +52,7 @@ CR_para = allRegions["SR3pTable"]["parameters"]
 regions = allRegions["SR3pTable"]["inclRegion"] + allRegions["SR3pTable"]["regions"]
 channels = ["all"]
 
-mc  = ["TTG","Top","WG","ZG","WJets","DY_LO","GQCD","other","all_mc"]
+mc  = ["TTG","Top","WG_NLO","ZG","WJets","DY_LO","GQCD","other","all_mc"]
 allEst = []
 allEst += [s for s in mc]
 allEst += [s+"_gen" for s in mc]
@@ -113,7 +113,7 @@ def printYieldTable():
         f.write("\\hline\n")
         f.write("t($\\gamma$)/tW($\\gamma$)/tt & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent )  & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent ) \\\\ \n"%getVals("Top", ptRegion="low"))
         f.write("\\hline\n")
-        f.write("W$\\gamma$ & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent )  & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent ) \\\\ \n"%getVals("WG", ptRegion="low"))
+        f.write("W$\\gamma$ & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent )  & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent ) \\\\ \n"%getVals("WG_NLO", ptRegion="low"))
         f.write("\\hline\n")
         f.write("Z$\\gamma$ & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent ) & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent ) \\\\ \n"%getVals("ZG", ptRegion="low"))
         f.write("\\hline\n")
@@ -138,7 +138,7 @@ def printYieldTable():
         f.write("\\hline\n")
         f.write("t($\\gamma$)/tW($\\gamma$)/tt & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent )  & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent ) \\\\ \n"%getVals("Top", ptRegion="high"))
         f.write("\\hline\n")
-        f.write("W$\\gamma$ & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent )  & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent ) \\\\ \n"%getVals("WG", ptRegion="high"))
+        f.write("W$\\gamma$ & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent )  & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent ) \\\\ \n"%getVals("WG_NLO", ptRegion="high"))
         f.write("\\hline\n")
         f.write("Z$\\gamma$ & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent ) & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent ) \\\\ \n"%getVals("ZG", ptRegion="high"))
         f.write("\\hline\n")

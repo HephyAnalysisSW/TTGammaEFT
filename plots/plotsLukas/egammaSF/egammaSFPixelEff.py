@@ -29,7 +29,8 @@ argParser.add_argument('--useZG',              action='store_true',             
 args = argParser.parse_args()
 
 #args.binning  = [19, 10, 200]
-args.binning  = [10,15,20,25,30,35,40,50,60,70,90,120,200]
+#args.binning  = [10,15,20,25,30,35,40,50,60,70,90,120,200]
+args.binning  = [10,30,60,200]
 explicitBinning = len(args.binning)>3
 
 if "nTPhoton" in args.selection:
@@ -106,6 +107,9 @@ dataHistIncl_wPixel = data_sample.get1DHistoFromDraw( args.variable, binning=bin
 #    dataHist_wPixel.Add( s.get1DHistoFromDraw( args.variable, binning=args.binning, binningIsExplicit=explicitBinning, selectionString=selection_wPixel, addOverFlowBin="upper" ), -1 )
 #    dataHistSF_wPixel.Add( s.get1DHistoFromDraw( args.variable, binning=binningSF, binningIsExplicit=explicitBinning, selectionString=selection_wPixel, addOverFlowBin="upper" ), -1 )
 
+print "data"
+for i in range(dataHist.GetNbinsX()):
+    print i, dataHist.GetBinContent(i+1) 
 
 dataHist_teff = ROOT.TEfficiency( dataHist_wPixel, dataHist )
 dataHistSF_teff = ROOT.TEfficiency( dataHistSF_wPixel, dataHistSF )
@@ -145,6 +149,10 @@ for s in mc:
     mcHist.Add(s.get1DHistoFromDraw( args.variable, binning=args.binning, binningIsExplicit=explicitBinning, selectionString=selection, addOverFlowBin="upper" ) )
     mcHistSF.Add(s.get1DHistoFromDraw( args.variable, binning=binningSF, binningIsExplicit=explicitBinning, selectionString=selection, addOverFlowBin="upper" ) )
     mcHistIncl.Add(s.get1DHistoFromDraw( args.variable, binning=binningIncl, binningIsExplicit=explicitBinning, selectionString=selection, addOverFlowBin="upper" ) )
+
+print "MC"
+for i in range(mcHist.GetNbinsX()):
+    print i, mcHist.GetBinContent(i+1) 
 
 mcHist_wPixel = dataHist.Clone("mcP")
 mcHist_wPixel.Scale(0)

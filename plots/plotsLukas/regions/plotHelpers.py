@@ -271,7 +271,7 @@ def getUncertaintyBoxes( totalHist, minMax=0.3, lineColor=ROOT.kGray+3, fillColo
         # uncertainty box in main histogram
         box = ROOT.TBox( totalHist.GetXaxis().GetBinLowEdge(ib),  max([0.006, val-syst]), totalHist.GetXaxis().GetBinUpEdge(ib), max([0.006, val+syst]) )
         box.SetLineColor(lineColor)
-        box.SetFillStyle(hashcode)
+        if hashcode: box.SetFillStyle(hashcode)
         box.SetFillColor(fillColor)
 
         # uncertainty box in ratio histogram
@@ -279,7 +279,7 @@ def getUncertaintyBoxes( totalHist, minMax=0.3, lineColor=ROOT.kGray+3, fillColo
         r_max = min( [ 1+sys_rel, r_max ])
         r_box = ROOT.TBox( totalHist.GetXaxis().GetBinLowEdge(ib),  max(1-minMax, 1-sys_rel), totalHist.GetXaxis().GetBinUpEdge(ib), min(1+minMax, 1+sys_rel) )
         r_box.SetLineColor(lineColor)
-        r_box.SetFillStyle(hashcode)
+        if hashcode: r_box.SetFillStyle(hashcode)
         r_box.SetFillColor(fillColor)
 
         boxes.append( box )
@@ -289,7 +289,7 @@ def getUncertaintyBoxes( totalHist, minMax=0.3, lineColor=ROOT.kGray+3, fillColo
         #pt text in main histogram
         box = ROOT.TBox( totalHist.GetXaxis().GetBinLowEdge(ib),  max([0.006, val-syst]), totalHist.GetXaxis().GetBinUpEdge(ib), max([0.006, val+syst]) )
         box.SetLineColor(lineColor)
-        box.SetFillStyle(hashcode)
+        if hashcode: box.SetFillStyle(hashcode)
         box.SetFillColor(fillColor)
 
     return boxes, ratio_boxes
@@ -317,7 +317,7 @@ def getErrorBoxes( totalHist, minMax=0.3, lineColor=ROOT.kGray+3, fillColor=ROOT
         # uncertainty box in main histogram
         box = ROOT.TBox( totalHist.GetXaxis().GetBinCenter(ib)-width,  max([0.006, val-syst]), totalHist.GetXaxis().GetBinCenter(ib)+width, max([0.006, val+syst]) )
         box.SetLineColor(lineColor)
-        box.SetFillStyle(hashcode)
+        if hashcode: box.SetFillStyle(hashcode)
         box.SetFillColor(fillColor)
 
         # uncertainty box in ratio histogram
@@ -325,7 +325,7 @@ def getErrorBoxes( totalHist, minMax=0.3, lineColor=ROOT.kGray+3, fillColor=ROOT
         r_max = min( [ rCenter+sys_rel, r_max ])
         r_box = ROOT.TBox( totalHist.GetXaxis().GetBinCenter(ib)-width,  max(1-minMax, rCenter-sys_rel), totalHist.GetXaxis().GetBinCenter(ib)+width, min(1+minMax, rCenter+sys_rel) )
         r_box.SetLineColor(lineColor)
-        r_box.SetFillStyle(hashcode)
+        if hashcode: r_box.SetFillStyle(hashcode)
         r_box.SetFillColor(fillColor)
 
         boxes.append( box )
@@ -335,7 +335,7 @@ def getErrorBoxes( totalHist, minMax=0.3, lineColor=ROOT.kGray+3, fillColor=ROOT
         #pt text in main histogram
         box = ROOT.TBox( totalHist.GetXaxis().GetBinCenter(ib)-width,  max([0.006, val-syst]), totalHist.GetXaxis().GetBinCenter(ib)+width, max([0.006, val+syst]) )
         box.SetLineColor(lineColor)
-        box.SetFillStyle(hashcode)
+        if hashcode: box.SetFillStyle(hashcode)
         box.SetFillColor(fillColor)
 
     return boxes, ratio_boxes
@@ -373,17 +373,17 @@ def formatSettings( nBins ):
 #        settings["heightFactor"] = 300 #bkg only
         settings["heightFactor"] = 1500 #SR
     else:
-        settings["textsize"] = 20
-        settings["xlabelsize"] = 16
-        settings["ylabelsize"] = 20
+        settings["textsize"] = 26
+        settings["xlabelsize"] = 20
+        settings["ylabelsize"] = 24
         settings["padwidth"] = 1000
         settings["padheight"] = 700
         settings["padratio"] = 250
         settings["hashcode"] = 3344
-        settings["legcolumns"] = 5
-        settings["legylower"] = 0.77
-        settings["textoffset"] = 1.5
-        settings["offsetfactor"] = 42
+        settings["legcolumns"] = 4
+        settings["legylower"] = 0.75
+        settings["textoffset"] = 1.3
+        settings["offsetfactor"] = 52
         settings["ptlabelsize"] = 0.022
         settings["heightFactor"] = 1000
 

@@ -29,7 +29,7 @@ loggerChoices = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTS
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",           action="store",      default="INFO", nargs="?", choices=loggerChoices,                        help="Log level for logging")
-argParser.add_argument("--plot_directory",     action="store",      default="102X_TTG_ppv45_v2",                                             help="plot sub-directory")
+argParser.add_argument("--plot_directory",     action="store",      default="102X_TTG_ppv47_v2",                                             help="plot sub-directory")
 argParser.add_argument("--year",               action="store",      default="2016",   type=str,  choices=["2016","2017","2018","RunII"],                     help="Which year to plot?")
 argParser.add_argument("--selection",          action="store",      default="SR3p", type=str,                                              help="reco region")
 argParser.add_argument("--addCut",             action="store",      default=None, type=str,                                                  help="additional cuts")
@@ -72,7 +72,7 @@ elif args.year == "RunII":
     import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
     lumi_scale   = 137.2
 
-sample = mc_samples.WG
+sample = mc_samples.WG_NLO
 #sample = mc_samples.ZG
 
 if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():

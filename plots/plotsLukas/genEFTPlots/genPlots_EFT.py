@@ -230,7 +230,7 @@ preSelection = cutInterpreter.cutString( args.selection + "-" + args.mode )
 #preSelection += "&&abs(ref_weight)<100"
 print preSelection
 # set default settings for your plots (selection, do you want an overflow bin?)
-Plot.setDefaults(   stack=stack, selectionString=preSelection, addOverFlowBin="upper" )
+Plot.setDefaults(   stack=stack, selectionString=preSelection )
 
 # define a list of plots here
 plotList = []

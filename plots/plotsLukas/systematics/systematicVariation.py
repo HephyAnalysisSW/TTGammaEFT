@@ -12,7 +12,7 @@ from RootTools.core.standard           import *
 # Analysis
 from Analysis.Tools.metFilters         import getFilterCut
 from Analysis.Tools.helpers            import add_histos
-#import Analysis.Tools.syncer as syncer
+import Analysis.Tools.syncer as syncer
 
 # Internal Imports
 from TTGammaEFT.Tools.user             import plot_directory, cache_directory
@@ -290,7 +290,7 @@ if args.variation is not None and args.variation not in variations.keys():
     raise RuntimeError( "Variation %s not among the known: %s", args.variation, ",".join( variation.keys() ) )
 
 # Sample definition
-os.environ["gammaSkim"]="False" #always false for QCD estimate
+os.environ["gammaSkim"]=str(not (args.selection.startswith("WJets") or args.selection.startswith("TT")) and args.variation and args.variation != "central") #"False" #always false for QCD estimate
 if args.year == 2016:
     import TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed as mc_samples
     from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import Run2016 as data_sample
@@ -304,7 +304,7 @@ elif args.year == "RunII":
     import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
     from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
-mc  = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
+mc  = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG_NLO, mc_samples.ZG, mc_samples.rest ]
 qcd = mc_samples.QCD
 
 read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval/I",
@@ -466,6 +466,9 @@ if args.variation == "central":
         dataHist = dirDB.get(key).Clone("dataAR")
 
     for s in mc:
+      if "TTG" in s.name: args.overwrite = True
+      else: args.overwrite = False
+      print s.name, args.overwrite
       for g in genCat:
         selectionModifier = variations[args.variation]["selectionModifier"]
         normalization_selection_string = selectionModifier(selection)
@@ -473,9 +476,12 @@ if args.variation == "central":
         mc_normalization_weight_string = MC_WEIGHT(variations[args.variation], lumi_scale, returntype="string")
         s.setWeightString( mc_normalization_weight_string )
         key = (s.name, "AR", args.variable, "_".join(map(str,args.binning)), s.weightString, s.selectionString, normalization_selection_string, args.variation)
+#        print s.name, g, dirDB.contains(key)
         if not dirDB.contains(key) or args.overwrite:
             mcHist = s.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=normalization_selection_string, addOverFlowBin=None ) #"upper" )
             dirDB.add(key, mcHist.Clone(s.name+"AR"+g if g else s.name+"AR"), overwrite=True)
+
+    args.overwrite = False
 
     key = ("QCD-DD", "ARincl" if args.inclQCDTF else "AR", args.variable, "_".join(map(str,args.binning)), selection)
     if not dirDB.contains(key) or args.overwrite:
@@ -487,6 +493,7 @@ if args.variation == "central":
         estimate   = getattr(estimators, "QCD-DD")
         estimate.initCache(setup.defaultCacheDir())
         mc_normalization_weight_string = MC_WEIGHT(variations[args.variation], lumi_scale, returntype="invIso")
+        print mc_normalization_weight_string
         allModes = ["eInv","muInv"] if args.mode == "all" else [args.mode + "Inv"]
         if "tight" in args.mode: allModes = []
         for mode in allModes:
@@ -509,6 +516,7 @@ if args.variation == "central":
 
                     leptonPtEtaCut = "&&".join( [preSel] + leptonPtEtaCut )
     
+                    print leptonPtEtaCut
                     print "Running histograms for qcd selection:"
 
                     # histos
@@ -517,18 +525,21 @@ if args.variation == "central":
                         dataHist_SB_tmp = dirDB.get(key).Clone("dataSB"+mode)
                     else:
                         dataHist_SB_tmp = data_sample.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=leptonPtEtaCut, addOverFlowBin=None ) #"upper" )
-                        dirDB.add(key, dataHist_SB_tmp.Clone("dataSB"+mode))
+                        dirDB.add(key, dataHist_SB_tmp.Clone("dataSB"+mode), overwrite=True)
 
                     qcdHist_tmp = dataHist_SB_tmp.Clone("qcdtmp_%i_%i"%(i_pt,i_eta))
     
                     for s in mc:
+#                        if "TTG" in s.name: args.overwrite = True
+#                        else: args.overwrite = False
                         s.setWeightString( mc_normalization_weight_string )
                         key = (s.name, "SB", args.variable, "_".join(map(str,args.binning)), s.weightString, s.selectionString, leptonPtEtaCut)
+                        print s.name, mode, dirDB.contains(key)
                         if dirDB.contains(key) and not args.overwrite:
                             s.hist_SB_tmp = dirDB.get(key).Clone(s.name+"SB")
                         else:
                             s.hist_SB_tmp = s.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=leptonPtEtaCut, addOverFlowBin=None ) #"upper" )
-                            dirDB.add(key, s.hist_SB_tmp.Clone(s.name+"SB"))
+                            dirDB.add(key, s.hist_SB_tmp.Clone(s.name+"SB"), overwrite=True)
     
                         # apply SF after histo caching
                         if addSF:
@@ -549,6 +560,8 @@ if args.variation == "central":
 
                         qcdHist_tmp.Add(s.hist_SB_tmp, -1)
 
+
+#                    args.overwrite = False
 
                     # Transfer Factor, get the QCD histograms always in barrel regions
                     if args.inclQCDTF:
@@ -583,9 +596,8 @@ if args.variation == "central":
                     nJetUpdates["SR"]["leptonPt"] = ( 0, -1 )
 
                     if setup.isBTagged:
-#                        qcdHist_tmp.Scale(estimate._nJetScaleFactor("mu", setup, qcdUpdates=nJetUpdates))
-                        qcdHist_tmp.Scale(estimate._nJetScaleFactor(mode.replace("Inv",""), setup, qcdUpdates=nJetUpdates))
-#                        qcdHist_tmp.Scale(estimate._nJetScaleFactor("mu", setup, qcdUpdates=nJetUpdates))
+#                        qcdHist_tmp.Scale(estimate._nJetScaleFactor(mode.replace("Inv",""), setup, qcdUpdates=nJetUpdates))
+                        qcdHist_tmp.Scale(estimate._nJetScaleFactor("mu", setup, qcdUpdates=nJetUpdates))
                         print "njet", estimate._nJetScaleFactor(mode.replace("Inv",""), setup, qcdUpdates=nJetUpdates)
 
                     qcdHist.Add(qcdHist_tmp)
@@ -608,6 +620,8 @@ if args.variation:
     mc_normalization_weight_string = MC_WEIGHT(variations[args.variation], lumi_scale, returntype="string")
     print normalization_selection_string
     for s in mc:
+#        if "TTG" in s.name: args.overwrite = True
+#        else: args.overwrite = False
         # Calculate the normalisation yield for mt2ll<100
         s.setWeightString( mc_normalization_weight_string )
         key = (s.name, "AR", var, "_".join(map(str,args.binning)), s.weightString, s.selectionString, normalization_selection_string, args.variation)
@@ -659,6 +673,8 @@ for s in mc:
             if args.variable in metvariables_with_selection_systematics and variation in metselection_systematics:
                 var = args.variable + "_" + variation
             key = (s.name, "AR", var, "_".join(map(str,args.binning)), s.weightString, s.selectionString, normalization_selection_string, variation)
+
+#            args.overwrite = True
 
             if dirDB.contains(key) and not args.overwrite:
                 s.hist[variation][g]               = dirDB.get(key).Clone(s.name+"_"+variation+g)
@@ -798,7 +814,7 @@ if args.variable == "nElectronTight":
 
 uncHist = data_histo_list[0].Clone()
 uncHist.Scale(0)
-#uncHist.style = styles.hashStyle()
+uncHist.style = styles.hashStyle()
 uncHist.legendText = "Uncertainty"
 
 Plot.setDefaults()
@@ -844,7 +860,7 @@ for i_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
                 variance += (0.08*mc_samples.DY_LO.hist["central"][g].GetBinContent(i_b))**2 # DY normalization
                 if args.selection.startswith("SR"):
                     variance += (0.08*mc_samples.DY_LO.hist["central"][g].GetBinContent(i_b))**2 # DY extrapolation
-            variance += (0.08*mc_samples.WG.hist["central"][g].GetBinContent(i_b))**2 # WG normalization
+            variance += (0.07*mc_samples.WG_NLO.hist["central"][g].GetBinContent(i_b))**2 # WG normalization
             variance += (0.10*mc_samples.ZG.hist["central"][g].GetBinContent(i_b))**2 # ZG normalization
             variance += (0.30*mc_samples.rest.hist["central"][g].GetBinContent(i_b))**2 # other normalization
             variance += (0.01*mc_samples.TTG.hist["central"][g].GetBinContent(i_b))**2 # mockup for PDF
@@ -865,9 +881,9 @@ for i_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
             max([7, (1-sigma_rel)*total_central_mc_yield]),
             total_mc_histo["central"].GetXaxis().GetBinUpEdge(i_b), 
             max([7, (1+sigma_rel)*total_central_mc_yield]) )
-    box.SetLineColor(ROOT.kGray+2)
+#    box.SetLineColor(ROOT.kGray+2)
     box.SetFillStyle(3644)
-    box.SetLineWidth(1)
+#    box.SetLineWidth(1)
     box.SetFillColor(ROOT.kGray+2)
     boxes.append(box)
 
@@ -900,6 +916,7 @@ for log in [True, False]:
         else:
             ratio = {'yRange':(0.76,1.24), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
 
+        ratio = {'yRange':(0.51,1.49), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
         print args.selection
         print ratio
         selDir = args.selection
@@ -911,7 +928,7 @@ for log in [True, False]:
         plotting.draw( plot,
                        plot_directory = plot_directory_,
                        logX = False, logY = log, sorting = not (args.mode == "e" and plot.name == "mLtight0Gamma" and args.photonCat) ,
-                       yRange = (7, 1e5) if plot.name == "PhotonGood0_pt" and args.mode =="all" and args.year == 2016 and args.selection == "SR3p" else (7,"auto"),
+                       yRange = (7, 1e5) if plot.name == "PhotonGood0_pt" and args.mode =="all" and args.year == 2016 and log and args.selection == "SR3p" else (3,"auto"),
                        ratio = ratio,
 #                       drawObjects = drawObjects( lumi_scale ),
                        drawObjects = drawObjects( lumi_scale, log=log ) + boxes,
