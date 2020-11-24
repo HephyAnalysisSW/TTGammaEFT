@@ -51,6 +51,7 @@ def get_parser():
 
     argParser.add_argument('--logLevel',                    action='store',         nargs='?',              choices=logChoices,     default='INFO',                     help="Log level for logging")
     argParser.add_argument('--overwrite',                   action='store_true',                                                                                        help="Overwrite existing output files, bool flag set to True  if used")
+    argParser.add_argument('--private',                     action='store_true',                                                                                        help="Use private nanoAODv6")
     argParser.add_argument('--samples',                     action='store',         nargs='*',  type=str,                           default=['WZTo3LNu'],               help="List of samples to be post-processed, given as CMG component name")
     argParser.add_argument('--eventsPerJob',                action='store',         nargs='?',  type=int,                           default=300000000,                  help="Maximum number of events per job (Approximate!).") # mul by 100
     argParser.add_argument('--nJobs',                       action='store',         nargs='?',  type=int,                           default=1,                          help="Maximum number of simultaneous jobs.")
@@ -162,23 +163,29 @@ runOnUL = False
 if options.year == 2016:
 #    from Samples.nanoAOD.Summer16_private_legacy_v1 import *
 #    from Samples.nanoAOD.Run2016_17Jul2018_private  import *
-#    from TTGammaEFT.Samples.Summer16_nanoAODv5      import *
-    from TTGammaEFT.Samples.Summer16_nanoAODv6      import *
-#    from TTGammaEFT.Samples.Summer16_private_nanoAODv6      import *
+    from TTGammaEFT.Samples.Summer16_nanoAODv5      import *
+    if options.private:
+        from TTGammaEFT.Samples.Summer16_private_nanoAODv6      import *
+    else:
+        from TTGammaEFT.Samples.Summer16_nanoAODv6      import *
     from Samples.nanoAOD.Run2016_nanoAODv6          import *
 elif options.year == 2017:
 #    from Samples.nanoAOD.Fall17_private_legacy_v1   import *
 #    from Samples.nanoAOD.Run2017_31Mar2018_private  import *
-    from TTGammaEFT.Samples.Fall17_nanoAODv6        import *
-#    from TTGammaEFT.Samples.Fall17_private_nanoAODv6        import *
+    if options.private:
+        from TTGammaEFT.Samples.Fall17_private_nanoAODv6        import *
+    else:
+        from TTGammaEFT.Samples.Fall17_nanoAODv6        import *
     from Samples.nanoAOD.Run2017_nanoAODv6          import *
 #    from Samples.nanoAOD.Run2017_UL                 import *
     runOnUL = "UL" in options.samples[0]
 elif options.year == 2018:
 #    from Samples.nanoAOD.Autumn18_private_legacy_v1 import *
 #    from Samples.nanoAOD.Run2018_17Sep2018_private  import *
-    from TTGammaEFT.Samples.Autumn18_nanoAODv6      import *
-#    from TTGammaEFT.Samples.Autumn18_private_nanoAODv6      import *
+    if options.private:
+        from TTGammaEFT.Samples.Autumn18_private_nanoAODv6      import *
+    else:
+        from TTGammaEFT.Samples.Autumn18_nanoAODv6      import *
     from Samples.nanoAOD.Run2018_nanoAODv6          import *
 
 # Load all samples to be post processed
@@ -666,6 +673,8 @@ if addSystematicVariations:
 
         new_variables += [ 'PhotonGood0_'+var+'_'            + v for v in writePhotonVariables ]
         new_variables += [ 'PhotonNoChgIsoNoSieie0_'+var+'_'   + v for v in writePhotonVariables ]
+        new_variables += [ 'photonJetdR_'+var+'/F' ]
+        new_variables += [ 'photonNoSieieNoChgIsoJetdR_'+var+'/F' ]
 
     for var in ['muTotalUp', 'muTotalDown']:
         new_variables += [ 'nMuonVeto_'+var+'/I']
@@ -684,6 +693,8 @@ if addSystematicVariations:
         new_variables += [ 'mLinvtight0GammaNoSieieNoChgIso_'+var+'/F', 'mLinvtight0Gamma_'+var+'/F' ] 
         new_variables += [ 'mlltight_'+var+'/F'] 
         new_variables += [ 'mT_'+var+'/F'] 
+        new_variables += [ 'ltight0GammadR_'+var+'/F', 'ltight0GammadPhi_'+var+'/F' ]
+        new_variables += [ 'ltight0GammaNoSieieNoChgIsodR_'+var+'/F', 'ltight0GammaNoSieieNoChgIsodPhi_'+var+'/F' ]
 
 new_variables += [ 'mll/F',  'mllgamma/F' ] 
 new_variables += [ 'mlltight/F',  'mllgammatight/F' ] 
@@ -728,6 +739,7 @@ if isMC:
     new_variables += [ 'GenLeptonCMSUnfold0_' + var for var in writeGenVariables ]
     new_variables += [ 'nGenElectronCMSUnfold/I', 'nGenMuonCMSUnfold/I', 'nGenLeptonCMSUnfold/I', 'nGenPhotonCMSUnfold/I', 'nGenBJetCMSUnfold/I', 'nGenJetsCMSUnfold/I' ]
     new_variables += [ 'genLCMStight0GammadPhi/F', 'genLCMStight0GammadR/F' ]
+    new_variables += [ 'genJetCMSGammadR/F' ]
 
     new_variables += [ 'GenElectron[%s]' %writeGenVarString ]
     new_variables += [ 'GenMuon[%s]'     %writeGenVarString ]
@@ -1106,6 +1118,8 @@ def filler( event ):
         if genP0 and genL0:
             event.genLCMStight0GammadPhi = deltaPhi( genL0['phi'], genP0['phi'] )
             event.genLCMStight0GammadR   = deltaR(   genL0,        genP0 )
+        if genP0 and GenJetCMSUnfold:
+            event.genJetCMSGammadR = min( deltaR( genP0, j ) for j in GenJetCMSUnfold )
 
         event.nGenElectronCMSUnfold = len( filter( lambda l: abs( l["pdgId"] ) == 11, GenLeptonCMSUnfold ) )
         event.nGenMuonCMSUnfold     = len( filter( lambda l: abs( l["pdgId"] ) == 13, GenLeptonCMSUnfold ) )
@@ -1748,6 +1762,64 @@ def filler( event ):
         if len(goodJets) > 1:
             event.j1GammadPhi = deltaPhi( goodJets[1]['phi'], mediumPhotons[0]['phi'] )
             event.j1GammadR   = deltaR(   goodJets[1],        mediumPhotons[0] )
+
+    if len(mediumPhotons) > 0 and len(tightLeptons_muup) > 0:
+            event.ltight0GammadPhi_muTotalUp = deltaPhi( tightLeptons_muup[0]['phi'], mediumPhotons[0]['phi'] )
+            event.ltight0GammadR_muTotalUp   = deltaR(   tightLeptons_muup[0],        mediumPhotons[0] )
+    if len(mediumPhotonsNoChgIsoNoSieie) > 0 and len(tightLeptons_muup) > 0:
+            event.ltight0GammaNoSieieNoChgIsodPhi_muTotalUp = deltaPhi( tightLeptons_muup[0]['phi'], mediumPhotonsNoChgIsoNoSieie[0]['phi'] )
+            event.ltight0GammaNoSieieNoChgIsodR_muTotalUp   = deltaR(   tightLeptons_muup[0],        mediumPhotonsNoChgIsoNoSieie[0] )
+
+    if len(mediumPhotons) > 0 and len(tightLeptons_mudown) > 0:
+            event.ltight0GammadPhi_muTotalDown = deltaPhi( tightLeptons_mudown[0]['phi'], mediumPhotons[0]['phi'] )
+            event.ltight0GammadR_muTotalDown   = deltaR(   tightLeptons_mudown[0],        mediumPhotons[0] )
+    if len(mediumPhotonsNoChgIsoNoSieie) > 0 and len(tightLeptons_mudown) > 0:
+            event.ltight0GammaNoSieieNoChgIsodPhi_muTotalDown = deltaPhi( tightLeptons_mudown[0]['phi'], mediumPhotonsNoChgIsoNoSieie[0]['phi'] )
+            event.ltight0GammaNoSieieNoChgIsodR_muTotalDown   = deltaR(   tightLeptons_mudown[0],        mediumPhotonsNoChgIsoNoSieie[0] )
+
+    if len(mediumPhotons_ScaleUp) > 0 and len(tightLeptons_eScaleUp) > 0:
+            event.ltight0GammadPhi_eScaleUp = deltaPhi( tightLeptons_eScaleUp[0]['phi'], mediumPhotons_ScaleUp[0]['phi'] )
+            event.ltight0GammadR_eScaleUp   = deltaR(   tightLeptons_eScaleUp[0],        mediumPhotons_ScaleUp[0] )
+    if len(mediumPhotons_ScaleUp) > 0 and len(goodJets) > 0:
+            event.photonJetdR_eScaleUp = min( deltaR( mediumPhotons_ScaleUp[0], j ) for j in goodJets )
+    if len(mediumPhotonsNoChgIsoNoSieie_ScaleUp) > 0 and len(tightLeptons_eScaleUp) > 0:
+            event.ltight0GammaNoSieieNoChgIsodPhi_eScaleUp = deltaPhi( tightLeptons_eScaleUp[0]['phi'], mediumPhotonsNoChgIsoNoSieie_ScaleUp[0]['phi'] )
+            event.ltight0GammaNoSieieNoChgIsodR_eScaleUp   = deltaR(   tightLeptons_eScaleUp[0],        mediumPhotonsNoChgIsoNoSieie_ScaleUp[0] )
+    if len(mediumPhotonsNoChgIsoNoSieie_ScaleUp) > 0 and len(goodNoChgIsoNoSieieJets) > 0:
+            event.photonNoSieieNoChgIsoJetdR_eScaleUp = min( deltaR( mediumPhotonsNoChgIsoNoSieie_ScaleUp[0], j ) for j in goodNoChgIsoNoSieieJets )
+
+    if len(mediumPhotons_ScaleDown) > 0 and len(tightLeptons_eScaleDown) > 0:
+            event.ltight0GammadPhi_eScaleDown = deltaPhi( tightLeptons_eScaleDown[0]['phi'], mediumPhotons_ScaleDown[0]['phi'] )
+            event.ltight0GammadR_eScaleDown   = deltaR(   tightLeptons_eScaleDown[0],        mediumPhotons_ScaleDown[0] )
+    if len(mediumPhotons_ScaleDown) > 0 and len(goodJets) > 0:
+            event.photonJetdR_eScaleDown = min( deltaR( mediumPhotons_ScaleDown[0], j ) for j in goodJets )
+    if len(mediumPhotonsNoChgIsoNoSieie_ScaleDown) > 0 and len(tightLeptons_eScaleDown) > 0:
+            event.ltight0GammaNoSieieNoChgIsodPhi_eScaleDown = deltaPhi( tightLeptons_eScaleDown[0]['phi'], mediumPhotonsNoChgIsoNoSieie_ScaleDown[0]['phi'] )
+            event.ltight0GammaNoSieieNoChgIsodR_eScaleDown   = deltaR(   tightLeptons_eScaleDown[0],        mediumPhotonsNoChgIsoNoSieie_ScaleDown[0] )
+    if len(mediumPhotonsNoChgIsoNoSieie_ScaleDown) > 0 and len(goodNoChgIsoNoSieieJets) > 0:
+            event.photonNoSieieNoChgIsoJetdR_eScaleDown = min( deltaR( mediumPhotonsNoChgIsoNoSieie_ScaleDown[0], j ) for j in goodNoChgIsoNoSieieJets )
+
+    if len(mediumPhotons_ResUp) > 0 and len(tightLeptons_eResUp) > 0:
+            event.ltight0GammadPhi_eResUp = deltaPhi( tightLeptons_eResUp[0]['phi'], mediumPhotons_ResUp[0]['phi'] )
+            event.ltight0GammadR_eResUp   = deltaR(   tightLeptons_eResUp[0],        mediumPhotons_ResUp[0] )
+    if len(mediumPhotons_ResUp) > 0 and len(goodJets) > 0:
+            event.photonJetdR_eResUp = min( deltaR( mediumPhotons_ResUp[0], j ) for j in goodJets )
+    if len(mediumPhotonsNoChgIsoNoSieie_ResUp) > 0 and len(tightLeptons_eResUp) > 0:
+            event.ltight0GammaNoSieieNoChgIsodPhi_eResUp = deltaPhi( tightLeptons_eResUp[0]['phi'], mediumPhotonsNoChgIsoNoSieie_ResUp[0]['phi'] )
+            event.ltight0GammaNoSieieNoChgIsodR_eResUp   = deltaR(   tightLeptons_eResUp[0],        mediumPhotonsNoChgIsoNoSieie_ResUp[0] )
+    if len(mediumPhotonsNoChgIsoNoSieie_ResUp) > 0 and len(goodNoChgIsoNoSieieJets) > 0:
+            event.photonNoSieieNoChgIsoJetdR_eResUp = min( deltaR( mediumPhotonsNoChgIsoNoSieie_ResUp[0], j ) for j in goodNoChgIsoNoSieieJets )
+
+    if len(mediumPhotons_ResDown) > 0 and len(tightLeptons_eResDown) > 0:
+            event.ltight0GammadPhi_eResDown = deltaPhi( tightLeptons_eResDown[0]['phi'], mediumPhotons_ResDown[0]['phi'] )
+            event.ltight0GammadR_eResDown   = deltaR(   tightLeptons_eResDown[0],        mediumPhotons_ResDown[0] )
+    if len(mediumPhotons_ResDown) > 0 and len(goodJets) > 0:
+            event.photonJetdR_eResDown = min( deltaR( mediumPhotons_ResDown[0], j ) for j in goodJets )
+    if len(mediumPhotonsNoChgIsoNoSieie_ResDown) > 0 and len(tightLeptons_eResDown) > 0:
+            event.ltight0GammaNoSieieNoChgIsodPhi_eResDown = deltaPhi( tightLeptons_eResDown[0]['phi'], mediumPhotonsNoChgIsoNoSieie_ResDown[0]['phi'] )
+            event.ltight0GammaNoSieieNoChgIsodR_eResDown   = deltaR(   tightLeptons_eResDown[0],        mediumPhotonsNoChgIsoNoSieie_ResDown[0] )
+    if len(mediumPhotonsNoChgIsoNoSieie_ResDown) > 0 and len(goodNoChgIsoNoSieieJets) > 0:
+            event.photonNoSieieNoChgIsoJetdR_eResDown = min( deltaR( mediumPhotonsNoChgIsoNoSieie_ResDown[0], j ) for j in goodNoChgIsoNoSieieJets )
 
     if len(mediumPhotons_ScaleUp) > 0   and len(tightLeptons_eScaleUp) > 0:   event.mLtight0Gamma_eScaleUp   = ( get4DVec(tightLeptons_eScaleUp[0]) + get4DVec(mediumPhotons_ScaleUp[0]) ).M()
     if len(mediumPhotons_ScaleDown) > 0 and len(tightLeptons_eScaleDown) > 0: event.mLtight0Gamma_eScaleDown = ( get4DVec(tightLeptons_eScaleDown[0]) + get4DVec(mediumPhotons_ScaleDown[0]) ).M()
