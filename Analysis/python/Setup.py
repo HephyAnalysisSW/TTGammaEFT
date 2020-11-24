@@ -8,6 +8,7 @@ from RootTools.core.standard          import *
 #user specific
 from TTGammaEFT.Tools.TriggerSelector import TriggerSelector
 from TTGammaEFT.Tools.cutInterpreter  import cutInterpreter, zMassRange
+from TTGammaEFT.Analysis.Region       import systematicReplacements
 from TTGammaEFT.Analysis.SetupHelpers import *
 
 from Analysis.Tools.metFilters        import getFilterCut
@@ -243,12 +244,12 @@ class Setup:
 
             if self.year == "RunII":
                 ws   = "(%s)"%_weightString["MC"]
-                ws16 = "+(%s*(%s0_photonCatMagic==2)*(%f-1)*(year==2016))" %(_weightString["MC"], photon, misIDSF_val[2016].val)
-                ws17 = "+(%s*(%s0_photonCatMagic==2)*(%f-1)*(year==2017))" %(_weightString["MC"], photon, misIDSF_val[2017].val)
-                ws18 = "+(%s*(%s0_photonCatMagic==2)*(%f-1)*(year==2018))" %(_weightString["MC"], photon, misIDSF_val[2018].val)
+                ws16 = "+(%s*(%s_photonCatMagic==2)*(%f-1)*(year==2016))" %(_weightString["MC"], photon, misIDSF_val[2016].val)
+                ws17 = "+(%s*(%s_photonCatMagic==2)*(%f-1)*(year==2017))" %(_weightString["MC"], photon, misIDSF_val[2017].val)
+                ws18 = "+(%s*(%s_photonCatMagic==2)*(%f-1)*(year==2018))" %(_weightString["MC"], photon, misIDSF_val[2018].val)
                 _weightString["MC"] = ws + ws16 + ws17 + ws18
             else:
-                _weightString["MC"] += "+%s*(%s0_photonCatMagic==2)*(%f-1)" %(_weightString["MC"], photon, misIDSF_val[self.year].val)
+                _weightString["MC"] += "+%s*(%s_photonCatMagic==2)*(%f-1)" %(_weightString["MC"], photon, misIDSF_val[self.year].val)
 
         if   dataMC == "DataMC": return _weightString
 
@@ -397,10 +398,6 @@ class Setup:
                 photonCatVar = "PhotonNoChgIsoNoSieie0_photonCatMagic"
                 photonCatPrefix = "noChgIsoNoSieiephotoncat"
 
-            res["prefixes"].append( photonIso )
-            preselphotonIso = cutInterpreter.cutString( photonIso )
-            res["cuts"].append( preselphotonIso )
-
         if not photonSel and not dileptonic:
             # remove default zwindow cut in qcd estimation for non photon regions
             zWindow = "all"
@@ -422,6 +419,15 @@ class Setup:
             pSysStr = "_" + self.sys['selectionModifier']
             isEVar = True
 #            leptonPtCutVar += "_totalUp" if "up" in self.sys['selectionModifier'].lower() else "_totalDown"
+
+        if photonSel and photonIso:
+
+            res["prefixes"].append( photonIso )
+            preselphotonIso = cutInterpreter.cutString( photonIso )
+            if dataMC == "MC":
+                res["cuts"].append( preselphotonIso.replace("0_","0"+pSysStr+"_") )
+            else:
+                res["cuts"].append( preselphotonIso )
 
         #leptons or inv. iso leptons
         res["prefixes"].append( tightLepton )
@@ -536,6 +542,9 @@ class Setup:
         if not "all" in zWindow:
             res["prefixes"].append( zWindow )
             preselZWindow = cutInterpreter.cutString( zWindow )
+            if pSysStr:
+                for s in systematicReplacements[self.sys['selectionModifier']]:
+                    if s in preselZWindow: preselZWindow=preselZWindow.replace(s,s+pSysStr)
             res["cuts"].append( preselZWindow )
 
         #M3 window
@@ -548,7 +557,7 @@ class Setup:
             catPrefix = photonCatPrefix + processCut.replace("cat","")
             res["prefixes"].append( catPrefix )
             catCut = cutInterpreter.cutString( catPrefix )
-            res["cuts"].append( catCut )
+            res["cuts"].append( catCut.replace("0_","0"+pSysStr+"_") )
 
         #badEEVeto
 #        if self.year == 2017:
@@ -576,8 +585,9 @@ class Setup:
             res["cuts"].append( getFilterCut(isData=(dataMC=="Data"), year=self.year, skipBadChargedCandidate=True) )
             res["cuts"].extend(self.externalCuts)
 
-        return {"cut":"&&".join(res["cuts"]), "prefix":"-".join(res["prefixes"]), "weightStr": self.weightString(dataMC,photon=photonCatVar.split("0")[0] if addMisIDSF else None,addMisIDSF=addMisIDSF and self.isPhotonSelection)}
-
+        catVar = photonCatVar.split("0")[0] + "0"
+        if pSysStr: catVar += pSysStr
+        return {"cut":"&&".join(res["cuts"]), "prefix":"-".join(res["prefixes"]), "weightStr": self.weightString(dataMC,photon=catVar if addMisIDSF else None,addMisIDSF=addMisIDSF and self.isPhotonSelection)}
 
     def genSelection(self, dataMC,
                         dileptonic=None, invertLepIso=None, addMisIDSF=None,
@@ -734,7 +744,7 @@ if __name__ == "__main__":
 #        dict["parameters"]["invertLepIso"] = False
         print
         setup = setup.sysClone( parameters=dict["parameters"] )
-        setup = setup.sysClone({"selectionModifier":"eResUp"})
+#        setup = setup.sysClone({"selectionModifier":"eResUp"})
         for channel in dict["channels"]:
             print
             print channel
