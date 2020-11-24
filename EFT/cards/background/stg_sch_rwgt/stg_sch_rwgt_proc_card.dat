@@ -1,0 +1,15 @@
+set group_subprocesses Auto
+set ignore_six_quark_processes False
+set loop_optimized_output True
+set loop_color_flows False
+set gauge unitary
+set complex_mass_scheme False
+set max_npoint_for_channel 0
+import model dim6top_LO_UFO-custom
+define p = p b b~
+define j = j b b~
+define w = w+ w-
+generate p p > w+ > t b~ a DIM6=1, t > b w+ DIM6=1, w+ > all all DIM6=0
+add process p p > w- > t~ b a DIM6=1, t~ > b~ w- DIM6=1, w- > all all DIM6=0
+
+output stg_sch_rwgt

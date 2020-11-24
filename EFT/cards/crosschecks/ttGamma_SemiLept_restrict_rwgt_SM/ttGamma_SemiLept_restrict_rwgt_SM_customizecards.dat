@@ -1,0 +1,9 @@
+#put card customizations here (change top and higgs mass for example)
+set param_card mass 6 172.5
+set param_card mass 25 125.0
+set param_card yukawa 6 172.5
+set param_card ctZ 0.000000
+set param_card ctZI 0.000000
+set param_card ctW 0.000000
+set param_card ctWI 0.000000
+
