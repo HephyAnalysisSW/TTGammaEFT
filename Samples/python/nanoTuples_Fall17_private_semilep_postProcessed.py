@@ -85,7 +85,7 @@ dirs["WJets"]            = ["W1JetsToLNu", "W2JetsToLNu", "W3JetsToLNu", "W4Jets
 dirs["WG"]               = ["WGToLNuG"]
 dirs["WG_NLO"]           = ["WGToLNuG_amcatnlo"]
 
-#dirs["TZQ"]              = ["tZq_ll", "tZq_nunu"]
+dirs["TZQ"]              = ["tZq_ll"] #, "tZq_nunu"]
 #dirs["TWZ"]              = ["tWll"]
 #dirs["THQ"]              = ["THQ"]
 #dirs["THW"]              = ["THW"]
@@ -116,7 +116,7 @@ dirs["ZZ"]               = ["ZZTo2L2Q", "ZZTo4L", "ZZTo2Q2Nu" ]
 #dirs["GluGlu"]           = ["GluGluHToZZTo4L", "GluGluToContinToZZTo2e2mu", "GluGluToContinToZZTo2e2tau", "GluGluToContinToZZTo2mu2tau", "GluGluToContinToZZTo4e", "GluGluToContinToZZTo4mu", "GluGluToContinToZZTo4tau"]
 
 dirs["other"]            = []
-#dirs["other"]           += dirs["TZQ"]  + dirs["THQ"]  + dirs["THW"] + dirs["TTH"] + dirs["TWZ"]
+dirs["other"]           += dirs["TZQ"] # + dirs["THQ"]  + dirs["THW"] + dirs["TTH"] + dirs["TWZ"]
 dirs["other"]           += dirs["TTW"]  + dirs["TTZ"]
 #dirs["other"]           += dirs["TTWZ"] + dirs["TTZZ"] + dirs["TTWW"] + dirs["TTTT"]
 #dirs["other"]           += dirs["WWW"]  + dirs["WWZ"]  + dirs["WZZ"]  + dirs["ZZZ"]
@@ -133,18 +133,18 @@ dirs["QCD"]              = dirs["QCD_mu"] + dirs["QCD_e"]
 dirs["GJets"]            = ["GJets_HT40to100", "GJets_HT100to200", "GJets_HT200to400", "GJets_HT400to600", "GJets_HT600toInf"]
 dirs["GQCD"]             = dirs["QCD_mu"] + dirs["QCD_e"] + dirs["GJets"]
 
-dirs["all_noOther"]      = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG"] + dirs["QCD"] + dirs["GJets"]
+dirs["all_noOther"]      = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG_NLO"] + dirs["QCD"] + dirs["GJets"]
 dirs["all"]              = dirs["all_noOther"] + dirs["other"]
 
-dirs["all_e"]            = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG"] + dirs["QCD_e"] + dirs["GJets"] + dirs["other"]
-dirs["all_mu"]           = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG"] + dirs["QCD_mu"] + dirs["GJets"] + dirs["other"]
+dirs["all_e"]            = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG_NLO"] + dirs["QCD_e"] + dirs["GJets"] + dirs["other"]
+dirs["all_mu"]           = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG_NLO"] + dirs["QCD_mu"] + dirs["GJets"] + dirs["other"]
 
-dirs["all_noOther_noTT"] = dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG"]# + dirs["QCD"] + dirs["GJets"]
+dirs["all_noOther_noTT"] = dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG_NLO"]# + dirs["QCD"] + dirs["GJets"]
 dirs["all_noTT"]         = dirs["all_noOther_noTT"] + dirs["other"]
 
-dirs["all_noQCD"]        = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG"] +  dirs["other"]
+dirs["all_noQCD"]        = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG_NLO"] +  dirs["other"]
 
-dirs["VG"]               = dirs["ZG_lowMLL"] + dirs["WG"]
+dirs["VG"]               = dirs["ZG_lowMLL"] + dirs["WG_NLO"]
 #dirs["rest"]             = dirs["singleTop"] + dirs["TG"] + dirs["other"]
 dirs["rest"]             = dirs["other"]
 

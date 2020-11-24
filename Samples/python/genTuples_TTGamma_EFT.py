@@ -47,21 +47,21 @@ logger.info( "Using db file: %s", dbFile )
 #ttGamma_SemiLept_restrict_rwgt ref point xsec (LO): 14.208233244 +- 0.008421588 pb 
 #ttGamma_SemiLept_restrict_4WC_order2_ref_rwgt                  = FWLiteSample.fromDAS("ttGamma_SemiLept_restrict_4WC_order2_ref_rwgt", "/ttGamma_SemiLept_restrict_ctZ_ctZI_ctW_ctWI_rwgt_v3/llechner-ttGamma_SemiLept_restrict_ctZ_ctZI_ctW_ctWI_rwgt_v3-52ccdb836f4f6a71f0c2e2dfd2ac5032/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 #ttGamma_SemiLept_restrict_4WC_order2_ref_rwgt.reweight_pkl     = os.path.join( gridpack_directory, "EFT", "dipoles", "ttGamma_SemiLept_restrict", "ttGamma_SemiLept_restrict_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
-#ttGamma_SemiLept_restrict_4WC_order2_ref_rwgt.xSection         = 14.208233244 * 1.994
+#ttGamma_SemiLept_restrict_4WC_order2_ref_rwgt.xSection         = 14.208233244 * 1.4852 # 1.994
 #ttGamma_SemiLept_restrict_4WC_order2_ref_rwgt.nEvents          = 1000000
 
 #ttGamma_Dilept_restrict_rwgt SM xsec (LO): 1.35234104243 +- 0.0918894201164 pb 
 #ttGamma_Dilept_restrict_rwgt ref point xsec (LO): 4.1996660736 +- 0.005027258 pb 
 #ttGamma_Dilept_restrict_4WC_order2_ref_rwgt                    = FWLiteSample.fromDAS("ttGamma_Dilept_restrict_4WC_order2_ref_rwgt", "/ttGamma_Dilept_restrict_ctZ_ctZI_ctW_ctWI_rwgt/llechner-ttGamma_Dilept_restrict_ctZ_ctZI_ctW_ctWI_rwgt-ca5a5defbc9ea37daa37f4d84541274e/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 #ttGamma_Dilept_restrict_4WC_order2_ref_rwgt.reweight_pkl       = os.path.join( gridpack_directory, "EFT", "dipoles", "ttGamma_Dilept_restrict", "ttGamma_Dilept_restrict_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
-#ttGamma_Dilept_restrict_4WC_order2_ref_rwgt.xSection           = 4.1996660736 * 1.616
+#ttGamma_Dilept_restrict_4WC_order2_ref_rwgt.xSection           = 4.1996660736 * 1.4852 # 1.616
 #ttGamma_Dilept_restrict_4WC_order2_ref_rwgt.nEvents            = 1000000
 
 #ttGamma_Had_restrict_rwgt SM xsec (LO): 3.66135127723 +- 0.423416766218 pb 
 #ttGamma_Had_restrict_rwgt ref point xsec (LO): 11.772568724 +- 0.02751207 pb 
 #ttGamma_Had_restrict_4WC_order2_ref_rwgt                       = FWLiteSample.fromDAS("ttGamma_Had_restrict_4WC_order2_ref_rwgt", "/ttGamma_Had_restrict_ctZ_ctZI_ctW_ctWI_rwgt/llechner-ttGamma_Had_restrict_ctZ_ctZI_ctW_ctWI_rwgt-3a8b03a4c138eccf092e79c105a0428d/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 #ttGamma_Had_restrict_4WC_order2_ref_rwgt.reweight_pkl          = os.path.join( gridpack_directory, "EFT", "dipoles", "ttGamma_Had_restrict", "ttGamma_Had_restrict_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
-#ttGamma_Had_restrict_4WC_order2_ref_rwgt.xSection              = 11.772568724 * 2.565
+#ttGamma_Had_restrict_4WC_order2_ref_rwgt.xSection              = 11.772568724 * 1.4852 # 1.565
 #ttGamma_Had_restrict_4WC_order2_ref_rwgt.nEvents               = 1000000
 
 # EFT bkg
@@ -162,21 +162,21 @@ EFT = [
 #ttGamma_SemiLept_restrict_rwgt/ttGamma_SemiLept_restrict_rwgt ref point xsec (LO) : 5.5683434238 +- 0.002784588 pb
 #ttGamma_SemiLept_restrict_4WC_ref_rwgt_dim3                  = FWLiteSample.fromDAS("ttGamma_SemiLept_restrict_4WC_ref_rwgt_dim3", "/ttGamma_SemiLept_restrict_rwgt_ref_dim3/llechner-ttGamma_SemiLept_restrict_rwgt_ref_dim3-c667af2b36a80bb7df7d629751130eb8/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 #ttGamma_SemiLept_restrict_4WC_ref_rwgt_dim3.reweight_pkl     = os.path.join( gridpack_directory, "EFT", "dipoles", "medRefdim3", "ttGamma_SemiLept_restrict_rwgt", "ttGamma_SemiLept_restrict_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
-#ttGamma_SemiLept_restrict_4WC_ref_rwgt_dim3.xSection         = 5.5683434238 * 1.994
+#ttGamma_SemiLept_restrict_4WC_ref_rwgt_dim3.xSection         = 5.5683434238 * 1.4852 # 1.994
 #ttGamma_SemiLept_restrict_4WC_ref_rwgt_dim3.nEvents          = 20000 * len(ttGamma_SemiLept_restrict_4WC_ref_rwgt_dim3.files)
 
 #ttGamma_Dilept_restrict_rwgt/ttGamma_Dilept_restrict_rwgt SM xsec (LO) : 1.42364456092 +- 0.0893995220222 pb
 #ttGamma_Dilept_restrict_rwgt/ttGamma_Dilept_restrict_rwgt ref point xsec (LO) : 1.61851737614 +- 0.001665757 pb
 #ttGamma_Dilept_restrict_4WC_ref_rwgt_dim3                    = FWLiteSample.fromDAS("ttGamma_Dilept_restrict_4WC_ref_rwgt_dim3", "/ttGamma_Dilept_restrict_rwgt_ref_dim3/llechner-ttGamma_Dilept_restrict_rwgt_ref_dim3-b57285320665589a75f879325a45239e/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 #ttGamma_Dilept_restrict_4WC_ref_rwgt_dim3.reweight_pkl       = os.path.join( gridpack_directory, "EFT", "dipoles", "medRefdim3", "ttGamma_Dilept_restrict_rwgt", "ttGamma_Dilept_restrict_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
-#ttGamma_Dilept_restrict_4WC_ref_rwgt_dim3.xSection           = 1.61851737614 * 1.616
+#ttGamma_Dilept_restrict_4WC_ref_rwgt_dim3.xSection           = 1.61851737614 * 1.4852 # 1.616
 #ttGamma_Dilept_restrict_4WC_ref_rwgt_dim3.nEvents            = 20000 * len(ttGamma_Dilept_restrict_4WC_ref_rwgt_dim3.files)
 
 #ttGamma_Had_restrict_rwgt/ttGamma_Had_restrict_rwgt SM xsec (LO) : 3.97374503392 +- 0.562422778965 pb
 #ttGamma_Had_restrict_rwgt/ttGamma_Had_restrict_rwgt ref point xsec (LO) : 4.668529203 +- 0.00947815 pb
 #ttGamma_Had_restrict_4WC_ref_rwgt_dim3                    = FWLiteSample.fromDAS("ttGamma_Had_restrict_4WC_ref_rwgt_dim3", "/ttGamma_Had_restrict_rwgt_ref_dim3/llechner-ttGamma_Had_restrict_rwgt_ref_dim3-8c52d8dc60d4dc6f9921eda098332184/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 #ttGamma_Had_restrict_4WC_ref_rwgt_dim3.reweight_pkl       = os.path.join( gridpack_directory, "EFT", "dipoles", "medRefdim3", "ttGamma_Had_restrict_rwgt", "ttGamma_Had_restrict_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
-#ttGamma_Had_restrict_4WC_ref_rwgt_dim3.xSection           = 4.668529203 * 2.565
+#ttGamma_Had_restrict_4WC_ref_rwgt_dim3.xSection           = 4.668529203 * 1.4852 # 1.565
 #ttGamma_Had_restrict_4WC_ref_rwgt_dim3.nEvents            = 20000 * len(ttGamma_Had_restrict_4WC_ref_rwgt_dim3.files)
 
 # EFT bkg
@@ -277,48 +277,48 @@ tWG_restrict_ref_rwgt_2WC.nEvents          = 20000 * len(tWG_restrict_ref_rwgt_2
 
 ttGamma_SemiLept_restrict_ref_rwgt_2WC                  = FWLiteSample.fromDAS("ttGamma_SemiLept_restrict_ref_rwgt_2WC", "/ttGamma_SemiLept_restrict_rwgt_ref_2WC_v3/llechner-ttGamma_SemiLept_restrict_rwgt_ref_2WC_v3-0640206874b70578d88844db8a1a4ded/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 ttGamma_SemiLept_restrict_ref_rwgt_2WC.reweight_pkl     = os.path.join( gridpack_directory, "EFT", "dipoles", "singleOp", "ttGamma_SemiLept_restrict_rwgt_2WC", "ttGamma_SemiLept_restrict_rwgt_2WC_slc7_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
-ttGamma_SemiLept_restrict_ref_rwgt_2WC.xSection         = 4.753 * 1.994
+ttGamma_SemiLept_restrict_ref_rwgt_2WC.xSection         = 4.753 * 1.4852 # 1.994
 ttGamma_SemiLept_restrict_ref_rwgt_2WC.nEvents          = 20000 * len(ttGamma_SemiLept_restrict_ref_rwgt_2WC.files)
 
 ttGamma_Dilept_restrict_ref_rwgt_2WC                  = FWLiteSample.fromDAS("ttGamma_Dilept_restrict_ref_rwgt_2WC", "/ttGamma_Dilept_restrict_rwgt_ref_2WC_v3/llechner-ttGamma_Dilept_restrict_rwgt_ref_2WC_v3-56cbec692fbe86ba20d968d1c4057952/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 ttGamma_Dilept_restrict_ref_rwgt_2WC.reweight_pkl     = os.path.join( gridpack_directory, "EFT", "dipoles", "singleOp", "ttGamma_Dilept_restrict_rwgt_2WC", "ttGamma_Dilept_restrict_rwgt_slc7_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
-ttGamma_Dilept_restrict_ref_rwgt_2WC.xSection         = 1.409 * 1.616
+ttGamma_Dilept_restrict_ref_rwgt_2WC.xSection         = 1.409 * 1.4852 # 1.616
 ttGamma_Dilept_restrict_ref_rwgt_2WC.nEvents          = 20000 * len(ttGamma_Dilept_restrict_ref_rwgt_2WC.files)
 
 ttGamma_SemiLept_restrict_ctZ2                  = FWLiteSample.fromDAS("ttGamma_SemiLept_restrict_ctZ2", "/ttGamma_SemiLept_restrict_singleOp_ctZ2_v3/llechner-ttGamma_SemiLept_restrict_singleOp_ctZ2_v3-42415c605bfefc1bae768a0414d5f542/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
-ttGamma_SemiLept_restrict_ctZ2.xSection         =  4.925 * 1.994
+ttGamma_SemiLept_restrict_ctZ2.xSection         =  4.925 * 1.4852 # 1.994
 ttGamma_SemiLept_restrict_ctZ2.nEvents          = 20000 * len(ttGamma_SemiLept_restrict_ctZ2.files)
 
 ttGamma_SemiLept_restrict_ctW2                  = FWLiteSample.fromDAS("ttGamma_SemiLept_restrict_ctW2", "/ttGamma_SemiLept_restrict_singleOp_ctW2/llechner-ttGamma_SemiLept_restrict_singleOp_ctW2-f6fd16ed73d49ac7b3424300441bc1f4/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
-ttGamma_SemiLept_restrict_ctW2.xSection         =  4.825 * 1.994
+ttGamma_SemiLept_restrict_ctW2.xSection         =  4.825 * 1.4852 # 1.994
 ttGamma_SemiLept_restrict_ctW2.nEvents          = 10000 * len(ttGamma_SemiLept_restrict_ctW2.files)
 
 ttGamma_SemiLept_restrict_ctZI2                  = FWLiteSample.fromDAS("ttGamma_SemiLept_restrict_ctZI2", "/ttGamma_SemiLept_restrict_singleOp_ctZI2_v3/llechner-ttGamma_SemiLept_restrict_singleOp_ctZI2_v3-2fe29daa6135711d3f381b8d439a66a5/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
-ttGamma_SemiLept_restrict_ctZI2.xSection         =  4.936 * 1.994
+ttGamma_SemiLept_restrict_ctZI2.xSection         =  4.936 * 1.4852 # 1.994
 ttGamma_SemiLept_restrict_ctZI2.nEvents          = 20000 * len(ttGamma_SemiLept_restrict_ctZI2.files)
 
 ttGamma_SemiLept_restrict_ctWI2                  = FWLiteSample.fromDAS("ttGamma_SemiLept_restrict_ctWI2", "/ttGamma_SemiLept_restrict_singleOp_ctWI2/llechner-ttGamma_SemiLept_restrict_singleOp_ctWI2-2fb480a33a2a85c17a542ad97668e4e2/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
-ttGamma_SemiLept_restrict_ctWI2.xSection         =  4.935 * 1.994
+ttGamma_SemiLept_restrict_ctWI2.xSection         =  4.935 * 1.4852 # 1.994
 ttGamma_SemiLept_restrict_ctWI2.nEvents          = 10000 * len(ttGamma_SemiLept_restrict_ctWI2.files)
 
 ttGamma_SemiLept_restrict_ctZm1                  = FWLiteSample.fromDAS("ttGamma_SemiLept_restrict_ctZm1", "/ttGamma_SemiLept_restrict_singleOp_ctZm1_v3/llechner-ttGamma_SemiLept_restrict_singleOp_ctZm1_v3-c8c707208e2368c5285c97d21dd7e19a/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
-ttGamma_SemiLept_restrict_ctZm1.xSection         =  4.727 * 1.994
+ttGamma_SemiLept_restrict_ctZm1.xSection         =  4.727 * 1.4852 # 1.994
 ttGamma_SemiLept_restrict_ctZm1.nEvents          = 20000 * len(ttGamma_SemiLept_restrict_ctZm1.files)
 
 ttGamma_SemiLept_restrict_ctWm1                  = FWLiteSample.fromDAS("ttGamma_SemiLept_restrict_ctWm1", "/ttGamma_SemiLept_restrict_singleOp_ctWm1/llechner-ttGamma_SemiLept_restrict_singleOp_ctWm1-4681ca7f134f63fff63b4e4abd56c103/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
-ttGamma_SemiLept_restrict_ctWm1.xSection         =  4.87 * 1.994
+ttGamma_SemiLept_restrict_ctWm1.xSection         =  4.87 * 1.4852 # 1.994
 ttGamma_SemiLept_restrict_ctWm1.nEvents          = 10000 * len(ttGamma_SemiLept_restrict_ctWm1.files)
 
 ttGamma_SemiLept_restrict_ctZIm1                  = FWLiteSample.fromDAS("ttGamma_SemiLept_restrict_ctZIm1", "/ttGamma_SemiLept_restrict_singleOp_ctZIm1_v3/llechner-ttGamma_SemiLept_restrict_singleOp_ctZIm1_v3-7d87abf868c46c9b9a078fda3b10ec5c/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
-ttGamma_SemiLept_restrict_ctZIm1.xSection         =  4.699 * 1.994
+ttGamma_SemiLept_restrict_ctZIm1.xSection         =  4.699 * 1.4852 # 1.994
 ttGamma_SemiLept_restrict_ctZIm1.nEvents          = 20000 * len(ttGamma_SemiLept_restrict_ctZIm1.files)
 
 ttGamma_SemiLept_restrict_ctWIm1                  = FWLiteSample.fromDAS("ttGamma_SemiLept_restrict_ctWIm1", "/ttGamma_SemiLept_restrict_singleOp_ctWIm1/llechner-ttGamma_SemiLept_restrict_singleOp_ctWIm1-aefcf5495f5626fff9fffaee8996af99/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
-ttGamma_SemiLept_restrict_ctWIm1.xSection         =  4.818 * 1.994
+ttGamma_SemiLept_restrict_ctWIm1.xSection         =  4.818 * 1.4852 # 1.994
 ttGamma_SemiLept_restrict_ctWIm1.nEvents          = 10000 * len(ttGamma_SemiLept_restrict_ctWIm1.files)
 
 ttGamma_SemiLept_restrict_SM                      = FWLiteSample.fromDAS("ttGamma_SemiLept_restrict_SM", "/ttGamma_SemiLept_restrict_singleOp_SM_v3/llechner-ttGamma_SemiLept_restrict_singleOp_SM_v3-cb8bb7da15fae1d68fcedeb20add8c5a/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
-ttGamma_SemiLept_restrict_SM.xSection             = 4.616 * 1.994
+ttGamma_SemiLept_restrict_SM.xSection             = 4.616 * 1.4852 # 1.994
 ttGamma_SemiLept_restrict_SM.nEvents              = 20000 * len(ttGamma_SemiLept_restrict_SM.files)
 
 
@@ -344,22 +344,22 @@ EFT_ctZ = [
 #ttGamma_SemiLept_restrict_rwgt/ttGamma_SemiLept_restrict_rwgt ref point xsec (LO) : 3.579146736 +- 0.002020074 pb 
 #ttGamma_SemiLept_restrict_4WC_medRef_rwgt                  = FWLiteSample.fromDAS("ttGamma_SemiLept_restrict_4WC_medRef_rwgt", "/ttGamma_SemiLept_restrict_rwgt_medRef/llechner-ttGamma_SemiLept_restrict_rwgt_medRef-c667af2b36a80bb7df7d629751130eb8/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 #ttGamma_SemiLept_restrict_4WC_medRef_rwgt.reweight_pkl     = os.path.join( gridpack_directory, "EFT", "dipoles", "medRef", "ttGamma_SemiLept_restrict_rwgt", "ttGamma_SemiLept_restrict_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
-#ttGamma_SemiLept_restrict_4WC_medRef_rwgt.xSection         = 4.87946500443 * 1.994
+#ttGamma_SemiLept_restrict_4WC_medRef_rwgt.xSection         = 4.87946500443 * 1.4852 # 1.994
 #ttGamma_SemiLept_restrict_4WC_medRef_rwgt.nEvents          = 20000 * len(ttGamma_SemiLept_restrict_4WC_medRef_rwgt.files)
 
 #ttGamma_SemiLept_restrict_4WC_medRef_rwgt_dim2                  = FWLiteSample.fromDAS("ttGamma_SemiLept_restrict_4WC_medRef_rwgt_dim2", "/ttGamma_SemiLept_restrict_rwgt_medRef_dim2/llechner-ttGamma_SemiLept_restrict_rwgt_medRef_dim2-6a7a1c3e9c192edc03722859cc9141ef/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 #ttGamma_SemiLept_restrict_4WC_medRef_rwgt_dim2.reweight_pkl     = os.path.join( gridpack_directory, "EFT", "dipoles", "medRef", "ttGamma_SemiLept_restrict_rwgt_dim2", "ttGamma_SemiLept_restrict_rwgt_dim2_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
-#ttGamma_SemiLept_restrict_4WC_medRef_rwgt_dim2.xSection         = 4.87946500443 * 1.994
+#ttGamma_SemiLept_restrict_4WC_medRef_rwgt_dim2.xSection         = 4.87946500443 * 1.4852 # 1.994
 #ttGamma_SemiLept_restrict_4WC_medRef_rwgt_dim2.nEvents          = 20000 * len(ttGamma_SemiLept_restrict_4WC_medRef_rwgt_dim2.files)
 
 #ttGamma_SemiLept_restrict_4WC_medRef_rwgt_dim3                  = FWLiteSample.fromDAS("ttGamma_SemiLept_restrict_4WC_medRef_rwgt_dim3", "/ttGamma_SemiLept_restrict_rwgt_medRef_dim3/llechner-ttGamma_SemiLept_restrict_rwgt_medRef_dim3-4d0a51796f8068d09fb74bb9a71d1495/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 #ttGamma_SemiLept_restrict_4WC_medRef_rwgt_dim3.reweight_pkl     = os.path.join( gridpack_directory, "EFT", "dipoles", "medRef", "ttGamma_SemiLept_restrict_rwgt_dim3", "ttGamma_SemiLept_restrict_rwgt_dim3_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
-#ttGamma_SemiLept_restrict_4WC_medRef_rwgt_dim3.xSection         = 4.87946500443 * 1.994
+#ttGamma_SemiLept_restrict_4WC_medRef_rwgt_dim3.xSection         = 4.87946500443 * 1.4852 # 1.994
 #ttGamma_SemiLept_restrict_4WC_medRef_rwgt_dim3.nEvents          = 20000 * len(ttGamma_SemiLept_restrict_4WC_medRef_rwgt_dim3.files)
 
 #ttGamma_restrict_4WC_medRef_rwgt                  = FWLiteSample.fromDAS("ttGamma_restrict_4WC_medRef_rwgt", "/ttGamma_restrict_rwgt_medRef/llechner-ttGamma_restrict_rwgt_medRef-7a1684c2d364fb87a18e56ea7700cc86/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 #ttGamma_restrict_4WC_medRef_rwgt.reweight_pkl     = os.path.join( gridpack_directory, "EFT", "dipoles", "medRef", "ttGamma_restrict_rwgt", "ttGamma_restrict_rwgt_slc6_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
-#ttGamma_restrict_4WC_medRef_rwgt.xSection         = 4.87946500443 * 1.994
+#ttGamma_restrict_4WC_medRef_rwgt.xSection         = 4.87946500443 * 1.4852 # 1.994
 #ttGamma_restrict_4WC_medRef_rwgt.nEvents          = 20000 * len(ttGamma_restrict_4WC_medRef_rwgt.files)
 
 EFT_lowRef = [

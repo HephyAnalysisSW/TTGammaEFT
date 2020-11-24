@@ -52,19 +52,28 @@ logger.info( "Loading MC samples from directory %s", os.path.join( data_director
 # Directories
 dirs = {}
 
-dirs["TT_pow"]           = ["TTSingleLep_pow_CP5_sync" ]
+#dirs["TT_pow"]           = ["TTSingleLep_pow_CP5_sync" ]
+#dirs["DY_LO"]            = ["DYJetsToLL_M50_LO_ext1_sync"]
+
 dirs["TTG"]              = ["TTGSingleLep_LO_sync"]
-dirs["DY_LO"]            = ["DYJetsToLL_M50_LO_ext1_sync"]
+dirs["QCD_e"]            = ["QCD_Ele_pt170to300_sync"]
+dirs["QCD_mu"]           = ["QCD_Mu_pt170to300_sync"]
+dirs["WJets"]            = ["W3JetsToLNu_sync"]
 
 directories = { key : [ os.path.join( data_directory_, postprocessing_directory_, dir) for dir in dirs[key] ] for key in dirs.keys() }
 
 # Samples
-TT_sync_16          = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_pow"], noCheckProxy=True, fromDPM=fromDPM)
-TT_sync_16.normalization = TTSingleLep_pow_CP5_sync.normalization
-TTG_sync_16         = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG"], noCheckProxy=True, fromDPM=fromDPM)
-TTG_sync_16.normalization = TTGSingleLep_LO_sync.normalization
-DY_LO_sync_16       = getMCSample(name="DY_LO",            redirector=redirector, color=color.DY,              texName="Drell-Yan",                directory=directories["DY_LO"], noCheckProxy=False, fromDPM=fromDPM)
-DY_LO_sync_16.normalization = DYJetsToLL_M50_LO_ext1_sync.normalization
+#TT_sync_16          = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_pow"], noCheckProxy=True, fromDPM=fromDPM)
+#TT_sync_16.normalization = TTSingleLep_pow_CP5_sync.normalization
+#TTG_sync_16         = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG"], noCheckProxy=True, fromDPM=fromDPM)
+#TTG_sync_16.normalization = TTGSingleLep_LO_sync.normalization
+#DY_LO_sync_16       = getMCSample(name="DY_LO",            redirector=redirector, color=color.DY,              texName="Drell-Yan",                directory=directories["DY_LO"], noCheckProxy=False, fromDPM=fromDPM)
+#DY_LO_sync_16.normalization = DYJetsToLL_M50_LO_ext1_sync.normalization
+
+TTG_sync_16           = getMCSample(name="TTG",            redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG"],    noCheckProxy=True, fromDPM=fromDPM)
+WJets_sync_16         = getMCSample(name="WJets",          redirector=redirector, color=color.TTG,             texName="W+Jets",            directory=directories["WJets"],  noCheckProxy=True, fromDPM=fromDPM)
+QCD_e_sync_16         = getMCSample(name="QCD_e",          redirector=redirector, color=color.TTG,             texName="QCD (e)",           directory=directories["QCD_e"],  noCheckProxy=True, fromDPM=fromDPM)
+QCD_mu_sync_16        = getMCSample(name="QCD_mu",         redirector=redirector, color=color.TTG,             texName="QCD (#mu)",         directory=directories["QCD_mu"], noCheckProxy=True, fromDPM=fromDPM)
 
 signals = []
 
