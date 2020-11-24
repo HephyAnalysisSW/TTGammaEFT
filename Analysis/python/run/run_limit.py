@@ -16,7 +16,7 @@ from TTGammaEFT.Analysis.SetupHelpers    import *
 from TTGammaEFT.Tools.user               import combineReleaseLocation, cardfileLocation, cache_directory
 from Analysis.Tools.MergingDirDB         import MergingDirDB
 from Analysis.Tools.u_float              import u_float
-from Analysis.Tools.cardFileWriter       import cardFileWriter
+from TTGammaEFT.Tools.cardFileWriter       import cardFileWriter
 from Analysis.Tools.cardFileWriter.CombineResults      import CombineResults
 from Analysis.Tools.getPostFit           import getPrePostFitFromMLF, getFitResults
 from TTGammaEFT.Tools.cutInterpreter     import cutInterpreter
@@ -63,6 +63,9 @@ argParser.add_argument('--order',               action='store',      default=2, 
 argParser.add_argument('--parameters',          action='store',      default=[],  type=str, nargs='+',                      help = "argument parameters")
 argParser.add_argument('--mode',                action='store',      default="all", type=str, choices=["mu", "e", "all"],   help="plot lepton mode" )
 argParser.add_argument('--withbkg',             action='store_true',                                                        help="reweight sample and bkg or sample only?")
+argParser.add_argument('--withEFTUnc',             action='store_true',                                                        help="add EFT uncertainty?")
+argParser.add_argument('--freezeR',             action='store_true',                                                        help="add EFT uncertainty?")
+argParser.add_argument('--addPtBinnedUnc',             action='store_true',                                                        help="add EFT uncertainty?")
 args=argParser.parse_args()
 
 if args.year != "RunII": args.year = int(args.year)
@@ -116,17 +119,17 @@ setups = []
 if args.parameters and args.withbkg:
     splitProcessDict = {}
     splitProcessDict["ST_tch_gen"]    = { "process":["ST_tch_gen"] }
-    splitProcessDict["ST_tch_had"]    = { "process":["ST_tch_had"] }
-    splitProcessDict["ST_tch_misID"]  = { "process":["ST_tch_misID"] }
+#    splitProcessDict["ST_tch_had"]    = { "process":["ST_tch_had"] }
+#    splitProcessDict["ST_tch_misID"]  = { "process":["ST_tch_misID"] }
     splitProcessDict["ST_sch_gen"]    = { "process":["ST_sch_gen"] }
-    splitProcessDict["ST_sch_had"]    = { "process":["ST_sch_had"] }
-    splitProcessDict["ST_sch_misID"]  = { "process":["ST_sch_misID"] }
+#    splitProcessDict["ST_sch_had"]    = { "process":["ST_sch_had"] }
+#    splitProcessDict["ST_sch_misID"]  = { "process":["ST_sch_misID"] }
     splitProcessDict["ST_tW_gen"]     = { "process":["ST_tW_gen"] }
-    splitProcessDict["ST_tW_had"]     = { "process":["ST_tW_had"] }
-    splitProcessDict["ST_tW_misID"]   = { "process":["ST_tW_misID"] }
+#    splitProcessDict["ST_tW_had"]     = { "process":["ST_tW_had"] }
+#    splitProcessDict["ST_tW_misID"]   = { "process":["ST_tW_misID"] }
     splitProcessDict["TT_pow_gen"]    = { "process":["TT_pow_gen"] }
-    splitProcessDict["TT_pow_had"]    = { "process":["TT_pow_had"] }
-    splitProcessDict["TT_pow_misID"]  = { "process":["TT_pow_misID"] }
+#    splitProcessDict["TT_pow_had"]    = { "process":["TT_pow_had"] }
+#    splitProcessDict["TT_pow_misID"]  = { "process":["TT_pow_misID"] }
 
 for key, val in allRegions.items():
     if not key in args.useRegions: continue
@@ -186,6 +189,8 @@ if args.useChannels:  regionNames.append("_".join([ch for ch in args.useChannels
 if args.linTest != 1: regionNames.append(str(args.linTest).replace(".","_"))
 if args.noMCStat:     regionNames.append("noMCStat")
 if args.noFakeStat:   regionNames.append("noFakeStat")
+if args.freezeR:   regionNames.append("freezeR")
+if args.addPtBinnedUnc:   regionNames.append("addPtBinnedUnc")
 
 # partly corr btagging unc as suggested from pog contacts
 ystring = "2016" if args.year == 2016 else "2017_2018"
@@ -195,6 +200,7 @@ lightFlavor = "light_flavor_%s"%ystring
 baseDir       = os.path.join( cache_directory, "analysis",  str(args.year), "limits" )
 if args.parameters:
     baseDir   = os.path.join( baseDir, "withbkg" if args.withbkg else "withoutbkg" )
+    if args.withEFTUnc: baseDir = os.path.join( baseDir, "withEFTUnc" )
 limitDir      = os.path.join( baseDir, "cardFiles", args.label, "expected" if args.expected else "observed" )
 if not os.path.exists( limitDir ): os.makedirs( limitDir )
 
@@ -221,22 +227,23 @@ if args.parameters:
 
     # store all the different samples in different caches (signal=TTG, background=TT, tWG, tW, stg_tch, st_tch, stg_sch, st_sch)
     baseDir              = os.path.join( cache_directory, "analysis", "eft" )
-    cacheFileName        = os.path.join( baseDir, 'TTG_4WC_ref' )
+    cacheFileName        = os.path.join( baseDir, 'TTG_2WC_ref' )
     yieldCache_TTG       = MergingDirDB( cacheFileName )
-    cacheFileName        = os.path.join( baseDir, 'TT_4WC_ref' )
-    yieldCache_TT        = MergingDirDB( cacheFileName )
-    cacheFileName        = os.path.join( baseDir, 'tWG_4WC_ref' )
+    print yieldCache_TTG
+#    cacheFileName        = os.path.join( baseDir, 'TT_2WC_ref' )
+#    yieldCache_TT        = MergingDirDB( cacheFileName )
+    cacheFileName        = os.path.join( baseDir, 'tWG_2WC_ref' )
     yieldCache_tWG       = MergingDirDB( cacheFileName )
-    cacheFileName        = os.path.join( baseDir, 'tW_4WC_ref' )
-    yieldCache_tW        = MergingDirDB( cacheFileName )
-    cacheFileName        = os.path.join( baseDir, 'stg_tch_4WC_ref' )
+#    cacheFileName        = os.path.join( baseDir, 'tW_2WC_ref' )
+#    yieldCache_tW        = MergingDirDB( cacheFileName )
+    cacheFileName        = os.path.join( baseDir, 'stg_tch_2WC_ref' )
     yieldCache_stg_tch   = MergingDirDB( cacheFileName )
-    cacheFileName        = os.path.join( baseDir, 'st_tch_4WC_ref' )
-    yieldCache_st_tch    = MergingDirDB( cacheFileName )
-    cacheFileName        = os.path.join( baseDir, 'stg_sch_4WC_ref' )
+#    cacheFileName        = os.path.join( baseDir, 'st_tch_2WC_ref' )
+#    yieldCache_st_tch    = MergingDirDB( cacheFileName )
+    cacheFileName        = os.path.join( baseDir, 'stg_sch_2WC_ref' )
     yieldCache_stg_sch   = MergingDirDB( cacheFileName )
-    cacheFileName        = os.path.join( baseDir, 'st_sch_4WC_ref' )
-    yieldCache_st_sch    = MergingDirDB( cacheFileName )
+#    cacheFileName        = os.path.join( baseDir, 'st_sch_2WC_ref' )
+#    yieldCache_st_sch    = MergingDirDB( cacheFileName )
 
     configlist = regionNames + args.parameters
     configlist.append("incl" if args.inclRegion else "diff")
@@ -245,7 +252,7 @@ if args.parameters:
     sEFTConfig = "_".join(configlist)
     print(nllCache.get(sEFTConfig))
     print(nllCache.contains(sEFTConfig))
-    if not args.overwrite and nllCache.contains( sEFTConfig ): sys.exit(0)
+#    if not args.overwrite and nllCache.contains( sEFTConfig ): sys.exit(0)
     print(sEFTConfig)
 
 # JEC Tags, (standard is "Total")
@@ -279,6 +286,16 @@ def wrapper():
         cardFileNameTxt   = os.path.join( limitDir, "_".join( regionNames ) + ".txt" )
     cardFileNameShape = cardFileNameTxt.replace( ".txt", "_shape.root" )
     cardFileName      = cardFileNameTxt
+    print cardFileName
+
+    pTG_thresh = [ 20, 35, 50, 65, 80, 120, 160, 200, 260, 320, -999 ]
+    freezeParams = []
+    if not args.inclRegion and with1pCR and args.addPtBinnedUnc:
+        for i in range(1, len(pTG_thresh)-1):
+            freezeParams.append( "Signal_e_3_pT_Bin%i"%(i) )
+            freezeParams.append( "Signal_mu_3_pT_Bin%i"%(i) )
+            freezeParams.append( "Signal_e_4p_pT_Bin%i"%(i) )
+            freezeParams.append( "Signal_mu_4p_pT_Bin%i"%(i) )
 
     if ( not os.path.exists(cardFileNameTxt) or ( not os.path.exists(cardFileNameShape) and not args.useTxt ) ) or args.overwrite:
 
@@ -291,13 +308,19 @@ def wrapper():
         c.reset()
         c.setPrecision(3)
         shapeString     = "lnN" if args.useTxt else "shape"
+
+
+        if args.parameters and args.withEFTUnc:
+            c.addUncertainty( "EFT",            shapeString)
+
         # experimental
         c.addUncertainty( "PU",            shapeString) #correlated
-        c.addUncertainty( "PU_DD",            shapeString) #correlated
+#        c.addUncertainty( "PU_DD",            shapeString) #correlated
         for j in jesTags:
             c.addUncertainty( "JEC_%s"%j,           shapeString) #partly correlated
         c.addUncertainty( "JER_%i"%args.year,           shapeString) #uncorrelated
-        c.addUncertainty( "EGamma_Scale",           shapeString) #correlated
+        c.addUncertainty( "EGammaScale",           shapeString) #correlated
+        c.addUncertainty( "EGammaResolution",           shapeString) #correlated
         c.addUncertainty( heavyFlavor,           shapeString) #need to check
         c.addUncertainty( lightFlavor,           shapeString) #need to check
         c.addUncertainty( "Trigger_muons_%i"%args.year,       shapeString) #uncorrelated
@@ -307,18 +330,13 @@ def wrapper():
         c.addUncertainty( "muon_ID_sta_%i"%args.year,      shapeString) #correlated in e, split stat/syst in mu
         c.addUncertainty( "electron_ID",      shapeString) #correlated in e, split stat/syst in mu
         c.addUncertainty( "electron_reco", shapeString) #uncorrelated to e ID (non existing for mu)
-        c.addUncertainty( "L1_Prefiring",     shapeString) #need to check
+        if args.year != 2018:
+            c.addUncertainty( "L1_Prefiring",     shapeString) #need to check
         c.addUncertainty( "top_pt_reweighting",  shapeString)
         if with1pCR:
             c.addUncertainty( "photon_ID",      shapeString)
-#            c.addUncertainty( "photon_ID_bkg",      shapeString)
-#            c.addUncertainty( "misID_photon_ID_bkg",      shapeString)
-#            c.addUncertainty( "fake_photon_ID_bkg",      shapeString)
-#            c.addUncertainty( "photon_ID_sig",      shapeString)
-#            c.addUncertainty( "misID_photon_ID_sig",      shapeString)
-#            c.addUncertainty( "fake_photon_ID_sig",      shapeString)
             c.addUncertainty( "pixelSeed_veto_%i"%args.year,       shapeString) #uncorrelated
-            # theory (PDF, scale, ISR)
+#            # theory (PDF, scale, ISR)
             c.addUncertainty( "Tune",          shapeString)
             c.addUncertainty( "erdOn",         shapeString)
             c.addUncertainty( "GluonMove",    shapeString)
@@ -326,6 +344,26 @@ def wrapper():
             c.addUncertainty( "Scale",         shapeString)
             c.addUncertainty( "PDF",           shapeString)
             c.addUncertainty( "Parton_Showering",            shapeString)
+
+##        if args.year == 2016:
+##            c.addUncertainty( "photon_ID_AltSig_2016",      shapeString)
+
+
+        default_pTG_unc = 5.
+        pTG_thresh = [ 20, 35, 50, 65, 80, 120, 160, 200, 260, 320, -999 ]
+        firstBin = False
+        freezeParams = []
+        if not args.inclRegion and with1pCR and args.addPtBinnedUnc:
+            for i in range(1, len(pTG_thresh)-1):
+                c.addUncertainty( "Signal_e_3_pT_Bin%i"%(i), shapeString )
+                c.addUncertainty( "Signal_e_4p_pT_Bin%i"%(i), shapeString )
+                c.addUncertainty( "Signal_mu_3_pT_Bin%i"%(i), shapeString )
+                c.addUncertainty( "Signal_mu_4p_pT_Bin%i"%(i), shapeString )
+                freezeParams.append( "Signal_e_3_pT_Bin%i"%(i) )
+                freezeParams.append( "Signal_mu_3_pT_Bin%i"%(i) )
+                freezeParams.append( "Signal_e_4p_pT_Bin%i"%(i) )
+                freezeParams.append( "Signal_mu_4p_pT_Bin%i"%(i) )
+
 
         default_misIDpT_unc = 0.40
         misIDPT_thresholds = [ 20, 35, 50, 65, 80, 120, 160, -999 ]
@@ -369,6 +407,8 @@ def wrapper():
 
         if with1pCR and not args.wgPOI:
             c.addFreeParameter("WGamma_normalization", '*WG*', 1, '[0.,2.]')
+        default_WG_unc    = 0.3
+#        c.addUncertainty( "WGamma_normalization",   shapeString )
 
         default_ZG_unc    = 0.3
         c.addUncertainty( "ZGamma_normalization",      shapeString )
@@ -387,7 +427,7 @@ def wrapper():
         default_ZG4p_unc    = 0.4
         default_WG4p_unc    = 0.2
         default_QCD0b4p_unc    = 0.2
-        default_QCD1b4p_unc    = 0.4
+        default_QCD1b4p_unc    = 0.2
         default_DY4p_unc    = 0.2
         if not (args.wgPOI or args.dyPOI):
             if (any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] )) or args.addNJetUnc or any( ["3p" in name for name in args.useRegions] ):
@@ -395,7 +435,7 @@ def wrapper():
                 c.addUncertainty( "ZGamma_nJet_dependence",      shapeString )
                 c.addUncertainty( "QCD_0b_nJet_dependence",      shapeString )
                 c.addUncertainty( "QCD_1b_nJet_dependence",      shapeString )
-                c.addUncertainty( "DY_nJet_dependence",      shapeString )
+#                c.addUncertainty( "DY_nJet_dependence",      shapeString )
                 c.addUncertainty( "WGamma_nJet_dependence",      shapeString )
  
         default_DY_unc    = 0.08
@@ -404,14 +444,17 @@ def wrapper():
             #c.addFreeParameter("DY", 'DY', 1, '[0.5,1.5]')
         elif not args.dyPOI:
             c.addUncertainty( "DY_normalization", shapeString )
-            c.addUncertainty( "DY_extrapolation", shapeString )
+#            c.addUncertainty( "DY_extrapolation", shapeString )
+
+        default_MisID_unc    = 0.30
 
         if not args.addMisIDSF and not args.misIDPOI and with1pCR:
             c.addFreeParameter("MisID_normalization_%i"%args.year, '*misID*', 1, '[0.,5.]')
             #c.addFreeParameter("misID_%i"%args.year, 'misID', 1, '[0,5]')
         elif not args.misIDPOI and with1pCR:
+#            c.addUncertainty( "MisID_normalization_%i"%args.year, shapeString )
             c.addFreeParameter("MisID_normalization_%i"%args.year, '*misID*', 1, '[0.,2.]')
-            #c.addFreeParameter("misID_%i"%args.year, 'misID', 1, '[0,2]')
+           #c.addFreeParameter("misID_%i"%args.year, 'misID', 1, '[0,2]')
 
         fakeStatUnc = []
         bn = 0
@@ -429,6 +472,7 @@ def wrapper():
 
             if "3p" in setup.name:
                 setup4p = setup.sysClone( parameters={"nJet":(4,-1)} )
+                setup3 = setup.sysClone( parameters={"nJet":(3,3)} )
 
             for pName, pList in setup.processes.items():
                 if pName == "Data": continue
@@ -436,58 +480,61 @@ def wrapper():
                     e.initCache( setup.defaultCacheDir() )
                     if args.parameters and args.withbkg:
                         setup.split_processes['ST_tch_gen'][0].initCache( setup.defaultCacheDir() )
-                        setup.split_processes['ST_tch_had'][0].initCache( setup.defaultCacheDir() )
-                        setup.split_processes['ST_tch_misID'][0].initCache( setup.defaultCacheDir() )
+#                        setup.split_processes['ST_tch_had'][0].initCache( setup.defaultCacheDir() )
+#                        setup.split_processes['ST_tch_misID'][0].initCache( setup.defaultCacheDir() )
                         setup.split_processes['ST_sch_gen'][0].initCache( setup.defaultCacheDir() )
-                        setup.split_processes['ST_sch_had'][0].initCache( setup.defaultCacheDir() )
-                        setup.split_processes['ST_sch_misID'][0].initCache( setup.defaultCacheDir() )
+#                        setup.split_processes['ST_sch_had'][0].initCache( setup.defaultCacheDir() )
+#                        setup.split_processes['ST_sch_misID'][0].initCache( setup.defaultCacheDir() )
                         setup.split_processes['ST_tW_gen'][0].initCache( setup.defaultCacheDir() )
-                        setup.split_processes['ST_tW_had'][0].initCache( setup.defaultCacheDir() )
-                        setup.split_processes['ST_tW_misID'][0].initCache( setup.defaultCacheDir() )
+#                        setup.split_processes['ST_tW_had'][0].initCache( setup.defaultCacheDir() )
+#                        setup.split_processes['ST_tW_misID'][0].initCache( setup.defaultCacheDir() )
                         setup.split_processes['TT_pow_gen'][0].initCache( setup.defaultCacheDir() )
-                        setup.split_processes['TT_pow_had'][0].initCache( setup.defaultCacheDir() )
-                        setup.split_processes['TT_pow_misID'][0].initCache( setup.defaultCacheDir() )
+#                        setup.split_processes['TT_pow_had'][0].initCache( setup.defaultCacheDir() )
+#                        setup.split_processes['TT_pow_misID'][0].initCache( setup.defaultCacheDir() )
             for r in setup.regions:
                 for i_ch, channel in enumerate(setup.channels):
                     if args.useChannels and channel not in args.useChannels: continue
                     if args.parameters:
                         # calc the ratios for the different samples (signal and background)
-                        smyieldkey  =  (setup.name, str(r),channel, "ctZ_0_ctZI_0_ctW_0_ctWI_0")
+#                        smyieldkey  =  (setup.name, str(r),channel, "ctZ_0_ctZI_0_ctW_0_ctWI_0")
+                        smyieldkey  =  (setup.name, str(r),channel, "ctZ_0_ctZI_0")
                         yieldkey    =  (setup.name, str(r),channel, str(eft))
-                   
+                        print  yieldkey
                         # signal 
                         smyield     =  yieldCache_TTG.get(smyieldkey)["val"]
                         ratio_TTG   =  yieldCache_TTG.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
-                        smyield     =  yieldCache_TT.get(smyieldkey)["val"]
-                        ratio_TT    =  yieldCache_TT.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
+
+                        print ratio_TTG
+#                        smyield     =  yieldCache_TT.get(smyieldkey)["val"]
+#                        ratio_TT    =  yieldCache_TT.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
                         # background
                         if args.withbkg: 
-                            smyield         =  yieldCache_tW.get(smyieldkey)["val"]
-                            ratio_tW        =  yieldCache_tW.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
+#                            smyield         =  yieldCache_tW.get(smyieldkey)["val"]
+#                            ratio_tW        =  yieldCache_tW.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
                             smyield         =  yieldCache_tWG.get(smyieldkey)["val"]
                             ratio_tWG       =  yieldCache_tWG.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
-                            smyield         =  yieldCache_st_tch.get(smyieldkey)["val"]
-                            ratio_st_tch    =  yieldCache_st_tch.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
+#                            smyield         =  yieldCache_st_tch.get(smyieldkey)["val"]
+#                            ratio_st_tch    =  yieldCache_st_tch.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
                             smyield         =  yieldCache_stg_tch.get(smyieldkey)["val"]
                             ratio_stg_tch   =  yieldCache_stg_tch.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
-                            smyield         =  yieldCache_st_sch.get(smyieldkey)["val"]
-                            ratio_st_sch    =  yieldCache_st_sch.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
+#                            smyield         =  yieldCache_st_sch.get(smyieldkey)["val"]
+#                            ratio_st_sch    =  yieldCache_st_sch.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
                             smyield         =  yieldCache_stg_sch.get(smyieldkey)["val"]
                             ratio_stg_sch   =  yieldCache_stg_sch.get(yieldkey)["val"]/smyield if smyield > 0 else 1   
    
                             # calc the amount of each sample in the components defined in SetupHelpers
                             yield_st_tch_gen     = setup.split_processes['ST_tch_gen'][0].cachedEstimate(r,channel,setup)
-                            yield_st_tch_had     = setup.split_processes['ST_tch_had'][0].cachedEstimate(r,channel,setup)
-                            yield_st_tch_misID   = setup.split_processes['ST_tch_misID'][0].cachedEstimate(r,channel,setup)
+#                            yield_st_tch_had     = setup.split_processes['ST_tch_had'][0].cachedEstimate(r,channel,setup)
+#                            yield_st_tch_misID   = setup.split_processes['ST_tch_misID'][0].cachedEstimate(r,channel,setup)
                             yield_st_sch_gen     = setup.split_processes['ST_sch_gen'][0].cachedEstimate(r,channel,setup)
-                            yield_st_sch_had     = setup.split_processes['ST_sch_had'][0].cachedEstimate(r,channel,setup)
-                            yield_st_sch_misID   = setup.split_processes['ST_sch_misID'][0].cachedEstimate(r,channel,setup)
+#                            yield_st_sch_had     = setup.split_processes['ST_sch_had'][0].cachedEstimate(r,channel,setup)
+#                            yield_st_sch_misID   = setup.split_processes['ST_sch_misID'][0].cachedEstimate(r,channel,setup)
                             yield_tW_gen         = setup.split_processes['ST_tW_gen'][0].cachedEstimate(r,channel,setup)
-                            yield_tW_had         = setup.split_processes['ST_tW_had'][0].cachedEstimate(r,channel,setup)
-                            yield_tW_misID       = setup.split_processes['ST_tW_misID'][0].cachedEstimate(r,channel,setup)
+#                            yield_tW_had         = setup.split_processes['ST_tW_had'][0].cachedEstimate(r,channel,setup)
+#                            yield_tW_misID       = setup.split_processes['ST_tW_misID'][0].cachedEstimate(r,channel,setup)
                             yield_TT_gen         = setup.split_processes['TT_pow_gen'][0].cachedEstimate(r,channel,setup)
-                            yield_TT_had         = setup.split_processes['TT_pow_had'][0].cachedEstimate(r,channel,setup)
-                            yield_TT_misID       = setup.split_processes['TT_pow_misID'][0].cachedEstimate(r,channel,setup)
+#                            yield_TT_had         = setup.split_processes['TT_pow_had'][0].cachedEstimate(r,channel,setup)
+#                            yield_TT_misID       = setup.split_processes['TT_pow_misID'][0].cachedEstimate(r,channel,setup)
 
                     niceName      = " ".join( [ channel, str(r), setup.addon ] )
                     binname       = "Bin%i"%counter
@@ -536,6 +583,9 @@ def wrapper():
                             if e.name.count( "QCD" ):
                                 exp_yield.sigma = 0
 
+                            if args.noFakeStat and ("WG" in pName or "DY" in pName): #pName == "fakes" and setup.signalregion:
+                                exp_yield.sigma = 0
+
                             if signal and args.linTest != 1:# and setup.signalregion:
                                 exp_yield /= args.linTest
                             if signal and args.addSSM:
@@ -545,31 +595,33 @@ def wrapper():
                                 exp_yield *= WJetsSF_val["RunII"].val
                                 logger.info( "Scaling WJets background %s by %f"%(e.name,WJetsSF_val["RunII"].val) )
                             if e.name.count( "DY" ) and args.addDYSF:
+                                exp_yield *= DY3pSF_val["RunII"].val
+                                logger.info( "Scaling DY background %s by %f"%(e.name,DY3pSF_val["RunII"].val) )
 
-                                if "2" in setup.name and not "2p" in setup.name:
-                                    exp_yield *= DY2SF_val["RunII"].val
-                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY2SF_val["RunII"].val) )
-                                elif "3" in setup.name and not "3p" in setup.name:
-                                    exp_yield *= DY3SF_val["RunII"].val
-                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY3SF_val["RunII"].val) )
-                                elif "4" in setup.name and not "4p" in setup.name:
-                                    exp_yield *= DY4SF_val["RunII"].val
-                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY4SF_val["RunII"].val) )
-                                elif "5" in setup.name:
-                                    exp_yield *= DY5SF_val["RunII"].val
-                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY5SF_val["RunII"].val) )
-                                elif "2p" in setup.name:
-                                    exp_yield *= DY2pSF_val["RunII"].val
-                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY2pSF_val["RunII"].val) )
-                                elif "3p" in setup.name:
-                                    exp_yield *= DY3pSF_val["RunII"].val
-                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY3pSF_val["RunII"].val) )
-                                elif "4p" in setup.name:
-                                    exp_yield *= DY4pSF_val["RunII"].val
-                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY4pSF_val["RunII"].val) )
-                                else:
-                                    exp_yield *= DYSF_val["RunII"].val
-                                    logger.info( "Scaling DY background %s by %f"%(e.name,DYSF_val["RunII"].val) )
+#                                if "2" in setup.name and not "2p" in setup.name:
+#                                    exp_yield *= DY2SF_val["RunII"].val
+#                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY2SF_val["RunII"].val) )
+#                                elif "3" in setup.name and not "3p" in setup.name:
+#                                    exp_yield *= DY3SF_val["RunII"].val
+#                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY3SF_val["RunII"].val) )
+#                                elif "4" in setup.name and not "4p" in setup.name:
+#                                    exp_yield *= DY4SF_val["RunII"].val
+#                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY4SF_val["RunII"].val) )
+#                                elif "5" in setup.name:
+#                                    exp_yield *= DY5SF_val["RunII"].val
+#                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY5SF_val["RunII"].val) )
+#                                elif "2p" in setup.name:
+#                                    exp_yield *= DY2pSF_val["RunII"].val
+#                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY2pSF_val["RunII"].val) )
+#                                elif "3p" in setup.name:
+#                                    exp_yield *= DY3pSF_val["RunII"].val
+#                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY3pSF_val["RunII"].val) )
+#                                elif "4p" in setup.name:
+#                                    exp_yield *= DY4pSF_val["RunII"].val
+#                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY4pSF_val["RunII"].val) )
+#                                else:
+#                                    exp_yield *= DYSF_val["RunII"].val
+#                                    logger.info( "Scaling DY background %s by %f"%(e.name,DYSF_val["RunII"].val) )
 
                             if e.name.count( "WG" ) and args.addWGSF:
                                 exp_yield *= WGSF_val["RunII"].val
@@ -586,33 +638,33 @@ def wrapper():
                             if args.parameters:
                                 # reweight the signal(TTGamma) with the calculated ratio
                                 if e.name== 'TTG_gen': exp_yield *= ratio_TTG
-                                if e.name== 'TTG_misID': exp_yield *= ratio_TT
+#                                if e.name== 'TTG_misID': exp_yield *= ratio_TT
                                 # reweight also the background with the calculated ratio
                                 if args.withbkg:
-                                    if e.name== 'Top_misID': 
-                                        print('Top_misID:', exp_yield)
-                                        print('sum of all Top_misID-samples:', yield_st_tch_misID + yield_st_sch_misID +yield_tW_misID + yield_TT_misID)
-                                        exp_yield = ((yield_st_tch_misID)*ratio_st_tch + (yield_st_sch_misID)*ratio_st_sch + (yield_tW_misID)*ratio_tW + (yield_TT_misID)*ratio_TT) 
-                                        #exp_yield *= ((yield_st_tch_misID/exp_yield)*ratio_st_tch + (yield_st_sch_misID/exp_yield)*ratio_st_sch + (yield_tW_misID/exp_yield)*ratio_tW + (yield_TT_misID/exp_yield)*ratio_TT) 
+#                                    if e.name== 'Top_misID': 
+#                                        print('Top_misID:', exp_yield)
+#                                        print('sum of all Top_misID-samples:', yield_st_tch_misID + yield_st_sch_misID +yield_tW_misID + yield_TT_misID)
+#                                        exp_yield = ((yield_st_tch_misID)*ratio_st_tch + (yield_st_sch_misID)*ratio_st_sch + (yield_tW_misID)*ratio_tW + (yield_TT_misID)*ratio_TT) 
+#                                        #exp_yield *= ((yield_st_tch_misID/exp_yield)*ratio_st_tch + (yield_st_sch_misID/exp_yield)*ratio_st_sch + (yield_tW_misID/exp_yield)*ratio_tW + (yield_TT_misID/exp_yield)*ratio_TT) 
                                     if e.name== 'Top_gen':
                                         print('Top_gen:', exp_yield)
                                         print('sum of all Top_gen-samples:', yield_st_tch_gen + yield_st_sch_gen +yield_tW_gen + yield_TT_gen)
                                         exp_yield = ((yield_st_tch_gen)*ratio_stg_tch + (yield_st_sch_gen)*ratio_stg_sch + (yield_tW_gen)*ratio_tWG + (yield_TT_gen)*ratio_TTG)
                                         #exp_yield *= ((yield_st_tch_gen/exp_yield)*ratio_stg_tch + (yield_st_sch_gen/exp_yield)*ratio_stg_sch + (yield_tW_gen/exp_yield)*ratio_tWG + (yield_TT_gen/exp_yield)*ratio_TTG)
                                     #if e.name=='fakes-DD' or e.name.endswith('_had'):
-                                    if e.name.endswith('_had'):
-                                        if e.name== 'TTG_had': exp_yield *= ratio_TT
-                                        if e.name== 'Top_had': 
-                                            print('Top_had:', exp_yield)
-                                            print('sum of all Top_had-samples:', yield_st_tch_had + yield_st_sch_had + yield_tW_had + yield_TT_had)
-                                            exp_yield = ((yield_st_tch_had)*ratio_st_tch + (yield_st_sch_had)*ratio_st_sch + (yield_tW_had)*ratio_tW + (yield_TT_had)*ratio_TT)
-                                            #exp_yield *= ((yield_st_tch_had/exp_yield)*ratio_st_tch + (yield_st_sch_had/exp_yield)*ratio_st_sch + (yield_tW_had/exp_yield)*ratio_tW + (yield_TT_had/exp_yield)*ratio_TT)
-                                        #if e.name== 'fakes-DD': 
-                                            #print('fakes-DD:', exp_yield)
-                                            #print('sum of all fakes-DD-samples:', yield_TTG_had + yield_st_tch_had + yield_st_sch_had + yield_tW_had + yield_TT_had + yield_WG_had + yield_ZG_had + yield_other_had + yield_WJets_had + yield_DY_LO_had)
-                                            #ratio = exp_yield/(yield_TTG_had + yield_st_tch_had + yield_st_sch_had + yield_tW_had + yield_TT_had + yield_WG_had + yield_ZG_had + yield_other_had + yield_WJets_had + yield_DY_LO_had)
-                                            #exp_yield = ((yield_TTG_had)*ratio_TT*ratio + (yield_st_tch_had)*ratio_st_tch*ratio + (yield_st_sch_had)*ratio_st_sch*ratio + (yield_tW_had)*ratio_tW*ratio + (yield_TT_had)*ratio_TT*ratio + (yield_WG_had)*ratio + (yield_ZG_had)*ratio + (yield_other_had)*ratio + (yield_WJets_had)*ratio + (yield_DY_LO_had)*ratio)
-                                            #exp_yield *= ((yield_TTG_had/exp_yield)*ratio_TT*ratio + (yield_st_tch_had/exp_yield)*ratio_st_tch*ratio + (yield_st_sch_had/exp_yield)*ratio_st_sch*ratio + (yield_tW_had/exp_yield)*ratio_tW*ratio + (yield_TT_had/exp_yield)*ratio_TT*ratio + (yield_WG_had/exp_yield)*ratio + (yield_ZG_had/exp_yield)*ratio + (yield_other_had/exp_yield)*ratio + (yield_WJets_had/exp_yield)*ratio + (yield_DY_LO_had/exp_yield)*ratio)
+#                                    if e.name.endswith('_had'):
+#                                        if e.name== 'TTG_had': exp_yield *= ratio_TT
+#                                        if e.name== 'Top_had': 
+#                                            print('Top_had:', exp_yield)
+#                                            print('sum of all Top_had-samples:', yield_st_tch_had + yield_st_sch_had + yield_tW_had + yield_TT_had)
+#                                            exp_yield = ((yield_st_tch_had)*ratio_st_tch + (yield_st_sch_had)*ratio_st_sch + (yield_tW_had)*ratio_tW + (yield_TT_had)*ratio_TT)
+#                                            #exp_yield *= ((yield_st_tch_had/exp_yield)*ratio_st_tch + (yield_st_sch_had/exp_yield)*ratio_st_sch + (yield_tW_had/exp_yield)*ratio_tW + (yield_TT_had/exp_yield)*ratio_TT)
+#                                        #if e.name== 'fakes-DD': 
+#                                            #print('fakes-DD:', exp_yield)
+#                                            #print('sum of all fakes-DD-samples:', yield_TTG_had + yield_st_tch_had + yield_st_sch_had + yield_tW_had + yield_TT_had + yield_WG_had + yield_ZG_had + yield_other_had + yield_WJets_had + yield_DY_LO_had)
+#                                            #ratio = exp_yield/(yield_TTG_had + yield_st_tch_had + yield_st_sch_had + yield_tW_had + yield_TT_had + yield_WG_had + yield_ZG_had + yield_other_had + yield_WJets_had + yield_DY_LO_had)
+#                                            #exp_yield = ((yield_TTG_had)*ratio_TT*ratio + (yield_st_tch_had)*ratio_st_tch*ratio + (yield_st_sch_had)*ratio_st_sch*ratio + (yield_tW_had)*ratio_tW*ratio + (yield_TT_had)*ratio_TT*ratio + (yield_WG_had)*ratio + (yield_ZG_had)*ratio + (yield_other_had)*ratio + (yield_WJets_had)*ratio + (yield_DY_LO_had)*ratio)
+#                                            #exp_yield *= ((yield_TTG_had/exp_yield)*ratio_TT*ratio + (yield_st_tch_had/exp_yield)*ratio_st_tch*ratio + (yield_st_sch_had/exp_yield)*ratio_st_sch*ratio + (yield_tW_had/exp_yield)*ratio_tW*ratio + (yield_TT_had/exp_yield)*ratio_TT*ratio + (yield_WG_had/exp_yield)*ratio + (yield_ZG_had/exp_yield)*ratio + (yield_other_had/exp_yield)*ratio + (yield_WJets_had/exp_yield)*ratio + (yield_DY_LO_had/exp_yield)*ratio)
 
                             e.expYield = exp_yield
                             expected  += exp_yield
@@ -635,11 +687,17 @@ def wrapper():
 
                         for j in jesTags:
                             locals()["jec_%s"%j] = 0
-                        fakestat, topPt, tune, erdOn, gluonMove, qcdBased, pu, mer, eer, ees, jer, sfb, sfl, trigger_e, trigger_mu, lepSF_e, lepSF_muExt, lepSF_muStat, lepSF_muSyst, lepTrSF, phFakeSF, phMisSF, phSF, eVetoSF, pfSF = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                        fakestat, topPt, tune, erdOn, gluonMove, qcdBased, pu, mer, eer, ees, jer, sfb, sfl, trigger_e, trigger_mu, lepSF_e, lepSF_muExt, lepSF_muStat, lepSF_muSyst, lepTrSF, phFakeSF, phMisSF, phSF, phSFAltSig, eVetoSF, pfSF = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                         ps, scale, pdf, isr = 0, 0, 0, 0
                         qcdTF3, qcdTF4, wjets4p, wg4p, qcd0b4p, qcd1b4p= 0, 0, 0, 0, 0, 0
-                        dyGenUnc, ttGenUnc, vgGenUnc, wjetsGenUnc, otherGenUnc, misIDUnc, lowSieieUnc, highSieieUnc, misIDPtUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0
+                        dyGenUnc, ttGenUnc, vgGenUnc, wjetsGenUnc, otherGenUnc, lowSieieUnc, highSieieUnc, misIDPtUnc = 0, 0, 0, 0, 0, 0, 0, 0
                         gluon, hadFakes17Unc, hadFakesUnc, wg, zg, misID4p, dy4p, zg4p, misIDUnc, qcdUnc, qcd0bUnc, qcd1bUnc, vgUnc, wgUnc, zgUnc, dyUnc, misExUnc, ttUnc, wjetsUnc, other0pUnc, otherUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                        for i in range(1,len(pTG_thresh)-1):
+                            locals()["Signal_e_3_bin%i_unc"%i] = 0
+                            locals()["Signal_e_4p_bin%i_unc"%i] = 0
+                            locals()["Signal_mu_3_bin%i_unc"%i] = 0
+                            locals()["Signal_mu_4p_bin%i_unc"%i] = 0
+
                         for i in range(1,len(misIDPT_thresholds)-1):
                             locals()["misID_bin%i_unc"%i] = 0
 
@@ -649,8 +707,8 @@ def wrapper():
 
                         if expected.val:
 
-                            if args.noFakeStat and pName == "fakes" and setup.signalregion:
-                                expected.sigma = 0
+#                            if args.noFakeStat and pName == "fakes" and setup.signalregion:
+#                                expected.sigma = 0
 
                             for e in pList:
                                 y_scale   = e.expYield.val / expected.val
@@ -684,7 +742,6 @@ def wrapper():
                                             y_e  = e.cachedEstimate( r, "e",   setup )
                                             downscaling *= (y_e.val  / e.expYield.val) if e.expYield.val else 0.
                                         downscaling *= ratio_nJ
-#                                        print downscaling
                                         hadFakes17Unc += y_scale * default_HadFakes_2017_unc * downscaling
 
 #                                if e.name.count( "fakes-DD" ): continue # no systematics for data-driven fakes
@@ -695,23 +752,90 @@ def wrapper():
                                 if e.name.count( "Top" ):
                                     ttUnc    += y_scale * default_TT_unc
 
+                                if not args.inclRegion and signal and setup.signalregion:
+                                    print str(r), r.vals.keys()
+                                    if ("PhotonGood0_pt" in r.vals.keys() or "PhotonNoChgIsoNoSieie0_pt" in r.vals.keys()):
+                                        low, high = r.vals["PhotonGood0_pt" if "PhotonGood0_pt" in r.vals.keys() else "PhotonNoChgIsoNoSieie0_pt"]
+                                        print pTG_thresh
+                                        print str(r), r.vals.keys(), low, high
+                                        pT_indices = []
+                                        for i_pt, thresh in enumerate(pTG_thresh[:-1]):
+                                            if (thresh >= low and thresh < high) or (pTG_thresh[i_pt+1] > low and pTG_thresh[i_pt+1] <= high) or (pTG_thresh[i_pt+1] == -999 and (high == -999 or high > thresh)): pT_indices.append(i_pt)
+                                    else:
+                                        pT_indices = []
+
+                                    print "pt signal", pT_indices
+                                    if pT_indices:
+                                        for pT_index in pT_indices:
+                                            if pT_index == 0: continue
+                                            if channel == "e":
+                                                if "4p" in setup.name:
+                                                    locals()["Signal_e_4p_bin%i_unc"%pT_index] += y_scale * default_pTG_unc
+                                                elif "3p" in setup.name:
+                                                    y_4p  = e.cachedEstimate( r, channel,   setup4p )
+                                                    ratio_4p = y_4p.val / e.expYield.val if e.expYield.val else 0
+                                                    ratio_3  = 1 - ratio_4p
+                                                    locals()["Signal_e_3_bin%i_unc"%pT_index] += y_scale * default_pTG_unc * ratio_3
+                                                    locals()["Signal_e_4p_bin%i_unc"%pT_index] += y_scale * default_pTG_unc * ratio_4p
+                                                elif "3" in setup.name:
+                                                    locals()["Signal_e_3_bin%i_unc"%pT_index] += y_scale * default_pTG_unc
+                                            elif channel == "mu":
+                                                if "4p" in setup.name:
+                                                    locals()["Signal_mu_4p_bin%i_unc"%pT_index] += y_scale * default_pTG_unc
+                                                elif "3p" in setup.name:
+                                                    y_4p  = e.cachedEstimate( r, channel,   setup4p )
+                                                    ratio_4p = y_4p.val / e.expYield.val if e.expYield.val else 0
+                                                    ratio_3  = 1 - ratio_4p
+                                                    locals()["Signal_mu_3_bin%i_unc"%pT_index] += y_scale * default_pTG_unc * ratio_3
+                                                    locals()["Signal_mu_4p_bin%i_unc"%pT_index] += y_scale * default_pTG_unc * ratio_4p
+                                                elif "3" in setup.name:
+                                                    locals()["Signal_mu_3_bin%i_unc"%pT_index] += y_scale * default_pTG_unc
+                                            elif channel == "all":
+                                                y_e  = e.cachedEstimate( r, "e",   setup )
+                                                y_mu = e.cachedEstimate( r, "mu",  setup )
+                                                e_ratio  = y_e.val  / e.expYield.val if e.expYield.val else 0
+                                                mu_ratio = y_mu.val / e.expYield.val if e.expYield.val else 0
+                                                if "4p" in setup.name:
+                                                    locals()["Signal_e_4p_bin%i_unc"%pT_index] += y_scale * e_ratio * default_pTG_unc
+                                                    locals()["Signal_mu_4p_bin%i_unc"%pT_index] += y_scale * mu_ratio * default_pTG_unc
+                                                elif "3p" in setup.name:
+                                                    y_4p_e     = e.cachedEstimate( r, "e",   setup4p )
+                                                    y_3_e      = e.cachedEstimate( r, "e",   setup3 )
+                                                    y_4p_mu     = e.cachedEstimate( r, "mu",   setup4p )
+                                                    y_3_mu      = e.cachedEstimate( r, "mu",   setup3 )
+                                                    ratio_4p_e = y_4p_e.val / e.expYield.val if e.expYield.val else 0
+                                                    ratio_3_e = y_3_e.val / e.expYield.val if e.expYield.val else 0
+                                                    ratio_4p_mu = y_4p_mu.val / e.expYield.val if e.expYield.val else 0
+                                                    ratio_3_mu = y_3_mu.val / e.expYield.val if e.expYield.val else 0
+                                                    locals()["Signal_e_3_bin%i_unc"%pT_index] += y_scale * default_pTG_unc * ratio_3_e
+                                                    locals()["Signal_mu_3_bin%i_unc"%pT_index] += y_scale * default_pTG_unc * ratio_3_mu
+                                                    locals()["Signal_e_4p_bin%i_unc"%pT_index] += y_scale * default_pTG_unc * ratio_4p_e
+                                                    locals()["Signal_mu_4p_bin%i_unc"%pT_index] += y_scale *  default_pTG_unc * ratio_4p_mu
+                                                elif "3" in setup.name:
+                                                    locals()["Signal_e_3_bin%i_unc"%pT_index] += y_scale * e_ratio * default_pTG_unc
+                                                    locals()["Signal_mu_3_bin%i_unc"%pT_index] += y_scale * mu_ratio * default_pTG_unc
+
                                 if not args.inclRegion and e.name.count( "misID" ):
-                                    if ("PhotonGood0_pt" in r.vals.keys() or "PhotonNoChgIsoNoSieie" in r.vals.keys()):
-                                        low, high = r.vals["PhotonGood0_pt" if "PhotonGood0_pt" in r.vals.keys() else "PhotonNoChgIsoNoSieie"]
+#                                    print str(r), r.vals.keys()
+                                    if ("PhotonGood0_pt" in r.vals.keys() or "PhotonNoChgIsoNoSieie0_pt" in r.vals.keys()):
+                                        low, high = r.vals["PhotonGood0_pt" if "PhotonGood0_pt" in r.vals.keys() else "PhotonNoChgIsoNoSieie0_pt"]
+#                                        print misIDPT_thresholds
+#                                        print str(r), r.vals.keys(), low, high
                                         pT_indices = []
                                         for i_pt, thresh in enumerate(misIDPT_thresholds[:-1]):
                                             if (thresh >= low and thresh < high) or (misIDPT_thresholds[i_pt+1] > low and misIDPT_thresholds[i_pt+1] <= high) or (misIDPT_thresholds[i_pt+1] == -999 and (high == -999 or high > thresh)): pT_indices.append(i_pt)
                                     else:
                                         pT_indices = []
 
+#                                    print "Unfold", pT_indices
                                     if pT_indices:
                                         for pT_index in pT_indices:
                                             if pT_index == 0: continue
                                             locals()["misID_bin%i_unc"%pT_index] += y_scale * default_misIDpT_unc
 
                                 if not args.inclRegion and (e.name.count( "WG" ) or e.name.count( "ZG" )):
-                                    if ("PhotonGood0_pt" in r.vals.keys() or "PhotonNoChgIsoNoSieie" in r.vals.keys()):
-                                        low, high = r.vals["PhotonGood0_pt" if "PhotonGood0_pt" in r.vals.keys() else "PhotonNoChgIsoNoSieie"]
+                                    if ("PhotonGood0_pt" in r.vals.keys() or "PhotonNoChgIsoNoSieie0_pt" in r.vals.keys()):
+                                        low, high = r.vals["PhotonGood0_pt" if "PhotonGood0_pt" in r.vals.keys() else "PhotonNoChgIsoNoSieie0_pt"]
                                         pT_indices = []
                                         for i_pt, thresh in enumerate(WGPT_thresholds[:-1]):
                                             if (thresh >= low and thresh < high) or (thresh <= low and thresh <= high and WGPT_thresholds[i_pt+1] >= low and WGPT_thresholds[i_pt+1] >= high) or (WGPT_thresholds[i_pt+1] > low and WGPT_thresholds[i_pt+1] <= high) or (WGPT_thresholds[i_pt+1] == -999 and (high == -999 or high > thresh)): pT_indices.append(i_pt)
@@ -726,7 +850,7 @@ def wrapper():
                                             if e.name.count( "ZG" ):
                                                 locals()["ZGamma_bin%i_unc"%pT_index] += y_scale * default_WGpT_unc
 
-                                if any( ["Unfold" in cardRegions and not "Pt" in cardRegions for cardRegions in args.useRegions] ):
+                                if e.expYield.val and any( ["Unfold" in cardRegions and not "Pt" in cardRegions for cardRegions in args.useRegions] ):
                                     # add fractional pt dependent uncertainties to eta/dR unfolding distributions
                                     # misIDPT_thresholds = [ 20, 35, 50, 65, 80, 120, 160, -999 ]
                                     # exp_yield = e.cachedEstimate( r, channel, setup )
@@ -743,9 +867,9 @@ def wrapper():
                                             eWG = e.cachedEstimate( r+WGPT_regions[i_pt], channel, setup )
                                             wgFraction = eWG.val / e.expYield.val
                                             if e.name.count( "WG" ):
-                                                locals()["WGamma_bin%i_unc"%pT_index] += y_scale * wgFraction * default_WGpT_unc
+                                                locals()["WGamma_bin%i_unc"%i_pt] += y_scale * wgFraction * default_WGpT_unc
                                             if e.name.count( "ZG" ):
-                                                locals()["ZGamma_bin%i_unc"%pT_index] += y_scale * wgFraction * default_WGpT_unc
+                                                locals()["ZGamma_bin%i_unc"%i_pt] += y_scale * wgFraction * default_WGpT_unc
 
 
 
@@ -753,6 +877,8 @@ def wrapper():
                                     otherUnc += y_scale * default_Other_unc
 
 
+                                if e.name.count( "WG" ):
+                                    wg += y_scale * default_WG_unc
                                 if e.name.count( "ZG" ):
                                     zg += y_scale * default_ZG_unc
                                     if setup.signalregion:
@@ -769,6 +895,9 @@ def wrapper():
 
                                 if e.name.count( "WG" ) and ("4" in setup.name or "3p" in setup.name):
                                     wg4p += y_scale * default_WG4p_unc * ratio_nJ
+
+                                if e.name.count( "misID" ):
+                                    misIDUnc += y_scale * default_MisID_unc
 
                                 if e.name.count( "misID" ) and ("4" in setup.name or "3p" in setup.name):
                                     misID4p += y_scale * default_misID4p_unc * ratio_nJ
@@ -819,6 +948,7 @@ def wrapper():
                                     locals()["jec_%s"%j] = y_scale * e.JECSystematic( r, channel, setup, jes=j ).val
                                 jer     += y_scale * e.JERSystematic(                  r, channel, setup ).val
                                 ees     += y_scale * e.EESSystematic(                  r, channel, setup ).val
+                                eer     += y_scale * e.EERSystematic(                  r, channel, setup ).val
                                 sfb     += y_scale * e.btaggingSFbSystematic(          r, channel, setup ).val
                                 sfl     += y_scale * e.btaggingSFlSystematic(          r, channel, setup ).val
 
@@ -828,8 +958,11 @@ def wrapper():
 #                                    phFakeSF += y_scale * e.photonSFSystematic(             r, channel, setup ).val
 #                                else:
                                 phSF    += y_scale * e.photonSFSystematic(             r, channel, setup ).val
+#                                if args.year == 2016:
+#                                    phSFAltSig    += y_scale * e.photonSFAltSigSystematic(             r, channel, setup ).val
                                 eVetoSF += y_scale * e.photonElectronVetoSFSystematic( r, channel, setup ).val
-                                pfSF    += y_scale * e.L1PrefireSystematic(            r, channel, setup ).val
+                                if args.year != 2018:
+                                    pfSF    += y_scale * e.L1PrefireSystematic(            r, channel, setup ).val
 
 
                         def addUnc( c, name, binname, pName, unc, unc_yield, signal ):
@@ -837,22 +970,21 @@ def wrapper():
                                 if name in sigUnc: sigUnc[name] += u_float(0,unc)*unc_yield
                                 else:              sigUnc[name]  = u_float(0,unc)*unc_yield
                             else:
-                                c.specifyUncertainty( name, binname, pName, 1 + unc )
+                                if unc > 0:
+                                    c.specifyUncertainty( name, binname, pName, 1 + unc )
 
-#                        if qcdUnc > 0.0005:
+                        if args.parameters and args.withEFTUnc and signal:
+                            addUnc( c, "EFT", binname, pName, 0.15, expected.val, signal )
+
                         addUnc( c, "QCD_normalization", binname, pName, qcdUnc, expected.val, signal )
 
-#                        if qcd1bUnc > 0.0005 and setup.bTagged:
-                        addUnc( c, "QCD_1b_normalization", binname, pName, qcd1bUnc, expected.val, signal )
+                        if setup.bTagged:
+                            addUnc( c, "QCD_1b_nJet_dependence", binname, pName, qcd1b4p, expected.val, signal )
+                            addUnc( c, "QCD_1b_normalization", binname, pName, qcd1bUnc, expected.val, signal )
 
-#                        if qcd0bUnc > 0.0005 and not setup.bTagged:
-                        addUnc( c, "QCD_0b_normalization", binname, pName, qcd0bUnc, expected.val, signal )
-
-#                        if qcd1b4p > 0.0005 and setup.bTagged:
-                        addUnc( c, "QCD_1b_nJet_dependence", binname, pName, qcd1b4p, expected.val, signal )
-
-#                        if qcd0b4p > 0.0005 and not setup.bTagged:
-                        addUnc( c, "QCD_0b_nJet_dependence", binname, pName, qcd0b4p, expected.val, signal )
+                        if not setup.bTagged:
+                            addUnc( c, "QCD_0b_normalization", binname, pName, qcd0bUnc, expected.val, signal )
+                            addUnc( c, "QCD_0b_nJet_dependence", binname, pName, qcd0b4p, expected.val, signal )
 
                         addUnc( c, "TT_normalization", binname, pName, ttUnc, expected.val, signal )
 
@@ -875,16 +1007,17 @@ def wrapper():
 #                            if locals()["jec_%s"%j] > 0.0005:
                             addUnc( c, "JEC_%s"%j,           binname, pName, locals()["jec_%s"%j],     expected.val, signal )
 #                        if jer > 0.0005:
-                            addUnc( c, "JER_%i"%args.year,           binname, pName, jer,     expected.val, signal )
+                        addUnc( c, "JER_%i"%args.year,           binname, pName, jer,     expected.val, signal )
 #                        if ees > 0.0005:
-                            addUnc( c, "EGamma_Scale",           binname, pName, ees,     expected.val, signal )
+                        addUnc( c, "EGammaScale",           binname, pName, ees,     expected.val, signal )
+                        addUnc( c, "EGammaResolution",           binname, pName, eer,     expected.val, signal )
 #                        if eer > 0.0005:
-                        if pName == "fakes" and setup.signalregion:
-                            addUnc( c, "PU_DD",            binname, pName, pu,      expected.val, signal )
-                            addUnc( c, "PU",            binname, pName, 0,      expected.val, signal )
-                        else:
-                            addUnc( c, "PU",            binname, pName, pu,      expected.val, signal )
-                            addUnc( c, "PU_DD",            binname, pName, 0,      expected.val, signal )
+#                        if pName == "fakes" and setup.signalregion:
+#                            addUnc( c, "PU_DD",            binname, pName, pu,      expected.val, signal )
+#                            addUnc( c, "PU",            binname, pName, 0,      expected.val, signal )
+#                        else:
+                        addUnc( c, "PU",            binname, pName, pu,      expected.val, signal )
+#                            addUnc( c, "PU_DD",            binname, pName, 0,      expected.val, signal )
 #                        if sfb > 0.0005:
                         addUnc( c, heavyFlavor,           binname, pName, sfb,     expected.val, signal )
 #                        if sfl > 0.0005:
@@ -903,32 +1036,30 @@ def wrapper():
 #                        if lepSF_muSyst > 0.0005:
                         addUnc( c, "muon_ID_syst",      binname, pName, lepSF_muSyst,   expected.val, signal )
 #                        if pfSF > 0.0005:
-                        addUnc( c, "L1_Prefiring",     binname, pName, pfSF,    expected.val, signal )
+                        if args.year != 2018:
+                            addUnc( c, "L1_Prefiring",     binname, pName, pfSF,    expected.val, signal )
 #                        if topPt > 0.0005:
                         addUnc( c, "top_pt_reweighting", binname, pName, topPt, expected.val, signal )
 
                         if with1pCR:
- #                           if phSF > 0.0005:
-#                            if signal:
-#                                addUnc( c, "photon_ID_sig",      binname, pName, phSF,    expected.val, signal )
-#                                addUnc( c, "misID_photon_ID_sig",      binname, pName, phMisSF,    expected.val, signal )
-#                                addUnc( c, "fake_photon_ID_sig",      binname, pName, phFakeSF,    expected.val, signal )
-#                                addUnc( c, "photon_ID_bkg",      binname, pName, 0,    expected.val, signal )
-#                                addUnc( c, "misID_photon_ID_bkg",      binname, pName, 0,    expected.val, signal )
-#                                addUnc( c, "fake_photon_ID_bkg",      binname, pName, 0,    expected.val, signal )
-#                            else:
-#                                addUnc( c, "photon_ID_bkg",      binname, pName, phSF,    expected.val, signal )
-#                                addUnc( c, "misID_photon_ID_bkg",      binname, pName, phMisSF,    expected.val, signal )
-#                                addUnc( c, "fake_photon_ID_bkg",      binname, pName, phFakeSF,    expected.val, signal )
-#                                addUnc( c, "photon_ID_sig",      binname, pName, 0,    expected.val, signal )
-#                                addUnc( c, "misID_photon_ID_sig",      binname, pName, 0,    expected.val, signal )
-#                                addUnc( c, "fake_photon_ID_sig",      binname, pName, 0,    expected.val, signal )
-#                            if eVetoSF > 0.0005:
                             addUnc( c, "photon_ID",      binname, pName, phSF,    expected.val, signal )
+#                            if args.year == 2016:
+#                                addUnc( c, "photon_ID_AltSig_2016",      binname, pName, phSFAltSig,    expected.val, signal )
                             addUnc( c, "pixelSeed_veto_%i"%args.year,       binname, pName, eVetoSF, expected.val, signal )
 
                         #if qcdTF3:
                         #addUnc( c, "QCD_TF", binname, pName, qcdTF3, expected.val, signal )
+
+                        if not args.inclRegion and setup.signalregion and signal and args.addPtBinnedUnc:
+#                            if not firstBin:
+#                                firstBin = True
+#                            else:
+#                                c.addFreeParameter("Signal_%s"%binname, 'signal', 1, '[0.,5.]', bin="Bin0_%s"%binname.replace("Bin","bin"))
+                            for i in range(1, len(pTG_thresh)-1):
+                                addUnc( c, "Signal_mu_3_pT_Bin%i"%(i), binname, pName, locals()["Signal_mu_3_bin%i_unc"%i], expected.val, signal )
+                                addUnc( c, "Signal_mu_4p_pT_Bin%i"%(i), binname, pName, locals()["Signal_mu_4p_bin%i_unc"%i], expected.val, signal )
+                                addUnc( c, "Signal_e_3_pT_Bin%i"%(i), binname, pName, locals()["Signal_e_3_bin%i_unc"%i], expected.val, signal )
+                                addUnc( c, "Signal_e_4p_pT_Bin%i"%(i), binname, pName, locals()["Signal_e_4p_bin%i_unc"%i], expected.val, signal )
 
                         if not args.inclRegion:
                             for i in range(1, len(misIDPT_thresholds)-1):
@@ -943,19 +1074,22 @@ def wrapper():
 
 #                        if dyUnc > 0.0005:
                         addUnc( c, "DY_normalization", binname, pName, dyUnc, expected.val, signal )
-                        addUnc( c, "DY_extrapolation", binname, pName, dyUnc if setup.signalregion else 0, expected.val, signal )
+#                        addUnc( c, "DY_extrapolation", binname, pName, dyUnc if setup.signalregion else 0, expected.val, signal )
 
                         addUnc( c, "MisID_extrapolation_%i"%args.year, binname, pName, misExUnc if setup.signalregion else 0, expected.val, signal )
 #                        if otherUnc > 0.0005:
                         addUnc( c, "Other_normalization", binname, pName, otherUnc, expected.val, signal )
 #                        if zg > 0.0005:
                         addUnc( c, "ZGamma_normalization", binname, pName, zg, expected.val, signal )
+#                        addUnc( c, "WGamma_normalization", binname, pName, wg, expected.val, signal )
+#                        if args.addMisIDSF:
+#                        addUnc( c, "MisID_normalization_%i"%args.year, binname, pName, misIDUnc, expected.val, signal )
 #                        if misID4p > 0.0005:
                         addUnc( c, "MisID_nJet_dependence_%i"%args.year, binname, pName, misID4p, expected.val, signal )
 #                        if zg4p > 0.0005:
                         addUnc( c, "ZGamma_nJet_dependence", binname, pName, zg4p, expected.val, signal )
 #                        if dy4p > 0.0005:
-                        addUnc( c, "DY_nJet_dependence", binname, pName, dy4p, expected.val, signal )
+#                        addUnc( c, "DY_nJet_dependence", binname, pName, dy4p, expected.val, signal )
 #                        if wg4p > 0.0005:
                         addUnc( c, "WGamma_nJet_dependence", binname, pName, wg4p, expected.val, signal )
 #                        if gluon > 0.0005:
@@ -1000,7 +1134,8 @@ def wrapper():
                         c.specifyExpectation( binname, "signal", sigExp.val )
                         if sigExp.val:
                             for key, val in sigUnc.items():
-                                c.specifyUncertainty( key, binname, "signal", 1 + val.sigma/sigExp.val )
+                                if val.sigma/sigExp.val > 0:
+                                    c.specifyUncertainty( key, binname, "signal", 1 + val.sigma/sigExp.val )
 
 #                    if args.expected or (args.year in [2017,2018] and not args.unblind and setup.signalregion):
                     if args.expected:
@@ -1049,24 +1184,35 @@ def wrapper():
     sConfig = "_".join(regionNames)
     res = None
 
+#    res = c.calcLimit( cardFileName )
+
     if args.parameters:
-        nll          = c.calcNLL( cardFileName )
-        nll_prefit   = nll['nll0']
-        nll_postfit  = nll['nll_abs']
-        NLL = nll['nll']
-
-        if nll_prefit  is None or abs(nll_prefit) > 10000 or abs(nll_prefit) < 1e-5:   nll_prefit  = 999
-        if nll_postfit is None or abs(nll_postfit) > 10000 or abs(nll_postfit) < 1e-5: nll_postfit = 999
-
-        nllCache.add( sEFTConfig, NLL, overwrite=True )
-        print(NLL)
+        options = "--expectSignal=1"
+#        nll          = c.calcNLL( fname=cardFileName.replace(".txt",".root"), options=options )
+        nll          = c.calcNLL( fname=cardFileName, options=options )
+        nllCache.add( sEFTConfig, nll, overwrite=True )
+        print(nll)
 
     else:
-            res = c.calcLimit( cardFileName )
+
+            options = ""
+            if args.freezeR:
+                options = "--setParameters r=1 --freezeParameters r"
+#            if not args.inclRegion and with1pCR and args.addPtBinnedUnc:
+#                res = c.calcLimit( cardFileName, options=options, reFitOptions=options+" --freezeParameters "+",".join(freezeParams) )
+#            else:
+            res = c.calcLimit( cardFileName, options=options )
 
             if not args.skipFitDiagnostics:
                 # options for running the bkg only fit with r=1
-                c.calcNuisances( cardFileName, bonly=args.bkgOnly, options="--customStartingPoint --setParameters r=1" )
+                options += " --customStartingPoint --expectSignal=1"
+                if args.freezeR:
+                    options += " --rMin 0.99 --rMax 1.01"
+                c.calcNuisances( cardFileName.replace(".txt",".root"), bonly=args.bkgOnly, options=options )
+                Results = CombineResults( cardFile=cardFileNameTxt, plotDirectory="./", year=args.year, bkgOnly=args.bkgOnly, isSearch=False )
+                postFit = Results.getPulls( postFit=True )
+                pulls = [ p+"="+str(postFit[p].val) for p in freezeParams ]
+                c.calcNuisances( cardFileName.replace(".txt",".root"), bonly=args.bkgOnly, options=options+" --setParameters %s --freezeParameters %s"%(",".join(pulls),",".join(freezeParams)) )
 
     if args.plot and not args.parameters:
         path  = os.environ["CMSSW_BASE"]
@@ -1106,7 +1252,7 @@ def wrapper():
         default_misID4p_unc    = 0.2
         default_ZG4p_unc    = 0.4
         default_DY4p_unc    = 0.2
-        default_WG4p_unc    = 0.2
+        default_WG4p_unc    = 0.4
         default_DY_unc    = 0.08
         default_QCD0b4p_unc    = 0.2
         default_QCD1b4p_unc    = 0.4
