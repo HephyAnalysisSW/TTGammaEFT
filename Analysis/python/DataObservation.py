@@ -85,7 +85,8 @@ class DataObservation():
 
         else:
             preSelection = setup.preselection("Data", channel=channel)
-            cut = "&&".join([region.cutString(setup.sys['selectionModifier']), preSelection['cut']])
+#            cut = "&&".join([region.cutString(setup.sys['selectionModifier']), preSelection['cut']])
+            cut = "&&".join([region.cutString(), preSelection['cut']])
 
             logger.debug( "Using cut %s"% cut )
 
