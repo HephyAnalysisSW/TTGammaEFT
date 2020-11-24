@@ -12,12 +12,12 @@ jes += ["BBEC1_%i"%year          for year in [2016,2107,2018]]
 jesVar = ["jes"+j+"Up" for j in jes] + ["jes"+j+"Down" for j in jes]
 
 systematicReplacements = {}
-systematicReplacements["eScaleUp"]    = ["PhotonGood0","PhotonNoChgIsoNoSieie0","LeptonTight0","mllgammatight","mLtight0GammaNoSieieNoChgIso","mLtight0Gamma","mLinvtight0GammaNoSieieNoChgIso","mLinvtight0Gamma","mlltight"]
-systematicReplacements["eScaleDown"]  = ["PhotonGood0","PhotonNoChgIsoNoSieie0","LeptonTight0","mllgammatight","mLtight0GammaNoSieieNoChgIso","mLtight0Gamma","mLinvtight0GammaNoSieieNoChgIso","mLinvtight0Gamma","mlltight"]
-systematicReplacements["eResUp"]      = ["PhotonGood0","PhotonNoChgIsoNoSieie0","LeptonTight0","mllgammatight","mLtight0GammaNoSieieNoChgIso","mLtight0Gamma","mLinvtight0GammaNoSieieNoChgIso","mLinvtight0Gamma","mlltight"]
-systematicReplacements["eResDown"]    = ["PhotonGood0","PhotonNoChgIsoNoSieie0","LeptonTight0","mllgammatight","mLtight0GammaNoSieieNoChgIso","mLtight0Gamma","mLinvtight0GammaNoSieieNoChgIso","mLinvtight0Gamma","mlltight"]
-systematicReplacements["muTotalUp"]   = ["LeptonTight0","mllgammatight","mLtight0GammaNoSieieNoChgIso","mLtight0Gamma","mLinvtight0GammaNoSieieNoChgIso","mLinvtight0Gamma","mlltight"]
-systematicReplacements["muTotalDown"] = ["LeptonTight0","mllgammatight","mLtight0GammaNoSieieNoChgIso","mLtight0Gamma","mLinvtight0GammaNoSieieNoChgIso","mLinvtight0Gamma","mlltight"]
+systematicReplacements["eScaleUp"]    = ["photonJetdR", "photonNoSieieNoChgIsoJetdR", "ltight0GammadR", "ltight0GammadPhi", "ltight0GammaNoSieieNoChgIsodR", "ltight0GammaNoSieieNoChgIsodPhi", "PhotonGood0","PhotonNoChgIsoNoSieie0","nElectronTight","LeptonTight0","mllgammatight","mLtight0GammaNoSieieNoChgIso","mLtight0Gamma","mLinvtight0GammaNoSieieNoChgIso","mLinvtight0Gamma","mlltight"]
+systematicReplacements["eScaleDown"]  = ["photonJetdR", "photonNoSieieNoChgIsoJetdR", "ltight0GammadR", "ltight0GammadPhi", "ltight0GammaNoSieieNoChgIsodR", "ltight0GammaNoSieieNoChgIsodPhi", "PhotonGood0","PhotonNoChgIsoNoSieie0","nElectronTight","LeptonTight0","mllgammatight","mLtight0GammaNoSieieNoChgIso","mLtight0Gamma","mLinvtight0GammaNoSieieNoChgIso","mLinvtight0Gamma","mlltight"]
+systematicReplacements["eResUp"]      = ["photonJetdR", "photonNoSieieNoChgIsoJetdR", "ltight0GammadR", "ltight0GammadPhi", "ltight0GammaNoSieieNoChgIsodR", "ltight0GammaNoSieieNoChgIsodPhi", "PhotonGood0","PhotonNoChgIsoNoSieie0","nElectronTight","LeptonTight0","mllgammatight","mLtight0GammaNoSieieNoChgIso","mLtight0Gamma","mLinvtight0GammaNoSieieNoChgIso","mLinvtight0Gamma","mlltight"]
+systematicReplacements["eResDown"]    = ["photonJetdR", "photonNoSieieNoChgIsoJetdR", "ltight0GammadR", "ltight0GammadPhi", "ltight0GammaNoSieieNoChgIsodR", "ltight0GammaNoSieieNoChgIsodPhi", "PhotonGood0","PhotonNoChgIsoNoSieie0","nElectronTight","LeptonTight0","mllgammatight","mLtight0GammaNoSieieNoChgIso","mLtight0Gamma","mLinvtight0GammaNoSieieNoChgIso","mLinvtight0Gamma","mlltight"]
+systematicReplacements["muTotalUp"]   = ["ltight0GammadR", "ltight0GammadPhi", "ltight0GammaNoSieieNoChgIsodR", "ltight0GammaNoSieieNoChgIsodPhi", "LeptonTight0","mllgammatight","mLtight0GammaNoSieieNoChgIso","mLtight0Gamma","mLinvtight0GammaNoSieieNoChgIso","mLinvtight0Gamma","mlltight"]
+systematicReplacements["muTotalDown"] = ["ltight0GammadR", "ltight0GammadPhi", "ltight0GammaNoSieieNoChgIsodR", "ltight0GammaNoSieieNoChgIsodPhi", "LeptonTight0","mllgammatight","mLtight0GammaNoSieieNoChgIso","mLtight0Gamma","mLinvtight0GammaNoSieieNoChgIso","mLinvtight0Gamma","mlltight"]
 for var in ["jerUp", "jerDown"] + jesVar:
     systematicReplacements[var] = ["m3"]
 

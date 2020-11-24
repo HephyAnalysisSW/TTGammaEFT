@@ -352,6 +352,15 @@ signalRegions["SR4pM3"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBT
                             "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                          }
 
+signalRegions["SR4pM3I"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
+                            "channels":   lepChannels,
+                            "regions":    [m3Regions[0]],
+                            "inclRegion": [m3Regions[0]],
+                            "noPhotonCR": False,
+                            "processes":  processesSR,
+                            "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                         }
+
 default_SR = signalRegions["SR4pM3"]
 
 #Define defaults here
@@ -370,10 +379,10 @@ default_m3Window     = "all"
 default_photonIso    = None
 
 SSMSF_val = {}
-SSMSF_val[2016]    = u_float( 0.76, 0.08 )
-SSMSF_val[2017]    = u_float( 0.76, 0.08 )
-SSMSF_val[2018]    = u_float( 0.76, 0.08 )
-SSMSF_val["RunII"] = u_float( 0.76, 0.08 )
+SSMSF_val[2016]    = u_float( 1.01, 0.07 )
+SSMSF_val[2017]    = u_float( 1.01, 0.07 )
+SSMSF_val[2018]    = u_float( 1.01, 0.07 )
+SSMSF_val["RunII"] = u_float( 1.01, 0.07 )
 
 WJetsSF_val = {}
 WJetsSF_val[2016]    = u_float( 1.14, 0.13 )
@@ -383,101 +392,101 @@ WJetsSF_val["RunII"] = u_float( 1.14, 0.13 )
 
 
 QCDSF_val = {}
-QCDSF_val[2016]    = u_float( 1.48, 0.18 )
-QCDSF_val[2017]    = u_float( 1.12, 0.21 )
-QCDSF_val[2018]    = u_float( 1.31, 0.30 )
-QCDSF_val["RunII"] = u_float( 1.33, 0.12 )
+QCDSF_val[2016]    = u_float( 1.46, 0.20 )
+QCDSF_val[2017]    = u_float( 1.07, 0.24 )
+QCDSF_val[2018]    = u_float( 1.26, 0.34 )
+QCDSF_val["RunII"] = u_float( 1.29, 0.16 )
 
 QCD2SF_val = {}
-QCD2SF_val[2016]    = u_float( 1.21, 0.18 )
-QCD2SF_val[2017]    = u_float( 1.26, 0.18 )
-QCD2SF_val[2018]    = u_float( 0.92, 0.15 )
-QCD2SF_val["RunII"] = u_float( 1.14, 0.14 )
+QCD2SF_val[2016]    = u_float( 1.22, 0.18 )
+QCD2SF_val[2017]    = u_float( 1.24, 0.18 )
+QCD2SF_val[2018]    = u_float( 0.93, 0.15 )
+QCD2SF_val["RunII"] = u_float( 1.15, 0.14 )
 
 QCD3SF_val = {}
-QCD3SF_val[2016]    = u_float( 1.44, 0.24 )
-QCD3SF_val[2017]    = u_float( 1.17, 0.31 )
-QCD3SF_val[2018]    = u_float( 1.27, 0.39 )
+QCD3SF_val[2016]    = u_float( 1.43, 0.24 )
+QCD3SF_val[2017]    = u_float( 1.17, 0.29 )
+QCD3SF_val[2018]    = u_float( 1.30, 0.37 )
 QCD3SF_val["RunII"] = u_float( 1.37, 0.17 )
 
 QCD4SF_val = {}
-QCD4SF_val[2016]    = u_float( 1.27, 0.47 )
-QCD4SF_val[2017]    = u_float( 0.78, 0.31 )
-QCD4SF_val[2018]    = u_float( 1.13, 0.44 )
-QCD4SF_val["RunII"] = u_float( 0.98, 0.25 )
+QCD4SF_val[2016]    = u_float( 1.33, 0.43 )
+QCD4SF_val[2017]    = u_float( 0.70, 0.31 )
+QCD4SF_val[2018]    = u_float( 1.11, 0.42 )
+QCD4SF_val["RunII"] = u_float( 0.93, 0.22 )
 
 QCD5SF_val = {}
-QCD5SF_val[2016]    = u_float( 1.02, 0.43 )
-QCD5SF_val[2017]    = u_float( 1.03, 0.43 )
-QCD5SF_val[2018]    = u_float( 1.06, 0.49 )
-QCD5SF_val["RunII"] = u_float( 1.09, 0.36 )
+QCD5SF_val[2016]    = u_float( 1.03, 0.43 )
+QCD5SF_val[2017]    = u_float( 1.01, 0.43 )
+QCD5SF_val[2018]    = u_float( 1.04, 0.52 )
+QCD5SF_val["RunII"] = u_float( 1.07, 0.36 )
 
 QCD2pSF_val = {}
 QCD2pSF_val[2016]    = u_float( 1.33, 0.14 )
-QCD2pSF_val[2017]    = u_float( 1.20, 0.17 )
+QCD2pSF_val[2017]    = u_float( 1.17, 0.18 )
 QCD2pSF_val[2018]    = u_float( 1.01, 0.17 )
-QCD2pSF_val["RunII"] = u_float( 1.23, 0.11 )
+QCD2pSF_val["RunII"] = u_float( 1.22, 0.11 )
 
 QCD3pSF_val = {}
-QCD3pSF_val[2016]    = u_float( 1.48, 0.18 )
-QCD3pSF_val[2017]    = u_float( 1.12, 0.21 )
-QCD3pSF_val[2018]    = u_float( 1.31, 0.30 )
-QCD3pSF_val["RunII"] = u_float( 1.33, 0.12 )
+QCD3pSF_val[2016]    = u_float( 1.46, 0.20 )
+QCD3pSF_val[2017]    = u_float( 1.07, 0.24 )
+QCD3pSF_val[2018]    = u_float( 1.26, 0.34 )
+QCD3pSF_val["RunII"] = u_float( 1.29, 0.16 )
 
 QCD4pSF_val = {}
-QCD4pSF_val[2016]    = u_float( 1.37, 0.38 )
-QCD4pSF_val[2017]    = u_float( 0.89, 0.27 )
-QCD4pSF_val[2018]    = u_float( 1.04, 0.47 )
-QCD4pSF_val["RunII"] = u_float( 1.09, 0.28 )
+QCD4pSF_val[2016]    = u_float( 1.35, 0.37 )
+QCD4pSF_val[2017]    = u_float( 0.85, 0.26 )
+QCD4pSF_val[2018]    = u_float( 1.00, 0.43 )
+QCD4pSF_val["RunII"] = u_float( 1.03, 0.24 )
 
 # SF with systematics, pull from JEC
 DYSF_val = {}
-DYSF_val[2016]    = u_float( 1.17, 0.12 )
-DYSF_val[2017]    = u_float( 1.10, 0.22 )
-DYSF_val[2018]    = u_float( 1.06, 0.11 )
-DYSF_val["RunII"] = u_float( 1.12, 0.09 )
+DYSF_val[2016]    = u_float( 1.17, 0.08 )
+DYSF_val[2017]    = u_float( 1.16, 0.11 )
+DYSF_val[2018]    = u_float( 1.09, 0.09 )
+DYSF_val["RunII"] = u_float( 1.15, 0.07 )
 
 DY2SF_val = {}
-DY2SF_val[2016]    = u_float( 1.12, 0.10 )
-DY2SF_val[2017]    = u_float( 1.10, 0.31 )
-DY2SF_val[2018]    = u_float( 1.08, 0.10 )
-DY2SF_val["RunII"] = u_float( 1.12, 0.08 )
+DY2SF_val[2016]    = u_float( 1.18, 0.07 )
+DY2SF_val[2017]    = u_float( 1.16, 0.08 )
+DY2SF_val[2018]    = u_float( 1.12, 0.08 )
+DY2SF_val["RunII"] = u_float( 1.16, 0.06 )
 
 DY3SF_val = {}
-DY3SF_val[2016]    = u_float( 1.20, 0.12 )
-DY3SF_val[2017]    = u_float( 1.11, 0.21 )
-DY3SF_val[2018]    = u_float( 1.07, 0.11 )
-DY3SF_val["RunII"] = u_float( 1.15, 0.09 )
+DY3SF_val[2016]    = u_float( 1.20, 0.08 )
+DY3SF_val[2017]    = u_float( 1.17, 0.10 )
+DY3SF_val[2018]    = u_float( 1.10, 0.09 )
+DY3SF_val["RunII"] = u_float( 1.17, 0.07 )
 
 DY4SF_val = {}
-DY4SF_val[2016]    = u_float( 1.08, 0.11 )
-DY4SF_val[2017]    = u_float( 1.12, 0.26 )
-DY4SF_val[2018]    = u_float( 1.03, 0.13 )
-DY4SF_val["RunII"] = u_float( 1.07, 0.10 )
+DY4SF_val[2016]    = u_float( 1.08, 0.08 )
+DY4SF_val[2017]    = u_float( 1.13, 0.11 )
+DY4SF_val[2018]    = u_float( 1.03, 0.10 )
+DY4SF_val["RunII"] = u_float( 1.08, 0.08 )
 
 DY5SF_val = {}
-DY5SF_val[2016]    = u_float( 1.01, 0.13 )
-DY5SF_val[2017]    = u_float( 1.19, 0.32 )
-DY5SF_val[2018]    = u_float( 1.09, 0.15 )
-DY5SF_val["RunII"] = u_float( 1.06, 0.11 )
+DY5SF_val[2016]    = u_float( 1.01, 0.09 )
+DY5SF_val[2017]    = u_float( 1.19, 0.15 )
+DY5SF_val[2018]    = u_float( 1.09, 0.13 )
+DY5SF_val["RunII"] = u_float( 1.06, 0.09 )
 
 DY2pSF_val = {}
-DY2pSF_val[2016]    = u_float( 1.11, 0.11 )
-DY2pSF_val[2017]    = u_float( 1.10, 0.20 )
-DY2pSF_val[2018]    = u_float( 1.08, 0.11 )
-DY2pSF_val["RunII"] = u_float( 1.12, 0.08 )
+DY2pSF_val[2016]    = u_float( 1.18, 0.07 )
+DY2pSF_val[2017]    = u_float( 1.16, 0.09 )
+DY2pSF_val[2018]    = u_float( 1.11, 0.08 )
+DY2pSF_val["RunII"] = u_float( 1.16, 0.06 )
 
 DY3pSF_val = {}
-DY3pSF_val[2016]    = u_float( 1.17, 0.12 )
-DY3pSF_val[2017]    = u_float( 1.10, 0.22 )
-DY3pSF_val[2018]    = u_float( 1.06, 0.11 )
-DY3pSF_val["RunII"] = u_float( 1.12, 0.09 )
+DY3pSF_val[2016]    = u_float( 1.17, 0.08 )
+DY3pSF_val[2017]    = u_float( 1.16, 0.11 )
+DY3pSF_val[2018]    = u_float( 1.09, 0.09 )
+DY3pSF_val["RunII"] = u_float( 1.15, 0.07 )
 
 DY4pSF_val = {}
-DY4pSF_val[2016]    = u_float( 1.07, 0.12 )
-DY4pSF_val[2017]    = u_float( 1.14, 0.26 )
-DY4pSF_val[2018]    = u_float( 1.05, 0.13 )
-DY4pSF_val["RunII"] = u_float( 1.07, 0.10 )
+DY4pSF_val[2016]    = u_float( 1.07, 0.08 )
+DY4pSF_val[2017]    = u_float( 1.14, 0.12 )
+DY4pSF_val[2018]    = u_float( 1.05, 0.11 )
+DY4pSF_val["RunII"] = u_float( 1.08, 0.08 )
 
 
 
@@ -488,135 +497,135 @@ misIDSF_val[2017]    = u_float( 2.50, 0.24 )
 misIDSF_val[2018]    = u_float( 1.49, 0.14 )
 
 misID2SF_val = {}
-misID2SF_val[2016]    = u_float( 2.26, 0.27 )
-misID2SF_val[2017]    = u_float( 2.71, 0.37 )
-misID2SF_val[2018]    = u_float( 1.56, 0.19 )
+misID2SF_val[2016]    = u_float( 2.39, 0.28 )
+misID2SF_val[2017]    = u_float( 2.80, 0.38 )
+misID2SF_val[2018]    = u_float( 1.64, 0.19 )
 
 misID3SF_val = {}
-misID3SF_val[2016]    = u_float( 2.23, 0.31 )
-misID3SF_val[2017]    = u_float( 2.35, 0.33 )
-misID3SF_val[2018]    = u_float( 1.45, 0.20 )
+misID3SF_val[2016]    = u_float( 2.36, 0.36 )
+misID3SF_val[2017]    = u_float( 2.46, 0.37 )
+misID3SF_val[2018]    = u_float( 1.53, 0.20 )
 
 misID4SF_val = {}
-misID4SF_val[2016]    = u_float( 1.81, 0.32 )
-misID4SF_val[2017]    = u_float( 3.02, 0.65 )
-misID4SF_val[2018]    = u_float( 1.72, 0.29 )
+misID4SF_val[2016]    = u_float( 1.92, 0.33 )
+misID4SF_val[2017]    = u_float( 3.20, 0.69 )
+misID4SF_val[2018]    = u_float( 1.79, 0.29 )
 
 misID5SF_val = {}
-misID5SF_val[2016]    = u_float( 1.67, 0.90 )
-misID5SF_val[2017]    = u_float( 2.22, 1.00 )
-misID5SF_val[2018]    = u_float( 1.28, 0.52 )
+misID5SF_val[2016]    = u_float( 1.64, 0.89 )
+misID5SF_val[2017]    = u_float( 2.17, 1.03 )
+misID5SF_val[2018]    = u_float( 1.23, 0.52 )
 
 misID2pSF_val = {}
-misID2pSF_val[2016]    = u_float( 2.27, 0.27 )
-misID2pSF_val[2017]    = u_float( 2.89, 0.39 )
-misID2pSF_val[2018]    = u_float( 1.59, 0.20 ) 
+misID2pSF_val[2016]    = u_float( 2.36, 0.28 )
+misID2pSF_val[2017]    = u_float( 2.92, 0.40 )
+misID2pSF_val[2018]    = u_float( 1.65, 0.20 ) 
 
 misID3pSF_val = {}
-misID3pSF_val[2016]    = u_float( 2.18, 0.21 )
-misID3pSF_val[2017]    = u_float( 2.50, 0.24 )
-misID3pSF_val[2018]    = u_float( 1.49, 0.14 )
+misID3pSF_val[2016]    = u_float( 2.31, 0.31 )
+misID3pSF_val[2017]    = u_float( 2.69, 0.41 )
+misID3pSF_val[2018]    = u_float( 1.57, 0.20 )
 
 misID4pSF_val = {}
-misID4pSF_val[2016]    = u_float( 1.91, 0.32 )
-misID4pSF_val[2017]    = u_float( 2.93, 0.63 )
-misID4pSF_val[2018]    = u_float( 1.70, 0.28 )
+misID4pSF_val[2016]    = u_float( 1.95, 0.32 )
+misID4pSF_val[2017]    = u_float( 2.96, 0.63 )
+misID4pSF_val[2018]    = u_float( 1.74, 0.27 )
 
 WGSF_val = {}
-WGSF_val[2016]    = u_float( 1.02, 0.08 )
-WGSF_val[2017]    = u_float( 1.20, 0.09 )
-WGSF_val[2018]    = u_float( 1.09, 0.10 )
-WGSF_val["RunII"] = u_float( 1.10, 0.06 )
+WGSF_val[2016]    = u_float( 1.03, 0.11 )
+WGSF_val[2017]    = u_float( 1.18, 0.12 )
+WGSF_val[2018]    = u_float( 1.08, 0.13 )
+WGSF_val["RunII"] = u_float( 1.10, 0.08 )
 
 WG2SF_val = {}
-WG2SF_val[2016]    = u_float( 1.13, 0.09 )
-WG2SF_val[2017]    = u_float( 1.05, 0.09 )
-WG2SF_val[2018]    = u_float( 1.08, 0.11 )
-WG2SF_val["RunII"] = u_float( 1.11, 0.07 )
+WG2SF_val[2016]    = u_float( 1.14, 0.08 )
+WG2SF_val[2017]    = u_float( 1.03, 0.07 )
+WG2SF_val[2018]    = u_float( 1.10, 0.08 )
+WG2SF_val["RunII"] = u_float( 1.08, 0.05 )
 
 WG3SF_val = {}
-WG3SF_val[2016]    = u_float( 1.01, 0.14 )
-WG3SF_val[2017]    = u_float( 1.12, 0.14 )
-WG3SF_val[2018]    = u_float( 1.07, 0.20 )
-WG3SF_val["RunII"] = u_float( 1.06, 0.10 )
+WG3SF_val[2016]    = u_float( 1.01, 0.13 )
+WG3SF_val[2017]    = u_float( 1.10, 0.12 )
+WG3SF_val[2018]    = u_float( 1.06, 0.13 )
+WG3SF_val["RunII"] = u_float( 1.08, 0.08 )
 
 WG4SF_val = {}
-WG4SF_val[2016]    = u_float( 1.15, 0.18 )
-WG4SF_val[2017]    = u_float( 1.28, 0.29 )
-WG4SF_val[2018]    = u_float( 1.06, 0.25 )
-WG4SF_val["RunII"] = u_float( 1.15, 0.15 )
+WG4SF_val[2016]    = u_float( 1.15, 0.17 )
+WG4SF_val[2017]    = u_float( 1.35, 0.21 )
+WG4SF_val[2018]    = u_float( 1.05, 0.19 )
+WG4SF_val["RunII"] = u_float( 1.17, 0.13 )
 
 WG5SF_val = {}
-WG5SF_val[2016]    = u_float( 1.19, 0.33 )
-WG5SF_val[2017]    = u_float( 1.58, 0.49 )
-WG5SF_val[2018]    = u_float( 1.31, 0.38 )
-WG5SF_val["RunII"] = u_float( 1.29, 0.27 )
+WG5SF_val[2016]    = u_float( 1.21, 0.31 )
+WG5SF_val[2017]    = u_float( 1.63, 0.41 )
+WG5SF_val[2018]    = u_float( 1.35, 0.34 )
+WG5SF_val["RunII"] = u_float( 1.33, 0.25 )
 
 WG2pSF_val = {}
-WG2pSF_val[2016]    = u_float( 1.08, 0.09 )
-WG2pSF_val[2017]    = u_float( 1.14, 0.10 )
-WG2pSF_val[2018]    = u_float( 1.06, 0.12 )
-WG2pSF_val["RunII"] = u_float( 1.11, 0.07 )
+WG2pSF_val[2016]    = u_float( 1.10, 0.08 )
+WG2pSF_val[2017]    = u_float( 1.09, 0.08 )
+WG2pSF_val[2018]    = u_float( 1.09, 0.08 )
+WG2pSF_val["RunII"] = u_float( 1.09, 0.06 )
 
 WG3pSF_val = {}
-WG3pSF_val[2016]    = u_float( 1.04, 0.08 )
-WG3pSF_val[2017]    = u_float( 1.20, 0.09 )
-WG3pSF_val[2018]    = u_float( 1.09, 0.10 )
-WG3pSF_val["RunII"] = u_float( 1.10, 0.06 )
+WG3pSF_val[2016]    = u_float( 1.03, 0.11 )
+WG3pSF_val[2017]    = u_float( 1.18, 0.12 )
+WG3pSF_val[2018]    = u_float( 1.08, 0.13 )
+WG3pSF_val["RunII"] = u_float( 1.10, 0.08 )
 
 WG4pSF_val = {}
-WG4pSF_val[2016]    = u_float( 1.15, 0.19 )
-WG4pSF_val[2017]    = u_float( 1.40, 0.31 )
-WG4pSF_val[2018]    = u_float( 1.21, 0.25 )
-WG4pSF_val["RunII"] = u_float( 1.21, 0.15 )
+WG4pSF_val[2016]    = u_float( 1.16, 0.17 )
+WG4pSF_val[2017]    = u_float( 1.40, 0.22 )
+WG4pSF_val[2018]    = u_float( 1.22, 0.20 )
+WG4pSF_val["RunII"] = u_float( 1.22, 0.13 )
 
 ZGSF_val = {}
-ZGSF_val[2016]    = u_float( 1.08, 0.15 )
-ZGSF_val[2017]    = u_float( 0.98, 0.14 )
-ZGSF_val[2018]    = u_float( 1.03, 0.15 )
-ZGSF_val["RunII"] = u_float( 1.04, 0.10 )
+ZGSF_val[2016]    = u_float( 1.09, 0.16 )
+ZGSF_val[2017]    = u_float( 1.05, 0.18 )
+ZGSF_val[2018]    = u_float( 1.03, 0.16 )
+ZGSF_val["RunII"] = u_float( 1.08, 0.12 )
 
 ZG2SF_val = {}
-ZG2SF_val[2016]    = u_float( 0.88, 0.10 )
-ZG2SF_val[2017]    = u_float( 0.88, 0.10 )
-ZG2SF_val[2018]    = u_float( 0.96, 0.11 )
-ZG2SF_val["RunII"] = u_float( 0.87, 0.07 )
+ZG2SF_val[2016]    = u_float( 0.89, 0.10 )
+ZG2SF_val[2017]    = u_float( 0.90, 0.09 )
+ZG2SF_val[2018]    = u_float( 0.94, 0.09 )
+ZG2SF_val["RunII"] = u_float( 0.90, 0.07 )
 
 ZG3SF_val = {}
 ZG3SF_val[2016]    = u_float( 1.03, 0.16 )
-ZG3SF_val[2017]    = u_float( 0.92, 0.15 )
-ZG3SF_val[2018]    = u_float( 1.00, 0.18 )
-ZG3SF_val["RunII"] = u_float( 0.89, 0.08 )
+ZG3SF_val[2017]    = u_float( 0.96, 0.15 )
+ZG3SF_val[2018]    = u_float( 1.00, 0.16 )
+ZG3SF_val["RunII"] = u_float( 1.01, 0.11 )
 
 ZG4SF_val = {}
-ZG4SF_val[2016]    = u_float( 1.10, 0.27 )
-ZG4SF_val[2017]    = u_float( 1.02, 0.27 )
-ZG4SF_val[2018]    = u_float( 1.06, 0.25 )
-ZG4SF_val["RunII"] = u_float( 1.08, 0.22 )
+ZG4SF_val[2016]    = u_float( 1.15, 0.27 )
+ZG4SF_val[2017]    = u_float( 1.04, 0.27 )
+ZG4SF_val[2018]    = u_float( 1.07, 0.25 )
+ZG4SF_val["RunII"] = u_float( 1.15, 0.22 )
 
 ZG5SF_val = {}
 ZG5SF_val[2016]    = u_float( 1.04, 0.29 )
-ZG5SF_val[2017]    = u_float( 1.07, 0.29 )
+ZG5SF_val[2017]    = u_float( 1.08, 0.29 )
 ZG5SF_val[2018]    = u_float( 1.04, 0.29 )
-ZG5SF_val["RunII"] = u_float( 1.14, 0.32 )
+ZG5SF_val["RunII"] = u_float( 1.17, 0.32 )
 
 ZG2pSF_val = {}
-ZG2pSF_val[2016]    = u_float( 0.92, 0.08 )
-ZG2pSF_val[2017]    = u_float( 0.93, 0.09 )
-ZG2pSF_val[2018]    = u_float( 0.99, 0.12 )
-ZG2pSF_val["RunII"] = u_float( 0.92, 0.07 )
+ZG2pSF_val[2016]    = u_float( 0.94, 0.09 )
+ZG2pSF_val[2017]    = u_float( 0.94, 0.09 )
+ZG2pSF_val[2018]    = u_float( 0.96, 0.09 )
+ZG2pSF_val["RunII"] = u_float( 0.95, 0.07 )
 
 ZG3pSF_val = {}
-ZG3pSF_val[2016]    = u_float( 1.08, 0.15 )
-ZG3pSF_val[2017]    = u_float( 0.98, 0.14 )
-ZG3pSF_val[2018]    = u_float( 1.03, 0.15 )
-ZG3pSF_val["RunII"] = u_float( 1.04, 0.10 )
+ZG3pSF_val[2016]    = u_float( 1.09, 0.16 )
+ZG3pSF_val[2017]    = u_float( 1.05, 0.18 )
+ZG3pSF_val[2018]    = u_float( 1.03, 0.16 )
+ZG3pSF_val["RunII"] = u_float( 1.08, 0.12 )
 
 ZG4pSF_val = {}
-ZG4pSF_val[2016]    = u_float( 1.17, 0.27 )
-ZG4pSF_val[2017]    = u_float( 1.07, 0.27 )
-ZG4pSF_val[2018]    = u_float( 1.08, 0.27 )
-ZG4pSF_val["RunII"] = u_float( 1.22, 0.21 )
+ZG4pSF_val[2016]    = u_float( 1.20, 0.25 )
+ZG4pSF_val[2017]    = u_float( 1.10, 0.28 )
+ZG4pSF_val[2018]    = u_float( 1.10, 0.27 )
+ZG4pSF_val["RunII"] = u_float( 1.26, 0.20 )
 
 # all processes are all samples + them splitted in photon categories
 p                       = copy.copy(default_sampleList) + [ "TT_pow", "ST_tW", "ST_tch", "ST_sch", "all_noQCD", "all_mc", "GQCD", "QCD", "QCD_e", "QCD_mu", "GJets", "WG_NLO", "WG" ]

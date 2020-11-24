@@ -120,7 +120,8 @@ chgIsoNoSRPtRegions = getRegions2D( "PhotonNoChgIsoNoSieie0_pt", pTG_thresh, "(P
 finepTG_thresh         = [ 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 150, 180, 210, -999 ]
 photonBinRegions   = getRegionsFromThresholds( "PhotonGood0_pt", finepTG_thresh )
 
-unfoldpTG_thresh = [ 20, 35, 50, 65, 80, 100, 120, 140, 160, 180, 200, 230, 260, 290, 320, -999 ]
+#unfoldpTG_thresh = [ 20, 35, 50, 65, 80, 100, 120, 140, 160, 180, 200, 230, 260, 290, 320, -999 ]
+unfoldpTG_thresh = [ 20, 35, 50, 65, 80, 120, 160, 200, 260, 320, -999 ]
 regionsTTGUnfolding = getRegionsFromThresholds( "PhotonGood0_pt", unfoldpTG_thresh )
 regionsTTGlooseUnfolding = getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", unfoldpTG_thresh )
 
