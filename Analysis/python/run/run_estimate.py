@@ -53,8 +53,11 @@ if not args.controlRegion:
 additionalRegions = [None]
 if "Unfold" in args.controlRegion and not "Pt" in args.controlRegion:
     args.noInclusive = True
+    pTG_thresh = [ 20, 35, 50, 65, 80, 120, 160, 200, 260, 320, -999 ]
+    additionalRegions += getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", pTG_thresh )
+
 #    misIDPT_thresholds = [ 20, 35, 50, 65, 80, 120, 160, -999 ]
-    misIDPT_thresholds = [ 35, 50, 65, 80, 120, 160, -999 ]
+    misIDPT_thresholds = [ 160, -999 ]
     additionalRegions += getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", misIDPT_thresholds )
 
 #    WGPT_thresholds = [ 20, 65, 160, -999 ]
