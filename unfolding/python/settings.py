@@ -488,7 +488,7 @@ class observed_dRlg_2016:
 
     fiducial_variable   = "genLCMStight0GammadR"
     fiducial_selection  = "nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1"
-    fiducial_thresholds     = (0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8, 3.2, 3.4)
+    fiducial_thresholds     = (0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8, 3.4)
     #plot_range_x_fiducial   = (0.4, 3.2)
     #fiducial_thresholds     = reco_thresholds[::2]
     #if fiducial_thresholds[-1]!=reco_thresholds[-1]:
@@ -593,7 +593,7 @@ class expected_dRlg_RunII:
 
     fiducial_variable   = "genLCMStight0GammadR"
     fiducial_selection  = "nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1"
-    fiducial_thresholds     = (0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8, 3.2, 3.4)
+    fiducial_thresholds     = (0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8, 3.4)
     #plot_range_x_fiducial   = (0.4, 3.2)
     #if fiducial_thresholds[-1]!=reco_thresholds[-1]:
     #    fiducial_thresholds=list(fiducial_thresholds)
@@ -617,14 +617,13 @@ class expected_dRlg_RunII:
     lumi_factor               = (lumi_year[2016]+lumi_year[2017]+lumi_year[2018])/1000.
     unfolding_data_input      = data
     unfolding_data_input_systematic_bands          = [
-       {'name' : 'total',
-        'label': "\pm 1#sigma (sys.)",
-        'ref': data,
-        'up':  dirDB.get( data_key+'Up' ),
-        'down':dirDB.get( data_key+'Down' ),
-        'color':ROOT.kBlue,
-        } ]
-
+#       {'name' : 'total',
+#        'label': "\pm 1#sigma (sys.)",
+#        'ref': data,
+#        'up':  dirDB.get( data_key+'Up' ),
+#        'down':dirDB.get( data_key+'Down' ),
+#        'color':ROOT.kBlue,}, 
+    ]
     unfolding_mc_input        = signal
     unfolding_mc_input_systematic_bands          = [
        {'name' : 'stat',
