@@ -33,7 +33,7 @@ all_systematics  = ['nominal'] + sum([list(p) for p in systematic_pairs],[])
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",           action="store",      default="INFO", nargs="?", choices=loggerChoices,                        help="Log level for logging")
-argParser.add_argument("--plot_directory",     action="store",      default="v47",                                              help="plot sub-directory")
+argParser.add_argument("--plot_directory",     action="store",      default="v48",                                              help="plot sub-directory")
 argParser.add_argument("--prefix",             action="store",      default=None,  type=str,                                                 help="for debugging")
 argParser.add_argument("--small",              action="store_true",                                                                          help="Run only on a small subset of the data?")
 argParser.add_argument("--extended",           action="store_true",                                                                          help="Write extended output?")
@@ -240,9 +240,9 @@ elif not args.systematic is None:
 
         # Sample for this year (fix)
 
-        ttg0l = Sample.fromDirectory("ttg0l_%s"%year, directory = ["/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v47/inclusive/TTGHad_LO/".format(year=year)])
-        ttg1l = Sample.fromDirectory("ttg1l_%s"%year, directory = ["/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v47/inclusive/TTGSingleLep_LO/".format(year=year)])
-        ttg2l = Sample.fromDirectory("ttg2l_%s"%year, directory = ["/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v47/inclusive/TTGLep_LO/".format(year=year)])
+        ttg0l = Sample.fromDirectory("ttg0l_%s"%year, directory = ["/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v48/inclusive/TTGHad_LO/".format(year=year)])
+        ttg1l = Sample.fromDirectory("ttg1l_%s"%year, directory = ["/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v48/inclusive/TTGSingleLep_LO/".format(year=year)])
+        ttg2l = Sample.fromDirectory("ttg2l_%s"%year, directory = ["/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v48/inclusive/TTGLep_LO/".format(year=year)])
 
         sample = Sample.combine( "ttg_%s"%year, [ttg1l, ttg2l, ttg0l] )
 
@@ -431,7 +431,7 @@ reco_spectrum_subtracted = fout_subtraction( reco_spectrum )
 
 reco_spectrum_subtracted.legendText = "reco (f_{out} subtracted)"
 reco_fout_spectrum.legendText = "reco f_{out}"
-reco_spectrum.legendText = "reco before subtraction"
+reco_spectrum.legendText = "Reco before subtraction"
 reco_spectrum_subtracted.style = styles.lineStyle( ROOT.kRed) 
 reco_fout_spectrum.style       = styles.lineStyle( ROOT.kGreen)       
 reco_spectrum.style            = styles.lineStyle( ROOT.kBlue)      
@@ -561,7 +561,7 @@ for logY in [True, False]:
     unfolded_mc_spectrum_ . legendText = "unfolded (%6.2f fb)" % (unfolded_mc_spectrum_.Integral())
     fiducial_spectrum_    . legendText = "fiducial (%6.2f fb)" % (fiducial_spectrum_.Integral())
     
-    plot = Plot.fromHisto( name = 'unfolding_closure' + ('_log' if logY else ''),  histos = [[ h ] for h in [fiducial_spectrum_, unfolded_mc_spectrum_]], texX = "p_{T}", texY = "Events" )
+    plot = Plot.fromHisto( name = 'unfolding_closure' + ('_log' if logY else ''),  histos = [[ h ] for h in [fiducial_spectrum_, unfolded_mc_spectrum_]], texX = "p_{T}", texY = "Fiducial cross section (fb)" )
     plot.stack = None
     draw(plot, logY = logY)
 
@@ -571,7 +571,7 @@ if not hasattr(settings, "unfolding_data_input"):
 # input plot unsubtracted
 boxes = []
 ratio_boxes = []
-for band in reversed(settings.unfolding_mc_input_systematic_bands):
+for band in reversed(settings.unfolding_signal_input_systematic_bands):
     for i in range(1, band['ref'].GetNbinsX()+1):
         box = ROOT.TBox( band['ref'].GetXaxis().GetBinLowEdge(i),  
                          band['down'].GetBinContent(i),
@@ -601,16 +601,21 @@ for band in reversed(settings.unfolding_mc_input_systematic_bands):
                 ratio_boxes.append(ratio_box)
                 stuff.append(ratio_box)
 
-settings.unfolding_data_input.style = styles.errorStyle( ROOT.kBlack )
-settings.unfolding_mc_input.style   = styles.lineStyle( ROOT.kBlue, width = 2)
+#settings.unfolding_data_input.style = styles.errorStyle( ROOT.kBlack )
+settings.unfolding_signal_input.style   = styles.lineStyle( ROOT.kBlue, width = 2)
+reco_spectrum.style = styles.lineStyle( ROOT.kGreen, width = 2)
 
-settings.unfolding_data_input.legendText = settings.data_legendText 
-settings.unfolding_mc_input.legendText   = settings.mc_legendText
+#settings.unfolding_data_input.legendText = settings.data_legendText 
+settings.unfolding_signal_input.legendText   = settings.signal_legendText
+reco_spectrum.legendText = "Simulation"
 
-for logy in [True, False]:
+for logY in [True, False]:
     plotting.draw(
         Plot.fromHisto( "input_spectrum" + ('_log' if logY else ''),
-                    [[settings.unfolding_mc_input],[settings.unfolding_data_input]],
+                    [
+                        [reco_spectrum],
+                        [settings.unfolding_signal_input],
+                    ],
                     texX = settings.tex_reco,
                     texY = "Number of events",
                 ),
@@ -619,7 +624,7 @@ for logy in [True, False]:
         #legend = None,
         legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
         yRange = settings.y_range,
-        ratio = {'yRange': (0.3, 1.7), 'texY':'Data / Sim.', 'histos':[(1,0)], 'drawObjects':ratio_boxes} ,
+        ratio = {'yRange': (0.3, 1.7), 'texY':'Obs / Sim.', 'histos':[(1,0)], 'drawObjects':ratio_boxes} ,
         drawObjects = drawObjects()+boxes,
         #drawObjects = boxes,
         redrawHistos = True,
@@ -628,7 +633,7 @@ for logy in [True, False]:
 # input plot subtracted
 boxes = []
 ratio_boxes = []
-for band in reversed(settings.unfolding_mc_input_systematic_bands):
+for band in reversed(settings.unfolding_signal_input_systematic_bands):
     # subtraction of nominal f_out 
     band['ref_subtracted']  = fout_subtraction(band['ref'])
     band['down_subtracted'] = fout_subtraction(band['down'])
@@ -643,14 +648,13 @@ for band in reversed(settings.unfolding_mc_input_systematic_bands):
         box.SetLineColor(band['color'])
         box.SetFillStyle(3244)
         box.SetFillColor(band['color'])
-        if hasattr( settings, "plot_range_x_fiducial") and band['ref_subtracted'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
+        if hasattr( settings, "plot_range_x_fiducial") and band['ref'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
             pass
         else:
             boxes.append(box)
             stuff.append(box)
-
-        if band['ref_subtracted'].GetBinContent(i)!=0: 
-            ratio_box = ROOT.TBox( band['ref_subtracted'].GetXaxis().GetBinLowEdge(i),  
+        if band['ref'].GetBinContent(i)!=0:
+            ratio_box = ROOT.TBox( band['ref_subtracted'].GetXaxis().GetBinLowEdge(i),
                              band['down_subtracted'].GetBinContent(i)/band['ref_subtracted'].GetBinContent(i),
                              band['ref_subtracted'].GetXaxis().GetBinUpEdge(i),
                              band['up_subtracted'].GetBinContent(i)/band['ref_subtracted'].GetBinContent(i),
@@ -664,19 +668,20 @@ for band in reversed(settings.unfolding_mc_input_systematic_bands):
                 ratio_boxes.append(ratio_box)
                 stuff.append(ratio_box)
 
-unfolding_data_input_subtracted = fout_subtraction( settings.unfolding_data_input )
-unfolding_mc_input_subtracted   = fout_subtraction( settings.unfolding_mc_input )
 
-unfolding_data_input_subtracted.style = styles.errorStyle( ROOT.kBlack )
-unfolding_mc_input_subtracted.style   = styles.lineStyle( ROOT.kBlue, width = 2)
-
-unfolding_data_input_subtracted.legendText = settings.data_legendText 
-unfolding_mc_input_subtracted.legendText   = settings.mc_legendText
+unfolding_signal_input_subtracted   = fout_subtraction( settings.unfolding_signal_input )
+unfolding_signal_input_subtracted.style   = styles.lineStyle( ROOT.kBlue, width = 2)
+unfolding_signal_input_subtracted.legendText   = settings.signal_legendText
+reco_spectrum_subtracted.style = styles.lineStyle( ROOT.kGreen, width = 2)
+reco_spectrum_subtracted.legendText = "Simulation"
 
 for logY in [True, False]:
     plotting.draw(
         Plot.fromHisto( "input_spectrum_subtracted" + ('_log' if logY else ''),
-                    [[unfolding_mc_input_subtracted],[unfolding_data_input_subtracted]],
+                    [
+                        [reco_spectrum_subtracted],
+                        [unfolding_signal_input_subtracted],
+                    ],
                     texX = settings.tex_reco,
                     texY = "Number of events",
                 ),
@@ -692,31 +697,27 @@ for logY in [True, False]:
     )
 
 # unfolding the data
-unfolding_data_output = getOutput(unfold['nominal'], unfolding_data_input_subtracted, "unfolding_data_input_subtracted")
-unfolding_data_output.Scale(1./settings.lumi_factor)
-
-# unfolding the mc
-unfolding_mc_output = getOutput(unfold['nominal'], unfolding_mc_input_subtracted, "unfolding_mc_input_subtracted")
-unfolding_mc_output.Scale(1./settings.lumi_factor)
+unfolding_signal_output = getOutput(unfold['nominal'], unfolding_signal_input_subtracted, "unfolding_signal_input_subtracted")
+unfolding_signal_output.Scale(1./settings.lumi_factor)
 
 # systematics in unfolding -> compute the variances from the variied unfolding matrix
 ## make a copy of the mc output and remove the uncertainty
-unfolding_systematic = unfolding_mc_output.Clone()
+unfolding_systematic = unfolding_signal_output.Clone()
 unfolding_systematic.style = styles.lineStyle(ROOT.kRed, errors=True) 
 for i_bin in range(unfolding_systematic.GetNbinsX()+2):
     unfolding_systematic.SetBinError( i_bin, 0 )
 for pair in systematic_pairs: 
-    unfolding_mc_output_systematic_up   = getOutput(unfold[pair[0]], unfolding_mc_input_subtracted, "unfolding_mc_input_subtracted_"+pair[0])
-    unfolding_mc_output_systematic_up.Scale(1./settings.lumi_factor)
-    unfolding_mc_output_systematic_down = getOutput(unfold[pair[1]], unfolding_mc_input_subtracted, "unfolding_mc_input_subtracted_"+pair[1])
-    unfolding_mc_output_systematic_down.Scale(1./settings.lumi_factor)
+    unfolding_signal_output_systematic_up   = getOutput(unfold[pair[0]], unfolding_signal_input_subtracted, "unfolding_signal_input_subtracted_"+pair[0])
+    unfolding_signal_output_systematic_up.Scale(1./settings.lumi_factor)
+    unfolding_signal_output_systematic_down = getOutput(unfold[pair[1]], unfolding_signal_input_subtracted, "unfolding_signal_input_subtracted_"+pair[1])
+    unfolding_signal_output_systematic_down.Scale(1./settings.lumi_factor)
     # Add unfolding systematics quadrature
     for i_bin in range(unfolding_systematic.GetNbinsX()+2):
         unfolding_systematic.SetBinError( i_bin, 
             sqrt( unfolding_systematic.GetBinError(i_bin)**2 # what it was before
-                 +(0.5*(unfolding_mc_output_systematic_up.GetBinContent(i_bin)-unfolding_mc_output_systematic_down.GetBinContent(i_bin)))**2 # contribution from pair
+                 +(0.5*(unfolding_signal_output_systematic_up.GetBinContent(i_bin)-unfolding_signal_output_systematic_down.GetBinContent(i_bin)))**2 # contribution from pair
                 ))
-        #print pair, unfolding_systematic.GetBinError(i_bin), 0.5*(unfolding_mc_output_systematic_up.GetBinContent(i_bin)-unfolding_mc_output_systematic_down.GetBinContent(i_bin))
+        #print pair, unfolding_systematic.GetBinError(i_bin), 0.5*(unfolding_signal_output_systematic_up.GetBinContent(i_bin)-unfolding_signal_output_systematic_down.GetBinContent(i_bin))
 
 # Make a plot of the unfolding systematics on the unfolded MC spectrum
 for logY in [True, False]:
@@ -733,11 +734,11 @@ for logY in [True, False]:
         yRange = settings.y_range,
         drawObjects = drawObjects(),
     )
-                
+
 # unfolding the error bands
 boxes = []
 ratio_boxes = []
-for band in reversed(settings.unfolding_mc_input_systematic_bands):
+for band in reversed(settings.unfolding_signal_input_systematic_bands):
     band['ref_unfolded']  = getOutput(unfold['nominal'], band['ref_subtracted'], "band_%s_ref_unfolded"%band['name'])
 
     band['up_unfolded']   = getOutput(unfold['nominal'], band['up_subtracted'],   "band_%s_up_unfolded"%band['name'])
@@ -799,11 +800,27 @@ for band in reversed(settings.unfolding_mc_input_systematic_bands):
             else:
                 ratio_boxes.append(ratio_box)
 
-unfolding_data_output.style = styles.errorStyle( ROOT.kBlack )
-unfolding_mc_output.style   = styles.lineStyle( ROOT.kBlue, width = 2)
+unfolding_signal_output.style = styles.lineStyle( ROOT.kBlue, width = 2)
+unfolding_signal_output.legendText = settings.signal_legendText 
 
-unfolding_data_output.legendText = settings.data_legendText 
-unfolding_mc_output.legendText   = settings.mc_legendText
+fiducial_spectrum.Scale(1./settings.lumi_factor)
+fiducial_spectrum.style = styles.lineStyle( ROOT.kGreen, width = 2)
+fiducial_spectrum.legendText = "Simulation"
+
+empty = unfolding_signal_output.Clone()
+for i in range(1, empty.GetNbinsX()+1):
+    empty.SetBinContent( i, 0 )
+    empty.SetBinError( i, 0 )
+
+empties = []
+for band in settings.unfolding_signal_input_systematic_bands:
+    empty_ = empty.Clone()
+    empty_.SetLineColor(band['color'])
+    empty_.SetLineWidth(0)
+    empty_.SetFillStyle(3244)
+    empty_.SetFillColor(band['color'])
+    empties.append(empty_)
+    empty_.legendText = band["label"]
 
 for logY in [True,False]:
     if hasattr( settings, "plot_range_x_fiducial"):
@@ -811,132 +828,135 @@ for logY in [True,False]:
     else:
         hist_mod = []
 
-    plotting.draw(
-        Plot.fromHisto( "unfolded_spectrum"+ ('_log' if logY else ''),
-                    [[unfolding_mc_output],[unfolding_data_output]],
+    plot = Plot.fromHisto( "unfolded_spectrum"+ ('_log' if logY else ''),
+                    [
+                        [fiducial_spectrum],
+                        [unfolding_signal_output],
+                    ] + [[e] for e in empties],
                     texX = settings.tex_unf,
                     texY = settings.texY,
-                ),
+                )
+    plotting.draw(plot,
         plot_directory = plot_directory_,
         logX = False, logY = logY, sorting = False, 
         #legend = None,
         histModifications = hist_mod,
         legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
         yRange = settings.y_range,
-        ratio = {'yRange': settings.y_range_ratio, 'texY':'Data / Sim.', 'histos':[(1,0)], 'drawObjects':ratio_boxes} ,
+        ratio = {'yRange': settings.y_range_ratio, 'texY':'Obs. / Sim.', 'histos':[(1,0)], 'drawObjects':ratio_boxes} ,
         drawObjects = drawObjects()+boxes,
         #drawObjects = boxes,
         redrawHistos = True,
     )
 
-# data error bands: fout subtraction 
-for band in reversed(settings.unfolding_data_input_systematic_bands):
-    # subtraction of nominal f_out 
-    band['ref_subtracted']  = fout_subtraction(band['ref'])
-    band['down_subtracted'] = fout_subtraction(band['down'])
-    band['up_subtracted']   = fout_subtraction(band['up'])
-
-# relative error plot
-ratio_boxes = []
-#for band in reversed(settings.unfolding_mc_input_systematic_bands):
-for band in reversed(settings.unfolding_data_input_systematic_bands):
-    if not band['name'] == 'total':
-        continue
-
-    band['ref_unfolded']  = getOutput(unfold['nominal'], band['ref_subtracted'], "band_%s_ref_unfolded"%band['name'])
-    band['up_unfolded']   = getOutput(unfold['nominal'], band['up_subtracted'],   "band_%s_up_unfolded"%band['name'])
-    band['down_unfolded'] = getOutput(unfold['nominal'], band['down_subtracted'], "band_%s_down_unfolded"%band['name'])
-
-    for h in [ band['up_unfolded'], band['down_unfolded'], band['ref_unfolded']]:
-       h.Scale(1./settings.lumi_factor)
-
-    for i in range(1, band['ref_unfolded'].GetNbinsX()+1):
-
-        if band['ref_unfolded'].GetBinContent(i)!=0: 
-            if band['name'] == 'total':
-                # stat uncertainty from data output
-                if unfolding_data_output.GetBinContent(i)>0:
-                    stat_uncertainty = unfolding_data_output.GetBinError(i)/unfolding_data_output.GetBinContent(i) 
-                    #print "bin", i, unfolding_data_output.GetBinLowEdge(i),"stat_uncertainty", stat_uncertainty, unfolding_data_output.GetBinError(i), unfolding_data_output.GetBinContent(i) 
-                    ratio_stat_box = ROOT.TBox( 
-                                     band['ref_unfolded'].GetXaxis().GetBinLowEdge(i),  
-                                     -stat_uncertainty,
-                                     band['ref_unfolded'].GetXaxis().GetBinUpEdge(i),
-                                     +stat_uncertainty,
-                         )
-                    #ratio_stat_box.SetLineColor(ROOT.kBlue)
-                    #ratio_stat_box.SetFillStyle(3244)
-                    ratio_stat_box.SetFillColor(ROOT.kBlue-9)
-
-                # total = unfolding-sys + sys + stat
-                total_sys_uncertainty = sqrt(  (0.5*(band['up_unfolded'].GetBinContent(i)-band['down_unfolded'].GetBinContent(i)))**2
-                                          + unfolding_systematic.GetBinError(i)**2 ) 
-                total_uncertainty = sqrt(  (0.5*(band['up_unfolded'].GetBinContent(i)-band['down_unfolded'].GetBinContent(i)))**2
-                                          + unfolding_systematic.GetBinError(i)**2 
-                                          + unfolding_data_output.GetBinError(i)**2 )
-                #print "ratio", total_uncertainty, unfolding_systematic.GetBinError(i), 0.5*(band['up_unfolded'].GetBinContent(i)-band['down_unfolded'].GetBinContent(i))
-                ratio_sys_box = ROOT.TBox( 
-                                 band['ref_unfolded'].GetXaxis().GetBinLowEdge(i),  
-                                 -1+max(0, band['ref_unfolded'].GetBinContent(i) - total_sys_uncertainty)/band['ref_unfolded'].GetBinContent(i),
-                                 band['ref_unfolded'].GetXaxis().GetBinUpEdge(i),
-                                 -1+(band['ref_unfolded'].GetBinContent(i) + total_sys_uncertainty)/band['ref_unfolded'].GetBinContent(i),
-                     )
-                ratio_box = ROOT.TBox( 
-                                 band['ref_unfolded'].GetXaxis().GetBinLowEdge(i),  
-                                 -1+max(0, band['ref_unfolded'].GetBinContent(i) - total_uncertainty)/band['ref_unfolded'].GetBinContent(i),
-                                 band['ref_unfolded'].GetXaxis().GetBinUpEdge(i),
-                                 -1+(band['ref_unfolded'].GetBinContent(i) + total_uncertainty)/band['ref_unfolded'].GetBinContent(i),
-                     )
-
-                ratio_sys_box.SetFillColor(ROOT.kBlue-9)
-                ratio_stat_box.SetFillColor(ROOT.kBlue-9)
-                ratio_box.SetFillColor(ROOT.kBlue-10)
-
-                ratio_boxes.append(ratio_box)
-                #ratio_boxes.append(ratio_sys_box)
-                ratio_boxes.append(ratio_stat_box)
-
-            else:
-                ratio_box = ROOT.TBox( 
-                                 band['ref_unfolded'].GetXaxis().GetBinLowEdge(i),  
-                                 -1+band['down_unfolded'].GetBinContent(i)/band['ref_unfolded'].GetBinContent(i),
-                                 band['ref_unfolded'].GetXaxis().GetBinUpEdge(i),
-                                 -1+band['up_unfolded'].GetBinContent(i)/band['ref_unfolded'].GetBinContent(i),
-                     )
-            #ratio_box.SetLineColor(band['color'])
-            #ratio_box.SetFillStyle(3244)
-
-empty = unfolding_mc_output.Clone()
-for i in range(1, empty.GetNbinsX()+1):
-    empty.SetBinContent( i, 0 )
-    empty.SetBinError( i, 0 )
-
-empty2=empty.Clone()
-empty2.SetLineColor(ROOT.kBlue-10)
-empty.SetLineColor(ROOT.kBlue-9)
-empty2.style = styles.fillStyle(ROOT.kBlue-10)
-empty.style = styles.fillStyle(ROOT.kBlue-9)
-empty.legendText = "stat." 
-empty2.legendText= "total"
-
-plotting.draw(
-    Plot.fromHisto( "unfolded_data_uncertainty",
-                [[empty2],[empty]],
-                texX = settings.tex_unf,
-                texY = "relative uncertainty",
-            ),
-    plot_directory = plot_directory_,
-    logX = False, logY = False, sorting = False,
-    legend         = (0.15,0.91-2*0.05,0.95,0.91),
-    #histModifications = hist_mod,
-    #legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
-    yRange = (-.6,.6),
-    #ratio = {'yRange': settings.y_range_ratio, 'texY':'Data / Sim.', 'histos':[(1,0)], 'drawObjects':ratio_boxes} ,
-    drawObjects = drawObjects()+ratio_boxes,
-    #drawObjects = boxes,
-    redrawHistos = True,
-    canvasModifications = [lambda c: c.RedrawAxis() ]
-)
+## data error bands: fout subtraction 
+#for band in reversed(settings.unfolding_data_input_systematic_bands):
+#    # subtraction of nominal f_out 
+#    band['ref_subtracted']  = fout_subtraction(band['ref'])
+#    band['down_subtracted'] = fout_subtraction(band['down'])
+#    band['up_subtracted']   = fout_subtraction(band['up'])
+#
+## relative error plot
+#ratio_boxes = []
+##for band in reversed(settings.unfolding_data_input_systematic_bands):
+#for band in reversed(settings.unfolding_data_input_systematic_bands):
+#    if not band['name'] == 'total':
+#        continue
+#
+#    band['ref_unfolded']  = getOutput(unfold['nominal'], band['ref_subtracted'], "band_%s_ref_unfolded"%band['name'])
+#    band['up_unfolded']   = getOutput(unfold['nominal'], band['up_subtracted'],   "band_%s_up_unfolded"%band['name'])
+#    band['down_unfolded'] = getOutput(unfold['nominal'], band['down_subtracted'], "band_%s_down_unfolded"%band['name'])
+#
+#    for h in [ band['up_unfolded'], band['down_unfolded'], band['ref_unfolded']]:
+#       h.Scale(1./settings.lumi_factor)
+#
+#    for i in range(1, band['ref_unfolded'].GetNbinsX()+1):
+#
+#        if band['ref_unfolded'].GetBinContent(i)!=0: 
+#            if band['name'] == 'total':
+#                # stat uncertainty from data output
+#                if unfolding_data_output.GetBinContent(i)>0:
+#                    stat_uncertainty = unfolding_data_output.GetBinError(i)/unfolding_data_output.GetBinContent(i) 
+#                    #print "bin", i, unfolding_data_output.GetBinLowEdge(i),"stat_uncertainty", stat_uncertainty, unfolding_data_output.GetBinError(i), unfolding_data_output.GetBinContent(i) 
+#                    ratio_stat_box = ROOT.TBox( 
+#                                     band['ref_unfolded'].GetXaxis().GetBinLowEdge(i),  
+#                                     -stat_uncertainty,
+#                                     band['ref_unfolded'].GetXaxis().GetBinUpEdge(i),
+#                                     +stat_uncertainty,
+#                         )
+#                    #ratio_stat_box.SetLineColor(ROOT.kBlue)
+#                    #ratio_stat_box.SetFillStyle(3244)
+#                    ratio_stat_box.SetFillColor(ROOT.kBlue-9)
+#
+#                # total = unfolding-sys + sys + stat
+#                total_sys_uncertainty = sqrt(  (0.5*(band['up_unfolded'].GetBinContent(i)-band['down_unfolded'].GetBinContent(i)))**2
+#                                          + unfolding_systematic.GetBinError(i)**2 ) 
+#                total_uncertainty = sqrt(  (0.5*(band['up_unfolded'].GetBinContent(i)-band['down_unfolded'].GetBinContent(i)))**2
+#                                          + unfolding_systematic.GetBinError(i)**2 
+#                                          + unfolding_data_output.GetBinError(i)**2 )
+#                #print "ratio", total_uncertainty, unfolding_systematic.GetBinError(i), 0.5*(band['up_unfolded'].GetBinContent(i)-band['down_unfolded'].GetBinContent(i))
+#                ratio_sys_box = ROOT.TBox( 
+#                                 band['ref_unfolded'].GetXaxis().GetBinLowEdge(i),  
+#                                 -1+max(0, band['ref_unfolded'].GetBinContent(i) - total_sys_uncertainty)/band['ref_unfolded'].GetBinContent(i),
+#                                 band['ref_unfolded'].GetXaxis().GetBinUpEdge(i),
+#                                 -1+(band['ref_unfolded'].GetBinContent(i) + total_sys_uncertainty)/band['ref_unfolded'].GetBinContent(i),
+#                     )
+#                ratio_box = ROOT.TBox( 
+#                                 band['ref_unfolded'].GetXaxis().GetBinLowEdge(i),  
+#                                 -1+max(0, band['ref_unfolded'].GetBinContent(i) - total_uncertainty)/band['ref_unfolded'].GetBinContent(i),
+#                                 band['ref_unfolded'].GetXaxis().GetBinUpEdge(i),
+#                                 -1+(band['ref_unfolded'].GetBinContent(i) + total_uncertainty)/band['ref_unfolded'].GetBinContent(i),
+#                     )
+#
+#                ratio_sys_box.SetFillColor(ROOT.kBlue-9)
+#                ratio_stat_box.SetFillColor(ROOT.kBlue-9)
+#                ratio_box.SetFillColor(ROOT.kBlue-10)
+#
+#                ratio_boxes.append(ratio_box)
+#                #ratio_boxes.append(ratio_sys_box)
+#                ratio_boxes.append(ratio_stat_box)
+#
+#            else:
+#                ratio_box = ROOT.TBox( 
+#                                 band['ref_unfolded'].GetXaxis().GetBinLowEdge(i),  
+#                                 -1+band['down_unfolded'].GetBinContent(i)/band['ref_unfolded'].GetBinContent(i),
+#                                 band['ref_unfolded'].GetXaxis().GetBinUpEdge(i),
+#                                 -1+band['up_unfolded'].GetBinContent(i)/band['ref_unfolded'].GetBinContent(i),
+#                     )
+#            #ratio_box.SetLineColor(band['color'])
+#            #ratio_box.SetFillStyle(3244)
+#
+#empty = unfolding_data_output.Clone()
+#for i in range(1, empty.GetNbinsX()+1):
+#    empty.SetBinContent( i, 0 )
+#    empty.SetBinError( i, 0 )
+#
+#empty2=empty.Clone()
+#empty2.SetLineColor(ROOT.kBlue-10)
+#empty.SetLineColor(ROOT.kBlue-9)
+#empty2.style = styles.fillStyle(ROOT.kBlue-10)
+#empty.style = styles.fillStyle(ROOT.kBlue-9)
+#empty.legendText = "stat." 
+#empty2.legendText= "total"
+#
+#plotting.draw(
+#    Plot.fromHisto( "unfolded_data_uncertainty",
+#                [[empty2],[empty]],
+#                texX = settings.tex_unf,
+#                texY = "relative uncertainty",
+#            ),
+#    plot_directory = plot_directory_,
+#    logX = False, logY = False, sorting = False,
+#    legend         = (0.15,0.91-2*0.05,0.95,0.91),
+#    #histModifications = hist_mod,
+#    #legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
+#    yRange = (-.6,.6),
+#    #ratio = {'yRange': settings.y_range_ratio, 'texY':'Data / Sim.', 'histos':[(1,0)], 'drawObjects':ratio_boxes} ,
+#    drawObjects = drawObjects()+ratio_boxes,
+#    #drawObjects = boxes,
+#    redrawHistos = True,
+#    canvasModifications = [lambda c: c.RedrawAxis() ]
+#)
 
 def get_TMatrixD( histo ):
     Tmatrix = ROOT.TMatrixD(histo.GetNbinsX(),histo.GetNbinsY())

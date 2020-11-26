@@ -44,11 +44,11 @@ default_cache_directory = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_rea
 class observed_ptG_2016:
     expected        = False
     cache_directory = default_cache_directory 
-    data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_data"
-    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal"
-    signal_stat_key = "bkgSubtracted_SR3pPtUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal_stat"
+    data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
+    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
+    signal_stat_key = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal_stat"
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit")
+    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
     dirDB           = MergingDirDB(cache_dir)
 
     data            = dirDB.get( data_key )
@@ -90,116 +90,45 @@ class observed_ptG_2016:
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.39,1.61)
     data_legendText = "Data (36/fb)"
-    mc_legendText =   "Simulation"
+    signal_legendText =   "Observation"
 
     lumi_factor               = lumi_year[2016]/1000.
     unfolding_data_input      = data
     unfolding_data_input_systematic_bands          = [
-       {'name' : 'total',
-        'label': "\pm 1#sigma (sys.)",
-        'ref': data,
-        'up':  dirDB.get( data_key+'Up' ),
-        'down':dirDB.get( data_key+'Down' ),
-        'color':ROOT.kBlue,
-        } ]
+#       {'name' : 'total',
+#        'label': "\pm 1\sigma (sys.)",
+#        'ref': data,
+#        'up':  dirDB.get( data_key+'Up' ),
+#        'down':dirDB.get( data_key+'Down' ),
+#        'color':ROOT.kBlue,
+#        } 
+        ]
 
-    unfolding_mc_input        = signal
-    unfolding_mc_input_systematic_bands          = [
+    unfolding_signal_input        = signal
+    unfolding_signal_input_systematic_bands          = [
+#       {'name' : 'stat',
+#        'label': "\pm 1\sigma (stat.)",
+#        'ref': signal,
+#        'up':  add_sigmas(signal_stat, +1),
+#        'down':add_sigmas(signal_stat, -1),
+#        'color':ROOT.kBlue,
+#        },
        {'name' : 'stat',
-        'label': "\pm 1#sigma (stat.)",
-        'ref': signal,
-        'up':  add_sigmas(signal_stat, +1),
-        'down':add_sigmas(signal_stat, -1),
+        'label': "\pm 1\sigma (stat.)",
+        'ref': data,
+        'up':  add_sigmas(data, +1),
+        'down':add_sigmas(data, -1),
         'color':ROOT.kBlue,
         },
        {'name' : 'total',
-        'label': "\pm 1#sigma (tot.)",
+        'label': "\pm 1\sigma (tot.)",
         'ref': signal,
         'up':  add_sigmas(signal, +1),
         'down':add_sigmas(signal, -1),
         'color':ROOT.kOrange,
-        }
-        ]
-
-class observed_ptG_2016_wrong:
-    expected        = False
-    cache_directory = default_cache_directory 
-    data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_data"
-    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal"
-    signal_stat_key = "bkgSubtracted_SR3pPtUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal_stat"
-
-    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit")
-    dirDB           = MergingDirDB(cache_dir)
-
-    data            = dirDB.get( data_key )
-    signal          = dirDB.get( signal_key )
-    signal_stat     = dirDB.get( signal_stat_key )
-
-    years           = ["2016"]
-
-    reco_variable   = "PhotonGood0_pt"
-    reco_selection  = "SR3p"
-    
-    reco_thresholds = thresholds_from_histo( data )
-
-    # events not in the reco region are filled with this value
-    reco_variable_underflow = -1
-
-    fiducial_variable   = "GenPhotonCMSUnfold0_pt"
-    fiducial_selection  = "nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1"
-    fiducial_thresholds     = [20, 35, 50, 65, 80, 120, 160, 200, 260, 320, 400] 
-    fiducial_overflow       = "upper"
-    max_fiducial_val        = fiducial_thresholds[-1]
-    max_fiducial_bincenter  = 0.5*sum(fiducial_thresholds[-2:])
-
-    # appending reco thresholds for multiple years
-    reco_overflow        = "upper"
-    max_reco_val         = reco_thresholds[-1]
-    min_reco_val         = reco_thresholds[0]
-    max_reco_bincenter   = 0.5*sum(reco_thresholds[-2:])
-
-    reco_thresholds_years = copy.deepcopy(reco_thresholds)
-    #for i_year in range(1, len(years)):
-    #    reco_thresholds_years += [t + i_year*max_reco_val for t in reco_thresholds]
-
-    tex_reco = "p^{reco}_{T}(#gamma) (GeV)"
-    tex_gen  = "p^{gen}_{T}(#gamma) (GeV)"
-    tex_unf  = "p^{fid.}_{T}(#gamma) (GeV)"
-    tex_pur  = "p_{T}(#gamma) (GeV)"
-    texY     = 'Fiducial cross section (fb)'    
-    y_range         = (0.9, "auto") #(0.9, 9000)
-    y_range_ratio   = (0.39,1.61)
-    data_legendText = "Data (36/fb)"
-    mc_legendText =   "Simulation"
-
-    lumi_factor               = lumi_year[2016]/1000.
-    unfolding_data_input      = data
-    unfolding_data_input_systematic_bands          = [
-       {'name' : 'total',
-        'label': "\pm 1#sigma (sys.)",
-        'ref': data,
-        'up':  dirDB.get( data_key+'Up' ),
-        'down':dirDB.get( data_key+'Down' ),
-        'color':ROOT.kBlue,
-        } ]
-
-    unfolding_mc_input        = signal
-    unfolding_mc_input_systematic_bands          = [
-       {'name' : 'stat',
-        'label': "\pm 1#sigma (stat.)",
-        'ref': signal,
-        'up':  add_sigmas(signal_stat, +1),
-        'down':add_sigmas(signal_stat, -1),
-        'color':ROOT.kBlue,
         },
-       {'name' : 'total',
-        'label': "\pm 1#sigma (tot.)",
-        'ref': signal,
-        'up':  add_sigmas(signal, +1),
-        'down':add_sigmas(signal, -1),
-        'color':ROOT.kOrange,
-        }
         ]
+
 
 class expected_ptG_RunII:
     cache_directory = default_cache_directory 
@@ -258,13 +187,13 @@ class expected_ptG_RunII:
     y_range         = (9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.7,1.3)
     data_legendText = "Data (137/fb)"
-    mc_legendText =   "Simulation"
+    signal_legendText =   "Simulation"
 
     lumi_factor               = (lumi_year[2016]+lumi_year[2017]+lumi_year[2018])/1000.
     unfolding_data_input      = data
     unfolding_data_input_systematic_bands          = [
        {'name' : 'total',
-        'label': "\pm 1#sigma (sys.)",
+        'label': "\pm 1\sigma (sys.)",
         'ref': data,
         'up':  dirDB.get( data_key+'Up' ),
         'down':dirDB.get( data_key+'Down' ),
@@ -274,14 +203,14 @@ class expected_ptG_RunII:
     unfolding_mc_input        = signal
     unfolding_mc_input_systematic_bands          = [
        {'name' : 'stat',
-        'label': "\pm 1#sigma (stat.)",
+        'label': "\pm 1\sigma (stat.)",
         'ref': signal,
         'up':  add_sigmas(signal_stat, +1),
         'down':add_sigmas(signal_stat, -1),
         'color':ROOT.kBlue,
         },
        {'name' : 'total',
-        'label': "\pm 1#sigma (tot.)",
+        'label': "\pm 1\sigma (tot.)",
         'ref': signal,
         'up':  add_sigmas(signal, +1),
         'down':add_sigmas(signal, -1),
@@ -347,13 +276,13 @@ class expected_absEta_RunII:
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.39,1.61)
     data_legendText = "Data (137/fb)"
-    mc_legendText =   "Simulation"
+    signal_legendText =   "Simulation"
 
     lumi_factor               = (lumi_year[2016]+lumi_year[2017]+lumi_year[2018])/1000.
     unfolding_data_input      = data
     unfolding_data_input_systematic_bands          = [
        {'name' : 'total',
-        'label': "\pm 1#sigma (sys.)",
+        'label': "\pm 1\sigma (sys.)",
         'ref': data,
         'up':  dirDB.get( data_key+'Up' ),
         'down':dirDB.get( data_key+'Down' ),
@@ -363,14 +292,14 @@ class expected_absEta_RunII:
     unfolding_mc_input        = signal
     unfolding_mc_input_systematic_bands          = [
        {'name' : 'stat',
-        'label': "\pm 1#sigma (stat.)",
+        'label': "\pm 1\sigma (stat.)",
         'ref': signal,
         'up':  add_sigmas(signal_stat, +1),
         'down':add_sigmas(signal_stat, -1),
         'color':ROOT.kBlue,
         },
        {'name' : 'total',
-        'label': "\pm 1#sigma (tot.)",
+        'label': "\pm 1\sigma (tot.)",
         'ref': signal,
         'up':  add_sigmas(signal, +1),
         'down':add_sigmas(signal, -1),
@@ -428,13 +357,13 @@ class observed_absEta_2016:
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.39,1.61)
     data_legendText = "Data (36/fb)"
-    mc_legendText =   "Simulation"
+    signal_legendText =   "Simulation"
 
     lumi_factor               = lumi_year[2016]/1000.
     unfolding_data_input      = data
     unfolding_data_input_systematic_bands          = [
        {'name' : 'total',
-        'label': "\pm 1#sigma (sys.)",
+        'label': "\pm 1\sigma (sys.)",
         'ref': data,
         'up':  dirDB.get( data_key+'Up' ),
         'down':dirDB.get( data_key+'Down' ),
@@ -444,14 +373,14 @@ class observed_absEta_2016:
     unfolding_mc_input        = signal
     unfolding_mc_input_systematic_bands          = [
        {'name' : 'stat',
-        'label': "\pm 1#sigma (stat.)",
+        'label': "\pm 1\sigma (stat.)",
         'ref': signal,
         'up':  add_sigmas(signal_stat, +1),
         'down':add_sigmas(signal_stat, -1),
         'color':ROOT.kBlue,
         },
        {'name' : 'total',
-        'label': "\pm 1#sigma (tot.)",
+        'label': "\pm 1\sigma (tot.)",
         'ref': signal,
         'up':  add_sigmas(signal, +1),
         'down':add_sigmas(signal, -1),
@@ -519,13 +448,13 @@ class observed_dRlg_2016:
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.39,1.61)
     data_legendText = "Data (36/fb)"
-    mc_legendText =   "Simulation"
+    signal_legendText =   "Simulation"
 
     lumi_factor               = lumi_year[2016]/1000.
     unfolding_data_input      = data
     unfolding_data_input_systematic_bands          = [
        {'name' : 'total',
-        'label': "\pm 1#sigma (sys.)",
+        'label': "\pm 1\sigma (sys.)",
         'ref': data,
         'up':  dirDB.get( data_key+'Up' ),
         'down':dirDB.get( data_key+'Down' ),
@@ -535,14 +464,14 @@ class observed_dRlg_2016:
     unfolding_mc_input        = signal
     unfolding_mc_input_systematic_bands          = [
        {'name' : 'stat',
-        'label': "\pm 1#sigma (stat.)",
+        'label': "\pm 1\sigma (stat.)",
         'ref': signal,
         'up':  add_sigmas(signal_stat, +1),
         'down':add_sigmas(signal_stat, -1),
         'color':ROOT.kBlue,
         },
        {'name' : 'total',
-        'label': "\pm 1#sigma (tot.)",
+        'label': "\pm 1\sigma (tot.)",
         'ref': signal,
         'up':  add_sigmas(signal, +1),
         'down':add_sigmas(signal, -1),
@@ -612,13 +541,13 @@ class expected_dRlg_RunII:
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.39,1.61)
     data_legendText = "Data (137/fb)"
-    mc_legendText =   "Simulation"
+    signal_legendText =  "Observation"
 
     lumi_factor               = (lumi_year[2016]+lumi_year[2017]+lumi_year[2018])/1000.
     unfolding_data_input      = data
     unfolding_data_input_systematic_bands          = [
 #       {'name' : 'total',
-#        'label': "\pm 1#sigma (sys.)",
+#        'label': "\pm 1\sigma (sys.)",
 #        'ref': data,
 #        'up':  dirDB.get( data_key+'Up' ),
 #        'down':dirDB.get( data_key+'Down' ),
@@ -627,14 +556,14 @@ class expected_dRlg_RunII:
     unfolding_mc_input        = signal
     unfolding_mc_input_systematic_bands          = [
        {'name' : 'stat',
-        'label': "\pm 1#sigma (stat.)",
+        'label': "\pm 1\sigma (stat.)",
         'ref': signal,
         'up':  add_sigmas(signal_stat, +1),
         'down':add_sigmas(signal_stat, -1),
         'color':ROOT.kBlue,
         },
        {'name' : 'total',
-        'label': "\pm 1#sigma (tot.)",
+        'label': "\pm 1\sigma (tot.)",
         'ref': signal,
         'up':  add_sigmas(signal, +1),
         'down':add_sigmas(signal, -1),
