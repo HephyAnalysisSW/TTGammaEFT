@@ -133,6 +133,8 @@ if args.systematic is None:
         else:
             sys_matrix['systematic']            = None
             missing.append( ['python', 'unfolding.py', '--settings', args.settings, '--systematic', systematic] )
+            if args.overwrite:
+                missing[-1].append('--overwrite')
     if len(missing)>0:
         with open("missing.sh", "a") as file_object:
             #file_object.write("#!/bin/sh\n") 
@@ -569,6 +571,21 @@ if not hasattr(settings, "unfolding_data_input"):
     sys.exit(0)
 
 # input plot unsubtracted
+empty = settings.unfolding_signal_input.Clone()
+for i in range(1, empty.GetNbinsX()+1):
+    empty.SetBinContent( i, 0 )
+    empty.SetBinError( i, 0 )
+
+empties = []
+for band in settings.unfolding_signal_input_systematic_bands:
+    empty_ = empty.Clone()
+    empty_.SetLineColor(band['color'])
+    empty_.SetLineWidth(0)
+    #empty_.SetFillStyle(3244)
+    empty_.SetFillColor(band['color'])
+    empties.append(empty_)
+    empty_.legendText = band["label"]
+
 boxes = []
 ratio_boxes = []
 for band in reversed(settings.unfolding_signal_input_systematic_bands):
@@ -579,7 +596,7 @@ for band in reversed(settings.unfolding_signal_input_systematic_bands):
                          band['up'].GetBinContent(i),
              )
         box.SetLineColor(band['color'])
-        box.SetFillStyle(3244)
+        #box.SetFillStyle(3244)
         box.SetFillColor(band['color'])
         if hasattr( settings, "plot_range_x_fiducial") and band['ref'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
             pass
@@ -593,7 +610,7 @@ for band in reversed(settings.unfolding_signal_input_systematic_bands):
                              band['up'].GetBinContent(i)/band['ref'].GetBinContent(i),
                  )
             ratio_box.SetLineColor(band['color'])
-            ratio_box.SetFillStyle(3244)
+            #ratio_box.SetFillStyle(3244)
             ratio_box.SetFillColor(band['color'])
             if hasattr( settings, "plot_range_x_fiducial") and band['ref'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
                 pass
@@ -608,23 +625,23 @@ reco_spectrum.style = styles.lineStyle( ROOT.kGreen, width = 2)
 #settings.unfolding_data_input.legendText = settings.data_legendText 
 settings.unfolding_signal_input.legendText   = settings.signal_legendText
 reco_spectrum.legendText = "Simulation"
-
+ratio_line = ROOT.TLine(reco_spectrum.GetXaxis().GetXmin(), 1, reco_spectrum.GetXaxis().GetXmax(),1)
 for logY in [True, False]:
-    plotting.draw(
-        Plot.fromHisto( "input_spectrum" + ('_log' if logY else ''),
+    plot = Plot.fromHisto( "input_spectrum" + ('_log' if logY else ''),
                     [
                         [reco_spectrum],
                         [settings.unfolding_signal_input],
-                    ],
+                    ] + [[e] for e in empties],
                     texX = settings.tex_reco,
                     texY = "Number of events",
-                ),
+                )
+    plotting.draw( plot, 
         plot_directory = plot_directory_,
         logX = False, logY = logY, sorting = False,
         #legend = None,
         legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
         yRange = settings.y_range,
-        ratio = {'yRange': (0.3, 1.7), 'texY':'Obs / Sim.', 'histos':[(1,0)], 'drawObjects':ratio_boxes} ,
+        ratio = {'yRange': (0.1, 1.9), 'texY':'Sim. / Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes+[ratio_line]} ,
         drawObjects = drawObjects()+boxes,
         #drawObjects = boxes,
         redrawHistos = True,
@@ -646,7 +663,7 @@ for band in reversed(settings.unfolding_signal_input_systematic_bands):
                          band['up_subtracted'].GetBinContent(i),
              )
         box.SetLineColor(band['color'])
-        box.SetFillStyle(3244)
+        #box.SetFillStyle(3244)
         box.SetFillColor(band['color'])
         if hasattr( settings, "plot_range_x_fiducial") and band['ref'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
             pass
@@ -660,7 +677,7 @@ for band in reversed(settings.unfolding_signal_input_systematic_bands):
                              band['up_subtracted'].GetBinContent(i)/band['ref_subtracted'].GetBinContent(i),
                  )
             ratio_box.SetLineColor(band['color'])
-            ratio_box.SetFillStyle(3244)
+            #ratio_box.SetFillStyle(3244)
             ratio_box.SetFillColor(band['color'])
             if hasattr( settings, "plot_range_x_fiducial") and band['ref_subtracted'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
                 pass
@@ -674,6 +691,7 @@ unfolding_signal_input_subtracted.style   = styles.lineStyle( ROOT.kBlue, width 
 unfolding_signal_input_subtracted.legendText   = settings.signal_legendText
 reco_spectrum_subtracted.style = styles.lineStyle( ROOT.kGreen, width = 2)
 reco_spectrum_subtracted.legendText = "Simulation"
+ratio_line = ROOT.TLine(reco_spectrum_subtracted.GetXaxis().GetXmin(), 1, reco_spectrum_subtracted.GetXaxis().GetXmax(),1)
 
 for logY in [True, False]:
     plotting.draw(
@@ -681,7 +699,7 @@ for logY in [True, False]:
                     [
                         [reco_spectrum_subtracted],
                         [unfolding_signal_input_subtracted],
-                    ],
+                    ] + [[e] for e in empties],
                     texX = settings.tex_reco,
                     texY = "Number of events",
                 ),
@@ -690,7 +708,7 @@ for logY in [True, False]:
         #legend = None,
         legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
         yRange = settings.y_range,
-        ratio = {'yRange': (0.3, 1.7), 'texY':'Data / Sim.', 'histos':[(1,0)], 'drawObjects':ratio_boxes} ,
+        ratio = {'yRange': (0.3, 1.7), 'texY':'Sim. / Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes+[ratio_line]},
         drawObjects = drawObjects()+boxes,
         #drawObjects = boxes,
         redrawHistos = True,
@@ -767,7 +785,7 @@ for band in reversed(settings.unfolding_signal_input_systematic_bands):
                              band['up_unfolded'].GetBinContent(i),
                  )
         box.SetLineColor(band['color'])
-        box.SetFillStyle(3244)
+        #box.SetFillStyle(3244)
         box.SetFillColor(band['color'])
         if hasattr( settings, "plot_range_x_fiducial") and band['ref_unfolded'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
             pass
@@ -793,7 +811,7 @@ for band in reversed(settings.unfolding_signal_input_systematic_bands):
                                  band['up_unfolded'].GetBinContent(i)/band['ref_unfolded'].GetBinContent(i),
                      )
             ratio_box.SetLineColor(band['color'])
-            ratio_box.SetFillStyle(3244)
+            #ratio_box.SetFillStyle(3244)
             ratio_box.SetFillColor(band['color'])
             if hasattr( settings, "plot_range_x_fiducial") and band['ref_unfolded'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
                 pass
@@ -806,6 +824,7 @@ unfolding_signal_output.legendText = settings.signal_legendText
 fiducial_spectrum.Scale(1./settings.lumi_factor)
 fiducial_spectrum.style = styles.lineStyle( ROOT.kGreen, width = 2)
 fiducial_spectrum.legendText = "Simulation"
+ratio_line = ROOT.TLine(fiducial_spectrum.GetXaxis().GetXmin(), 1, fiducial_spectrum.GetXaxis().GetXmax(),1)
 
 empty = unfolding_signal_output.Clone()
 for i in range(1, empty.GetNbinsX()+1):
@@ -817,7 +836,7 @@ for band in settings.unfolding_signal_input_systematic_bands:
     empty_ = empty.Clone()
     empty_.SetLineColor(band['color'])
     empty_.SetLineWidth(0)
-    empty_.SetFillStyle(3244)
+    #empty_.SetFillStyle(3244)
     empty_.SetFillColor(band['color'])
     empties.append(empty_)
     empty_.legendText = band["label"]
@@ -843,7 +862,7 @@ for logY in [True,False]:
         histModifications = hist_mod,
         legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
         yRange = settings.y_range,
-        ratio = {'yRange': settings.y_range_ratio, 'texY':'Obs. / Sim.', 'histos':[(1,0)], 'drawObjects':ratio_boxes} ,
+        ratio = {'yRange': settings.y_range_ratio, 'texY':'Sim. / Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes+[ratio_line]} ,
         drawObjects = drawObjects()+boxes,
         #drawObjects = boxes,
         redrawHistos = True,

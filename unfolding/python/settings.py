@@ -67,7 +67,8 @@ class observed_ptG_2016:
 
     fiducial_variable   = "GenPhotonCMSUnfold0_pt"
     fiducial_selection  = "nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1"
-    fiducial_thresholds     = [20, 35, 50, 65, 80, 120, 160, 200, 260, 320, 400] 
+    fiducial_thresholds     = [20, 35, 50, 80, 120, 160, 200, 260, 320, 400] 
+
     fiducial_overflow       = "upper"
     max_fiducial_val        = fiducial_thresholds[-1]
     max_fiducial_bincenter  = 0.5*sum(fiducial_thresholds[-2:])
@@ -87,10 +88,10 @@ class observed_ptG_2016:
     tex_unf  = "p^{fid.}_{T}(#gamma) (GeV)"
     tex_pur  = "p_{T}(#gamma) (GeV)"
     texY     = 'Fiducial cross section (fb)'    
-    y_range         = (0.9, "auto") #(0.9, 9000)
-    y_range_ratio   = (0.39,1.61)
+    y_range         = (.9, "auto") #(0.9, 9000)
+    y_range_ratio   = (0.19,1.81)
     data_legendText = "Data (36/fb)"
-    signal_legendText =   "Observation"
+    signal_legendText = "Observation"
 
     lumi_factor               = lumi_year[2016]/1000.
     unfolding_data_input      = data
@@ -118,25 +119,25 @@ class observed_ptG_2016:
         'ref': data,
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue,
+        'color':ROOT.kBlue -10,
         },
        {'name' : 'total',
         'label': "\pm 1\sigma (tot.)",
         'ref': signal,
         'up':  add_sigmas(signal, +1),
         'down':add_sigmas(signal, -1),
-        'color':ROOT.kOrange,
+        'color':ROOT.kOrange-9,
         },
         ]
 
 
 class expected_ptG_RunII:
     cache_directory = default_cache_directory 
-    data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_data_%s"
-    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_signal_%s"
-    signal_stat_key = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_signal_stat_%s"
+    data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_data_%s"
+    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_signal_%s"
+    signal_stat_key = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_signal_stat_%s"
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected", "postFit")
+    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected", "postFit", "noFreeze")
     dirDB           = MergingDirDB(cache_dir)
 
     years           = ["2016", "2017", "2018"]
@@ -174,7 +175,8 @@ class expected_ptG_RunII:
 
     fiducial_variable   = "GenPhotonCMSUnfold0_pt"
     fiducial_selection  = "nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1"
-    fiducial_thresholds     = [20, 35, 50, 65, 80, 120, 160, 200, 260, 320, 400]
+    fiducial_thresholds     = [20, 35, 50, 80, 120, 160, 200, 260, 320, 400]
+
     fiducial_overflow       = "upper"
     max_fiducial_val        = fiducial_thresholds[-1]
     max_fiducial_bincenter  = 0.5*sum(fiducial_thresholds[-2:])
@@ -185,47 +187,55 @@ class expected_ptG_RunII:
     tex_pur  = "p_{T}(#gamma) (GeV)"
     texY     = 'Fiducial cross section (fb)'    
     y_range         = (9, "auto") #(0.9, 9000)
-    y_range_ratio   = (0.7,1.3)
+    y_range_ratio   = (0.39,1.61)
     data_legendText = "Data (137/fb)"
-    signal_legendText =   "Simulation"
+    signal_legendText = "Observation"
 
     lumi_factor               = (lumi_year[2016]+lumi_year[2017]+lumi_year[2018])/1000.
     unfolding_data_input      = data
     unfolding_data_input_systematic_bands          = [
-       {'name' : 'total',
-        'label': "\pm 1\sigma (sys.)",
-        'ref': data,
-        'up':  dirDB.get( data_key+'Up' ),
-        'down':dirDB.get( data_key+'Down' ),
-        'color':ROOT.kBlue,
-        } ]
+#       {'name' : 'total',
+#        'label': "\pm 1\sigma (sys.)",
+#        'ref': data,
+#        'up':  dirDB.get( data_key+'Up' ),
+#        'down':dirDB.get( data_key+'Down' ),
+#        'color':ROOT.kBlue,
+#        } 
+        ]
 
-    unfolding_mc_input        = signal
-    unfolding_mc_input_systematic_bands          = [
+    unfolding_signal_input        = signal
+    unfolding_signal_input_systematic_bands          = [
+#       {'name' : 'stat',
+#        'label': "\pm 1\sigma (stat.)",
+#        'ref': signal,
+#        'up':  add_sigmas(signal_stat, +1),
+#        'down':add_sigmas(signal_stat, -1),
+#        'color':ROOT.kBlue,
+#        },
        {'name' : 'stat',
         'label': "\pm 1\sigma (stat.)",
-        'ref': signal,
-        'up':  add_sigmas(signal_stat, +1),
-        'down':add_sigmas(signal_stat, -1),
-        'color':ROOT.kBlue,
+        'ref': data,
+        'up':  add_sigmas(data, +1),
+        'down':add_sigmas(data, -1),
+        'color':ROOT.kBlue -10,
         },
        {'name' : 'total',
         'label': "\pm 1\sigma (tot.)",
         'ref': signal,
         'up':  add_sigmas(signal, +1),
         'down':add_sigmas(signal, -1),
-        'color':ROOT.kOrange,
-        }
+        'color':ROOT.kOrange-9,
+        },
         ]
 
 class expected_absEta_RunII:
     expected        = True
     cache_directory = default_cache_directory 
-    data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_data_%s"
-    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_signal_%s"
-    signal_stat_key = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_signal_stat_%s"
+    data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_data_%s"
+    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_signal_%s"
+    signal_stat_key = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_signal_stat_%s"
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit")
+    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
     dirDB           = MergingDirDB(cache_dir)
 
     years           = ["2016", "2017", "2018"]
@@ -262,7 +272,7 @@ class expected_absEta_RunII:
 
     fiducial_variable   = {"absEta_fid":"abs(GenPhotonCMSUnfold0_eta)"}
     fiducial_selection  = "nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1"
-    fiducial_thresholds = [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.45]
+    fiducial_thresholds = [0, 0.3, 0.6, 0.9, 1.2, 1.45]
     fiducial_overflow       = None
 
     max_fiducial_val        = fiducial_thresholds[-1]
@@ -276,45 +286,54 @@ class expected_absEta_RunII:
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.39,1.61)
     data_legendText = "Data (137/fb)"
-    signal_legendText =   "Simulation"
+    signal_legendText = "Observation"
 
     lumi_factor               = (lumi_year[2016]+lumi_year[2017]+lumi_year[2018])/1000.
     unfolding_data_input      = data
     unfolding_data_input_systematic_bands          = [
-       {'name' : 'total',
-        'label': "\pm 1\sigma (sys.)",
-        'ref': data,
-        'up':  dirDB.get( data_key+'Up' ),
-        'down':dirDB.get( data_key+'Down' ),
-        'color':ROOT.kBlue,
-        } ]
+#       {'name' : 'total',
+#        'label': "\pm 1\sigma (sys.)",
+#        'ref': data,
+#        'up':  dirDB.get( data_key+'Up' ),
+#        'down':dirDB.get( data_key+'Down' ),
+#        'color':ROOT.kBlue,
+#        } 
+        ]
 
-    unfolding_mc_input        = signal
-    unfolding_mc_input_systematic_bands          = [
+    unfolding_signal_input        = signal
+    unfolding_signal_input_systematic_bands          = [
+#       {'name' : 'stat',
+#        'label': "\pm 1\sigma (stat.)",
+#        'ref': signal,
+#        'up':  add_sigmas(signal_stat, +1),
+#        'down':add_sigmas(signal_stat, -1),
+#        'color':ROOT.kBlue,
+#        },
        {'name' : 'stat',
         'label': "\pm 1\sigma (stat.)",
-        'ref': signal,
-        'up':  add_sigmas(signal_stat, +1),
-        'down':add_sigmas(signal_stat, -1),
-        'color':ROOT.kBlue,
+        'ref': data,
+        'up':  add_sigmas(data, +1),
+        'down':add_sigmas(data, -1),
+        'color':ROOT.kBlue -10,
         },
        {'name' : 'total',
         'label': "\pm 1\sigma (tot.)",
         'ref': signal,
         'up':  add_sigmas(signal, +1),
         'down':add_sigmas(signal, -1),
-        'color':ROOT.kOrange,
-        }
+        'color':ROOT.kOrange-9,
+        },
         ]
 
 class observed_absEta_2016:
     expected        = False
     cache_directory = default_cache_directory 
-    data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_data"
-    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal"
-    signal_stat_key = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal_stat"
+    data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
+    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
+    signal_stat_key = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal_stat"
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit")
+    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
+
     dirDB           = MergingDirDB(cache_dir)
 
     data            = dirDB.get( data_key )
@@ -333,7 +352,7 @@ class observed_absEta_2016:
 
     fiducial_variable   = {"absEta_fid":"abs(GenPhotonCMSUnfold0_eta)"}
     fiducial_selection  = "nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1"
-    fiducial_thresholds = [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.45]
+    fiducial_thresholds = [0, 0.3, 0.6, 0.9, 1.2, 1.45]
     
     fiducial_overflow       = None
     max_fiducial_val        = fiducial_thresholds[-1]
@@ -357,48 +376,53 @@ class observed_absEta_2016:
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.39,1.61)
     data_legendText = "Data (36/fb)"
-    signal_legendText =   "Simulation"
+    signal_legendText = "Observation"
 
     lumi_factor               = lumi_year[2016]/1000.
     unfolding_data_input      = data
     unfolding_data_input_systematic_bands          = [
-       {'name' : 'total',
-        'label': "\pm 1\sigma (sys.)",
-        'ref': data,
-        'up':  dirDB.get( data_key+'Up' ),
-        'down':dirDB.get( data_key+'Down' ),
-        'color':ROOT.kBlue,
-        } ]
+#       {'name' : 'total',
+#        'label': "\pm 1\sigma (sys.)",
+#        'ref': data,
+#        'up':  dirDB.get( data_key+'Up' ),
+#        'down':dirDB.get( data_key+'Down' ),
+#        'color':ROOT.kBlue,
+#        } 
+        ]
 
-    unfolding_mc_input        = signal
-    unfolding_mc_input_systematic_bands          = [
+    unfolding_signal_input        = signal
+    unfolding_signal_input_systematic_bands          = [
+#       {'name' : 'stat',
+#        'label': "\pm 1\sigma (stat.)",
+#        'ref': signal,
+#        'up':  add_sigmas(signal_stat, +1),
+#        'down':add_sigmas(signal_stat, -1),
+#        'color':ROOT.kBlue,
+#        },
        {'name' : 'stat',
         'label': "\pm 1\sigma (stat.)",
-        'ref': signal,
-        'up':  add_sigmas(signal_stat, +1),
-        'down':add_sigmas(signal_stat, -1),
-        'color':ROOT.kBlue,
+        'ref': data,
+        'up':  add_sigmas(data, +1),
+        'down':add_sigmas(data, -1),
+        'color':ROOT.kBlue -10,
         },
        {'name' : 'total',
         'label': "\pm 1\sigma (tot.)",
         'ref': signal,
         'up':  add_sigmas(signal, +1),
         'down':add_sigmas(signal, -1),
-        'color':ROOT.kOrange,
-        }
+        'color':ROOT.kOrange-9,
+        },
         ]
-
-class observed_absEta_coarse_2016(observed_absEta_2016):
-    fiducial_thresholds = [0, 0.4, 0.8, 1.2, 1.45]
 
 class observed_dRlg_2016:
     expected        = False
     cache_directory = default_cache_directory 
-    data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_data"
-    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal"
-    signal_stat_key = "bkgSubtracted_SR3pdRUnfold_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal_stat"
+    data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
+    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
+    signal_stat_key = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal_stat"
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit")
+    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
     dirDB           = MergingDirDB(cache_dir)
 
     data            = dirDB.get( data_key )
@@ -448,45 +472,53 @@ class observed_dRlg_2016:
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.39,1.61)
     data_legendText = "Data (36/fb)"
-    signal_legendText =   "Simulation"
+    signal_legendText =   "Observation"
 
     lumi_factor               = lumi_year[2016]/1000.
     unfolding_data_input      = data
     unfolding_data_input_systematic_bands          = [
-       {'name' : 'total',
-        'label': "\pm 1\sigma (sys.)",
-        'ref': data,
-        'up':  dirDB.get( data_key+'Up' ),
-        'down':dirDB.get( data_key+'Down' ),
-        'color':ROOT.kBlue,
-        } ]
+#       {'name' : 'total',
+#        'label': "\pm 1\sigma (sys.)",
+#        'ref': data,
+#        'up':  dirDB.get( data_key+'Up' ),
+#        'down':dirDB.get( data_key+'Down' ),
+#        'color':ROOT.kBlue,
+#        } 
+        ]
 
-    unfolding_mc_input        = signal
-    unfolding_mc_input_systematic_bands          = [
+    unfolding_signal_input        = signal
+    unfolding_signal_input_systematic_bands          = [
+#       {'name' : 'stat',
+#        'label': "\pm 1\sigma (stat.)",
+#        'ref': signal,
+#        'up':  add_sigmas(signal_stat, +1),
+#        'down':add_sigmas(signal_stat, -1),
+#        'color':ROOT.kBlue,
+#        },
        {'name' : 'stat',
         'label': "\pm 1\sigma (stat.)",
-        'ref': signal,
-        'up':  add_sigmas(signal_stat, +1),
-        'down':add_sigmas(signal_stat, -1),
-        'color':ROOT.kBlue,
+        'ref': data,
+        'up':  add_sigmas(data, +1),
+        'down':add_sigmas(data, -1),
+        'color':ROOT.kBlue -10,
         },
        {'name' : 'total',
         'label': "\pm 1\sigma (tot.)",
         'ref': signal,
         'up':  add_sigmas(signal, +1),
         'down':add_sigmas(signal, -1),
-        'color':ROOT.kOrange,
-        }
+        'color':ROOT.kOrange-9,
+        },
         ]
 
 class expected_dRlg_RunII:
     expected        = True
     cache_directory = default_cache_directory 
-    data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_data_%s"
-    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_signal_%s"
-    signal_stat_key = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_signal_stat_%s"
+    data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_data_%s"
+    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_signal_%s"
+    signal_stat_key = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_signal_stat_%s"
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit")
+    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
     dirDB           = MergingDirDB(cache_dir)
 
     years           = ["2016", "2017", "2018"]
@@ -551,22 +583,32 @@ class expected_dRlg_RunII:
 #        'ref': data,
 #        'up':  dirDB.get( data_key+'Up' ),
 #        'down':dirDB.get( data_key+'Down' ),
-#        'color':ROOT.kBlue,}, 
-    ]
-    unfolding_mc_input        = signal
-    unfolding_mc_input_systematic_bands          = [
+#        'color':ROOT.kBlue,
+#        } 
+        ]
+
+    unfolding_signal_input        = signal
+    unfolding_signal_input_systematic_bands          = [
+#       {'name' : 'stat',
+#        'label': "\pm 1\sigma (stat.)",
+#        'ref': signal,
+#        'up':  add_sigmas(signal_stat, +1),
+#        'down':add_sigmas(signal_stat, -1),
+#        'color':ROOT.kBlue,
+#        },
        {'name' : 'stat',
         'label': "\pm 1\sigma (stat.)",
-        'ref': signal,
-        'up':  add_sigmas(signal_stat, +1),
-        'down':add_sigmas(signal_stat, -1),
-        'color':ROOT.kBlue,
+        'ref': data,
+        'up':  add_sigmas(data, +1),
+        'down':add_sigmas(data, -1),
+        'color':ROOT.kBlue -10,
         },
        {'name' : 'total',
         'label': "\pm 1\sigma (tot.)",
         'ref': signal,
         'up':  add_sigmas(signal, +1),
         'down':add_sigmas(signal, -1),
-        'color':ROOT.kOrange,
-        }
+        'color':ROOT.kOrange-9,
+        },
         ]
+
