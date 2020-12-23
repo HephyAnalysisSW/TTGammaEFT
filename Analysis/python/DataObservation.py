@@ -77,6 +77,11 @@ class DataObservation():
 
     def observation(self, region, channel, setup, overwrite):
 
+        if setup.nJet == "3p":
+            setup4p = setup.sysClone( parameters={"nJet":(4,-1)} )
+            setup3 = setup.sysClone( parameters={"nJet":(3,3)} )
+            return sum([ self.cachedEstimate(region, channel, s, overwrite=overwrite) for s in [setup3,setup4p]])
+
         if channel=="all":
             return sum([self.cachedEstimate(region, c, setup, overwrite=overwrite) for c in lepChannels ])
 

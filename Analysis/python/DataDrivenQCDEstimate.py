@@ -177,6 +177,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         yield_other_SR = 0
         for s in default_sampleList:
             if s in ["QCD-DD", "QCD", "QCD_e", "QCD_mu", "GJets", "Data"]: continue
+            print s
             y_CR = self.yieldFromCache( setup, s, channel, cut_MC_CR, weight_MC_CR, overwrite=overwrite )
             y_SR = self.yieldFromCache( setup, s, channel, cut_MC_SR, weight_MC_SR, overwrite=overwrite )
             print "without SF", s, "CR", y_CR, "SR", y_SR
@@ -366,18 +367,6 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         for i in range(qcdHist.GetNbinsX()):
             if qcdHist.GetBinContent(i+1) < 0: qcdHist.SetBinContent(i+1, 0)
 
-        # fix electron channel floating sf to muon sf, skip that
-        if var == "mT" and photonRegion and False:
-            cache_dir = os.path.join(cache_directory, "qcdTFHistosSF", str(setup.year))
-            dirDBSF = MergingDirDB(cache_dir)
-            if not dirDBSF: raise
-
-            if channel == "e":
-                key = (floatSample, "mu", var, "_".join(map(str,binning)), weight_MC_SR, cut_MC_SR.replace("Muon","Lepton").replace("Electron","Lepton"))
-                muonSF = dirDBSF.get(key) if dirDBSF.contains(key) else 1.
-                floatHist.Scale( muonSF )
-                print("Scaling floating electron channel histogram by muon channel SF of %f"%muonSF)
-
         # all histos prepared, now prepare the fit
         tarray = ROOT.TObjArray(3)
         tarray.Add( qcdHist )
@@ -409,7 +398,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         if photonRegion:
             tfitter.Config().ParSettings(1).Set("float", nFloatScale, 0.001, nFloatScale*0.999, nFloatScale*1.001)
         elif bjetRegion:
-            tfitter.Config().ParSettings(1).Set("float", nFloatScale, 0.001, nFloatScale*0.5, nFloatScale*1.5)
+            tfitter.Config().ParSettings(1).Set("float", nFloatScale, 0.001, nFloatScale*0.8, nFloatScale*1.2)
         else:
             tfitter.Config().ParSettings(1).Set("float", nFloatScale, 0.001, nFloatScale*0.8, nFloatScale*1.2)
 
@@ -428,12 +417,6 @@ class DataDrivenQCDEstimate(SystematicEstimator):
 
         transferFac = u_float( qcdTFVal,   qcdTFErr ) / nQCDScale
         floatSF     = u_float( floatSFVal, floatSFErr ) / nFloatScale
-
-#        if var == "mT" and channel == "mu":
-        if var == "mT" and photonRegion and channel == "mu" and False:
-            key = (floatSample, "mu", var, "_".join(map(str,binning)), weight_MC_SR, cut_MC_SR.replace("Muon","Lepton").replace("Electron","Lepton"))
-            dirDBSF.add( key, floatSF.val, overwrite=True )
-            print("Storing floating SF of %f"%floatSF.val)
 
         print("Calculating data-driven QCD TF normalization in channel " + channel + " using lumi " + str(setup.dataLumi) + ":")
         print("TF CR yield QCD:                 " + str(nQCDScale*nTotal))
@@ -502,6 +485,11 @@ class DataDrivenQCDEstimate(SystematicEstimator):
 
     #Concrete implementation of abstract method "estimate" as defined in Systematic
     def _estimate(self, region, channel, setup, signalAddon=None, overwrite=False):
+
+        if setup.nJet == "3p":
+            setup4p = setup.sysClone( parameters={"nJet":(4,-1)} )
+            setup3 = setup.sysClone( parameters={"nJet":(3,3)} )
+            return sum([ self.cachedEstimate(region, channel, s, signalAddon=signalAddon, overwrite=overwrite) for s in [setup3,setup4p]])
 
         #Sum of all channels for "all"
         if channel=="all":
@@ -622,7 +610,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
                         nJetUpdates["CR"]["leptonPt"] = ( 0, -1 )
                         nJetUpdates["SR"]["leptonPt"] = ( 0, -1 )
 
-                        nJetSF = self._nJetScaleFactor(channel, setup, qcdUpdates=nJetUpdates)
+                        nJetSF = self._nJetScaleFactor("mu", setup, qcdUpdates=nJetUpdates)
                         if nJetSF <= 0: nJetSF = 1.
 
 

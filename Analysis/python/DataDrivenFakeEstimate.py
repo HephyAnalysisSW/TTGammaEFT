@@ -35,6 +35,11 @@ class DataDrivenFakeEstimate(SystematicEstimator):
     #Concrete implementation of abstract method "estimate" as defined in Systematic
     def _estimate(self, region, channel, setup, signalAddon=None, overwrite=False):
 
+        if setup.nJet == "3p":
+            setup4p = setup.sysClone( parameters={"nJet":(4,-1)} )
+            setup3 = setup.sysClone( parameters={"nJet":(3,3)} )
+            return sum([ self.cachedEstimate(region, channel, s, signalAddon=signalAddon, overwrite=overwrite) for s in [setup3,setup4p]])
+
         #Sum of all channels for "all"
         if channel == "all":
             return sum([ self.cachedEstimate(region, c, setup, signalAddon=signalAddon, overwrite=overwrite) for c in lepChannels])
