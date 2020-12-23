@@ -7,7 +7,7 @@ class TriggerSelector:
                 self.m  = [ "HLT_IsoMu24", "HLT_IsoTkMu24" ]
                 self.e  = [ "HLT_Ele27_WPTight_Gsf" ]
         elif year == 2017:
-                self.m   = [ "HLT_IsoMu24" ]
+                self.m   = [ "HLT_IsoMu27" ]
                 self.e   = [ "HLT_Ele32_WPTight_Gsf_L1DoubleEG" ]
 #                self.e   = [ "HLT_Ele32_WPTight_Gsf", "HLT_Ele32_WPTight_Gsf_L1DoubleEG" ]
                 self.eL1 = [ "L1_SingleEG24", "L1_SingleEG26", "L1_SingleEG30", "L1_SingleEG32", "L1_SingleEG34", "L1_SingleEG36", "L1_SingleEG38", "L1_SingleEG40", "L1_SingleEG42", "L1_SingleEG45", "L1_SingleEG50", "L1_SingleEG34er2p1", "L1_SingleEG36er2p1", "L1_SingleEG38er2p1", "L1_SingleIsoEG24er2p1", "L1_SingleIsoEG26er2p1", "L1_SingleIsoEG28er2p1", "L1_SingleIsoEG30er2p1", "L1_SingleIsoEG32er2p1", "L1_SingleIsoEG34er2p1", "L1_SingleIsoEG36er2p1", "L1_SingleIsoEG24", "L1_SingleIsoEG26", "L1_SingleIsoEG28", "L1_SingleIsoEG30", "L1_SingleIsoEG32", "L1_SingleIsoEG34", "L1_SingleIsoEG36", "L1_SingleIsoEG38"]
