@@ -260,17 +260,17 @@ EFT_dim3 = [
 #    stg_sch_restrict_4WC_ref_rwgt_dim3,
 ]
 
-stg_sch_restrict_ref_rwgt_2WC                  = FWLiteSample.fromDAS("stg_sch_restrict_ref_rwgt_2WC", "/stg_sch_rwgt_ref_v3/llechner-stg_sch_rwgt_ref_v3-89064afdbf280d34e266b56f0d026da6/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
+stg_sch_restrict_ref_rwgt_2WC                  = FWLiteSample.fromDAS("stg_sch_restrict_ref_rwgt_2WC", "/stg_sch_rwgt_ref_v6/llechner-stg_sch_rwgt_ref_v6-89064afdbf280d34e266b56f0d026da6/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 stg_sch_restrict_ref_rwgt_2WC.reweight_pkl     = os.path.join( gridpack_directory, "EFT", "dipoles", "singleOp", "stg_sch_rwgt", "stg_sch_rwgt_slc7_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
 stg_sch_restrict_ref_rwgt_2WC.xSection         = 0.04415
 stg_sch_restrict_ref_rwgt_2WC.nEvents          = 20000 * len(stg_sch_restrict_ref_rwgt_2WC.files)
 
-stg_tch_restrict_ref_rwgt_2WC                  = FWLiteSample.fromDAS("stg_tch_restrict_ref_rwgt_2WC", "/stg_tch_rwgt_ref_v3/llechner-stg_tch_rwgt_ref_v3-ef229b6fd4562be8773a73ef5fe5bce3/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
+stg_tch_restrict_ref_rwgt_2WC                  = FWLiteSample.fromDAS("stg_tch_restrict_ref_rwgt_2WC", "/stg_tch_rwgt_ref_v6/llechner-stg_tch_rwgt_ref_v6-ef229b6fd4562be8773a73ef5fe5bce3/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 stg_tch_restrict_ref_rwgt_2WC.reweight_pkl     = os.path.join( gridpack_directory, "EFT", "dipoles", "singleOp", "stg_tch_rwgt", "stg_tch_rwgt_slc7_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
 stg_tch_restrict_ref_rwgt_2WC.xSection         = 3.449
 stg_tch_restrict_ref_rwgt_2WC.nEvents          = 20000 * len(stg_tch_restrict_ref_rwgt_2WC.files)
 
-tWG_restrict_ref_rwgt_2WC                  = FWLiteSample.fromDAS("tWG_restrict_ref_rwgt_2WC", "/tWG_rwgt_ref_v3/llechner-tWG_rwgt_ref_v3-d3cb71b945b065c1220425aae4f3dbe2/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
+tWG_restrict_ref_rwgt_2WC                  = FWLiteSample.fromDAS("tWG_restrict_ref_rwgt_2WC", "/tWG_rwgt_ref_v6/llechner-tWG_rwgt_ref_v6-d3cb71b945b065c1220425aae4f3dbe2/USER", "phys03", dbFile=dbFile, overwrite=ov, prefix=redirector)
 tWG_restrict_ref_rwgt_2WC.reweight_pkl     = os.path.join( gridpack_directory, "EFT", "dipoles", "singleOp", "tWG_rwgt", "tWG_rwgt_slc7_amd64_gcc630_CMSSW_9_3_16_tarball.pkl" )
 tWG_restrict_ref_rwgt_2WC.xSection         = 0.3973
 tWG_restrict_ref_rwgt_2WC.nEvents          = 20000 * len(tWG_restrict_ref_rwgt_2WC.files)

@@ -58,6 +58,8 @@ dirs["TT_SemiLep"]       = ["TTSingleLep_pow"]
 dirs["TTGSemiLep"]       = ["TTGSingleLep_LO", "TTGSingleLep_ptG100To200_LO", "TTGSingleLep_ptG200_LO"]
 #dirs["TTGSemiLep"]       = ["TTGSingleLep_LO"]
 
+dirs["TTG_NLO"]           = ["TTGJets"]
+
 dirs["TTGLep"]           = ["TTGLep_LO", "TTGLep_ptG100To200_LO", "TTGLep_ptG200_LO"]
 #dirs["TTGLep"]           = ["TTGLep_LO"]
 dirs["TTG"]              = ["TTGLep_LO", "TTGLep_ptG100To200_LO", "TTGLep_ptG200_LO", "TTGSingleLep_LO", "TTGSingleLep_ptG100To200_LO", "TTGSingleLep_ptG200_LO", "TTGHad_LO", "TTGHad_ptG100To200_LO", "TTGHad_ptG200_LO"]
@@ -130,6 +132,8 @@ dirs["other"]           += dirs["WW"]   + dirs["WZ"]  + dirs["ZZ"]
 dirs["QCD_mu"]           = [ "QCD_Mu_pt15to20", "QCD_Mu_pt20to30", "QCD_Mu_pt30to50", "QCD_Mu_pt50to80", "QCD_Mu_pt80to120", "QCD_Mu_pt120to170_comb", "QCD_Mu_pt170to300", "QCD_Mu_pt300to470_comb", "QCD_Mu_pt470to600", "QCD_Mu_pt600to800", "QCD_Mu_pt800to1000_ext", "QCD_Mu_pt1000toInf" ]
 dirs["QCD_e"]            = [ "QCD_Ele_pt20to30", "QCD_Ele_pt30to50", "QCD_Ele_pt50to80", "QCD_Ele_pt80to120", "QCD_Ele_pt120to170", "QCD_Ele_pt170to300", "QCD_Ele_pt300toInf" ]
 dirs["QCD_e"]           += [ "QCD_bcToE_pt20to30", "QCD_bcToE_pt30to80", "QCD_bcToE_pt80to170", "QCD_bcToE_pt170to250", "QCD_bcToE_pt250toInf" ]
+dirs["QCD_e80To120"]    = [ "QCD_Ele_pt80to120" ]
+dirs["QCD_mu80To120"]    = [ "QCD_Mu_pt80to120" ]
 
 dirs["QCD"]              = dirs["QCD_mu"] + dirs["QCD_e"]
 dirs["GJets"]            = ["GJets_HT40to100", "GJets_HT100to200", "GJets_HT200to400", "GJets_HT400to600", "GJets_HT600toInf"]
@@ -165,6 +169,7 @@ singleTop        = getMCSample(name="singleTop",        redirector=redirector, c
 ST_tW            = getMCSample(name="ST_tW",            redirector=redirector, color=color.T,               texName="tW",                directory=directories["st_tW"], noCheckProxy=True, fromDPM=fromDPM)
 ST_tch           = getMCSample(name="ST_tch",           redirector=redirector, color=color.T,               texName="t (t-ch)",          directory=directories["st_tch"], noCheckProxy=True, fromDPM=fromDPM)
 ST_sch           = getMCSample(name="ST_sch",           redirector=redirector, color=color.T,               texName="t (s-ch)",          directory=directories["st_sch"], noCheckProxy=True, fromDPM=fromDPM)
+TTG_NLO          = getMCSample(name="TTG_NLO",          redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma (NLO)",    directory=directories["TTG_NLO"], noCheckProxy=True, fromDPM=fromDPM)
 TTG              = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG"], noCheckProxy=True, fromDPM=fromDPM)
 TTG_sys_incl     = getMCSample(name="TTG_sys",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_sys_incl"], noCheckProxy=True, fromDPM=fromDPM)
 TTG_TuneUp       = getMCSample(name="TTG_TuneUp",       redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_TuneUp"], noCheckProxy=True, fromDPM=fromDPM)
@@ -187,6 +192,8 @@ QCD             = getMCSample(name="QCD",               redirector=redirector, c
 QCD_e           = getMCSample(name="QCD_e",             redirector=redirector, color=color.QCD,             texName="Multijet",         directory=directories["QCD_e"], noCheckProxy=True, fromDPM=fromDPM)
 QCD_mu          = getMCSample(name="QCD_mu",            redirector=redirector, color=color.QCD,             texName="Multijet",         directory=directories["QCD_mu"], noCheckProxy=True, fromDPM=fromDPM)
 GJets           = getMCSample(name="GJets",             redirector=redirector, color=color.GJets,           texName="#gamma+jets",       directory=directories["GJets"], noCheckProxy=True, fromDPM=fromDPM)
+QCD_e80To120     = getMCSample(name="QCD_e80To120",            redirector=redirector, color=color.QCD,             texName="Multijet",         directory=directories["QCD_e80To120"], noCheckProxy=True, fromDPM=fromDPM)
+QCD_mu80To120     = getMCSample(name="QCD_mu80To120",            redirector=redirector, color=color.QCD,             texName="Multijet",         directory=directories["QCD_mu80To120"], noCheckProxy=True, fromDPM=fromDPM)
 
 VG              = getMCSample(name="VG",               redirector=redirector, color=color.WGamma,          texName="V+#gamma",          directory=directories["VG"], noCheckProxy=True, fromDPM=fromDPM)
 rest            = getMCSample(name="other",             redirector=redirector, color=color.Other,          texName="Other",             directory=directories["rest"], noCheckProxy=True, fromDPM=fromDPM)
