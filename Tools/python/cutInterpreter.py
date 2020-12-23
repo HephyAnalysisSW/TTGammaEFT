@@ -26,6 +26,9 @@ special_cuts = {
     "gMVABarrel":           "abs(PhotonMVA0_eta)<=1.4442",
     "gMVAEC":               "abs(PhotonMVA0_eta)>=1.566",
 
+    "noTopDecayPhoton":     "(abs(PhotonGood0_mother)!=21&&abs(PhotonGood0_mother)!=6)",
+    "topDecayPhoton":     "(abs(PhotonGood0_mother)==21||abs(PhotonGood0_mother)==6)",
+
     "gLlDRCut":           "minGLLepdR<=0.8&&minGLLepdR>=0.1",
     "gLlDRCutWrong":      "minGLLepdR<=0.8",
     "gMlDRlow":           "minGMLepdR<0.1",
