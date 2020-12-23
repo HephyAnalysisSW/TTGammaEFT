@@ -87,7 +87,7 @@ options = get_parser().parse_args()
 
 stitching = False
 # combine ttg samples is they are nominal
-if "TTG" in options.samples[0] and not "Tune" in options.samples[0] and not "erd" in options.samples[0] and not "QCDbased" in options.samples[0] and not "GluonMove" in options.samples[0] and not "ptG" in options.samples[0]:
+if "TTG" in options.samples[0] and not "Tune" in options.samples[0] and not "TTGJets" in options.samples[0] and not "erd" in options.samples[0] and not "QCDbased" in options.samples[0] and not "GluonMove" in options.samples[0] and not "ptG" in options.samples[0]:
     stitching = True
 
 # B-Tagger
