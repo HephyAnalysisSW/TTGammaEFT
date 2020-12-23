@@ -143,9 +143,11 @@ class Setup:
                 all_noQCD    = mc_samples.all_noQCD
                 all_e        = mc_samples.all_mc_e
                 all_mu       = mc_samples.all_mc_mu
+            else:
+                ttg_NLO       = mc_samples.TTG_NLO
 
             if private:
-                mc           = [ ttg, tt ]
+                mc           = [ ttg, tt, ttg_NLO ]
             else:
                 mc           = [ ttg, top, DY, zg, wjets, wg, wg_NLO, other, qcd, gqcd, qcd_e, qcd_mu, gjets, all, all_e, all_mu, all_noQCD ]
                 mc          += [ ttg_TuneUp, ttg_TuneDown, ttg_erdOn, ttg_QCDbased, ttg_GluonMove, ttg_sys_incl ]
@@ -751,6 +753,7 @@ if __name__ == "__main__":
             print
             res = setup.selection("MC", channel=channel, **setup.defaultParameters( update=dict["parameters"] ))
             print res["cut"]
+            print cutInterpreter.cutString( res["prefix"] )
 #            print res["prefix"]
 #            print res["weightStr"]
 
