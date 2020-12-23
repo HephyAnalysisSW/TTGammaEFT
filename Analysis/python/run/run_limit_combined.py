@@ -16,7 +16,7 @@ from TTGammaEFT.Analysis.SetupHelpers    import *
 from TTGammaEFT.Tools.user               import combineReleaseLocation, cardfileLocation, cache_directory
 from Analysis.Tools.MergingDirDB         import MergingDirDB
 from Analysis.Tools.u_float              import u_float
-from Analysis.Tools.cardFileWriter       import cardFileWriter
+from TTGammaEFT.Tools.cardFileWriter       import cardFileWriter
 from Analysis.Tools.getPostFit           import getPrePostFitFromMLF, getFitResults
 
 from Analysis.Tools.cardFileWriter.CombineResults   import CombineResults
@@ -59,6 +59,10 @@ argParser.add_argument( "--linTest",            action="store",      default=1, 
 argParser.add_argument('--order',               action='store',      default=2, type=int,                                                             help='Polynomial order of weight string (e.g. 2)')
 argParser.add_argument('--parameters',          action='store',      default=[], type=str, nargs='+',                       help = "argument parameters")
 argParser.add_argument('--withbkg',             action='store_true',                                                        help="reweight sample and bkg or sample only?")
+argParser.add_argument('--withEFTUnc',             action='store_true',                                                        help="add EFT uncertainty?")
+argParser.add_argument('--freezeR',             action='store_true',                                                        help="add EFT uncertainty?")
+argParser.add_argument('--freezeSigUnc',             action='store_true',                                                        help="add EFT uncertainty?")
+argParser.add_argument('--addPtBinnedUnc',             action='store_true',                                                        help="add EFT uncertainty?")
 args=argParser.parse_args()
 
 if args.linTest != 1: args.expected = True
@@ -159,6 +163,9 @@ if args.useChannels: regionNames.append("_".join([ch for ch in args.useChannels 
 if args.linTest != 1: regionNames.append(str(args.linTest).replace(".","_"))
 if args.noMCStat:     regionNames.append("noMCStat")
 if args.noFakeStat:   regionNames.append("noFakeStat")
+if args.freezeR:   regionNames.append("freezeR")
+if args.freezeSigUnc:   regionNames.append("freezeSigUnc")
+if args.addPtBinnedUnc:   regionNames.append("addPtBinnedUnc")
 
 if args.parameters:
     # load and define the EFT sample
@@ -179,7 +186,7 @@ if args.parameters:
     configlist.append("expected" if args.expected else "observed")
 
     sEFTConfig = "_".join(configlist)
-#    if not args.overwrite and nllCache.contains( sEFTConfig ): sys.exit(0)
+    if not args.overwrite and nllCache.contains( sEFTConfig ) and abs(nllCache.get(sEFTConfig)["nll0"])>0.1: sys.exit(0)
 
 
 years = [2016,2017,2018]
@@ -220,8 +227,8 @@ def wrapper():
     if not os.path.isdir(limitDir):
         os.makedirs(limitDir)
 
-    txtcombinedCard   = c.combineCards( txtcards )
-    shapecombinedCard = c.combineCards( shapecards )
+    txtcombinedCard   = c.combineCards( txtcards, txtFileOnly=bool(args.parameters) )
+    shapecombinedCard = c.combineCards( shapecards, txtFileOnly=bool(args.parameters) )
     combinedCard = txtcombinedCard if args.useTxt else shapecombinedCard
     print combinedCard
 
@@ -236,13 +243,29 @@ def wrapper():
     cardFileName      = cardFileNameTxt if args.useTxt else cardFileNameShape
     
     if args.parameters:
-        nll          = c.calcNLL( cardFileName )
+        options = "--expectSignal=1 --freezeParameters r --setParameters r=1  --X-rtd REMOVE_CONSTANT_ZERO_POINT=1"
+        nll          = c.calcNLL( fname=cardFileName, options=options )
         nllCache.add( sEFTConfig, nll, overwrite=True )
-
+        print nll
+        print sEFTConfig
     else:
-        sConfig = "_".join(regionNames)
-        res = c.calcLimit( cardFileName )
-        c.calcNuisances( cardFileName, bonly=args.bkgOnly, options="--customStartingPoint --setParameters r=1" )
+        options = ""
+        if args.freezeR:
+            options = "--setParameters r=1 --freezeParameters r"
+        res = c.calcLimit( cardFileName, options=options )
+
+        # options for running the bkg only fit with r=1
+        options += " --customStartingPoint --expectSignal=1"
+        if args.freezeR:
+            options += " --rMin 0.99 --rMax 1.01"
+        options += " --rMin 0.5 --rMax 1.5" # --cminDefaultMinimizerTolerance=0.01"
+        c.calcNuisances( cardFileName, bonly=args.bkgOnly, options=options )
+        if args.freezeSigUnc:
+            Results = CombineResults( cardFile=cardFileNameTxt, plotDirectory="./", year=args.year, bkgOnly=args.bkgOnly, isSearch=False )
+            postFit = Results.getPulls( postFit=True )
+            freezeParams = [ p for p in postFit.keys() if p.startswith("Signal_") ]
+            pulls = [ p+"="+str(postFit[p].val) for p in freezeParams ]
+            c.calcNuisances( cardFileName.replace(".txt",".root"), bonly=args.bkgOnly, options=options+" --setParameters %s --freezeParameters %s"%(",".join(pulls),",".join(freezeParams)) )
 
     if args.plot and not args.parameters:
         path  = os.environ["CMSSW_BASE"]
