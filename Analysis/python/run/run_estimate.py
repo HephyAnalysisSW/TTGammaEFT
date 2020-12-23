@@ -51,13 +51,14 @@ if not args.controlRegion:
     sys.exit(0)
 
 additionalRegions = [None]
-if "Unfold" in args.controlRegion and not "Pt" in args.controlRegion:
+if "Unfold" in args.controlRegion and not "Pt" in args.controlRegion and not "QCD" in args.selectEstimator and not "fakes" in args.selectEstimator:
     args.noInclusive = True
-    pTG_thresh = [ 20, 35, 50, 65, 80, 120, 160, 200, 260, 320, -999 ]
-    additionalRegions += getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", pTG_thresh )
+    pTG_thresh = [ 20, 35, 50, 65, 80, 100, 120, 140, 160, 180, 200, 260, 320, -999 ]
+#    additionalRegions += getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", pTG_thresh )
 
-#    misIDPT_thresholds = [ 20, 35, 50, 65, 80, 120, 160, -999 ]
-    misIDPT_thresholds = [ 160, -999 ]
+    misIDPT_thresholds = [ 20, 35, 50, 65, 80, 120, 160, -999 ]
+#    misIDPT_thresholds = [ 80, 120, 160, -999 ]
+#    misIDPT_thresholds = [ 160, -999 ]
     additionalRegions += getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", misIDPT_thresholds )
 
 #    WGPT_thresholds = [ 20, 65, 160, -999 ]
@@ -95,7 +96,7 @@ def wrapper(arg):
         return (estimate.uniqueKey(r, channel, setup), res )
 
 estimate.initCache(setup.defaultCacheDir())
-#if "all" in channels: channels = ["e","mu"]
+if "all" in channels: channels = ["e","mu", "all"]
 jobs=[]
 for channel in channels:
     for (ai, ar) in enumerate(additionalRegions):
