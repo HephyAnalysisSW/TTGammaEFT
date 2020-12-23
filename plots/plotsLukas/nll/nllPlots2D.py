@@ -1,6 +1,8 @@
 ''' Plot script WC parameter LogLikelihood
 '''
 
+#https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit/blob/102x/data/tutorials/count_toys_with_signif_lt_localmax.C#L42-L58
+
 # Standard imports 
 import sys, os, copy, ROOT
 import ctypes
@@ -39,6 +41,7 @@ argParser.add_argument('--variables' ,         action='store',      default = ['
 argParser.add_argument( "--expected",           action="store_true",                                                        help="Use sum of backgrounds instead of data." )
 argParser.add_argument( "--inclRegion",         action="store_true",                                                        help="use inclusive photon pt region" )
 argParser.add_argument( "--useRegions",         action="store",      nargs='*',       type=str, choices=allRegions.keys(),  help="Which regions to use?" )
+argParser.add_argument( "--useChannels",        action="store",      nargs='*', default=None,   type=str, choices=["e", "mu", "all", "comb"], help="Which lepton channels to use?" )
 argParser.add_argument('--contours',           action='store_true',                                                                                  help='draw 1sigma and 2sigma contour line?')
 argParser.add_argument('--smooth',             action='store_true',                                                                                  help='smooth histogram?')
 argParser.add_argument('--withbkg',             action='store_true',                                                                                  help='with bkg?')
@@ -68,6 +71,7 @@ regionNames.sort()
 if args.addDYSF:     regionNames.append("addDYSF")
 if args.addMisIDSF:  regionNames.append("addMisIDSF")
 if args.inclRegion:  regionNames.append("incl")
+if args.useChannels:  regionNames.append("_".join([ch for ch in args.useChannels if not "tight" in ch]))
 
 baseDir       = os.path.join( cache_directory, "analysis",  str(args.year) if args.year != "RunII" else "COMBINED", "limits", "withbkg" if args.withbkg else "withoutbkg" )
 if args.withEFTUnc: baseDir = os.path.join( baseDir, "withEFTUnc" )
@@ -75,7 +79,7 @@ cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
 print cacheFileName
 
-directory = os.path.join( plot_directory, "nllPlots", str(args.year), "_".join( regionNames ))
+directory = os.path.join( plot_directory, "nllPlotsPPA", str(args.year), "_".join( regionNames ))
 addon = "expected" if args.expected else "observed"
 plot_directory_ = os.path.join( directory, addon )
 
@@ -91,8 +95,18 @@ elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
 #binning range
 xRange = eftParameterRange[args.variables[0]]
 yRange = eftParameterRange[args.variables[1]]
-print xRange
-print yRange
+
+xRange = [ el for el in xRange if abs(el) <= 0.6 ]
+yRange = [ el for el in yRange if abs(el) <= 0.6 ]
+
+
+#xRange       = np.linspace( -1.0, 1.0, 30, endpoint=False)
+#halfstepsize = 0.5 * ( xRange[1] - xRange[0] )
+#xRange       = [ round(el + halfstepsize, 3) for el in xRange ] + [0]
+#xRange.sort()
+#yRange = xRange
+
+
 def getNllData( varx, vary ):
     dict = {"ctZI":0, "ctZ":0}
     dict[args.variables[0]] = varx
@@ -102,12 +116,23 @@ def getNllData( varx, vary ):
     configlist.append("incl" if args.inclRegion else "diff")
     configlist.append("expected" if args.expected else "observed")
     sConfig = "_".join(configlist)
-    if nllCache.contains(sConfig): nll = nllCache.get(sConfig)
-    else:                          nll = -999
-    print nll
-    print sConfig
-    return float(nll["nll"])
-#    return float(nll)
+
+    if not nllCache.contains(sConfig):
+        print sConfig
+        return None  
+
+    nll = nllCache.get(sConfig)
+
+    if nll["nll"] == 0:
+        print sConfig
+        print nll
+        return None
+
+#    print nll
+
+    nll = nll["nll"] + nll["nll0"]
+
+    return float(nll)  
 
 
 logger.info("Loading cache data" )
@@ -117,9 +142,33 @@ points += [ (varX, 0) for varX in xRange] #1D plots
 points += [ (varX, varY) for varY in yRange for varX in xRange] #2D plots
 
 nllData  = [ (varx, vary, getNllData( varx, vary )) for (varx, vary) in points ]
-sm_nll   = getNllData(0,0)
+nllData  = [ x for x in nllData if x[2]]
 
-nllData  = [ (x, y, 2*(nll - sm_nll)) for x, y, nll in nllData if nll != 0]
+if args.expected:
+    sm_nll   = getNllData(0,0)
+    bfx, bfy = 0,0
+else:
+#    allResults = sorted([y for y in nllData if abs(y[0])<0.5 and abs(y[1])<0.5], key=lambda x:-x[2])
+    allResults = sorted([y for y in nllData ], key=lambda x:x[2])
+    sm_nll   = allResults[0][2]
+    bfx, bfy = allResults[0][0], allResults[0][1]
+    print allResults[0]
+
+#nllData  = [ (x, y, -2*(nll - sm_nll) if -2*(nll - sm_nll) < 20 and -2*(nll - sm_nll) > 0 else 20) for x, y, nll in nllData ]
+nllData  = [ (x, y, 2*(nll - sm_nll) ) for x, y, nll in nllData ]
+
+if args.year == "RunII":
+    nllData  += [ (0.6, x, 30) for x in xRange ]
+    nllData  += [ (-0.6, x, 30) for x in xRange ]
+    nllData  += [ (x, 0.6, 30) for x in xRange ]
+    nllData  += [ (x, -0.6, 30) for x in xRange ]
+
+if args.expected:
+    nllData  = [ x for x in nllData if x[2] > 0 ]
+#for x in nllData:
+#    if abs(x[0]) < 0.35: print x
+#sys.exit()
+
 
 tmp = nllData
 tmp.sort( key = lambda res: (res[0], res[1]) )
@@ -226,13 +275,35 @@ hist.GetXaxis().SetLabelSize(0.04)
 hist.GetYaxis().SetLabelSize(0.04)
 hist.GetZaxis().SetLabelSize(0.04)
 
+SMpoint = ROOT.TGraph(1)
+SMpoint.SetName("SMpoint")
+BFpoint = ROOT.TGraph(1)
+BFpoint.SetName("BFpoint")
+
+SMpoint.SetPoint(0, 0, 0)
+BFpoint.SetPoint(0, bfx, bfy)
+
+SMpoint.SetMarkerStyle(20)
+SMpoint.SetMarkerSize(2)
+SMpoint.SetMarkerColor(ROOT.kOrange+1)
+BFpoint.SetMarkerStyle(29)
+BFpoint.SetMarkerSize(3)
+BFpoint.SetMarkerColor(ROOT.kCyan-9)
+
+SMpoint.Draw("p same")
+BFpoint.Draw("p same")
+
+
 latex1 = ROOT.TLatex()
 latex1.SetNDC()
 latex1.SetTextSize(0.035)
 latex1.SetTextFont(42)
 latex1.SetTextAlign(11)
 
-latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Simulation Preliminary}'),
+if args.expected:
+    latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Simulation Preliminary}'),
+else:
+    latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Preliminary}'),
 latex1.DrawLatex(0.60, 0.91, '#bf{%3.1f fb{}^{-1} (13 TeV)}' % lumi_scale)
 
 latex2 = ROOT.TLatex()
