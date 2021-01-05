@@ -53,7 +53,7 @@ if not args.controlRegion:
 additionalRegions = [None]
 if "Unfold" in args.controlRegion and not "Pt" in args.controlRegion and not "QCD" in args.selectEstimator and not "fakes" in args.selectEstimator:
     args.noInclusive = True
-    pTG_thresh = [ 20, 35, 50, 65, 80, 100, 120, 140, 160, 180, 200, 260, 320, -999 ]
+    pTG_thresh = [ 20, 35, 50, 65, 80, 100, 120, 140, 160, 200, 280, -999 ]
 #    additionalRegions += getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", pTG_thresh )
 
     misIDPT_thresholds = [ 20, 35, 50, 65, 80, 120, 160, -999 ]

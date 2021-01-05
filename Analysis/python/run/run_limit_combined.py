@@ -258,14 +258,15 @@ def wrapper():
         options += " --customStartingPoint --expectSignal=1"
         if args.freezeR:
             options += " --rMin 0.99 --rMax 1.01"
-        options += " --rMin 0.5 --rMax 1.5" # --cminDefaultMinimizerTolerance=0.01"
+        options += " --rMin 0.5 --rMax 1.5 --cminDefaultMinimizerTolerance=0.1"
         c.calcNuisances( cardFileName, bonly=args.bkgOnly, options=options )
         if args.freezeSigUnc:
-            Results = CombineResults( cardFile=cardFileNameTxt, plotDirectory="./", year=args.year, bkgOnly=args.bkgOnly, isSearch=False )
+            Results = CombineResults( cardFile=cardFileNameTxt, plotDirectory="./", year="combined", bkgOnly=args.bkgOnly, isSearch=False )
             postFit = Results.getPulls( postFit=True )
             freezeParams = [ p for p in postFit.keys() if p.startswith("Signal_") ]
             pulls = [ p+"="+str(postFit[p].val) for p in freezeParams ]
-            c.calcNuisances( cardFileName.replace(".txt",".root"), bonly=args.bkgOnly, options=options+" --setParameters %s --freezeParameters %s"%(",".join(pulls),",".join(freezeParams)) )
+            print pulls
+            c.calcNuisances( cardFileName, bonly=args.bkgOnly, options=options+" --setParameters %s --freezeParameters %s"%(",".join(pulls),",".join(freezeParams)) )
 
     if args.plot and not args.parameters:
         path  = os.environ["CMSSW_BASE"]

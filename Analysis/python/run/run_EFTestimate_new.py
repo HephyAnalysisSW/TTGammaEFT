@@ -87,17 +87,24 @@ def wrapper(arg):
         selection = setup.genSelection( "MC", channel=channel, **setup.defaultParameters())["cut"]
         selection = "&&".join( [ selection, r.cutString() ] )
         weightString = "ref_weight*(" + get_weight_string(params) + ")"
+        print selection
+        print weightString
         res = eftSample.getYieldFromDraw( selectionString=selection, weightString=weightString )
+#        print key, res
         cache.add( key, res, overwrite=True )
-    print "done", res
+#    print "done", res
     return ( key, res )
 
 jobs=[]
 for channel in channels:
     for (i, r) in enumerate(allPhotonRegions):
+#        ctZI = 0
         for ctZ in eftParameterRange["ctZ"]:
             for ctZI in eftParameterRange["ctZI"]:
                 jobs.append((r, channel, setup, (ctZ, ctZI, 0, 0)))
+#        ctZ = 0
+#                jobs.append((r, channel, setup, (ctZ, ctZI, 0, 0)))
+
 #        for ctW in eftParameterRange["ctW"]:
 #            for ctWI in eftParameterRange["ctWI"]:
 #                jobs.append((r, channel, setup, (0, 0, ctW, ctWI)))
@@ -132,6 +139,8 @@ else:
 
 if args.checkOnly:
     for res in results:
-        print res[0][0], res[0][1], res[0][2], "yield:", res[1]["val"]
+#        if not res[0][3].startswith("ctZ_0_"): continue
+#        if not res[0][1] == "PhotonNoChgIsoNoSieie0_pt320": continue
+        print res[0][0], res[0][1], res[0][2], res[0][3], "yield:", res[1]["val"]
     sys.exit(0)
 

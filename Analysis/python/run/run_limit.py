@@ -293,7 +293,7 @@ def wrapper():
     cardFileName      = cardFileNameTxt
     print cardFileName
 
-    pTG_thresh = [ 20, 35, 50, 65, 80, 100, 120, 140, 160, 180, 200, 260, 320, -999 ]
+    pTG_thresh = [ 20, 35, 50, 65, 80, 100, 120, 140, 160, 200, 280, -999 ]
 #[ 20, 35, 50, 65, 80, 120, 160, 200, 260, 320, -999 ]
     eta_thresh = list(np.linspace(start=0, stop=1.35, num=10)) + [1.4442]
     dR_thresh = [ 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, -999 ]
@@ -372,8 +372,8 @@ def wrapper():
 ##            c.addUncertainty( "photon_ID_AltSig_2016",      shapeString)
 
 
-        default_Signal_unc = 6.
-        pTG_thresh = [ 20, 35, 50, 65, 80, 100, 120, 140, 160, 180, 200, 260, 320, -999 ]
+        default_Signal_unc = 5.
+        pTG_thresh = [ 20, 35, 50, 65, 80, 100, 120, 140, 160, 200, 280, -999 ]
 #[ 20, 35, 50, 65, 80, 120, 160, 200, 260, 320, -999 ]
         eta_thresh = list(np.linspace(start=0, stop=1.35, num=10)) + [1.4442]
         dR_thresh = [ 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, -999 ]
@@ -630,49 +630,49 @@ def wrapper():
                             if signal and args.linTest != 1:# and setup.signalregion:
                                 exp_yield /= args.linTest
                             if signal and args.addSSM:
-                                exp_yield *= SSMSF_val["RunII"].val
-                                logger.info( "Scaling signal by %f"%(SSMSF_val["RunII"].val) )
+                                exp_yield *= SSMSF_val[args.year].val
+                                logger.info( "Scaling signal by %f"%(SSMSF_val[args.year].val) )
                             if e.name.count( "WJets" ) and args.addWJetsSF:
-                                exp_yield *= WJetsSF_val["RunII"].val
-                                logger.info( "Scaling WJets background %s by %f"%(e.name,WJetsSF_val["RunII"].val) )
+                                exp_yield *= WJetsSF_val[args.year].val
+                                logger.info( "Scaling WJets background %s by %f"%(e.name,WJetsSF_val[args.year].val) )
                             if e.name.count( "DY" ) and args.addDYSF:
-                                exp_yield *= DY3pSF_val["RunII"].val
-                                logger.info( "Scaling DY background %s by %f"%(e.name,DY3pSF_val["RunII"].val) )
+#                                exp_yield *= DYSF_val[args.year].val
+#                                logger.info( "Scaling DY background %s by %f"%(e.name,DYSF_val[args.year].val) )
 
-#                                if "2" in setup.name and not "2p" in setup.name:
-#                                    exp_yield *= DY2SF_val["RunII"].val
-#                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY2SF_val["RunII"].val) )
-#                                elif "3" in setup.name and not "3p" in setup.name:
-#                                    exp_yield *= DY3SF_val["RunII"].val
-#                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY3SF_val["RunII"].val) )
-#                                elif "4" in setup.name and not "4p" in setup.name:
-#                                    exp_yield *= DY4SF_val["RunII"].val
-#                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY4SF_val["RunII"].val) )
-#                                elif "5" in setup.name:
-#                                    exp_yield *= DY5SF_val["RunII"].val
-#                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY5SF_val["RunII"].val) )
-#                                elif "2p" in setup.name:
-#                                    exp_yield *= DY2pSF_val["RunII"].val
-#                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY2pSF_val["RunII"].val) )
-#                                elif "3p" in setup.name:
-#                                    exp_yield *= DY3pSF_val["RunII"].val
-#                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY3pSF_val["RunII"].val) )
-#                                elif "4p" in setup.name:
-#                                    exp_yield *= DY4pSF_val["RunII"].val
-#                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY4pSF_val["RunII"].val) )
-#                                else:
-#                                    exp_yield *= DYSF_val["RunII"].val
-#                                    logger.info( "Scaling DY background %s by %f"%(e.name,DYSF_val["RunII"].val) )
+                                if "2" in setup.name and not "2p" in setup.name:
+                                    exp_yield *= DY2SF_val["RunII"].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY2SF_val["RunII"].val) )
+                                elif "3" in setup.name and not "3p" in setup.name:
+                                    exp_yield *= DY3SF_val["RunII"].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY3SF_val["RunII"].val) )
+                                elif "4" in setup.name and not "4p" in setup.name:
+                                    exp_yield *= DY4SF_val["RunII"].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY4SF_val["RunII"].val) )
+                                elif "5" in setup.name:
+                                    exp_yield *= DY5SF_val["RunII"].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY5SF_val["RunII"].val) )
+                                elif "2p" in setup.name:
+                                    exp_yield *= DY2pSF_val["RunII"].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY2pSF_val["RunII"].val) )
+                                elif "3p" in setup.name:
+                                    exp_yield *= DY3pSF_val["RunII"].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY3pSF_val["RunII"].val) )
+                                elif "4p" in setup.name:
+                                    exp_yield *= DY4pSF_val["RunII"].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DY4pSF_val["RunII"].val) )
+                                else:
+                                    exp_yield *= DYSF_val["RunII"].val
+                                    logger.info( "Scaling DY background %s by %f"%(e.name,DYSF_val["RunII"].val) )
 
                             if e.name.count( "WG" ) and args.addWGSF:
-                                exp_yield *= WGSF_val["RunII"].val
-                                logger.info( "Scaling WG background %s by %f"%(e.name,WGSF_val["RunII"].val) )
+                                exp_yield *= WGSF_val[args.year].val
+                                logger.info( "Scaling WG background %s by %f"%(e.name,WGSF_val[args.year].val) )
                             if e.name.count( "ZG" ) and args.addZGSF:
-                                exp_yield *= ZGSF_val["RunII"].val
-                                logger.info( "Scaling ZG background %s by %f"%(e.name,ZGSF_val["RunII"].val) )
+                                exp_yield *= ZGSF_val[args.year].val
+                                logger.info( "Scaling ZG background %s by %f"%(e.name,ZGSF_val[args.year].val) )
                             if e.name.count( "misID" ) and args.addMisIDSF:
                                 exp_yield *= misIDSF_val[args.year].val
-                                logger.info( "Scaling misID background %s by %f"%(e.name,misID3SF_val[args.year].val) )
+                                logger.info( "Scaling misID background %s by %f"%(e.name,misIDSF_val[args.year].val) )
                             
                             total_exp_bkg += exp_yield.val
                             
@@ -1191,10 +1191,12 @@ def wrapper():
 #        c.goodnessOfFitTest(cardFileName)
         if not args.plot: sys.exit(0)
     else:
-        options = ""
+        options = "--expectSignal=1"
+        options += " --rMin 0.5 --rMax 1.5 --cminDefaultMinimizerTolerance=0.01"
         if args.freezeR:
             options = "--setParameters r=1 --freezeParameters r"
     res = c.calcLimit( cardFileName, options=options )
+    options = ""
 
     if not args.skipFitDiagnostics:
         if not args.parameters:
