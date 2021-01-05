@@ -8,10 +8,11 @@ from Analysis.Tools.MergingDirDB      import MergingDirDB
 # hard coded to remove dependency
 lumi_year = {2016: 35920.0, 2017: 41530.0, 2018: 59740.0}
 
-def add_sigmas( h, sigmas):
+def add_sigmas( h, sigmas, ref = None):
+    ref_ = ref if ref is not None else h
     res = h.Clone()
     for i in range(0, h.GetNbinsX()+2):
-        res.SetBinContent( i, h.GetBinContent( i ) + sigmas*h.GetBinError( i ) )
+        res.SetBinContent( i, ref_.GetBinContent( i ) + sigmas*h.GetBinError( i ) )
     return res
 
 def thresholds_from_histo( histo ):
@@ -88,7 +89,7 @@ class observed_ptG_2016:
     tex_unf  = "p^{fid.}_{T}(#gamma) (GeV)"
     tex_pur  = "p_{T}(#gamma) (GeV)"
     texY     = 'Fiducial cross section (fb)'    
-    y_range         = (.9, "auto") #(0.9, 9000)
+    y_range         = (.7, "auto") #(0.9, 9000)
     y_range_ratio   = (0.19,1.81)
     data_legendText = "Data (36/fb)"
     signal_legendText = "Observation"
@@ -96,24 +97,9 @@ class observed_ptG_2016:
     lumi_factor               = lumi_year[2016]/1000.
     unfolding_data_input      = data
     unfolding_data_input_systematic_bands          = [
-#       {'name' : 'total',
-#        'label': "\pm 1\sigma (sys.)",
-#        'ref': data,
-#        'up':  dirDB.get( data_key+'Up' ),
-#        'down':dirDB.get( data_key+'Down' ),
-#        'color':ROOT.kBlue,
-#        } 
         ]
-
-    unfolding_signal_input        = signal
+    unfolding_signal_input        = data
     unfolding_signal_input_systematic_bands          = [
-#       {'name' : 'stat',
-#        'label': "\pm 1\sigma (stat.)",
-#        'ref': signal,
-#        'up':  add_sigmas(signal_stat, +1),
-#        'down':add_sigmas(signal_stat, -1),
-#        'color':ROOT.kBlue,
-#        },
        {'name' : 'stat',
         'label': "\pm 1\sigma (stat.)",
         'ref': data,
@@ -123,13 +109,12 @@ class observed_ptG_2016:
         },
        {'name' : 'total',
         'label': "\pm 1\sigma (tot.)",
-        'ref': signal,
-        'up':  add_sigmas(signal, +1),
-        'down':add_sigmas(signal, -1),
+        'ref': data,
+        'up':  add_sigmas(signal, +1, ref = data),
+        'down':add_sigmas(signal, -1, ref = data),
         'color':ROOT.kOrange-9,
         },
         ]
-
 
 class expected_ptG_RunII:
     cache_directory = default_cache_directory 
@@ -186,7 +171,7 @@ class expected_ptG_RunII:
     tex_unf  = "p^{fid.}_{T}(#gamma) (GeV)"
     tex_pur  = "p_{T}(#gamma) (GeV)"
     texY     = 'Fiducial cross section (fb)'    
-    y_range         = (9, "auto") #(0.9, 9000)
+    y_range         = (.7, "auto") #(0.9, 9000)
     y_range_ratio   = (0.39,1.61)
     data_legendText = "Data (137/fb)"
     signal_legendText = "Observation"
@@ -194,24 +179,9 @@ class expected_ptG_RunII:
     lumi_factor               = (lumi_year[2016]+lumi_year[2017]+lumi_year[2018])/1000.
     unfolding_data_input      = data
     unfolding_data_input_systematic_bands          = [
-#       {'name' : 'total',
-#        'label': "\pm 1\sigma (sys.)",
-#        'ref': data,
-#        'up':  dirDB.get( data_key+'Up' ),
-#        'down':dirDB.get( data_key+'Down' ),
-#        'color':ROOT.kBlue,
-#        } 
         ]
-
-    unfolding_signal_input        = signal
+    unfolding_signal_input        = data
     unfolding_signal_input_systematic_bands          = [
-#       {'name' : 'stat',
-#        'label': "\pm 1\sigma (stat.)",
-#        'ref': signal,
-#        'up':  add_sigmas(signal_stat, +1),
-#        'down':add_sigmas(signal_stat, -1),
-#        'color':ROOT.kBlue,
-#        },
        {'name' : 'stat',
         'label': "\pm 1\sigma (stat.)",
         'ref': data,
@@ -221,9 +191,9 @@ class expected_ptG_RunII:
         },
        {'name' : 'total',
         'label': "\pm 1\sigma (tot.)",
-        'ref': signal,
-        'up':  add_sigmas(signal, +1),
-        'down':add_sigmas(signal, -1),
+        'ref': data,
+        'up':  add_sigmas(signal, +1, ref = data),
+        'down':add_sigmas(signal, -1, ref = data),
         'color':ROOT.kOrange-9,
         },
         ]
@@ -291,24 +261,9 @@ class expected_absEta_RunII:
     lumi_factor               = (lumi_year[2016]+lumi_year[2017]+lumi_year[2018])/1000.
     unfolding_data_input      = data
     unfolding_data_input_systematic_bands          = [
-#       {'name' : 'total',
-#        'label': "\pm 1\sigma (sys.)",
-#        'ref': data,
-#        'up':  dirDB.get( data_key+'Up' ),
-#        'down':dirDB.get( data_key+'Down' ),
-#        'color':ROOT.kBlue,
-#        } 
         ]
-
-    unfolding_signal_input        = signal
+    unfolding_signal_input        = data
     unfolding_signal_input_systematic_bands          = [
-#       {'name' : 'stat',
-#        'label': "\pm 1\sigma (stat.)",
-#        'ref': signal,
-#        'up':  add_sigmas(signal_stat, +1),
-#        'down':add_sigmas(signal_stat, -1),
-#        'color':ROOT.kBlue,
-#        },
        {'name' : 'stat',
         'label': "\pm 1\sigma (stat.)",
         'ref': data,
@@ -318,9 +273,9 @@ class expected_absEta_RunII:
         },
        {'name' : 'total',
         'label': "\pm 1\sigma (tot.)",
-        'ref': signal,
-        'up':  add_sigmas(signal, +1),
-        'down':add_sigmas(signal, -1),
+        'ref': data,
+        'up':  add_sigmas(signal, +1, ref = data),
+        'down':add_sigmas(signal, -1, ref = data),
         'color':ROOT.kOrange-9,
         },
         ]
@@ -381,24 +336,9 @@ class observed_absEta_2016:
     lumi_factor               = lumi_year[2016]/1000.
     unfolding_data_input      = data
     unfolding_data_input_systematic_bands          = [
-#       {'name' : 'total',
-#        'label': "\pm 1\sigma (sys.)",
-#        'ref': data,
-#        'up':  dirDB.get( data_key+'Up' ),
-#        'down':dirDB.get( data_key+'Down' ),
-#        'color':ROOT.kBlue,
-#        } 
         ]
-
-    unfolding_signal_input        = signal
+    unfolding_signal_input        = data
     unfolding_signal_input_systematic_bands          = [
-#       {'name' : 'stat',
-#        'label': "\pm 1\sigma (stat.)",
-#        'ref': signal,
-#        'up':  add_sigmas(signal_stat, +1),
-#        'down':add_sigmas(signal_stat, -1),
-#        'color':ROOT.kBlue,
-#        },
        {'name' : 'stat',
         'label': "\pm 1\sigma (stat.)",
         'ref': data,
@@ -408,9 +348,9 @@ class observed_absEta_2016:
         },
        {'name' : 'total',
         'label': "\pm 1\sigma (tot.)",
-        'ref': signal,
-        'up':  add_sigmas(signal, +1),
-        'down':add_sigmas(signal, -1),
+        'ref': data,
+        'up':  add_sigmas(signal, +1, ref = data),
+        'down':add_sigmas(signal, -1, ref = data),
         'color':ROOT.kOrange-9,
         },
         ]
@@ -477,24 +417,9 @@ class observed_dRlg_2016:
     lumi_factor               = lumi_year[2016]/1000.
     unfolding_data_input      = data
     unfolding_data_input_systematic_bands          = [
-#       {'name' : 'total',
-#        'label': "\pm 1\sigma (sys.)",
-#        'ref': data,
-#        'up':  dirDB.get( data_key+'Up' ),
-#        'down':dirDB.get( data_key+'Down' ),
-#        'color':ROOT.kBlue,
-#        } 
         ]
-
-    unfolding_signal_input        = signal
+    unfolding_signal_input        = data
     unfolding_signal_input_systematic_bands          = [
-#       {'name' : 'stat',
-#        'label': "\pm 1\sigma (stat.)",
-#        'ref': signal,
-#        'up':  add_sigmas(signal_stat, +1),
-#        'down':add_sigmas(signal_stat, -1),
-#        'color':ROOT.kBlue,
-#        },
        {'name' : 'stat',
         'label': "\pm 1\sigma (stat.)",
         'ref': data,
@@ -504,9 +429,9 @@ class observed_dRlg_2016:
         },
        {'name' : 'total',
         'label': "\pm 1\sigma (tot.)",
-        'ref': signal,
-        'up':  add_sigmas(signal, +1),
-        'down':add_sigmas(signal, -1),
+        'ref': data,
+        'up':  add_sigmas(signal, +1, ref = data),
+        'down':add_sigmas(signal, -1, ref = data),
         'color':ROOT.kOrange-9,
         },
         ]
@@ -578,24 +503,9 @@ class expected_dRlg_RunII:
     lumi_factor               = (lumi_year[2016]+lumi_year[2017]+lumi_year[2018])/1000.
     unfolding_data_input      = data
     unfolding_data_input_systematic_bands          = [
-#       {'name' : 'total',
-#        'label': "\pm 1\sigma (sys.)",
-#        'ref': data,
-#        'up':  dirDB.get( data_key+'Up' ),
-#        'down':dirDB.get( data_key+'Down' ),
-#        'color':ROOT.kBlue,
-#        } 
         ]
-
-    unfolding_signal_input        = signal
+    unfolding_signal_input        = data
     unfolding_signal_input_systematic_bands          = [
-#       {'name' : 'stat',
-#        'label': "\pm 1\sigma (stat.)",
-#        'ref': signal,
-#        'up':  add_sigmas(signal_stat, +1),
-#        'down':add_sigmas(signal_stat, -1),
-#        'color':ROOT.kBlue,
-#        },
        {'name' : 'stat',
         'label': "\pm 1\sigma (stat.)",
         'ref': data,
@@ -605,10 +515,9 @@ class expected_dRlg_RunII:
         },
        {'name' : 'total',
         'label': "\pm 1\sigma (tot.)",
-        'ref': signal,
-        'up':  add_sigmas(signal, +1),
-        'down':add_sigmas(signal, -1),
+        'ref': data,
+        'up':  add_sigmas(signal, +1, ref = data),
+        'down':add_sigmas(signal, -1, ref = data),
         'color':ROOT.kOrange-9,
         },
         ]
-

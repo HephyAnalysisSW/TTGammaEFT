@@ -33,9 +33,10 @@ all_systematics  = ['nominal'] + sum([list(p) for p in systematic_pairs],[])
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",           action="store",      default="INFO", nargs="?", choices=loggerChoices,                        help="Log level for logging")
-argParser.add_argument("--plot_directory",     action="store",      default="v48",                                              help="plot sub-directory")
+argParser.add_argument("--plot_directory",     action="store",      default="v47_stitched",                                                 help="plot sub-directory")
 argParser.add_argument("--prefix",             action="store",      default=None,  type=str,                                                 help="for debugging")
 argParser.add_argument("--small",              action="store_true",                                                                          help="Run only on a small subset of the data?")
+argParser.add_argument("--inclusive_samples",  action="store_true",                                                                          help="use inclusive samples?")
 argParser.add_argument("--extended",           action="store_true",                                                                          help="Write extended output?")
 argParser.add_argument("--overwrite",          action="store_true",                                                                          help="overwrite cache?")
 argParser.add_argument('--settings',           action='store',      type=str, default="ptG_unfolding_closure",                               help="Settings.")
@@ -76,7 +77,7 @@ dirDB     = MergingDirDB(cache_dir)
 
 # specifics from the arguments
 plot_directory_ = os.path.join( plot_directory, "unfolding", args.plot_directory, args.settings)
-cfg_key         = ( args.small, year_str, args.settings)
+cfg_key         = ( args.small, year_str, args.settings, args.plot_directory)
 
 read_variables = [ "weight/F", "year/I",
                    "triggered/I", "overlapRemoval/I", "pTStitching/I",
@@ -184,6 +185,8 @@ elif not args.systematic is None:
 
         MET_filter_cut     = "(year==%s&&"%year+getFilterCut(isData=False, year=int(year), skipBadChargedCandidate=True)+")"
         reco_selection_str = MET_filter_cut+"&&triggered==1&&overlapRemoval==1&&"+cutInterpreter.cutString(reco_selection['prefix'])
+        if not args.inclusive_samples:
+            reco_selection_str+="&&pTStitching==1"
         reco_reweight_str  = 'reweightHEM*reweightTrigger*reweightPU*reweightL1Prefire*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF'
     
         # apply systematic variations
@@ -232,6 +235,8 @@ elif not args.systematic is None:
 
         # fiducial seletion
         fiducial_selection_str = cutInterpreter.cutString(settings.fiducial_selection)+"&&overlapRemoval==1"
+        if not args.inclusive_samples:
+            fiducial_selection_str+="&&pTStitching==1"
 
         ttreeFormulas = {
                     'is_fiducial':    fiducial_selection_str, 
@@ -242,9 +247,16 @@ elif not args.systematic is None:
 
         # Sample for this year (fix)
 
-        ttg0l = Sample.fromDirectory("ttg0l_%s"%year, directory = ["/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v48/inclusive/TTGHad_LO/".format(year=year)])
-        ttg1l = Sample.fromDirectory("ttg1l_%s"%year, directory = ["/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v48/inclusive/TTGSingleLep_LO/".format(year=year)])
-        ttg2l = Sample.fromDirectory("ttg2l_%s"%year, directory = ["/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v48/inclusive/TTGLep_LO/".format(year=year)])
+        data_dir = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v47/inclusive".format(year=year)
+
+        if args.inclusive_samples:
+            ttg0l = Sample.fromDirectory("ttg0l_%s"%year, directory = [os.path.join(data_dir, "TTGHad_LO")])
+            ttg1l = Sample.fromDirectory("ttg1l_%s"%year, directory = [os.path.join(data_dir, "TTGSingleLep_LO")])
+            ttg2l = Sample.fromDirectory("ttg2l_%s"%year, directory = [os.path.join(data_dir, "TTGLep_LO")])
+        else:
+            ttg0l = Sample.fromDirectory("ttg0l_%s"%year, directory = [os.path.join(data_dir, name) for name in ["TTGHad_LO","TTGHad_ptG100To200_LO","TTGHad_ptG200_LO"]])
+            ttg1l = Sample.fromDirectory("ttg1l_%s"%year, directory = [os.path.join(data_dir, name) for name in ["TTGSingleLep_LO","TTGSingleLep_ptG100To200_LO","TTGSingleLep_ptG200_LO"]])
+            ttg2l = Sample.fromDirectory("ttg2l_%s"%year, directory = [os.path.join(data_dir, name) for name in ["TTGLep_LO","TTGLep_ptG100To200_LO","TTGLep_ptG200_LO"]])
 
         sample = Sample.combine( "ttg_%s"%year, [ttg1l, ttg2l, ttg0l] )
 
