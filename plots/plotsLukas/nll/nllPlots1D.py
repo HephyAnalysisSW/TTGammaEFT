@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+#https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit/blob/102x/data/tutorials/count_toys_with_signif_lt_localmax.C#L42-L58
+
 import os, copy, sys
 import ctypes
 import ROOT
@@ -39,8 +41,11 @@ argParser.add_argument('--variables',           action='store',      default='ct
 argParser.add_argument( "--expected",           action="store_true",                                                        help="Use sum of backgrounds instead of data." )
 argParser.add_argument( "--inclRegion",         action="store_true",                                                        help="use inclusive photon pt region" )
 argParser.add_argument( "--useRegions",         action="store",      nargs='*',       type=str, choices=allRegions.keys(),  help="Which regions to use?" )
+argParser.add_argument( "--useChannels",        action="store",      nargs='*', default=None,   type=str, choices=["e", "mu", "all", "comb"], help="Which lepton channels to use?" )
 argParser.add_argument('--withbkg',             action='store_true',                                                                                  help='with bkg?')
 argParser.add_argument('--withEFTUnc',             action='store_true',                                                        help="add EFT uncertainty?")
+argParser.add_argument('--noMCStat',             action='store_true',                                                        help="remove mc stat unc?")
+argParser.add_argument('--noFakeStat',             action='store_true',                                                        help="remove mc stat unc?")
 args = argParser.parse_args()
 
 if args.year != "RunII": args.year = int(args.year)
@@ -67,6 +72,9 @@ regionNames.sort()
 if args.addDYSF:     regionNames.append("addDYSF")
 if args.addMisIDSF:  regionNames.append("addMisIDSF")
 if args.inclRegion:  regionNames.append("incl")
+if args.useChannels:  regionNames.append("_".join([ch for ch in args.useChannels if not "tight" in ch]))
+if args.noMCStat:     regionNames.append("noMCStat")
+if args.noFakeStat:     regionNames.append("noFakeStat")
 
 baseDir       = os.path.join( cache_directory, "analysis",  str(args.year) if args.year != "RunII" else "COMBINED", "limits", "withbkg" if args.withbkg else "withoutbkg" )
 if args.withEFTUnc: baseDir = os.path.join( baseDir, "withEFTUnc" )
@@ -75,7 +83,7 @@ nllCache      = MergingDirDB( cacheFileName )
 
 print cacheFileName
 
-directory = os.path.join( plot_directory, "nllPlots", str(args.year), "_".join( regionNames ))
+directory = os.path.join( plot_directory, "nllPlotsPPA", str(args.year), "_".join( regionNames ))
 addon = "expected" if args.expected else "observed"
 if args.plotData: addon += "_check"
 plot_directory_ = os.path.join( directory, addon )
@@ -91,8 +99,17 @@ elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
 
 #binning range
 xRange = eftParameterRange[args.variables] 
-xRange = [ x for x in xRange if abs(x) < 0.55]
-print xRange
+
+
+
+#xRange       = np.linspace( -1.0, 1.0, 30, endpoint=False)
+#halfstepsize = 0.5 * ( xRange[1] - xRange[0] )
+#xRange       = [ round(el + halfstepsize, 3) for el in xRange ] + [0]
+#xRange.sort()
+
+
+
+
 def getNllData( var1):
     dict = {"ctZI":0, "ctZ":0}
     dict[args.variables] = var1
@@ -101,16 +118,21 @@ def getNllData( var1):
     configlist.append("incl" if args.inclRegion else "diff")
     configlist.append("expected" if args.expected else "observed")
     sConfig = "_".join(configlist)
-    nll = nllCache.get(sConfig)
-#    if nllCache.contains(sConfig): nll = nllCache.get(sConfig)
-#    else:                          nll = -999
-#    print nll
 
-#    print sConfig
-    print var1, float(nll["nll"])
-#    return float(nll["nll0"]+nll["nll"])
-#    return float(nll["nll0"]+nll["bestfit"])
-    return float(nll["nll"])
+    print sConfig
+    if not nllCache.contains(sConfig):
+        return None  
+
+    nll = nllCache.get(sConfig)
+
+    if nll["nll"] == 0: return None
+
+    print sConfig
+    print nll
+
+    nll = nll["nll"] + nll["nll0"]
+#    nll = nll["nll0"]
+    return float(nll)  
 
 
 logger.info("Loading cache data" )
@@ -118,31 +140,32 @@ points = [ (0) ] #SM point
 points += [ (varX) for varX in xRange] #1D plots
 
 nllData  = [ (var1, getNllData( var1 )) for var1 in points ]
+nllData  = [ x for x in nllData if x[1] ]
 
-allResults = sorted([y for y in nllData if abs(y[0])<0.35], key=lambda x:-x[1])
-print
-print
-for x in allResults: print x
-print
-print
-sm_nll   = allResults[0][1]
-xm   = allResults[0][0]
-print xm
-#xm = -0.3 if not args.expected else -0.1
+if args.expected:
+    sm_nll   = getNllData(0)
+    xm   = 0
+else:
+    allResults = sorted([y for y in nllData], key=lambda x:x[1])
+    sm_nll   = allResults[0][1]
+    xm   = allResults[0][0]
+#xm = 0 #-0.3 if not args.expected else -0.1
 #sm_nll   = getNllData(xm)
 #sm_nll   = min( [ x[1] for x in nllData if abs(x[1]) < 998 ] )
-print sm_nll
 
-nllData  = [ (x, -2*(nll - sm_nll)) for x, nll in nllData if -2*(nll-sm_nll) < 6 ]
-
-for x in nllData:
-    print x
+for x in nllData: print x
+nllData  = [ (x, 2*(nll - sm_nll)) for x, nll in nllData ]
+print
+for x in nllData: print x
+#sys.exit()
+print nllData
+print sm_nll, xm
 #length = len(nllData)
 #for i in range(length):
  #   nllData[i][2] = 2*(nllData[i][2]-sm_nll)
   #  nllData[i] = tuple(nllData[i])
 
-xNLL     = [ (x, nll) for x, nll in nllData if nll >= 0 ]
+xNLL     = [ (x, nll) for x, nll in nllData if nll < 100 ]
 
 tmp = nllData
 tmp.sort( key = lambda res: (res[0], res[1]) )
@@ -161,29 +184,27 @@ def toGraph( name, title, data ):
     return result
 
 if args.expected:
-    polString = "[2]*x**2+[3]*x**3+[4]*x**4+[5]*x**5+[6]*x**6" #+[7]*x**7+[8]*x**8" #+[5]*x**7+[6]*x**8"#+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
+    polString = "[0]*x**2+[1]*x**3+[2]*x**4+[3]*x**5+[4]*x**6" #+[7]*x**7+[8]*x**8" #+[5]*x**7+[6]*x**8"#+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
 else:
     polString = "[0]+[1]*x+[2]*x**2+[3]*x**3+[4]*x**4+[5]*x**5+[6]*x**6" #+[7]*x**7+[8]*x**8" #+[5]*x**7+[6]*x**8"#+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
-polString = "[0]+[1]*x+[2]*x**2+[3]*x**3+[4]*x**4+[5]*x**5+[6]*x**6+[7]*x**7+[8]*x**8" #+[7]*x**7+[8]*x**8" #+[5]*x**7+[6]*x**8"#+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
-polString = "[2]*(x-%f)**2+[3]*(x-%f)**3+[4]*(x-%f)**4+[6]*(x-%f)**6+[8]*(x-%f)**8"%(xm,xm,xm,xm,xm) #+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
+#polString = "[0]+[1]*x+[2]*x**2+[3]*x**3+[4]*x**4+[5]*x**5+[6]*x**6+[7]*x**7+[8]*x**8" #+[7]*x**7+[8]*x**8" #+[5]*x**7+[6]*x**8"#+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
+#polString = "[2]*(x-%f)**2+[3]*(x-%f)**3+[4]*(x-%f)**4+[6]*(x-%f)**6+[8]*(x-%f)**8"%(xm,xm,xm,xm,xm) #+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
 xPlotLow, xPlotHigh = args.xRange
 
 def plot1D( dat, var, xmin, xmax ):
     # get TGraph from results data list
     xhist = toGraph( var, var, dat )
+#    polString = "[0]+[1]*x+[2]*x**2+[3]*x**3+[4]*x**4+[5]*x**5+[6]*x**6+[7]*x**7+[8]*x**8" #+[7]*x**7+[8]*x**8" #+[5]*x**7+[6]*x**8"#+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
 #    polString = "[0]+[1]*x+[2]*x**2+[3]*x**3+[4]*x**4+[5]*x**5+[6]*x**6" #+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
     func  = ROOT.TF1("func", polString, xmin, xmax )
     xhist.Fit(func,"NO")
-#    ym = func.GetMinimum(-0.1,0.3)
-#    xm = func.GetX(ym, -0.3, 0.3 )
-#    print dat
-#    print ym, xm
+    ym = func.GetMinimum(xmin, xmax)
+    xm = func.GetX(ym, xmin, xmax )
 #    nDat = []
 #    for (x,d) in dat: nDat.append((x,d-ym))
-#    print nDat
-#    print ym, xm
 #    del xhist
 #    xhist = toGraph( var, var, nDat )
+#    polString = "[0]*(x-%f)**2+[1]*(x-%f)**3+[2]*(x-%f)**4+[3]*(x-%f)**5+[4]*(x-%f)**6"%(xm,xm,xm,xm,xm) #+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
 #    polString = "[0]*(x-%f)**2+[1]*(x-%f)**3+[2]*(x-%f)**4+[3]*(x-%f)**5+[4]*(x-%f)**6"%(xm,xm,xm,xm,xm) #+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
 #    del func
 #    func  = ROOT.TF1("func", polString, xmin, xmax )
@@ -191,8 +212,20 @@ def plot1D( dat, var, xmin, xmax ):
 
     x68min = func.GetX( 0.989, xmin, xm )
     x68max = func.GetX( 0.989, xm, xmax )
+#    x68max = func.GetX( 0.989, xm, xmax )
+#    x68maxNew = func.GetX( 0.989, x68max+0.01, xmax )
+#    print xmax
+#    print x68maxNew
+#    while x68maxNew != x68max:
+#        x68max = x68maxNew
+#        x68maxNew = func.GetX( 0.989, x68max, xmax )
+#        print x68maxNew
+
+#    x68max = x68maxNew
     x95min = func.GetX( 3.84, xmin, xm )
     x95max = func.GetX( 3.84, xm, xmax )
+
+    print xm, x68min, x68max
 
     xhist.SetLineWidth(0)
 
@@ -211,9 +244,9 @@ def plot1D( dat, var, xmin, xmax ):
     cans = ROOT.TCanvas("cans","cans",500,500)
 
     #if not None in args.zRange:
-    xhist.GetYaxis().SetRangeUser( 0, 5.5 )
+    xhist.GetYaxis().SetRangeUser( 0, 15.5 )
     xhist.GetXaxis().SetRangeUser( xmin, xmax )
-    xhist.GetXaxis().SetLimits(xmin, xmax)
+#    xhist.GetXaxis().SetLimits(xmin, xmax)
 
     func95 = ROOT.TF1("func95",polString, x95min,x95max )
     xhist.Fit(func95,"NO")
@@ -312,7 +345,7 @@ def plot1D( dat, var, xmin, xmax ):
 #    for e in [".png",".pdf",".root"]:
 #        cans.Print( plot_directory_ + "/%s%s%s"%(var, "_profiled" if profiled else "", e) )
 
-xmin = xPlotLow  if xPlotLow  else -1.49
-xmax = xPlotHigh if xPlotHigh else 1.49
+xmin = xPlotLow  if xPlotLow  else -2.49
+xmax = xPlotHigh if xPlotHigh else 2.49
 plot1D( xNLL, args.variables, xmin, xmax )
 

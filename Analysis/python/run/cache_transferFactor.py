@@ -95,7 +95,7 @@ def wrapper(arg):
 
 jobs=[]
 for channel in channels:
-  for nP in [0,1]:
+  for nP in [0]:
     for nJet in [(2,2), (3,3), (4,-1), (3,-1), (2,-1)]:
         # inclusive tf
         nJetLow, nJetHigh = nJet

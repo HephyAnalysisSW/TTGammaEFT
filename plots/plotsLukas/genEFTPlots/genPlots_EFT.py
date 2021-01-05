@@ -38,6 +38,7 @@ argParser.add_argument('--year',               action='store',      default=2016
 argParser.add_argument('--sample',             action='store',      default='TTG_4WC_ref',   type=str,                                               help="Which sample to plot")
 argParser.add_argument('--mode',               action='store',      default="all", type=str, choices=["genMu", "genE", "all"],                       help="plot lepton mode" )
 argParser.add_argument('--normalize',          action='store_true', default=False,                                                                   help="Normalize yields" )
+argParser.add_argument('--photonPtReweighting',          action='store_true', default=False,                                                                   help="Normalize yields" )
 argParser.add_argument('--order',              action='store',      default=2, type=int,                                                             help='Polynomial order of weight string (e.g. 2)')
 argParser.add_argument('--parameters',         action='store',      default=['ctZI', '2', 'ctWI', '2', 'ctZ', '2', 'ctW', '2'], type=str, nargs='+', help = "argument parameters")
 args = argParser.parse_args()
@@ -50,11 +51,29 @@ logger_rt = logger_rt.get_logger(args.logLevel, logFile = None)
 
 if args.small:           args.plot_directory += "_small"
 if args.normalize:       args.plot_directory += "_normalize"
+if args.photonPtReweighting:       args.plot_directory += "_ptReweighted"
 
 
 # load and define the EFT sample
 from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed      import *
 eftSample = eval(args.sample)
+
+# settings for eft reweighting
+w = WeightInfo( eftSample.reweight_pkl )
+w.set_order( args.order )
+variables = w.variables
+
+print w.get_weight_string()
+
+#Histograms 
+def get_weight_string( parameters ):
+    return w.get_weight_string( **parameters )
+
+# define your plot selection via the python option --selection
+preSelection = cutInterpreter.cutString( args.selection + "-" + args.mode )
+smweightString = "(%s)*ref_weight"%get_weight_string({})
+Histo = eftSample.get1DHistoFromDraw( "GenPhotonCMSUnfold0_pt", binning=[20,20,520],selectionString=preSelection, weightString=smweightString )
+
 
 # define some colors
 colors = [ ROOT.kRed+1, ROOT.kGreen-2, ROOT.kOrange+1, ROOT.kAzure+4 ]
@@ -66,13 +85,19 @@ if args.parameters:
     str_vals = args.parameters[1::2]
     vals = list( map( float, str_vals ) )
     for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
+        bsmweightString = "(%s)*ref_weight"%get_weight_string({coeff:val})
+        bsmHisto = eftSample.get1DHistoFromDraw( "GenPhotonCMSUnfold0_pt", binning=[20, 20, 520], selectionString=preSelection, weightString=bsmweightString )
+        copyHisto = Histo.Clone(str(i_param))
+        copyHisto.Divide(bsmHisto)
         params.append( {
             'legendText': ' = '.join([coeff,str_val]).replace("c", "C_{").replace(" =", "} =").replace("I", "}^{[Im]"),
             'WC' : { coeff:val },
             'color' : colors[i_param],
+            'histo':  copy.deepcopy(copyHisto),
+            'name': coeff
             })
 
-params.append( {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack} )
+params.append( {'legendText':'SM', 'WC':{}, 'color':ROOT.kBlack, 'histo':Histo, 'name':'SM'} )
 
 # for shape plots normalize each EFT shape to the SM shape
 if args.normalize:
@@ -80,13 +105,6 @@ if args.normalize:
 
 if args.parameters: wcString = "_".join(args.parameters).replace('.','p').replace('-','m')
 else: wcString = "SM"
-
-# settings for eft reweighting
-w = WeightInfo( eftSample.reweight_pkl )
-w.set_order( args.order )
-variables = w.variables
-
-print w.get_weight_string()
 
 def checkReferencePoint( sample ):
     ''' check if sample is simulated with a reference point
@@ -195,7 +213,7 @@ for i, param in enumerate( params ):
     # copy the sample for each EFT parameter
     sample                = copy.deepcopy( eftSample )
     sample.params         = param
-
+    sample.name           = param['name']
     # change the style of the MC sample
     if param["legendText"] == "SM":
         sample.style = styles.lineStyle( param["color"], width=3  ) # let the standard model histo be black and solid
@@ -222,13 +240,29 @@ stack      = Stack( *stackList )
 if args.small:
     for sample in stack.samples:
         sample.normalization=1.
-        sample.reduceFiles( factor=20 )
+        sample.reduceFiles( factor=200 )
         sample.scale /= sample.normalization
 
-# define your plot selection via the python option --selection
-preSelection = cutInterpreter.cutString( args.selection + "-" + args.mode )
-#preSelection += "&&abs(ref_weight)<100"
-print preSelection
+
+#ptweight
+def pt_weight( event, sample ):
+    if sample.name == 'SM': return
+    else :
+        if event.GenPhotonCMSUnfold0_pt >= 520: binNumber = 20
+        else: binNumber = sample.params["histo"].FindBin( event.GenPhotonCMSUnfold0_pt )
+    eftweight = sample.params["histo"].GetBinContent( binNumber )
+    event.weight *= eftweight
+    event.ref_weight *= eftweight
+
+
+# add functions to calculate your own variables here
+# this is slow, use it only if needed
+if args.photonPtReweighting:
+    sequence = [ pt_weight ]
+else:
+    sequence = []
+
+
 # set default settings for your plots (selection, do you want an overflow bin?)
 Plot.setDefaults(   stack=stack, selectionString=preSelection )
 
@@ -923,7 +957,7 @@ plotList.append( Plot(
 
 # fill the histograms here, depending on the selection this can take a while
 # here you also say which plots you want to fill (plots), which variables they need (read_variables) and which additionl functions to call for each event (sequence)
-plotting.fill( plotList, read_variables=read_variables )
+plotting.fill( plotList, read_variables=read_variables, sequence=sequence )
 
 # print the plots
 drawPlots( plotList )

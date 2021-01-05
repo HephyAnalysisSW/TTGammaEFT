@@ -58,6 +58,8 @@ argParser.add_argument("--plotCovMatrix",        action='store_true',           
 argParser.add_argument("--plotCorrelations",     action='store_true',           default=False,   help="plot Correlation matrix")
 argParser.add_argument("--bkgSubstracted",       action='store_true',           default=False,   help="plot region plot background substracted")
 argParser.add_argument("--cacheHistogram",       action='store_true',           default=False,   help="store the histogram as cache")
+argParser.add_argument("--noFreeze",       action='store_true',           default=False,   help="store the histogram as cache")
+argParser.add_argument("--rebin",       action='store_true',           default=False,   help="store the histogram as cache")
 args = argParser.parse_args()
 
 # logger
@@ -94,7 +96,7 @@ if args.expected: add += ["expected"]
 if args.linTest != 1: add += ["linTest"+str(args.linTest)]
 fit      = "_".join( ["postFit" if args.postFit else "preFit"] + add )
 
-plotDirectory = os.path.join(plot_directory, "fit", str(args.year), fit, dirName)
+plotDirectory = os.path.join(plot_directory, "fitPPA", str(args.year), fit, dirName)
 cardFile      = os.path.join( cache_directory, "analysis", str(args.year) if args.year != "combined" else "COMBINED", args.carddir, args.cardfile+".txt" )
 logger.info("Plotting from cardfile %s"%cardFile)
 
@@ -102,12 +104,12 @@ logger.info("Plotting from cardfile %s"%cardFile)
 Results = CombineResults( cardFile=cardFile, plotDirectory=plotDirectory, year=args.year, bkgOnly=args.bkgOnly, isSearch=False )
 #print Results.fitResult
 
-allNuisances = Results.getNuisancesList( addRateParameter=args.postFit )
+#allNuisances = Results.getNuisancesList( addRateParameter=args.postFit )
 #print Results.getPulls( postFit=True )["r"]
 #print Results.getNuisanceYields( "MisID_normalization_2016", postFit=False )["Bin0"]["Bin0"]
 #print Results.getEstimates( postFit=False, bin="Bin0", estimate="TT_misID" )
 
-pulls = Results.getPulls( postFit=args.postFit ).keys()
+#pulls = Results.getPulls( postFit=args.postFit ).keys()
 #cov = Results.getCovarianceHisto(postFit=True)
 #for i in range( cov.GetNbinsX() ):
 #    for j in range( cov.GetNbinsY() ):
@@ -121,36 +123,40 @@ pulls = Results.getPulls( postFit=args.postFit ).keys()
 
 if args.substituteCard:
     rebinnedCardFile = os.path.join( cache_directory, "analysis", str(args.year) if args.year != "combined" else "COMBINED", args.carddir, args.substituteCard+".txt" )
-#    freeze = Results.getPulls( postFit=True )
-
-#    print freeze
-
-
-#    setParameters = [ p+"="+freeze[p].val for p in freeze.keys() if p.startswith("Signal_")]
-#    print
-#    print setParameters
-#    freezeParameters = "--freezeParameters " + ",".join([p for p in freeze.keys() if p.startswith("Signal_")])
+    setParameters = []
+    if not args.noFreeze:
+        freeze = Results.getPulls( postFit=True )
+        setParameters = [ p+"="+str(freeze[p].val) for p in freeze.keys() if p.startswith("Signal_")]
+        freezeParameters = "--freezeParameters " + ",".join([p for p in freeze.keys() if p.startswith("Signal_")])
 #    print
 #    print freezeParameters
 #    if args.year == "combined" and args.expected and "3pPt" in args.substituteCard:
-#        subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/expected/SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF/SR3pPtUnfold_addDYSF_addMisIDSF.txt"
+#        subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/expected/SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc/SR3pPtUnfold_addDYSF_addMisIDSF_addPtBinnedUnc.txt"
 #    elif args.year == "combined" and args.expected and "3pAbsEta" in args.substituteCard:
-#        subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/expected/SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF/SR3pAbsEtaUnfold_addDYSF_addMisIDSF.txt"
+#        subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/expected/SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc/SR3pAbsEtaUnfold_addDYSF_addMisIDSF_addPtBinnedUnc.txt"
 #    elif args.year == "combined" and args.expected and "3pdRJet" in args.substituteCard:
-#        subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/expected/SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF/SR3pdRJetUnfold_addDYSF_addMisIDSF.txt"
+#        subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/expected/SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc/SR3pdRJetUnfold_addDYSF_addMisIDSF_addPtBinnedUnc.txt"
 #    elif args.year == "combined" and args.expected and "3pdR" in args.substituteCard:
-#        subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/expected/SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF/SR3pdRUnfold_addDYSF_addMisIDSF.txt"
+#        subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/expected/SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc/SR3pdRUnfold_addDYSF_addMisIDSF_addPtBinnedUnc.txt"
 #    else:
-    subCardFile = Results.createRebinnedResults( rebinnedCardFile, skipStatOnly=False ) #, setParameters=setParameters, options=freezeParameters )
+
+
+#    if "3pPt" in args.substituteCard:
+#        subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/2016/limits/cardFiles/defaultSetup/observed/SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc/SR3pPtUnfold_addDYSF_addPtBinnedUnc.txt"
+#    elif "3pAbsEta" in args.substituteCard:
+#        subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/2016/limits/cardFiles/defaultSetup/observed/SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc/SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc.txt"
+#    elif "3pdRJet" in args.substituteCard:
+#        subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/2016/limits/cardFiles/defaultSetup/observed/SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc/SR3pdRJetUnfold_addDYSF_addPtBinnedUnc.txt"
+#    elif "3pdR" in args.substituteCard:
+#        subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/2016/limits/cardFiles/defaultSetup/observed/SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc/SR3pdRUnfold_addDYSF_addPtBinnedUnc.txt"
+
+    if setParameters and not args.noFreeze:
+        subCardFile = Results.createRebinnedResults( rebinnedCardFile, skipStatOnly=False, setParameters=",".join(setParameters), options="--rMin 0.5 --rMax 1.5 --cminDefaultMinimizerTolerance=0.01 "+freezeParameters )
+    else:
+        subCardFile = Results.createRebinnedResults( rebinnedCardFile, skipStatOnly=False, options="--rMin 0.5 --rMax 1.5 --cminDefaultMinimizerTolerance=0.01" )
+
 #    y = str(args.year).replace("combined","COMBINED")
 #    subCardFile = cardFile.replace(".txt","/")+args.substituteCard+".txt"
-    print
-    print
-    print
-#    print subCardFile
-    print
-    print
-    print
 #    subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/2016/limits/cardFiles/defaultSetup/observed/SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc/SR3pPtUnfold_addDYSF_addPtBinnedUnc.txt"
 #    subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/2016/limits/cardFiles/defaultSetup/observed/SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF/SR3pPtUnfold_addDYSF.txt"
 #    subCardFile = "/scratch/lukas.lechner/TTGammaEFT/cache/analysis/COMBINED/limits/cardFiles/defaultSetup/expected/SR3pM3_VG3p_misDY3p_addDYSF/SR3pFine_addDYSF.txt"
@@ -159,6 +165,7 @@ if args.substituteCard:
 
 labelFormater   = lambda x: ", ".join( [x.split(" ")[3].replace("PtUnfold","").replace("M3","").replace("VG","ZG+WG") if not "mLtight0Gamma" in x.split(" ")[2] else x.split(" ")[3].replace("VG","ZG") if "mLtight0Gamma0" in x.split(" ")[2] else x.split(" ")[3].replace("VG","WG"), x.split(" ")[1].replace("all","e+mu").replace("mu","#mu").replace("tight","")] )
 labels = [ ( i, label ) for i, label in enumerate(Results.getBinLabels( labelFormater=lambda x:x.split(" "))[Results.channels[0]])]
+print labels
 # get list of labels
 
 if args.plotRegions:  labels = filter( lambda (i,(year, ch, lab, reg)): reg in args.plotRegions, labels )
@@ -188,7 +195,7 @@ nBins     = len(labels) #int(len(crLabel)/3.) if args.year == "combined" else le
 
 if "misIDPOI" in args.cardfile:
     processes = processesMisIDPOI.keys()
-else:
+elif not "ctZ" in args.cardfile:
     card = args.substituteCard if args.substituteCard else args.cardfile
     processes = [ cr for cr in card.split("_") if (not args.plotRegions or (args.plotRegions and cr in args.plotRegions)) and cr in allRegions.keys() ]
     processes = allRegions[processes[0]]["processes"].keys()
@@ -551,7 +558,7 @@ def plotRegions( sorted=True ):
     ch = "all"
     xLabel = ""
     if args.substituteCard: subCard = args.substituteCard.split("_")
-    if (args.bkgSubstracted or args.cacheHistogram) and args.substituteCard:
+    if (args.bkgSubstracted or args.cacheHistogram or args.rebin) and args.substituteCard:
 #    if args.substituteCard:
         hists, xLabel = replaceHistoBinning( hists )
         differential = True
@@ -621,6 +628,8 @@ def plotRegions( sorted=True ):
     if args.substituteCard: addon += ["rebinned"] + [ cr for cr in subCard ]#if cr not in args.cardfile.split("_") ]
     if args.plotNuisances:  addon += args.plotNuisances
     if args.plotYear:       addon += [args.plotYear]
+    if args.noFreeze:       addon += ["noFreeze"]
+    if args.rebin:          addon += ["rebin"]
 
     # plot name
     if   args.plotRegions and args.plotChannels: plotName = "_".join( ["regions"] + addon + args.plotRegions + [ch for ch in args.plotChannels if not "tight" in ch] )
@@ -633,7 +642,7 @@ def plotRegions( sorted=True ):
         from TTGammaEFT.Tools.user            import cache_directory
         year = str(args.year)
         if args.plotYear: year += "_" + str(args.plotYear)
-        cache_dir = os.path.join(cache_directory, "unfolding", str(args.year), "bkgSubstracted" if args.bkgSubstracted else "total", "expected" if args.expected else "observed", "postFit" if args.postFit else "preFit")
+        cache_dir = os.path.join(cache_directory, "unfolding", str(args.year), "bkgSubstracted" if args.bkgSubstracted else "total", "expected" if args.expected else "observed", "postFit" if args.postFit else "preFit", "noFreeze" if args.noFreeze else "freeze")
         print cache_dir
         dirDB = MergingDirDB(cache_dir)
         if not dirDB: raise
@@ -641,34 +650,34 @@ def plotRegions( sorted=True ):
         if args.plotRegions:  addon += args.plotRegions
         if args.plotChannels: addon += args.plotChannels
         if args.plotYear:     addon += [args.plotYear]
-        systematics = [ sys for sys in pulls if not "prop" in sys ]
+#        systematics = [ sys for sys in pulls if not "prop" in sys ]
 
-        if args.bkgSubstracted:
-            # dataUp histogram
-            name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, "dataUp"]
-            print "_".join(name+addon)
-            dirDB.add( "_".join(name+addon), hists["dataUp"], overwrite=True )
-
-            # dataDown histogram
-            name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, "dataDown"]
-            print "_".join(name+addon)
-            dirDB.add( "_".join(name+addon), hists["dataDown"], overwrite=True )
+#        if args.bkgSubstracted:
+#            # dataUp histogram
+#            name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, "dataUp"]
+#            print "_".join(name+addon)
+#            dirDB.add( "_".join(name+addon), hists["dataUp"], overwrite=True )
+#
+#            # dataDown histogram
+#            name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, "dataDown"]
+#            print "_".join(name+addon)
+#            dirDB.add( "_".join(name+addon), hists["dataDown"], overwrite=True )
 
         # data histogram
         name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, "data"]
         print "_".join(name+addon)
         dirDB.add( "_".join(name+addon), hists["data"], overwrite=True )
 
-        if args.bkgSubstracted:
-            # bkg substracted total histogram (signal) with total error
-            name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, "signalUp"]
-            print "_".join(name+addon)
-            dirDB.add( "_".join(name+addon), hists["signalUp"], overwrite=True )
-
-            # bkg substracted total histogram (signalDown) with total error
-            name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, "signalDown"]
-            print "_".join(name+addon)
-            dirDB.add( "_".join(name+addon), hists["signalDown"], overwrite=True )
+#        if args.bkgSubstracted:
+#            # bkg substracted total histogram (signal) with total error
+#            name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, "signalUp"]
+#            print "_".join(name+addon)
+#            dirDB.add( "_".join(name+addon), hists["signalUp"], overwrite=True )
+#
+#            # bkg substracted total histogram (signalDown) with total error
+#            name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, "signalDown"]
+#            print "_".join(name+addon)
+#            dirDB.add( "_".join(name+addon), hists["signalDown"], overwrite=True )
 
         # bkg substracted total histogram (signal) with total error
         name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, "signal"]
@@ -686,7 +695,8 @@ def plotRegions( sorted=True ):
         name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, "total_stat"]
         print "_".join(name+addon)
         dirDB.add( "_".join(name+addon), hists["total_stat"], overwrite=True )
-        for n in args.plotNuisances:
+        if args.plotNuisances:
+          for n in args.plotNuisances:
             if n == "experimental": nu = "expUnc"
             elif n == "background": nu = "bkgUnc"
             elif n == "fakeModelling": nu = "fakeUnc"
@@ -714,7 +724,7 @@ def plotRegions( sorted=True ):
             plot_directory    = plotDirectory,
             legend            = [ (0.17, 0.84 if args.bkgSubstracted else formatSettings(nBins)["legylower"], 0.93, 0.9), formatSettings(nBins)["legcolumns"] ] if not differential else [(0.20,0.67,0.85,0.9),1] if args.plotNuisances else (0.20,0.80,0.85,0.9),
             widths            = { "x_width":formatSettings(nBins)["padwidth"], "y_width":formatSettings(nBins)["padheight"], "y_ratio_width":formatSettings(nBins)["padratio"] } if not differential else {},
-            yRange            = ( 7, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ) if not differential else "auto",
+            yRange            = ( 3, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ) if not differential else "auto",
             ratio             = { "yRange": (1-minMax, 1+minMax), "texY":"Obs./Pred.", "histos":ratioHistos, "drawObjects":ratio_boxes + ratio_boxes_stat if args.bkgSubstracted else ratio_boxes, "histModifications":ratioHistModifications },
             drawObjects       = drawObjects_ if not differential else drawObjectsDiff(lumi_scale) + boxes + boxes_stat if args.bkgSubstracted else drawObjectsDiff(lumi_scale) + boxes,
             histModifications = histModifications,
@@ -802,7 +812,11 @@ def plotCorrelations():
 
 # impact plot
 def plotImpacts():
-    Results.getImpactPlot( expected=args.expected, printPNG=True, cores=args.cores )
+    if "ctZ" in args.cardfile:
+        options = "--setParameters r=1 --freezeParameters r"
+    else:
+        options = ""
+    Results.getImpactPlot( expected=args.expected, printPNG=True, cores=args.cores, options=options )
 
 if args.plotRegionPlot or args.cacheHistogram:
     plotRegions( sorted=True )

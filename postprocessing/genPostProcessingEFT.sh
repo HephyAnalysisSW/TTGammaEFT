@@ -39,18 +39,18 @@
 #python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v10 --sample ttGamma_restrict_4WC_medRef_rwgt --addReweights --interpolationOrder 2 #SPLIT50
 
 
-python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v13 --sample stg_sch_restrict_ref_rwgt_2WC --addReweights --interpolationOrder 2 #SPLIT50
-python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v13 --sample stg_tch_restrict_ref_rwgt_2WC --addReweights --interpolationOrder 2 #SPLIT50
-python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v13 --sample tWG_restrict_ref_rwgt_2WC --addReweights --interpolationOrder 2 #SPLIT50
-python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v13 --sample ttGamma_SemiLept_restrict_ref_rwgt_2WC --addReweights --interpolationOrder 2 #SPLIT100
-python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v13 --sample ttGamma_Dilept_restrict_ref_rwgt_2WC --addReweights --interpolationOrder 2 #SPLIT100
-python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v13 --sample ttGamma_SemiLept_restrict_ctZ2 #SPLIT100
-#python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v13 --sample ttGamma_SemiLept_restrict_ctW2 #SPLIT100
-python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v13 --sample ttGamma_SemiLept_restrict_ctZI2 #SPLIT100
-#python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v13 --sample ttGamma_SemiLept_restrict_ctWI2 #SPLIT100
-python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v13 --sample ttGamma_SemiLept_restrict_ctZm1 #SPLIT100
-#python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v13 --sample ttGamma_SemiLept_restrict_ctWm1 #SPLIT100
-python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v13 --sample ttGamma_SemiLept_restrict_ctZIm1 #SPLIT100
-#python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v13 --sample ttGamma_SemiLept_restrict_ctWIm1 #SPLIT100
-python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v13 --sample ttGamma_SemiLept_restrict_SM #SPLIT100
+python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v14 --sample stg_sch_restrict_ref_rwgt_2WC --addReweights --interpolationOrder 2 #SPLIT125
+python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v14 --sample stg_tch_restrict_ref_rwgt_2WC --addReweights --interpolationOrder 2 #SPLIT125
+python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v14 --sample tWG_restrict_ref_rwgt_2WC --addReweights --interpolationOrder 2 #SPLIT125
+#python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v14 --sample ttGamma_SemiLept_restrict_ref_rwgt_2WC --addReweights --interpolationOrder 2 #SPLIT100
+#python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v14 --sample ttGamma_Dilept_restrict_ref_rwgt_2WC --addReweights --interpolationOrder 2 #SPLIT100
+#python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v14 --sample ttGamma_SemiLept_restrict_ctZ2 #SPLIT100
+#python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v14 --sample ttGamma_SemiLept_restrict_ctW2 #SPLIT100
+#python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v14 --sample ttGamma_SemiLept_restrict_ctZI2 #SPLIT100
+#python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v14 --sample ttGamma_SemiLept_restrict_ctWI2 #SPLIT100
+#python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v14 --sample ttGamma_SemiLept_restrict_ctZm1 #SPLIT100
+#python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v14 --sample ttGamma_SemiLept_restrict_ctWm1 #SPLIT100
+#python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v14 --sample ttGamma_SemiLept_restrict_ctZIm1 #SPLIT100
+#python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v14 --sample ttGamma_SemiLept_restrict_ctWIm1 #SPLIT100
+#python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v14 --sample ttGamma_SemiLept_restrict_SM #SPLIT100
 

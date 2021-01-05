@@ -463,8 +463,8 @@ if args.variation == "central":
         dataHist = dirDB.get(key)
 
     for s in mc:
-      if "TTG" in s.name: args.overwrite = True
-      else: args.overwrite = False
+#      if "TTG" in s.name: args.overwrite = True
+#      else: args.overwrite = False
       for g in genCat:
         selectionString = selection
         selectionModifier = variations[args.variation]["selectionModifier"]
@@ -477,7 +477,7 @@ if args.variation == "central":
             mcHist = s.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=normalization_selection_string) #, addOverFlowBin="upper" )
             dirDB.add(key, mcHist.Clone(s.name+"AR"+g if g else s.name+"AR"), overwrite=True)
 
-    args.overwrite = False
+#    args.overwrite = False
 
     key = ("QCD-DD", "ARincl" if args.inclQCDTF else "AR", args.variable, "_".join(map(str,args.binning)), selection)
     if not dirDB.contains(key) or args.overwrite or True:

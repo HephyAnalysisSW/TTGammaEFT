@@ -38,6 +38,11 @@ class MCBasedEstimate(SystematicEstimator):
 
         logger.debug( "MC prediction for %s channel %s" %(self.name, channel) )
 
+        if setup.nJet == "3p":
+            setup4p = setup.sysClone( parameters={"nJet":(4,-1)} )
+            setup3 = setup.sysClone( parameters={"nJet":(3,3)} )
+            return sum([ self.cachedEstimate(region, channel, s, signalAddon=signalAddon, overwrite=overwrite) for s in [setup3,setup4p]])
+
         if channel=='all':
             # 'all' is the total of all contributions
             return sum([self.cachedEstimate(region, c, setup, signalAddon=signalAddon, overwrite=overwrite) for c in lepChannels])

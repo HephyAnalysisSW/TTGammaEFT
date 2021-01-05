@@ -170,7 +170,7 @@ class cardFileWriter:
     def mfs(self, f):
         return str(round(float(f),self.precision))
 
-    def writeToFile(self, fname, shapeFile=False, noMCStat=False):
+    def writeToFile(self, fname, shapeFile=False, noMCStat=False, poisThresh=20):
         import datetime, os
         if not self.checkCompleteness():
             print "Incomplete specification."
@@ -239,7 +239,7 @@ class cardFileWriter:
                     outfile.write('%s rateParam %s %s %s %s\n'%(p[0], str(p[4]), p[1], str(p[2]), str(p[3])))
 
         if shapeFile and not noMCStat:
-            outfile.write('* autoMCStats 20 1 1\n')
+            outfile.write('* autoMCStats %i 1 1\n'%poisThresh)
 
         outfile.close()
         print "[cardFileWrite] Written card file %s"%fname
@@ -248,7 +248,7 @@ class cardFileWriter:
     def makeHist(self, name):
         return ROOT.TH1F(name, name, len(self.bins), 0, len(self.bins))
 
-    def writeToShapeFile(self, fname, noMCStat=False):
+    def writeToShapeFile(self, fname, noMCStat=False, poisThresh=20):
         bins        = natural_sort(self.bins)
         processes   = []
         nuisances   = [ u for u in self.uncertainties if (not 'stat' in u.lower() and (self.uncertaintyString[u] == 'shape' or self.uncertaintyString[u] == 'flatParam'))  ] # stat uncertainties are treated differently
@@ -330,7 +330,7 @@ class cardFileWriter:
 
         self.specifyObservation(self.bins[0], int(data_obs.Integral()))
         self.uncertainties = logNormal + nuisances # need to fix things if up/down are already provided
-        self.writeToFile(txtFile, shapeFile=rootFile, noMCStat=noMCStat)
+        self.writeToFile(txtFile, shapeFile=rootFile, noMCStat=noMCStat, poisThresh=poisThresh)
         
         # write all the histograms to a root file
         writeObjToFile(rootFileFull, data_obs)
@@ -338,7 +338,7 @@ class cardFileWriter:
             writeObjToFile(rootFileFull, histos[h], update=True)
         return txtFile
 
-    def combineCards(self, cards):
+    def combineCards(self, cards, txtFileOnly=False):
 
         import uuid, os
         ustr          = str(uuid.uuid4())
@@ -360,7 +360,10 @@ class cardFileWriter:
             os.makedirs(resPath)
         logger.info("Putting combined card into dir %s", resPath)
         shutil.copyfile(uniqueDirname+"/combinedCard.txt", resFile)
-        shutil.copyfile(uniqueDirname+"/combinedCard.root", resFile.replace(".txt",".root"))
+        if not txtFileOnly:
+            shutil.copyfile(uniqueDirname+"/combinedCard.root", resFile.replace(".txt",".root"))
+
+        shutil.rmtree(uniqueDirname)
 
         return resFile
 
@@ -436,11 +439,13 @@ class cardFileWriter:
         nll["nll0"] = t.nll0
         # delta NLL to prefit (should always be negative since stuff is fitted)
         nll["nll"] = t.nll
+        nll["prefit"]  = nll["nll0"]
+        nll["postfit"] = nll["nll"] + nll["nll0"]
         # absolute NLL postfit
         nll["nll_abs"] = t.nll0 + t.nll
 
-        print "t", t.GetListOfBranches().ls()
-        print t.deltaNLL, t.nll0, t.nll
+
+        t.GetEntry(1) # changed from 1!
         f.Close()
         return nll
 
@@ -459,17 +464,43 @@ class cardFileWriter:
           filename = fname if fname else os.path.join(uniqueDirname, ustr+".txt")
           self.writeToFile(filename)
 
-#        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit -n Nominal --saveNLL --forceRecreateNLL %s %s"%(options,filename)
+        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit -n Nominal --saveNLL --forceRecreateNLL %s %s"%(options,filename)
 #        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit -n Nominal --saveNLL --forceRecreateNLL --freezeParameters r %s %s"%(options,filename)
-        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit -n Nominal --saveNLL --cminDefaultMinimizerStrategy=0 --cminDefaultMinimizerTolerance=0.01 %s %s"%(options,filename)
+#        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit -n Nominal --saveNLL --cminDefaultMinimizerStrategy=0 --cminDefaultMinimizerTolerance=0.01 %s %s"%(options,filename)
 #        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit --algo grid --points 100 --rMin 0. --rMax 2.0 -n Nominal --saveNLL --forceRecreateNLL %s %s"%(options,filename)
+        print combineCommand
         os.system(combineCommand)
         nll = self.readNLLFile(uniqueDirname+"/higgsCombineNominal.MultiDimFit.mH120.root")
-        nll["bestfit"] = nll["nll"]
-        print "NLL", nll
         shutil.rmtree(uniqueDirname)
 
         return nll
+
+    def goodnessOfFitTest(self, fname=None, options=""):
+        '''
+        Does goodness of fit test
+        '''
+        import uuid, os
+        ustr          = str(uuid.uuid4())
+        uniqueDirname = os.path.join(self.releaseLocation, ustr)
+        print "Creating %s"%uniqueDirname
+        os.makedirs(uniqueDirname)
+        if fname is not None:  # Assume card is already written when fname is not none
+          filename = os.path.abspath(fname)
+        else:
+          filename = fname if fname else os.path.join(uniqueDirname, ustr+".txt")
+          self.writeToFile(filename)
+
+        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M GoodnessOfFit --algo=saturated %s %s"%(options,filename)
+        combineCommand += "combine -M GoodnessOfFit --algo=saturated --toysFreq -t 50 -s 1 --fixedSignalStrength=1 %s %s"%(options,filename)
+#        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit -n Nominal --saveNLL --forceRecreateNLL --freezeParameters r %s %s"%(options,filename)
+#        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit -n Nominal --saveNLL --cminDefaultMinimizerStrategy=0 --cminDefaultMinimizerTolerance=0.01 %s %s"%(options,filename)
+#        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit --algo grid --points 100 --rMin 0. --rMax 2.0 -n Nominal --saveNLL --forceRecreateNLL %s %s"%(options,filename)
+        print combineCommand
+        os.system(combineCommand)
+#        nll = self.readNLLFile(uniqueDirname+"/higgsCombineNominal.MultiDimFit.mH120.root")
+        shutil.rmtree(uniqueDirname)
+
+#        return nll
 
     def calcNuisances(self, fname=None, options="", outputFileAddon = "", bonly=False):
         import uuid, os
@@ -500,7 +531,7 @@ class cardFileWriter:
         os.system(combineCommand)
 
         if outputFileAddon: outputFileAddon = "_"+outputFileAddon
-        shutil.copyfile(uniqueDirname+'/fitDiagnostics.root', fname.replace('.root','%s_FD.root'%(outputFileAddon)))
+        shutil.copyfile(uniqueDirname+'/fitDiagnostics.root', fname.replace('.txt','%s_FD.root'%(outputFileAddon)))
 
         tempResFile      = uniqueDirname+"/nuisances%s.txt"%(outputFileAddon)
         tempResFileFull  = uniqueDirname+"/nuisances%s_full.txt"%(outputFileAddon)

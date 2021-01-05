@@ -90,10 +90,10 @@ class BTagEfficiency:
             keys                 = keys_2016
         if year == 2017:
             self.scaleFactorFile = os.path.expandvars( os.path.join( self.dataDir, sfFile2017DeepCSV ) )
-            keys                 = keys_2016
+            keys                 = keys_2017
         if year == 2018:
             self.scaleFactorFile = os.path.expandvars( os.path.join( self.dataDir, sfFile2018DeepCSV ) )
-            keys                 = keys_2016
+            keys                 = keys_2018
 
         self.mcEff = {}
         for s in ["Top","Other"]:
@@ -167,38 +167,38 @@ class BTagEfficiency:
 if __name__ == "__main__":
 
     print "2016"
-    BTagEff = BTagEfficiency( year=2016, isTopSample=False )
-    print BTagEff.getMCEff(5, 100, 1.5)
-    print BTagEff.getMCEff(5, 100, -1.5)
-    print BTagEff.getMCEff(5, 100, 2)
-    print BTagEff.getMCEff(5, 100, -2)
-    print BTagEff.getMCEff(5, 400, 1.5)
-    print BTagEff.getMCEff(5, 400, -1.5)
-    print BTagEff.getMCEff(5, 400, 2)
-    print BTagEff.getMCEff(5, 400, -2)
+    BTagEff = BTagEfficiency( year=2016, isTopSample=True )
+    print BTagEff.getMCEff(2, 35, 1.8)
+    print BTagEff.getMCEff(2, 35, -1.8)
+    print BTagEff.getMCEff(2, 35, 0.5)
+    print BTagEff.getMCEff(2, 35, -0.5)
+    print BTagEff.getMCEff(2, 150, 1.8)
+    print BTagEff.getMCEff(2, 150, -1.8)
+    print BTagEff.getMCEff(2, 150, 0.5)
+    print BTagEff.getMCEff(2, 150, -0.5)
     del BTagEff
 
     print "2017"
-    BTagEff = BTagEfficiency( year=2017, isTopSample=False )
-    print BTagEff.getMCEff(5, 100, 1.5)
-    print BTagEff.getMCEff(5, 100, -1.5)
-    print BTagEff.getMCEff(5, 100, 2)
-    print BTagEff.getMCEff(5, 100, -2)
-    print BTagEff.getMCEff(5, 400, 1.5)
-    print BTagEff.getMCEff(5, 400, -1.5)
-    print BTagEff.getMCEff(5, 400, 2)
-    print BTagEff.getMCEff(5, 400, -2)
+    BTagEff = BTagEfficiency( year=2017, isTopSample=True )
+    print BTagEff.getMCEff(2, 35, 1.8)
+    print BTagEff.getMCEff(2, 35, -1.8)
+    print BTagEff.getMCEff(2, 35, 0.5)
+    print BTagEff.getMCEff(2, 35, -0.5)
+    print BTagEff.getMCEff(2, 150, 1.8)
+    print BTagEff.getMCEff(2, 150, -1.8)
+    print BTagEff.getMCEff(2, 150, 0.5)
+    print BTagEff.getMCEff(2, 150, -0.5)
     del BTagEff
 
     print "2018"
-    BTagEff = BTagEfficiency( year=2018, isTopSample=False )
-    print BTagEff.getMCEff(5, 100, 1.5)
-    print BTagEff.getMCEff(5, 100, -1.5)
-    print BTagEff.getMCEff(5, 100, 2)
-    print BTagEff.getMCEff(5, 100, -2)
-    print BTagEff.getMCEff(5, 400, 1.5)
-    print BTagEff.getMCEff(5, 400, -1.5)
-    print BTagEff.getMCEff(5, 400, 2)
-    print BTagEff.getMCEff(5, 400, -2)
+    BTagEff = BTagEfficiency( year=2018, isTopSample=True )
+    print BTagEff.getMCEff(2, 35, 1.8)
+    print BTagEff.getMCEff(2, 35, -1.8)
+    print BTagEff.getMCEff(2, 35, 0.5)
+    print BTagEff.getMCEff(2, 35, -0.5)
+    print BTagEff.getMCEff(2, 150, 1.8)
+    print BTagEff.getMCEff(2, 150, -1.8)
+    print BTagEff.getMCEff(2, 150, 0.5)
+    print BTagEff.getMCEff(2, 150, -0.5)
     del BTagEff
 

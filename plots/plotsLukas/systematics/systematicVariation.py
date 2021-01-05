@@ -49,6 +49,7 @@ argParser.add_argument("--postfit",            action="store_true",             
 argParser.add_argument("--photonCat",          action="store_true",                                                                          help="all plots in one directory?")
 argParser.add_argument("--inclQCDTF",          action="store_true",                                                                          help="run with incl QCD TF?")
 argParser.add_argument("--paperPlot",          action="store_true",                                                                          help="change labeling for paper")
+argParser.add_argument("--splitWG",          action="store_true",                                                                          help="change labeling for paper")
 args = argParser.parse_args()
 
 addSF = args.postfit
@@ -304,7 +305,7 @@ elif args.year == "RunII":
     import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
     from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
-mc  = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG_NLO, mc_samples.ZG, mc_samples.rest ]
+mc  = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
 qcd = mc_samples.QCD
 
 read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval/I",
@@ -466,9 +467,9 @@ if args.variation == "central":
         dataHist = dirDB.get(key).Clone("dataAR")
 
     for s in mc:
-      if "TTG" in s.name: args.overwrite = True
-      else: args.overwrite = False
-      print s.name, args.overwrite
+#      if "TTG" in s.name: args.overwrite = True
+#      else: args.overwrite = False
+#      print s.name, args.overwrite
       for g in genCat:
         selectionModifier = variations[args.variation]["selectionModifier"]
         normalization_selection_string = selectionModifier(selection)
@@ -481,7 +482,7 @@ if args.variation == "central":
             mcHist = s.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=normalization_selection_string, addOverFlowBin=None ) #"upper" )
             dirDB.add(key, mcHist.Clone(s.name+"AR"+g if g else s.name+"AR"), overwrite=True)
 
-    args.overwrite = False
+#    args.overwrite = False
 
     key = ("QCD-DD", "ARincl" if args.inclQCDTF else "AR", args.variable, "_".join(map(str,args.binning)), selection)
     if not dirDB.contains(key) or args.overwrite:
@@ -607,6 +608,7 @@ if args.variation == "central":
         dirDB.add(key, qcdHist.Clone("QCD"), overwrite=True)
 
 
+
 if args.variation:
     var = args.variable
     if args.variable in variables_with_selection_systematics and args.variation in selection_systematics:
@@ -654,6 +656,7 @@ systematics = [\
 ]
 
 
+totalYield = 0 
 missing_cmds   = []
 variation_data = {}
 for s in mc:
@@ -678,7 +681,9 @@ for s in mc:
 
             if dirDB.contains(key) and not args.overwrite:
                 s.hist[variation][g]               = dirDB.get(key).Clone(s.name+"_"+variation+g)
-                if variation == "central": print s.name, g, s.hist[variation][g].Integral()
+                if variation == "central":
+                    print s.name, g, s.hist[variation][g].Integral()
+                    totalYield += s.hist[variation][g].Integral()
                 s.hist[variation][g].style         = styles.fillStyle( s.color )
                 s.hist[variation][g].legendText    = s.texName
 
@@ -764,7 +769,8 @@ key = ("QCD-DD", "ARincl" if args.inclQCDTF else "AR", args.variable, "_".join(m
 print dirDB.contains(key)
 qcdHist = dirDB.get(key)
 
-print qcdHist.Integral()
+print "qcd", qcdHist.Integral()
+print "total", totalYield
 
 if addSF and setup.isPhotonSelection:
     qcdHist.Scale(QCDSF_val[args.year].val)
@@ -781,7 +787,10 @@ qcdHist.style          = styles.fillStyle( color.QCD )
 qcdHist.legendText     = "Multijet"
 
 data_histo_list = [data_sample.hist]
-for s in mc: print s.hist["central"]
+#for s in mc:
+#    print s.name, s.hist["central"]#.Integral()
+
+
 mc_histo_list   = {variation:[s.hist[variation]["all" if variation != "central" or not args.photonCat else genCat[0]] for s in mc] + [qcdHist] for variation in variations.keys()}
 
 # for central (=no variation), we store plot_data_1, plot_mc_1, plot_data_2, plot_mc_2, ...
@@ -797,7 +806,15 @@ if args.photonCat:
         catHists[i].style = styles.fillStyle( catSettings[g]["color"] )
         catHists[i].legendText = catSettings[g]["texName"]
         for s in mc[1:]:
+            if g == "noChgIsoNoSieiephotoncat0" and (("WG" in s.name or "ZG" in s.name) and args.splitWG): continue
             catHists[i].Add(s.hist["central"][g])
+    if args.splitWG:
+        mc_samples.WG.hist["central"]["noChgIsoNoSieiephotoncat0"].style = styles.fillStyle( color.WGamma )
+        mc_samples.WG.hist["central"]["noChgIsoNoSieiephotoncat0"].legendText = "W#gamma (Gen.#gamma)"
+        mc_samples.ZG.hist["central"]["noChgIsoNoSieiephotoncat0"].style = styles.fillStyle( color.ZGamma )
+        mc_samples.ZG.hist["central"]["noChgIsoNoSieiephotoncat0"].legendText = "Z#gamma (Gen.#gamma)"
+        catHists.append(mc_samples.WG.hist["central"]["noChgIsoNoSieiephotoncat0"])
+        catHists.append(mc_samples.ZG.hist["central"]["noChgIsoNoSieiephotoncat0"])
     mc_histo_list["central"] = catHists + [qcdHist]
 
 # copy styles and tex
@@ -860,7 +877,7 @@ for i_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
                 variance += (0.08*mc_samples.DY_LO.hist["central"][g].GetBinContent(i_b))**2 # DY normalization
                 if args.selection.startswith("SR"):
                     variance += (0.08*mc_samples.DY_LO.hist["central"][g].GetBinContent(i_b))**2 # DY extrapolation
-            variance += (0.07*mc_samples.WG_NLO.hist["central"][g].GetBinContent(i_b))**2 # WG normalization
+            variance += (0.07*mc_samples.WG.hist["central"][g].GetBinContent(i_b))**2 # WG normalization
             variance += (0.10*mc_samples.ZG.hist["central"][g].GetBinContent(i_b))**2 # ZG normalization
             variance += (0.30*mc_samples.rest.hist["central"][g].GetBinContent(i_b))**2 # other normalization
             variance += (0.01*mc_samples.TTG.hist["central"][g].GetBinContent(i_b))**2 # mockup for PDF

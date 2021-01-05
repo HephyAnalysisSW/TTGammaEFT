@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+#https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit/blob/102x/data/tutorials/count_toys_with_signif_lt_localmax.C#L42-L58
+
 import os, copy, sys
 import ctypes
 import ROOT
@@ -41,6 +43,7 @@ argParser.add_argument('--variables',           action='store',      default='ct
 argParser.add_argument( "--expected",           action="store_true",                                                        help="Use sum of backgrounds instead of data." )
 argParser.add_argument( "--inclRegion",         action="store_true",                                                        help="use inclusive photon pt region" )
 argParser.add_argument( "--useRegions",         action="store",      nargs='*',       type=str, choices=allRegions.keys(),  help="Which regions to use?" )
+argParser.add_argument( "--useChannels",        action="store",      nargs='*', default=None,   type=str, choices=["e", "mu", "all", "comb"], help="Which lepton channels to use?" )
 argParser.add_argument('--withbkg',             action='store_true',                                                                                  help='with bkg?')
 argParser.add_argument('--withEFTUnc',             action='store_true',                                                        help="add EFT uncertainty?")
 args = argParser.parse_args()
@@ -69,6 +72,7 @@ regionNames.sort()
 if args.addDYSF:     regionNames.append("addDYSF")
 if args.addMisIDSF:  regionNames.append("addMisIDSF")
 if args.inclRegion:  regionNames.append("incl")
+if args.useChannels:  regionNames.append("_".join([ch for ch in args.useChannels if not "tight" in ch]))
 
 if args.year == 2016:   lumi_scale = 35.92
 elif args.year == 2017: lumi_scale = 41.53
@@ -82,7 +86,7 @@ nllCache      = MergingDirDB( cacheFileName )
 
 print cacheFileName
 
-directory = os.path.join( plot_directory, "nllPlots", str(args.year), "_".join( regionNames ))
+directory = os.path.join( plot_directory, "nllPlotsPPA", str(args.year), "_".join( regionNames ))
 addon = "expected" if args.expected else "observed"
 if args.plotData: addon += "_check"
 plot_directory_ = os.path.join( directory, addon )
@@ -94,6 +98,16 @@ if not os.path.isdir( plot_directory_ ):
 #binning range
 xRange = eftParameterRange["ctZ"]
 yRange = eftParameterRange["ctZI"]
+
+
+
+
+#xRange       = np.linspace( -1.0, 1.0, 30, endpoint=False)
+#halfstepsize = 0.5 * ( xRange[1] - xRange[0] )
+#xRange       = [ round(el + halfstepsize, 3) for el in xRange ] + [0]
+#xRange.sort()
+#yRange = xRange
+
 print xRange
 print yRange
 def getNllData( varx, vary ):
@@ -102,10 +116,17 @@ def getNllData( varx, vary ):
     configlist.append("incl" if args.inclRegion else "diff")
     configlist.append("expected" if args.expected else "observed")
     sConfig = "_".join(configlist)
-    if nllCache.contains(sConfig): nll = nllCache.get(sConfig)
-    else:                          nll = -999
-    return float(nll["nll"])
-#    return float(nll)
+
+    if not nllCache.contains(sConfig):
+        return None
+
+    nll = nllCache.get(sConfig)
+
+    if nll["nll"] == 0: return None
+
+    nll = nll["nll"] + nll["nll0"]
+
+    return float(nll)
 
 
 logger.info("Loading cache data" )
@@ -115,14 +136,16 @@ points += [ (varX, 0) for varX in xRange] #1D plots
 points += [ (varX, varY) for varY in yRange for varX in xRange] #2D plots
 
 nllData  = [ (varx, vary, getNllData( varx, vary )) for (varx, vary) in points ]
+nllData  = [ x for x in nllData if x[2] ]
 sm_nll   = getNllData(0,0)
 
-nllData  = [ (x, y, 2*(nll - sm_nll)) for x, y, nll in nllData if 2*(nll - sm_nll) >= 0]
+nllData  = [ (x, y, -2*(nll - sm_nll)) for x, y, nll in nllData ]
 nllData.sort( key = lambda res: (res[0 if args.variables=="ctZ" else 1], res[2]) )
 
 xNLL = []
 for key, group in groupby( nllData, operator.itemgetter(0 if args.variables=="ctZ" else 1) ):
     x, y, res = list(group)[0]
+    if res < 0: continue
     xNLL.append((x if args.variables=="ctZ" else y, res))
 
 def toGraph( name, title, data ):
@@ -170,6 +193,7 @@ def plot1D( dat, var, xmin, xmax, lumi_scale ):
     #if not None in args.zRange:
     xhist.GetYaxis().SetRangeUser( -0.01, 5.5 )
     xhist.GetXaxis().SetRangeUser( xmin, xmax )
+    xhist.GetXaxis().SetLimits(xmin, xmax)
 
 
     func95 = ROOT.TF1("func95",polString, x95min,x95max )
@@ -266,7 +290,7 @@ def plot1D( dat, var, xmin, xmax, lumi_scale ):
 #    for e in [".png",".pdf",".root"]:
 #        cans.Print( plot_directory_ + "/%s%s%s"%(var, "_profiled" if profiled else "", e) )
 
-xmin = xPlotLow  if xPlotLow  else -1.49
-xmax = xPlotHigh if xPlotHigh else 1.49
+xmin = xPlotLow  if xPlotLow  else -2.49
+xmax = xPlotHigh if xPlotHigh else 2.49
 plot1D( xNLL, args.variables, xmin, xmax, lumi_scale )
 

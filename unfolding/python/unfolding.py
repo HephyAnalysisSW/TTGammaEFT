@@ -33,7 +33,7 @@ all_systematics  = ['nominal'] + sum([list(p) for p in systematic_pairs],[])
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",           action="store",      default="INFO", nargs="?", choices=loggerChoices,                        help="Log level for logging")
-argParser.add_argument("--plot_directory",     action="store",      default="v47_stitched",                                                 help="plot sub-directory")
+argParser.add_argument("--plot_directory",     action="store",      default="v49",                                              help="plot sub-directory")
 argParser.add_argument("--prefix",             action="store",      default=None,  type=str,                                                 help="for debugging")
 argParser.add_argument("--small",              action="store_true",                                                                          help="Run only on a small subset of the data?")
 argParser.add_argument("--inclusive_samples",  action="store_true",                                                                          help="use inclusive samples?")
@@ -247,7 +247,7 @@ elif not args.systematic is None:
 
         # Sample for this year (fix)
 
-        data_dir = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v47/inclusive".format(year=year)
+        data_dir = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v49/inclusive".format(year=year)
 
         if args.inclusive_samples:
             ttg0l = Sample.fromDirectory("ttg0l_%s"%year, directory = [os.path.join(data_dir, "TTGHad_LO")])

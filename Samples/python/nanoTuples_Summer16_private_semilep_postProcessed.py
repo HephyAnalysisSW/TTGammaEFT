@@ -68,7 +68,8 @@ dirs["TT_pow"]           = ["TTLep_pow_CP5", "TTSingleLep_pow_CP5", "TTHad_pow_C
 dirs["TT_SemiLep"]       = ["TTSingleLep_pow_CP5" ]
 dirs["TT_Lep"]           = ["TTLep_pow_CP5" ]
 
-#dirs["TTG_NLO"]          = ["TTGJets_comb"]
+dirs["TTG_NLO"]          = ["TTGJets_comb"]
+
 dirs["TTGLep"]           = ["TTGLep_LO", "TTGLep_ptG100To200_LO", "TTGLep_ptG200_LO"]
 dirs["TTGSemiLep"]       = ["TTGSingleLep_LO", "TTGSingleLep_ptG100To200_LO", "TTGSingleLep_ptG200_LO"]
 dirs["TTG"]              = ["TTGLep_LO", "TTGLep_ptG100To200_LO", "TTGLep_ptG200_LO", "TTGSingleLep_LO", "TTGSingleLep_ptG100To200_LO", "TTGSingleLep_ptG200_LO", "TTGHad_LO", "TTGHad_ptG100To200_LO", "TTGHad_ptG200_LO"]
@@ -150,21 +151,21 @@ dirs["other"]           += dirs["VV"]
 dirs["other"]           += dirs["WW"]   + dirs["WZ"]  + dirs["ZZ"]
 #dirs["other"]           += dirs["GluGlu"]
 
-dirs["all_noOther_noTT"] = dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["TG"] + dirs["WJets"] + dirs["WG_NLO"]# + dirs["QCD"] + dirs["GJets"]
+dirs["all_noOther_noTT"] = dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["TG"] + dirs["WJets"] + dirs["WG"]# + dirs["QCD"] + dirs["GJets"]
 dirs["all_noTT"]         = dirs["all_noOther_noTT"] + dirs["other"]
 
-dirs["all_noOther"]      = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG_NLO"] + dirs["QCD"] + dirs["GJets"]
+dirs["all_noOther"]      = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG"] + dirs["QCD"] + dirs["GJets"]
 dirs["all"]              = dirs["all_noOther"] + dirs["other"]
 
-dirs["all_e"]             = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG_NLO"] + dirs["QCD_e"] + dirs["GJets"] + dirs["other"]
-dirs["all_mu"]            = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG_NLO"] + dirs["QCD_mu"] + dirs["GJets"] + dirs["other"]
+dirs["all_e"]             = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG"] + dirs["QCD_e"] + dirs["GJets"] + dirs["other"]
+dirs["all_mu"]            = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG"] + dirs["QCD_mu"] + dirs["GJets"] + dirs["other"]
 
-dirs["all_noQCD_noOther"] = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG_NLO"]
+dirs["all_noQCD_noOther"] = dirs["TTG"] + dirs["top"] + dirs["DY_LO"] + dirs["ZG_lowMLL"] + dirs["WJets"] + dirs["WG"]
 dirs["all_noQCD"]         = dirs["all_noQCD_noOther"] + dirs["other"]
 
-#dirs["W"]                = dirs["WJets_HT"] + dirs["WG_NLO"]
+#dirs["W"]                = dirs["WJets_HT"] + dirs["WG"]
 
-dirs["VG"]               = dirs["ZG_lowMLL"] + dirs["WG_NLO"]
+dirs["VG"]               = dirs["ZG_lowMLL"] + dirs["WG"]
 #dirs["rest"]             = dirs["singleTop"] + dirs["TG"] + dirs["other"]
 dirs["rest"]             = dirs["other"]
 
@@ -183,7 +184,7 @@ singleTop       = getMCSample(name="singleTop",        redirector=redirector, co
 ST_tW            = getMCSample(name="ST_tW",            redirector=redirector, color=color.T,               texName="tW",                directory=directories["st_tW"], noCheckProxy=True, fromDPM=fromDPM)
 ST_tch           = getMCSample(name="ST_tch",           redirector=redirector, color=color.T,               texName="t (t-ch)",          directory=directories["st_tch"], noCheckProxy=True, fromDPM=fromDPM)
 ST_sch           = getMCSample(name="ST_sch",           redirector=redirector, color=color.T,               texName="t (s-ch)",          directory=directories["st_sch"], noCheckProxy=True, fromDPM=fromDPM)
-#TTG_NLO         = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_NLO"], noCheckProxy=True, fromDPM=fromDPM)
+TTG_NLO         = getMCSample(name="TTG_NLO",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma (NLO)",    directory=directories["TTG_NLO"], noCheckProxy=True, fromDPM=fromDPM)
 TTG             = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG"], noCheckProxy=True, fromDPM=fromDPM)
 TTG_sys_incl    = getMCSample(name="TTG_sys",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_sys_incl"], noCheckProxy=True, fromDPM=fromDPM)
 #TTG_med    = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_med"], noCheckProxy=True, fromDPM=fromDPM)

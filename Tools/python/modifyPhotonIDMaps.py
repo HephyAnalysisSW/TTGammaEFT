@@ -35,7 +35,7 @@ for i in range(sfmap.GetNbinsX()):
                     else:
                         sfmap.SetBinContent(i+1,j+1, 1.029)
                 else:
-                    if abs( sfmap.GetXaxis().GetBinLowEdge(i+1) ) > 0.8:
+                    if sfmap.GetXaxis().GetBinLowEdge(i+1) < -0.8 or sfmap.GetXaxis().GetBinLowEdge(i+1) > 0.75:
                         sfmap.SetBinContent(i+1,j+1, 1.015)
                         sfmap.SetBinError(i+1,j+1, 0.014)
                     else:

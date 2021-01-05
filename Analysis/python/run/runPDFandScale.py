@@ -50,11 +50,18 @@ argParser.add_argument( "--checkOnly",           action="store_true",           
 argParser.add_argument( "--combine",             action="store_true",                                                     help="calculate final uncertainties?" )
 argParser.add_argument( "--runOnLxPlus",         action="store_true",                                                     help="Change the global redirector of samples")
 argParser.add_argument( "--runOnTopNanoAOD",     action="store_true",                                                     help="Change from LHAPDF to NNPDF3.1, other range for scale variations")
+argParser.add_argument( "--notNormalized",       action="store_true",                                                     help="Do not normalize")
 args = argParser.parse_args()
 
 if args.year != "RunII": args.year = int(args.year)
 
-inclEstimate = "TT_pow" if "TT_pow" in args.selectEstimator else "TTG"
+inclEstimate = "TT_pow" 
+if "TT_pow" in args.selectEstimator:
+    inclEstimate = "TT_pow"
+elif "TTG_NLO" in args.selectEstimator:
+    inclEstimate = "TTG_NLO"
+else:
+    inclEstimate = "TTG"
 
 print
 print
@@ -89,6 +96,8 @@ setupIncl        = setupIncl.sysClone( parameters={ "zWindow":"all", "nJet":(0,-
 estimates        = EstimatorList( setupIncl, processes=[inclEstimate] )
 estimateIncl     = getattr( estimates, inclEstimate )
 estimateIncl.initCache( setupIncl.defaultCacheDir() + "/PDF")
+
+if channels[0] == "all": channels = ["e","mu","all"]
 
 logger.info( "Calculating PDF and Scale uncertainties for %s", args.selectEstimator)
 
@@ -132,12 +141,19 @@ logger.info( "Using PDF type: %s"%PDFType )
 #https://indico.cern.ch/event/860492/contributions/3624049/attachments/1957483/3252108/SystematicIssues.pdf
 if args.runOnTopNanoAOD:
     # other range of Scale variations for TopNanoAODv6
-    if "TTG" in inclEstimate:
+    print inclEstimate
+    if "TTG" in inclEstimate and not "NLO" in inclEstimate:
         scale_indices       = [0,5,15,24,34,39] #20 central?
     else:
         scale_indices       = [0,1,3,5,7,8] #4 central?
+    print scale_indices
     pdf_indices         = range(100)
     aS_variations       = []
+    if args.notNormalized:
+        if "TTG" in inclEstimate and "NLO" in inclEstimate and args.year == 2016:
+            aS_variations = ["abs(LHEPdfWeight[100])", "abs(LHEPdfWeight[101])"]
+        else:
+            aS_variations = ["abs(LHEPdfWeight[101])", "abs(LHEPdfWeight[102])"]
     #https://indico.cern.ch/event/947115/contributions/3979526/attachments/2088737/3509365/200818_topNano.pdf
     ps_indices          = [6,7,8,9]
     PS_variations       = [ "abs(PSWeight[%i])"%i for i in ps_indices ]
@@ -161,7 +177,7 @@ results             = {}
 scale_systematics   = {}
 
 # Results DB for scale and PDF uncertainties
-cacheDir    = os.path.join( cache_directory, "modelling",  str(args.year) )
+cacheDir    = os.path.join( cache_directory, "modelling",  str(args.year), "inclusive" if args.notNormalized else "normalized" )
 PDF_cache   = MergingDirDB( os.path.join( cacheDir, "PDF" ) )
 scale_cache = MergingDirDB( os.path.join( cacheDir, "Scale" ) )
 PS_cache    = MergingDirDB( os.path.join( cacheDir, "PS" ) )
@@ -233,12 +249,12 @@ sigma_incl_central       = estimateIncl.cachedEstimate(noRegions[0], 'all', setu
 #sigma_incl_central_PDF   = estimateIncl.cachedEstimate(noRegions[0], 'all', setupIncl.sysClone(sys={'reweight':[PDF_variations[central_pdf]]}))
 
 for c in channels:
-    logger.info("Combining channel: %s", c)
+    logger.debug("Combining channel: %s", c)
     for region in regions:
-        logger.info("Combining region: %s", region)
+        logger.debug("Combining region: %s", region)
                 
         # central yield inclusive and in region
-        logger.info("Getting yield for region with scaleweight_central")
+        logger.debug("Getting yield for region with scaleweight_central")
 
         sigma_central            = estimate.cachedEstimate(region, c, setup)
 #        sigma_central_scale      = estimate.cachedEstimate(region, c, setup.sysClone(sys={'reweight':["abs(LHEScaleWeight[%i])"%central_scale]}))
@@ -246,12 +262,12 @@ for c in channels:
 
         scales        = []
         for var in scale_variations:
-            logger.info("Getting inclusive yield with varied weight")
+            logger.debug("Getting inclusive yield with varied weight")
             sigma_incl_reweight = estimateIncl.cachedEstimate(noRegions[0], 'all', setupIncl.sysClone(sys={'reweight':[var]}))
 #            norm                = sigma_incl_central_scale / sigma_incl_reweight if sigma_incl_reweight > 0 else 1.
-            norm                = sigma_incl_central / sigma_incl_reweight if sigma_incl_reweight > 0 else 1.
+            norm                = sigma_incl_central / sigma_incl_reweight if sigma_incl_reweight > 0 and not args.notNormalized else 1.
 
-            logger.info("Getting yield for region with varied weight")
+            logger.debug("Getting yield for region with varied weight")
             sigma_reweight     = estimate.cachedEstimate(region, c, setup.sysClone(sys={'reweight':[var]}))
             sigma_reweight_acc = sigma_reweight * norm
 
@@ -266,10 +282,10 @@ for c in channels:
         delta_squared = 0
         for var in PDF_variations:
 
-            logger.info("Getting yield for region with varied weight PDF")
+            logger.debug("Getting yield for region with varied weight PDF")
             sigma_incl_reweight = estimateIncl.cachedEstimate(noRegions[0], 'all', setupIncl.sysClone(sys={'reweight':[var]}))
 #            norm = sigma_incl_central_PDF / sigma_incl_reweight if sigma_incl_reweight > 0 else 1.
-            norm = sigma_incl_central / sigma_incl_reweight if sigma_incl_reweight > 0 else 1.
+            norm = sigma_incl_central / sigma_incl_reweight if sigma_incl_reweight > 0 and not args.notNormalized else 1.
 
             sigma_reweight     = estimate.cachedEstimate(region, c, setup.sysClone(sys={'reweight':[var]}))
             sigma_reweight_acc = sigma_reweight * norm
@@ -290,33 +306,37 @@ for c in channels:
             upper = len(deltas)*84/100 - 1
             lower = len(deltas)*16/100 - 1
             delta_sigma = (deltas[upper]-deltas[lower])/2.
+            print delta_sigma, deltas[upper]-deltas[lower], deltas[upper], deltas[lower], deltas
         else:
             # "hessian"
             delta_sigma = math.sqrt(delta_squared)
 
         deltas_as = []
         for var in aS_variations:
-            logger.info("Getting inclusive yield with varied weight aS")
+            logger.debug("Getting inclusive yield with varied weight aS")
             sigma_incl_reweight = estimateIncl.cachedEstimate(noRegions[0], 'all', setupIncl.sysClone(sys={'reweight':[var]}))
 #            norm = sigma_incl_central_PDF / sigma_incl_reweight if sigma_incl_reweight > 0 else 1.
-            norm = sigma_incl_central / sigma_incl_reweight if sigma_incl_reweight > 0 else 1.
+            norm = sigma_incl_central / sigma_incl_reweight if sigma_incl_reweight > 0 and not args.notNormalized else 1.
 
-            logger.info("Getting yield for region with varied weight aS")
+            logger.debug("Getting yield for region with varied weight aS")
             sigma_reweight  = estimate.cachedEstimate(region, c, setup.sysClone(sys={'reweight':[var]}))
+            print var, sigma_reweight
             sigma_reweight_acc = sigma_reweight * norm
 
             deltas_as.append(sigma_reweight_acc.val)
 
-        if deltas_as:
-            delta_sigma_alphaS = ( deltas_as[0] - deltas_as[1] ) * 0.5
-            # add alpha_s and PDF in quadrature
-            delta_sigma = math.sqrt( delta_sigma**2 + delta_sigma_alphaS**2 )
-
-        # calculate uncertainty
-        delta_sigma_total = math.sqrt( delta_squared )
+#        # calculate uncertainty
+#        delta_sigma_total = math.sqrt( delta_squared )
 
         # make it relative wrt central value in region
-        delta_sigma_rel = delta_sigma_total / sigma_central.val if sigma_central.val > 0 else 0.
+        delta_sigma_rel = delta_sigma / sigma_central.val if sigma_central.val > 0 else 0.
+
+        if deltas_as:
+            delta_sigma_alphaS = ( deltas_as[1] - deltas_as[0] ) * 0.5
+            delta_sigma_alphaS_rel = delta_sigma_alphaS / sigma_central.val if sigma_central.val > 0 else 0.
+            # add alpha_s and PDF in quadrature
+            delta_sigma_rel = math.sqrt( delta_sigma_rel**2 + delta_sigma_alphaS_rel**2 )
+            print deltas_as, delta_sigma_alphaS, delta_sigma_alphaS_rel, delta_sigma_rel
 
         if delta_sigma_rel > 1: logger.info("ERROR: delta_sigma_rel > 1 for region %s and channel %s"%(region, c))
 
@@ -325,7 +345,7 @@ for c in channels:
             ps_scales        = []
             for var in PS_variations:
 
-                logger.info("Getting yield for region with varied weight aS")
+                logger.debug("Getting yield for region with varied weight aS")
                 sigma_reweight_PS     = estimate.cachedEstimate(region, c, setup.sysClone(sys={'reweight':[var]}))
 
                 unc = abs( sigma_reweight_PS - sigma_central ) / sigma_central if sigma_central > 0 else u_float(0)
@@ -341,7 +361,7 @@ for c in channels:
         niceName = " ".join([c, region.__str__()])
         logger.info("Calculated PDF, PS and scale uncertainties for region %s in channel %s"%(region, c))
         logger.info("Central x-sec: %s"%sigma_central)
-        logger.info("Relative uncertainty: %s"%delta_sigma_rel)
+        logger.info("Relative PDF uncertainty: %s"%delta_sigma_rel)
         logger.info("Relative scale uncertainty: %s"%scale_rel)
         logger.info("Relative PS uncertainty: %s"%PS_scale_rel)
                 
