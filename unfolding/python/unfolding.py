@@ -57,7 +57,7 @@ def drawObjects( ):
     tex.SetNDC()
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
-    line = (0.65, 0.95, "(13 TeV)") 
+    line = (0.8, 0.95, "(13 TeV)") 
     lines = [
       (0.15, 0.95, "CMS #bf{#it{Preliminary}}"), 
       line
@@ -105,7 +105,7 @@ def draw( plot, **kwargs):
         logX = False, sorting = False,
         #yRange         = (0.5, 1.5) ,
         #scaling        = {0:1} if len(plot.stack)==2 else {},
-        legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
+        legend         = [ (0.20,0.75,0.9,0.91), 2 ],
         drawObjects    = drawObjects(),
         copyIndexPHP   = True, 
         **kwargs
@@ -446,9 +446,9 @@ reco_spectrum_subtracted = fout_subtraction( reco_spectrum )
 reco_spectrum_subtracted.legendText = "reco (f_{out} subtracted)"
 reco_fout_spectrum.legendText = "reco f_{out}"
 reco_spectrum.legendText = "Reco before subtraction"
-reco_spectrum_subtracted.style = styles.lineStyle( ROOT.kRed) 
-reco_fout_spectrum.style       = styles.lineStyle( ROOT.kGreen)       
-reco_spectrum.style            = styles.lineStyle( ROOT.kBlue)      
+reco_spectrum_subtracted.style = styles.lineStyle( ROOT.kRed, width=2) 
+reco_fout_spectrum.style       = styles.lineStyle( ROOT.kGreen+1, width=2)       
+reco_spectrum.style            = styles.lineStyle( ROOT.kBlue, width=2)      
 
 for logY in [True, False]:
     plot = Plot.fromHisto( name = 'fout_subtraction' + ('_log' if logY else ''),  histos = [[ reco_spectrum ], [reco_spectrum_subtracted], [reco_fout_spectrum] ], texX = settings.tex_reco, texY = "Events")
@@ -464,8 +464,8 @@ for logY in [True, False]:
 
 for logY in [False]:
 
-    purity     . style =  styles.lineStyle( ROOT.kRed, width = 1, errors=False)
-    efficiency . style =  styles.lineStyle( ROOT.kBlue, width = 1, errors=True)
+    purity     . style =  styles.lineStyle( ROOT.kRed, width = 2, errors=False)
+    efficiency . style =  styles.lineStyle( ROOT.kBlue, width = 2, errors=True)
     purity     . legendText = "purity" 
     efficiency . legendText = "efficiency" 
     
@@ -549,11 +549,11 @@ for ext in ['pdf','png','root']:
     canv.Print(os.path.join(plot_directory_, 'scan_tau.'+ext))
 
 hs = []
-colors = [ROOT.kBlue, ROOT.kRed, ROOT.kGreen]
+colors = [ROOT.kBlue, ROOT.kRed, ROOT.kGreen+1]
 for i_tau, tau in enumerate( [  0, 10**best_logtau, 10**-1] ):
     h = getOutput(unfold_nom_sys, reco_spectrum_subtracted, tau=tau)
     h.legendText = ( "log(#tau) = %6.4f" % log(tau,10) if tau > 0 else  "log(#tau) = -#infty" )
-    h.style = styles.lineStyle( colors[i_tau] )
+    h.style = styles.lineStyle( colors[i_tau], width=2 )
     hs.append( h )
 for logY in [True]:
     plot = Plot.fromHisto( name = 'unfolding_tau_comparison' + ('_log' if logY else ''),  histos = [[ h ] for h in hs], texX = "p_{T}", texY = "Events" )
@@ -570,7 +570,7 @@ for logY in [True, False]:
     fiducial_spectrum_    = fiducial_spectrum.Clone()
     fiducial_spectrum_    . Scale(1./settings.lumi_factor) 
 
-    unfolded_mc_spectrum_ . style =  styles.lineStyle( ROOT.kRed, width = 1, errors=True)
+    unfolded_mc_spectrum_ . style =  styles.lineStyle( ROOT.kRed, width = 2, errors=True)
     fiducial_spectrum_    . style =  styles.lineStyle( ROOT.kBlack, width = 2, errors=True)
     unfolded_mc_spectrum_ . legendText = "unfolded (%6.2f fb)" % (unfolded_mc_spectrum_.Integral())
     fiducial_spectrum_    . legendText = "fiducial (%6.2f fb)" % (fiducial_spectrum_.Integral())
@@ -632,7 +632,7 @@ for band in reversed(settings.unfolding_signal_input_systematic_bands):
 
 #settings.unfolding_data_input.style = styles.errorStyle( ROOT.kBlack )
 settings.unfolding_signal_input.style   = styles.lineStyle( ROOT.kBlue, width = 2)
-reco_spectrum.style = styles.lineStyle( ROOT.kGreen, width = 2)
+reco_spectrum.style = styles.lineStyle( ROOT.kRed+1, width = 2)
 
 #settings.unfolding_data_input.legendText = settings.data_legendText 
 settings.unfolding_signal_input.legendText   = settings.signal_legendText
@@ -651,7 +651,7 @@ for logY in [True, False]:
         plot_directory = plot_directory_,
         logX = False, logY = logY, sorting = False,
         #legend = None,
-        legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
+        legend         = [ (0.20,0.75,0.9,0.91), 2 ],
         yRange = settings.y_range,
         ratio = {'yRange': (0.1, 1.9), 'texY':'Sim. / Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes+[ratio_line]} ,
         drawObjects = drawObjects()+boxes,
@@ -701,7 +701,7 @@ for band in reversed(settings.unfolding_signal_input_systematic_bands):
 unfolding_signal_input_subtracted   = fout_subtraction( settings.unfolding_signal_input )
 unfolding_signal_input_subtracted.style   = styles.lineStyle( ROOT.kBlue, width = 2)
 unfolding_signal_input_subtracted.legendText   = settings.signal_legendText
-reco_spectrum_subtracted.style = styles.lineStyle( ROOT.kGreen, width = 2)
+reco_spectrum_subtracted.style = styles.lineStyle( ROOT.kRed+1, width = 2)
 reco_spectrum_subtracted.legendText = "Simulation"
 ratio_line = ROOT.TLine(reco_spectrum_subtracted.GetXaxis().GetXmin(), 1, reco_spectrum_subtracted.GetXaxis().GetXmax(),1)
 
@@ -718,7 +718,7 @@ for logY in [True, False]:
         plot_directory = plot_directory_,
         logX = False, logY = logY, sorting = False,
         #legend = None,
-        legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
+        legend         = [ (0.20,0.75,0.9,0.91), 2 ],
         yRange = settings.y_range,
         ratio = {'yRange': (0.3, 1.7), 'texY':'Sim. / Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes+[ratio_line]},
         drawObjects = drawObjects()+boxes,
@@ -760,7 +760,7 @@ for logY in [True, False]:
         plot_directory = plot_directory_,
         logX = False, logY = logY, sorting = False,
         #legend = None,
-        legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
+        legend         = [ (0.20,0.75,0.9,0.91), 2 ],
         yRange = settings.y_range,
         drawObjects = drawObjects(),
     )
@@ -834,7 +834,7 @@ unfolding_signal_output.style = styles.lineStyle( ROOT.kBlue, width = 2)
 unfolding_signal_output.legendText = settings.signal_legendText 
 
 fiducial_spectrum.Scale(1./settings.lumi_factor)
-fiducial_spectrum.style = styles.lineStyle( ROOT.kGreen, width = 2)
+fiducial_spectrum.style = styles.lineStyle( ROOT.kRed+1, width = 2)
 fiducial_spectrum.legendText = "Simulation"
 ratio_line = ROOT.TLine(fiducial_spectrum.GetXaxis().GetXmin(), 1, fiducial_spectrum.GetXaxis().GetXmax(),1)
 
@@ -872,7 +872,7 @@ for logY in [True,False]:
         logX = False, logY = logY, sorting = False, 
         #legend = None,
         histModifications = hist_mod,
-        legend         = [ (0.15,0.91-0.05*len(plot.histos)/2,0.95,0.91), 2 ],
+        legend         = [ (0.20,0.75,0.9,0.91), 2 ],
         yRange = settings.y_range,
         ratio = {'yRange': settings.y_range_ratio, 'texY':'Sim. / Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes+[ratio_line]} ,
         drawObjects = drawObjects()+boxes,
