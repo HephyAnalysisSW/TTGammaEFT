@@ -68,11 +68,15 @@ argParser.add_argument('--freezeR',             action='store_true',            
 argParser.add_argument('--freezeSigUnc',             action='store_true',                                                        help="add EFT uncertainty?")
 argParser.add_argument('--addPtBinnedUnc',             action='store_true',                                                        help="add EFT uncertainty?")
 argParser.add_argument('--notNormalized',             action='store_true',                                                        help="not normalized Scale uncertainties?")
+argParser.add_argument('--uncorrVG',              action='store_true',                                                        help="uncorrelate VGamma unc?")
 args=argParser.parse_args()
 
 if args.year != "RunII": args.year = int(args.year)
 # linearity test with expected observation
 if args.linTest != 1: args.expected = True
+
+#if args.addPtBinnedUnc:
+#    args.freezeR = True
 
 # Logging
 import Analysis.Tools.logger as logger
@@ -195,6 +199,11 @@ if args.freezeR:   regionNames.append("freezeR")
 if args.freezeSigUnc:   regionNames.append("freezeSigUnc")
 if args.addPtBinnedUnc:   regionNames.append("addPtBinnedUnc")
 if args.notNormalized:   regionNames.append("notNormalized")
+if args.uncorrVG:   regionNames.append("uncorrVG")
+
+vgCorr = ""
+if args.uncorrVG:
+    vgCorr = "_"+str(args.year)
 
 # partly corr btagging unc as suggested from pog contacts
 ystring = "2016" if args.year == 2016 else "2017_2018"
@@ -215,6 +224,10 @@ cacheFileName   = os.path.join( cacheDir, "PDF" )
 pdfUncCache     = MergingDirDB( cacheFileName )
 cacheFileName   = os.path.join( cacheDir, "PS" )
 psUncCache      = MergingDirDB( cacheFileName )
+cacheFileName   = os.path.join( cacheDir, "ISR" )
+isrUncCache      = MergingDirDB( cacheFileName )
+cacheFileName   = os.path.join( cacheDir, "FSR" )
+fsrUncCache      = MergingDirDB( cacheFileName )
 
 if args.parameters:
     # read the EFT parameters
@@ -281,6 +294,18 @@ def getPSUnc(name, r, channel, setup):
 #    if PSUnc > 0.5: PSUnc = 0.5
     return PSUnc #max(0.0004, PSUnc)
 
+def getISRUnc(name, r, channel, setup):
+    key   = uniqueKey( name, r, channel, setup ) + tuple(str(args.year))
+    ISRUnc = isrUncCache.get( key )
+#    if PSUnc > 0.5: PSUnc = 0.5
+    return ISRUnc #max(0.0004, PSUnc)
+
+def getFSRUnc(name, r, channel, setup):
+    key   = uniqueKey( name, r, channel, setup ) + tuple(str(args.year))
+    FSRUnc = fsrUncCache.get( key )
+#    if PSUnc > 0.5: PSUnc = 0.5
+    return FSRUnc #max(0.0004, PSUnc)
+
 def wrapper():
     c = cardFileWriter.cardFileWriter()
     c.releaseLocation = combineReleaseLocation
@@ -311,14 +336,14 @@ def wrapper():
         else:
             sigBin_thresh = pTG_thresh
             sigVar = "PhotonNoChgIsoNoSieie0_pt"
-            sigIndex = 0
+            sigIndex = 1
 
         for i in range(len(sigBin_thresh)-1):
             freezeParams.append( "Signal_e_3_Bin%i_%s"%(i,str(args.year)) )
             freezeParams.append( "Signal_mu_3_Bin%i_%s"%(i,str(args.year)) )
+            freezeParams.append( "Signal_mu_4p_Bin%i_%s"%(i,str(args.year)) )
             if i != sigIndex:
                 freezeParams.append( "Signal_e_4p_Bin%i_%s"%(i,str(args.year)) )
-                freezeParams.append( "Signal_mu_4p_Bin%i_%s"%(i,str(args.year)) )
 
     if ( not os.path.exists(cardFileNameTxt) or ( not os.path.exists(cardFileNameShape) and not args.useTxt ) ) or args.overwrite:
 
@@ -366,7 +391,9 @@ def wrapper():
             c.addUncertainty( "QCDbased",     shapeString)
             c.addUncertainty( "Scale",         shapeString)
             c.addUncertainty( "PDF",           shapeString)
-            c.addUncertainty( "Parton_Showering",            shapeString)
+#            c.addUncertainty( "Parton_Showering",            shapeString)
+            c.addUncertainty( "ISR",            shapeString)
+            c.addUncertainty( "FSR",            shapeString)
 
 ##        if args.year == 2016:
 ##            c.addUncertainty( "photon_ID_AltSig_2016",      shapeString)
@@ -391,36 +418,36 @@ def wrapper():
             else:
                 sigBin_thresh = pTG_thresh
                 sigVar = "PhotonNoChgIsoNoSieie0_pt"
-                sigIndex = 0
+                sigIndex = 1
 
             for i in range(len(sigBin_thresh)-1):
                 c.addUncertainty( "Signal_e_3_Bin%i_%s"%(i,str(args.year)), shapeString )
                 c.addUncertainty( "Signal_mu_3_Bin%i_%s"%(i,str(args.year)), shapeString )
+                c.addUncertainty( "Signal_mu_4p_Bin%i_%s"%(i,str(args.year)), shapeString )
                 if i != sigIndex:
                     c.addUncertainty( "Signal_e_4p_Bin%i_%s"%(i,str(args.year)), shapeString )
-                    c.addUncertainty( "Signal_mu_4p_Bin%i_%s"%(i,str(args.year)), shapeString )
 
                 freezeParams.append( "Signal_e_3_Bin%i_%s"%(i,str(args.year)) )
                 freezeParams.append( "Signal_mu_3_Bin%i_%s"%(i,str(args.year)) )
+                freezeParams.append( "Signal_mu_4p_Bin%i_%s"%(i,str(args.year)) )
                 if i != sigIndex:
                     freezeParams.append( "Signal_e_4p_Bin%i_%s"%(i,str(args.year)) )
-                    freezeParams.append( "Signal_mu_4p_Bin%i_%s"%(i,str(args.year)) )
 
 
         default_misIDpT_unc = 0.40
         misIDPT_thresholds = [ 20, 35, 50, 65, 80, 120, 160, -999 ]
         misIDPT_regions = getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", misIDPT_thresholds )
-        if not args.inclRegion and with1pCR:
+        if not args.inclRegion and with1pCR and not "VGAbsEta3" in args.useRegions and not "VGdR3" in args.useRegions:
             for i in range(1, len(misIDPT_thresholds)-1):
                 c.addUncertainty( "misID_pT_Bin%i_%i"%(i,args.year), shapeString )
 
         default_WGpT_unc = 0.20
         WGPT_thresholds = [ 20, 65, 160, -999 ]
         WGPT_regions = getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", WGPT_thresholds )
-        if not args.inclRegion and with1pCR:
+        if not args.inclRegion and with1pCR and not "VGAbsEta3" in args.useRegions and not "VGdR3" in args.useRegions:
             for i in range(1, len(WGPT_thresholds)-1):
-                c.addUncertainty( "WGamma_pT_Bin%i"%(i), shapeString )
-                c.addUncertainty( "ZGamma_pT_Bin%i"%(i), shapeString )
+                c.addUncertainty( "WGamma_pT_Bin%i%s"%(i,vgCorr), shapeString )
+                c.addUncertainty( "ZGamma_pT_Bin%i%s"%(i,vgCorr), shapeString )
 
         default_QCD1b_unc = 0.
         default_QCD0b_unc = 0.
@@ -434,7 +461,7 @@ def wrapper():
         c.addUncertainty( "QCD_normalization", shapeString )
 #        c.addUncertainty( "QCD_TF", shapeString )
 
-        default_TT_unc = 0.07
+        default_TT_unc = 0.05
         c.addUncertainty( "TT_normalization", shapeString )
 
         default_HadFakes_MC_unc = 0.05
@@ -452,10 +479,10 @@ def wrapper():
 #            if args.parameters:
 #                c.addUncertainty( "WGamma_normalization",   shapeString )
 #            else:
-                c.addFreeParameter("WGamma_normalization", '*WG*', 1, '[0.,2.]')
+                c.addFreeParameter("WGamma_normalization%s"%vgCorr, '*WG*', 1, '[0.,2.]')
 
         default_ZG_unc    = 0.3
-        c.addUncertainty( "ZGamma_normalization",      shapeString )
+        c.addUncertainty( "ZGamma_normalization%s"%vgCorr,      shapeString )
 
         default_ZG_gluon_unc    = 0.12 # only on the fraction of 2 gen b-jets in the SR
         default_WG_gluon_unc    = 0.04 # only on the fraction of 2 gen b-jets in the SR
@@ -476,10 +503,10 @@ def wrapper():
         if not (args.wgPOI or args.dyPOI):
             if (any( ["3" in name and not "4pM3" in name for name in args.useRegions] ) and any( ["4p" in name for name in args.useRegions] )) or args.addNJetUnc or any( ["3p" in name for name in args.useRegions] ):
                 c.addUncertainty( "MisID_nJet_dependence_%i"%args.year,      shapeString )
-                c.addUncertainty( "ZGamma_nJet_dependence",      shapeString )
+                c.addUncertainty( "ZGamma_nJet_dependence%s"%vgCorr,      shapeString )
                 c.addUncertainty( "QCD_0b_nJet_dependence",      shapeString )
                 c.addUncertainty( "QCD_1b_nJet_dependence",      shapeString )
-                c.addUncertainty( "WGamma_nJet_dependence",      shapeString )
+                c.addUncertainty( "WGamma_nJet_dependence%s"%vgCorr,      shapeString )
 
         default_DY_unc    = 0.08
         if any( [ name in ["DY2","DY3","DY4","DY4p","DY5"] for name in args.useRegions] ) and not args.dyPOI:
@@ -639,7 +666,7 @@ def wrapper():
 #                                exp_yield *= DYSF_val[args.year].val
 #                                logger.info( "Scaling DY background %s by %f"%(e.name,DYSF_val[args.year].val) )
 
-                                if "2" in setup.name and not "2p" in setup.name:
+                                if "2" in setup.name and not "2p" in setup.name and not "B2" in setup.name:
                                     exp_yield *= DY2SF_val["RunII"].val
                                     logger.info( "Scaling DY background %s by %f"%(e.name,DY2SF_val["RunII"].val) )
                                 elif "3" in setup.name and not "3p" in setup.name:
@@ -674,7 +701,18 @@ def wrapper():
                                 exp_yield *= misIDSF_val[args.year].val
                                 logger.info( "Scaling misID background %s by %f"%(e.name,misIDSF_val[args.year].val) )
                             
+
+
+
+
+
+                            
                             total_exp_bkg += exp_yield.val
+
+
+
+
+
                             
                             if args.parameters:
                                 # reweight the signal(TTGamma) with the calculated ratio
@@ -709,7 +747,7 @@ def wrapper():
                             locals()["jec_%s"%j] = 0
 
                         fakestat, topPt, tune, erdOn, gluonMove, qcdBased, pu, mer, eer, ees, jer, sfb, sfl, trigger_e, trigger_mu, lepSF_e, lepSF_muExt, lepSF_muStat, lepSF_muSyst, lepTrSF, phFakeSF, phMisSF, phSF, phSFAltSig, eVetoSF, pfSF = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-                        ps, scale, pdf, isr = 0, 0, 0, 0
+                        isr, fsr, ps, scale, pdf, isr = 0, 0, 0, 0, 0, 0
                         wjets4p, wg4p, qcd0b4p, qcd1b4p= 0, 0, 0, 0
                         dyGenUnc, ttGenUnc, vgGenUnc, wjetsGenUnc, otherGenUnc, lowSieieUnc, highSieieUnc, misIDPtUnc = 0, 0, 0, 0, 0, 0, 0, 0
                         gluon, hadFakes17Unc, hadFakesUnc, wg, zg, misID4p, dy4p, zg4p, misIDUnc, qcdUnc, qcd0bUnc, qcd1bUnc, vgUnc, wgUnc, zgUnc, dyUnc, misExUnc, ttUnc, wjetsUnc, other0pUnc, otherUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -958,7 +996,7 @@ def wrapper():
 
                                 for ch in allCh:
                                   for setupKey, stp in allSetups.iteritems():
-                                    if signal and not "had" in e.name and not newPOI_input and not args.skipTuneUnc:
+                                    if signal and not "had" in e.name and not newPOI_input and not args.skipTuneUnc and setup.signalregion:
                                         tune      += y_scale * e.TuneSystematic(    r_noM3, ch, stp ).val * ratio[setupKey+ch]
                                         erdOn     += y_scale * e.ErdOnSystematic(   r_noM3, ch, stp ).val * ratio[setupKey+ch]
                                         qcdBased  += y_scale * e.QCDbasedSystematic(   r_noM3, ch, stp ).val * ratio[setupKey+ch]
@@ -968,10 +1006,12 @@ def wrapper():
                                         scale   += y_scale * getScaleUnc( uncName, r_noM3, ch, stp ) * ratio[setupKey+ch]
                                         pdf     += y_scale * getPDFUnc(   uncName, r_noM3, ch, stp ) * ratio[setupKey+ch]
                                         uncName = e.name #PS weights not available in 2016 NLO sample
-                                        ps      += y_scale * getPSUnc(    uncName, r_noM3, ch, stp ) * ratio[setupKey+ch]
+#                                        ps      += y_scale * getPSUnc(    uncName, r_noM3, ch, stp ) * ratio[setupKey+ch]
+                                        isr      += y_scale * getISRUnc(    uncName, r_noM3, ch, stp ) * ratio[setupKey+ch]
+                                        fsr      += y_scale * getFSRUnc(    uncName, r_noM3, ch, stp ) * ratio[setupKey+ch]
 
 
-                                    elif "Top" in e.name and not "had" in e.name and not args.skipTuneUnc:
+                                    elif "Top" in e.name and not "had" in e.name and not args.skipTuneUnc and setup.signalregion:
                                         uncName = e.name.replace("Top","TT_pow")
                                         scale   += y_scale * getScaleUnc( uncName, r_noM3, ch, stp ) * ratio[setupKey+ch]
                                         pdf     += y_scale * getPDFUnc(   uncName, r_noM3, ch, stp ) * ratio[setupKey+ch]
@@ -1049,7 +1089,9 @@ def wrapper():
                             addUnc( c, "QCDbased",         binname, pName, qcdBased,   expected.val, signal )
                             addUnc( c, "GluonMove",         binname, pName, gluonMove,   expected.val, signal )
                             addUnc( c, "Tune",          binname, pName, tune,    expected.val, signal )
-                            addUnc( c, "Parton_Showering",          binname, pName, ps,    expected.val, signal )
+#                            addUnc( c, "Parton_Showering",          binname, pName, ps,    expected.val, signal )
+                            addUnc( c, "ISR",          binname, pName, isr,    expected.val, signal )
+                            addUnc( c, "FSR",          binname, pName, fsr,    expected.val, signal )
                         for j in jesTags:
                             addUnc( c, "JEC_%s"%j,           binname, pName, locals()["jec_%s"%j],     expected.val, signal )
                         addUnc( c, "JER_%i"%args.year,           binname, pName, jer,     expected.val, signal )
@@ -1079,29 +1121,29 @@ def wrapper():
                             for i in range(len(sigBin_thresh)-1):
                                 addUnc( c, "Signal_mu_3_Bin%i_%s"%(i,str(args.year)), binname, pName, locals()["Signal_mu_3_bin%i_unc"%i], expected.val, signal )
                                 addUnc( c, "Signal_e_3_Bin%i_%s"%(i,str(args.year)), binname, pName, locals()["Signal_e_3_bin%i_unc"%i], expected.val, signal )
+                                addUnc( c, "Signal_mu_4p_Bin%i_%s"%(i,str(args.year)), binname, pName, locals()["Signal_mu_4p_bin%i_unc"%i], expected.val, signal )
                                 if i != sigIndex:
                                     addUnc( c, "Signal_e_4p_Bin%i_%s"%(i,str(args.year)), binname, pName, locals()["Signal_e_4p_bin%i_unc"%i], expected.val, signal )
-                                    addUnc( c, "Signal_mu_4p_Bin%i_%s"%(i,str(args.year)), binname, pName, locals()["Signal_mu_4p_bin%i_unc"%i], expected.val, signal )
 
                         if not args.inclRegion:
                             for i in range(1, len(misIDPT_thresholds)-1):
                                 addUnc( c, "misID_pT_Bin%i_%i"%(i,args.year), binname, pName, locals()["misID_bin%i_unc"%i], expected.val, signal )
 
                             for i in range(1, len(WGPT_thresholds)-1):
-                                addUnc( c, "WGamma_pT_Bin%i"%(i), binname, pName, locals()["WGamma_bin%i_unc"%i], expected.val, signal )
-                                addUnc( c, "ZGamma_pT_Bin%i"%(i), binname, pName, locals()["ZGamma_bin%i_unc"%i], expected.val, signal )
+                                addUnc( c, "WGamma_pT_Bin%i%s"%(i,vgCorr), binname, pName, locals()["WGamma_bin%i_unc"%i], expected.val, signal )
+                                addUnc( c, "ZGamma_pT_Bin%i%s"%(i,vgCorr), binname, pName, locals()["ZGamma_bin%i_unc"%i], expected.val, signal )
 
 #                        if args.parameters:
 #                            addUnc( c, "MisID_normalization_%i"%args.year, binname, pName, misIDUnc, expected.val, signal )
 #                            addUnc( c, "WGamma_normalization", binname, pName, wg, expected.val, signal )
 
                         addUnc( c, "DY_normalization", binname, pName, dyUnc, expected.val, signal )
-                        addUnc( c, "MisID_extrapolation_%i"%args.year, binname, pName, misExUnc if setup.signalregion else 0, expected.val, signal )
+                        addUnc( c, "MisID_extrapolation_%i"%args.year, binname, pName, misExUnc if setup.signalregion or setup.name == "misTT2" else 0, expected.val, signal )
                         addUnc( c, "Other_normalization", binname, pName, otherUnc, expected.val, signal )
-                        addUnc( c, "ZGamma_normalization", binname, pName, zg, expected.val, signal )
+                        addUnc( c, "ZGamma_normalization%s"%vgCorr, binname, pName, zg, expected.val, signal )
                         addUnc( c, "MisID_nJet_dependence_%i"%args.year, binname, pName, misID4p, expected.val, signal )
-                        addUnc( c, "ZGamma_nJet_dependence", binname, pName, zg4p, expected.val, signal )
-                        addUnc( c, "WGamma_nJet_dependence", binname, pName, wg4p, expected.val, signal )
+                        addUnc( c, "ZGamma_nJet_dependence%s"%vgCorr, binname, pName, zg4p, expected.val, signal )
+                        addUnc( c, "WGamma_nJet_dependence%s"%vgCorr, binname, pName, wg4p, expected.val, signal )
                         addUnc( c, "Gluon_splitting", binname, pName, gluon, expected.val, signal )
 
                         if setup.signalregion:
@@ -1172,7 +1214,7 @@ def wrapper():
             c.specifyFlatUncertainty( "Int_Luminosity_2017_2018", 1.003 ) #17-18 correlated
 
         cardFileNameTxt     = c.writeToFile( cardFileNameTxt )
-        cardFileNameShape   = c.writeToShapeFile( cardFileNameShape, noMCStat=args.noMCStat, poisThresh=0 if args.parameters else 20 )
+        cardFileNameShape   = c.writeToShapeFile( cardFileNameShape, noMCStat=args.noMCStat, poisThresh=0 if args.parameters else 0 )
         cardFileName        = cardFileNameTxt if args.useTxt else cardFileNameShape
     else:
         logger.info( "File %s found. Reusing."%cardFileName )
@@ -1201,7 +1243,7 @@ def wrapper():
     if not args.skipFitDiagnostics:
         if not args.parameters:
             # options for running the bkg only fit with r=1
-            options += " --customStartingPoint --expectSignal=1"
+            options = " --customStartingPoint --expectSignal=1"
             if args.freezeR:
                 options += " --rMin 0.99 --rMax 1.01"
 #            options += " --rMin 0.5 --rMax 1.5 --cminDefaultMinimizerTolerance=0.01"
@@ -1228,9 +1270,11 @@ def wrapper():
         cfile = cardFileNameTxt.split("/")[-1].split(".")[0]
 
         cmd = "python %s/fitResults.py --carddir %s --cardfile %s --linTest %s --year %i --plotCovMatrix --plotRegionPlot %s --cores %i %s %s %s %s %s %s"%(path, cdir, cfile, str(args.linTest), args.year, "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "", "--wgPOI" if args.wgPOI else "", "--misIDPOI" if args.misIDPOI else "", "--ttPOI" if args.ttPOI else "", "--dyPOI" if args.dyPOI else "", "--wJetsPOI" if args.wJetsPOI else "")
+#        cmd = "python %s/fitResults.py --carddir %s --cardfile %s --linTest %s --year %i --plotRegionPlot %s --cores %i %s %s %s %s %s %s"%(path, cdir, cfile, str(args.linTest), args.year, "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "", "--wgPOI" if args.wgPOI else "", "--misIDPOI" if args.misIDPOI else "", "--ttPOI" if args.ttPOI else "", "--dyPOI" if args.dyPOI else "", "--wJetsPOI" if args.wJetsPOI else "")
         logger.info("Executing plot command: %s"%cmd)
         os.system(cmd)
         cmd = "python %s/fitResults.py --carddir %s --cardfile %s --linTest %s --year %i --plotCorrelations --plotCovMatrix --plotRegionPlot --plotImpacts --postFit %s --cores %i %s %s %s %s %s %s"%(path, cdir, cfile, str(args.linTest), args.year, "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "", "--wgPOI" if args.wgPOI else "", "--misIDPOI" if args.misIDPOI else "", "--ttPOI" if args.ttPOI else "", "--dyPOI" if args.dyPOI else "", "--wJetsPOI" if args.wJetsPOI else "")
+#        cmd = "python %s/fitResults.py --carddir %s --cardfile %s --linTest %s --year %i --plotRegionPlot --postFit %s --cores %i %s %s %s %s %s %s"%(path, cdir, cfile, str(args.linTest), args.year, "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "", "--wgPOI" if args.wgPOI else "", "--misIDPOI" if args.misIDPOI else "", "--ttPOI" if args.ttPOI else "", "--dyPOI" if args.dyPOI else "", "--wJetsPOI" if args.wJetsPOI else "")
         logger.info("Executing plot command: %s"%cmd)
         os.system(cmd)
 

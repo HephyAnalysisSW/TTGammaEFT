@@ -63,9 +63,12 @@ argParser.add_argument('--withEFTUnc',             action='store_true',         
 argParser.add_argument('--freezeR',             action='store_true',                                                        help="add EFT uncertainty?")
 argParser.add_argument('--freezeSigUnc',             action='store_true',                                                        help="add EFT uncertainty?")
 argParser.add_argument('--addPtBinnedUnc',             action='store_true',                                                        help="add EFT uncertainty?")
+argParser.add_argument('--notNormalized',             action='store_true',                                                        help="not normalized Scale uncertainties?")
+argParser.add_argument('--uncorrVG',              action='store_true',                                                        help="uncorrelate VGamma unc?")
 args=argParser.parse_args()
 
 if args.linTest != 1: args.expected = True
+#if args.addPtBinnedUnc: args.freezeR = True
 
 # Logging
 import Analysis.Tools.logger as logger
@@ -166,6 +169,8 @@ if args.noFakeStat:   regionNames.append("noFakeStat")
 if args.freezeR:   regionNames.append("freezeR")
 if args.freezeSigUnc:   regionNames.append("freezeSigUnc")
 if args.addPtBinnedUnc:   regionNames.append("addPtBinnedUnc")
+if args.notNormalized:   regionNames.append("notNormalized")
+if args.uncorrVG:   regionNames.append("uncorrVG")
 
 if args.parameters:
     # load and define the EFT sample
@@ -255,10 +260,14 @@ def wrapper():
         res = c.calcLimit( cardFileName, options=options )
 
         # options for running the bkg only fit with r=1
-        options += " --customStartingPoint --expectSignal=1"
+        options = " --customStartingPoint --expectSignal=1 --cminDefaultMinimizerStrategy=0"
         if args.freezeR:
-            options += " --rMin 0.99 --rMax 1.01"
-        options += " --rMin 0.5 --rMax 1.5 --cminDefaultMinimizerTolerance=0.1"
+#            options += " --setParameters r=1.14 --freezeParameters r --cminDefaultMinimizerTolerance=0.1"
+#            options += " --rMin 1.13 --rMax 1.15 --cminDefaultMinimizerTolerance=0.1"
+#            options += " --rMin 0.99 --rMax 1.01"
+            options += " --redefineSignalPOI Signal_mu_4p_Bin0_2018 --freezeParameters r --setParameters r=1" # --rMin 1.11 --rMax 1.13"
+        else:
+            options += " --rMin 0.5 --rMax 1.5 --cminDefaultMinimizerTolerance=0.1"
         c.calcNuisances( cardFileName, bonly=args.bkgOnly, options=options )
         if args.freezeSigUnc:
             Results = CombineResults( cardFile=cardFileNameTxt, plotDirectory="./", year="combined", bkgOnly=args.bkgOnly, isSearch=False )
@@ -278,9 +287,11 @@ def wrapper():
         cfile = cardFileNameTxt.split("/")[-1].split(".")[0]
 
         cmd = "python %s/fitResults.py --carddir %s --cardfile %s --linTest %s --year %s --plotCovMatrix --plotRegionPlot %s --cores %i %s %s %s %s %s %s"%(path, cdir, cfile, str(args.linTest), "combined", "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "", "--misIDPOI" if args.misIDPOI else "", "--wgPOI" if args.wgPOI else "", "--ttPOI" if args.ttPOI else "", "--dyPOI" if args.dyPOI else "", "--wJetsPOI" if args.wJetsPOI else "")
+#        cmd = "python %s/fitResults.py --carddir %s --cardfile %s --linTest %s --year %s --plotRegionPlot %s --cores %i %s %s %s %s %s %s"%(path, cdir, cfile, str(args.linTest), "combined", "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "", "--misIDPOI" if args.misIDPOI else "", "--wgPOI" if args.wgPOI else "", "--ttPOI" if args.ttPOI else "", "--dyPOI" if args.dyPOI else "", "--wJetsPOI" if args.wJetsPOI else "")
         logger.info("Executing plot command: %s"%cmd)
         os.system(cmd)
         cmd = "python %s/fitResults.py --carddir %s --cardfile %s --linTest %s --year %s --plotCorrelations --plotCovMatrix --plotRegionPlot --plotImpacts --postFit %s --cores %i %s %s %s %s %s %s"%(path, cdir, cfile, str(args.linTest), "combined", "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "", "--misIDPOI" if args.misIDPOI else "", "--wgPOI" if args.wgPOI else "", "--ttPOI" if args.ttPOI else "", "--dyPOI" if args.dyPOI else "", "--wJetsPOI" if args.wJetsPOI else "")
+#        cmd = "python %s/fitResults.py --carddir %s --cardfile %s --linTest %s --year %s --plotRegionPlot --postFit %s --cores %i %s %s %s %s %s %s"%(path, cdir, cfile, str(args.linTest), "combined", "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "", "--misIDPOI" if args.misIDPOI else "", "--wgPOI" if args.wgPOI else "", "--ttPOI" if args.ttPOI else "", "--dyPOI" if args.dyPOI else "", "--wJetsPOI" if args.wJetsPOI else "")
 #        cmd = "python %s/fitResults.py --carddir %s --cardfile %s --year %s --plotImpacts --postFit %s --cores %i %s %s %s %s %s"%(path, cdir, cfile, "combined", "--bkgOnly" if args.bkgOnly else "", 1, "--expected" if args.expected else "", "--misIDPOI" if args.misIDPOI else "", "--ttPOI" if args.ttPOI else "", "--dyPOI" if args.dyPOI else "", "--wJetsPOI" if args.wJetsPOI else "")
         logger.info("Executing plot command: %s"%cmd)
         os.system(cmd)
@@ -290,22 +301,26 @@ def wrapper():
     ###################
     if not args.parameters:
         default_QCD_unc = 0.5
-        default_HadFakes_unc = 0.10
+        default_HadFakes_unc = 0.05
         default_ZG_unc    = 0.3
         default_Other_unc    = 0.30
-        default_misID4p_unc    = 0.5
-        default_ZG4p_unc    = 0.8
-        default_DY4p_unc    = 0.8
-        default_WG4p_unc    = 0.5
+        default_misID4p_unc    = 0.2
+        default_ZG4p_unc    = 0.4
+        default_WG4p_unc    = 0.2
         default_DY_unc    = 0.1
         unc = {
-                "QCD_normalization":default_QCD_unc,
+                "QCD_0b_normalization":default_QCD_unc,
+                "QCD_1b_normalization":default_QCD_unc,
                 "ZGamma_normalization":default_ZG_unc,
                 "Other_normalization":default_Other_unc,
-                "fake_photon_normalization":default_HadFakes_unc,
-                "MisID_nJet_dependence":default_misID4p_unc,
+                "fake_photon_DD_normalization":default_HadFakes_unc,
+                "MisID_nJet_dependence_2016":default_misID4p_unc,
+                "MisID_nJet_dependence_2017":default_misID4p_unc,
+                "MisID_nJet_dependence_2018":default_misID4p_unc,
+                "MisID_extrapolation_2016":0.1,
+                "MisID_extrapolation_2017":0.1,
+                "MisID_extrapolation_2018":0.1,
                 "ZGamma_nJet_dependence":default_ZG4p_unc,
-                "ZJets_nJet_dependence":default_DY4p_unc,
                 "WGamma_nJet_dependence":default_WG4p_unc,
                 "ZJets_normalization":default_DY_unc,
               }
