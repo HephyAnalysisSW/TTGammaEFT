@@ -31,12 +31,13 @@ addSF = True
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",           action="store",      default="INFO", nargs="?", choices=loggerChoices,                        help="Log level for logging")
-argParser.add_argument("--plot_directory",     action="store",      default="102X_TTG_ppv29_v1",                                             help="plot sub-directory")
+argParser.add_argument("--plot_directory",     action="store",      default="102X_TTG_ppv49_v1",                                             help="plot sub-directory")
 argParser.add_argument("--selection",          action="store",      default="WJets2",                                                        help="reco region")
 argParser.add_argument("--year",               action="store",      default="2016",   type=str,  choices=["2016","2017","2018","RunII"],                     help="Which year to plot?")
 argParser.add_argument("--mode",               action="store",      default="e",    type=str,  choices=["mu", "e"],                          help="lepton selection")
 argParser.add_argument("--addCut",             action="store",      default=None, type=str,                                                  help="additional cuts")
 argParser.add_argument("--overwrite",          action="store_true",                                                                          help="overwrite cache?")
+argParser.add_argument("--bTagSideband",       action="store_true",                                                                          help="use btagged sideband")
 args = argParser.parse_args()
 
 if args.year != "RunII": args.year = int(args.year)
@@ -62,6 +63,8 @@ def drawObjects( lumi_scale ):
 
 selDir = args.selection
 if args.addCut: selDir += "-" + args.addCut
+
+if args.bTagSideband: args.plot_directory += "_bTag"
 
 mTinv = "sqrt(2*Lepton_pt[0]*MET_pt*(1-cos(Lepton_phi[0]-MET_phi)))" #"mTinv"
 replaceSelection = {
@@ -110,6 +113,7 @@ elif args.year == "RunII":
     from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
 mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG_NLO, mc_samples.ZG, mc_samples.rest ]
+qcd = mc_samples.QCD_e if args.mode == "e" else mc_samples.QCD_mu
 
 read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval/I",
                      "reweightPU/F", "reweightPUDown/F", "reweightPUUp/F", "reweightPUVDown/F", "reweightPUVUp/F",
@@ -143,14 +147,14 @@ weightStringInv = wsInv + wsInv16 + wsInv17 + wsInv18
 
 filterCutData = getFilterCut( args.year, isData=True,  skipBadChargedCandidate=True )
 filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )
-tr            = TriggerSelector( args.year, singleLepton=True )
-triggerCutMc  = tr.getSelection( "MC" )
+#tr            = TriggerSelector( args.year, singleLepton=True )
+#triggerCutMc  = tr.getSelection( "MC" )
 
-data_sample.setSelectionString( filterCutData )
+data_sample.setSelectionString( [filterCutData, "reweightHEM>0"] )
 data_sample.setWeightString( "weight" )
 
-for s in mc:
-    s.setSelectionString( [ filterCutMc, triggerCutMc, "pTStitching==1", "overlapRemoval==1" ] )
+for s in mc + [qcd]:
+    s.setSelectionString( [ filterCutMc, "pTStitching==1", "overlapRemoval==1", "reweightHEM>0" ] )
     s.read_variables = read_variables_MC
     sampleWeight     = "1"
 
@@ -170,30 +174,25 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
     njets        = setup.parameters["nJet"][0]
 
     selection  = setup.selection( "DataMC", channel=args.mode )["prefix"]
-    print selection
-#    selection     = allSelection + "-" + args.mode
-    preSelection     = cutInterpreter.cutString( selection )
     selection     = cutInterpreter.cutString( selection )
+    selection += "&&triggered==1"
     if args.addCut:
         print cutInterpreter.cutString( args.addCut )
         selection += "&&" + cutInterpreter.cutString( args.addCut )
     print( "Using selection string: %s"%args.selection )
-    print selection
+    print "sel", selection
 
-#    preSelection  = setup.selection("DataMC",   channel=args.mode, **setup.defaultParameters( update=QCD_updates ))["prefix"]
-    print preSelection
-#    preSelection += "-" + args.mode + "Inv"
-#    preSelection  = cutInterpreter.cutString( preSelection )
-    print preSelection
-    print args.addCut
+    preSelection  = setup.selection("DataMC",   channel=args.mode, **setup.defaultParameters( update=QCD_updates ))["prefix"]
+    preSelection  = cutInterpreter.cutString( preSelection )
+    preSelection += "&&triggeredInvIso==1"
+    if args.bTagSideband:
+        preSelection = preSelection.replace("nBTagGoodInvLepIso==0","nBTagGoodInvLepIso>=1")
+    print "inv sel", preSelection
     if args.addCut:
         addSel = cutInterpreter.cutString( args.addCut )
-        print addSel
         for iso, invIso in replaceSelection.iteritems():
             preSelection = preSelection.replace(iso,invIso)
             addSel = addSel.replace(iso,invIso)
-        print preSelection
-        print addSel
         preSelection += "&&" + addSel
 else:
     raise Exception("Region not implemented")
@@ -286,6 +285,34 @@ for s in mc:
 # remove negative bins
 for i in range(qcdHist.GetNbinsX()):
     if qcdHist.GetBinContent(i+1) < 0: qcdHist.SetBinContent(i+1, 0)
+
+
+# qcd MC template
+qcd.setWeightString( weightStringAR + "*" + sampleWeight )
+key = (qcd.name, "mT", "_".join(map(str,binning)), qcd.weightString, qcd.selectionString, selection)
+if dirDB.contains(key) and not args.overwrite:
+    qcd.hist = dirDB.get(key)
+else:
+    qcd.hist = qcd.get1DHistoFromDraw( "mT", binning=binning, selectionString=selection, addOverFlowBin="upper" )
+    dirDB.add(key, qcd.hist)
+
+flavbinning = [ 23, 0, 23 ]
+key = (qcd.name, "genPartFlav", "_".join(map(str,flavbinning)), qcd.weightString, qcd.selectionString, selection)
+if dirDB.contains(key) and not args.overwrite:
+    flavHist = dirDB.get(key)
+else:
+    flavHist = qcd.get1DHistoFromDraw( "LeptonTight0_genPartFlav", binning=flavbinning, selectionString=selection, addOverFlowBin="upper" )
+    dirDB.add(key, flavHist)
+
+flavHist.style = styles.lineStyle( color.QCD, width=3 )
+flavHist.legendText = "QCD (MC, %s)"%args.mode.replace("mu","#mu")
+
+qcd.hist.style = styles.lineStyle( ROOT.kBlue, width=3 )
+qcd.hist.legendText = "QCD Template (MC, %s)"%args.mode.replace("mu","#mu")
+
+qcdTemplate_comp = qcdHist.Clone("QCDTemplate_comp")
+qcdTemplate_comp.style = styles.lineStyle( color.QCD, width=3 )
+qcdTemplate_comp.legendText = "QCD Template (Data, %s)"%args.mode.replace("mu","#mu")
 
 # copy template
 qcdTemplate            = qcdHist.Clone("QCDTemplate")
@@ -393,6 +420,8 @@ plots.append( Plot.fromHisto( "mT",          mTHistos,        texX = "m_{T} [GeV
 plots.append( Plot.fromHisto( "mT_fit",      mTHistos_fit,    texX = "m_{T} [GeV]",                texY = "Number of Events" ) )
 plots.append( Plot.fromHisto( "mT_sideband", mTHistos_SB,     texX = "m_{T} (QCD sideband) [GeV]", texY = "Number of Events" ) )
 #plots.append( Plot.fromHisto( "mT_template", [[qcdTemplate]], texX = "m_{T} [GeV]",                texY = "Number of Events" ) )
+mcPlot = Plot.fromHisto( "mT_MCcomp", [[qcd.hist], [qcdTemplate_comp]], texX = "m_{T} [GeV]",                texY = "Number of Events" )
+flavPlot = Plot.fromHisto( "genPartFlav_QCD", [[flavHist]], texX = "genPartFlav",                texY = "Number of Events" )
 
 for plot in plots:
 
@@ -405,10 +434,16 @@ for plot in plots:
 
     for log in [True, False]:
 
+        histModifications  = []
+        histModifications += [lambda h: h.GetYaxis().SetTitleOffset(1.6 if log else 2.2)]
+
+        ratioHistModifications  = []
+        ratioHistModifications += [lambda h: h.GetYaxis().SetTitleOffset(1.6 if log else 2.2)]
+
         if plot.name == "mT" or plot.name == "mT_fit":
-            ratio = {'yRange':(0.1,1.9)}
+            ratio = {'yRange':(0.1,1.9), "histModifications":ratioHistModifications}
         elif plot.name == "mT_sideband":
-            ratio = {'histos':[(2,3)], 'logY':log, 'texY': 'Template', 'yRange': (0.03, maxQCD*2) if log else (0.001, maxQCD*1.2)}
+            ratio = {'histos':[(2,3)], 'logY':log, 'texY': 'Template', 'yRange': (0.03, maxQCD*2) if log else (0.001, maxQCD*1.2), "histModifications":ratioHistModifications}
         else:
             ratio = None
 
@@ -420,7 +455,52 @@ for plot in plots:
                        ratio = ratio,
                        drawObjects = drawObjects( lumi_scale ),
                        legend = legend,
+                       histModifications = histModifications,
                        copyIndexPHP = True,
                        )
+
+legend = (0.2, 0.78, 0.9, 0.9)
+for log in [True, False]:
+
+    histModifications  = []
+    histModifications += [lambda h: h.GetYaxis().SetTitleOffset(1.6 if log else 2.2)]
+
+    ratioHistModifications  = []
+    ratioHistModifications += [lambda h: h.GetYaxis().SetTitleOffset(1.6 if log else 2.2)]
+
+    ratio = {'yRange':(0.1,1.9), "histModifications":ratioHistModifications}
+    plot_directory_ = os.path.join( plot_directory, "transferFactor", str(args.year), args.plot_directory, "qcdHistos",  selDir, args.mode, "log" if log else "lin" )
+    plotting.draw( mcPlot,
+                   plot_directory = plot_directory_,
+                   logX = False, logY = log, sorting = False,
+                   yRange = (0.3, "auto"),
+                   scaling = {1:0},
+                   ratio = ratio,
+                   drawObjects = drawObjects( lumi_scale ),
+                   legend = legend,
+                   histModifications = histModifications,
+                   copyIndexPHP = True,
+                   )
+
+legend = (0.2, 0.84, 0.9, 0.9)
+for log in [True, False]:
+
+    histModifications  = []
+    histModifications += [lambda h: h.GetYaxis().SetTitleOffset(1.6 if log else 2.2)]
+
+    ratioHistModifications  = []
+    ratioHistModifications += [lambda h: h.GetYaxis().SetTitleOffset(1.6 if log else 2.2)]
+
+    ratio = {'yRange':(0.1,1.9), "histModifications":ratioHistModifications}
+    plot_directory_ = os.path.join( plot_directory, "transferFactor", str(args.year), args.plot_directory, "qcdHistos",  selDir, args.mode, "log" if log else "lin" )
+    plotting.draw( flavPlot,
+                   plot_directory = plot_directory_,
+                   logX = False, logY = log, sorting = False,
+                   yRange = (0.3, "auto"),
+                   drawObjects = drawObjects( lumi_scale ),
+                   legend = legend,
+                   histModifications = histModifications,
+                   copyIndexPHP = True,
+                   )
 
 del fitter
