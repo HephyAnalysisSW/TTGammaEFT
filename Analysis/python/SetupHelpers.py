@@ -13,9 +13,7 @@ allChannels   = ["all", "e", "mu", "eetight", "mumutight", "SFtight"]
 
 # processes
 signal      = ["TTG_gen","TTG_misID"]
-DY_misID    = ["DY_LO_misID"]
-TT_misID    = ["Top_misID"]
-other_misID = ["WJets_misID","other_misID","WG_misID","ZG_misID"]
+misID       = ["DY_LO_misID","Top_misID","WJets_misID","other_misID","WG_misID","ZG_misID"]
 WG          = ["WG_gen"]
 ZG          = ["ZG_gen"]
 other       = ["other_gen","Top_gen","DY_LO_gen","WJets_gen"]
@@ -24,30 +22,26 @@ fakes       = ["DY_LO_had","Top_had","TTG_had","WG_had","ZG_had","other_had","WJ
 
 default_sampleList            = ["TTG","Top","DY_LO","ZG","WG","WJets","other","QCD-DD"]
 default_systematicList        = ["TTG_TuneUp","TTG_TuneDown","TTG_erdOn","TTG_QCDbased","TTG_GluonMove","TTG_sys_incl"]
-default_photonSampleList      = signal + DY_misID + TT_misID + other_misID + WG + ZG + other + QCD + fakes + ["fakes-DD"]
+default_photonSampleList      = signal + misID + WG + ZG + other + QCD + fakes + ["fakes-DD"]
 
 processes = {
-             "signal":      { "process":signal,      "color":color.TTG,          "texName":"t#bar{t}#gamma (gen.#gamma, misid.e)" },
-             "DY_misID":    { "process":DY_misID,    "color":color.DY_misID,     "texName":"Drell-Yan (misid.e)"            },
-             "TT_misID":    { "process":TT_misID,    "color":color.TT_misID,     "texName":"t/t#bar{t} (misid.e)"            },
-             "other_misID": { "process":other_misID, "color":color.Other_misID,  "texName":"W+jets, W#gamma, Z#gamma, Other (misid.e)" },
-             "WG":          { "process":WG,          "color":color.WGamma,       "texName":"W#gamma (gen.#gamma)"    },
-             "ZG":          { "process":ZG,          "color":color.ZGamma,       "texName":"Z#gamma (gen.#gamma)"    },
-             "other":       { "process":other,       "color":color.Other,        "texName":"t/t#bar{t}, Drell-Yan, W+jets, Other (gen.#gamma)"      },
+             "signal":      { "process":signal,      "color":color.TTG,          "texName":"t#bar{t}#gamma" },
+             "misID":       { "process":misID,       "color":color.DY_misID,     "texName":"Misid. e"            },
+             "WG":          { "process":WG,          "color":color.WGamma,       "texName":"W#gamma"    },
+             "ZG":          { "process":ZG,          "color":color.ZGamma,       "texName":"Z#gamma"    },
+             "other":       { "process":other,       "color":color.Other,        "texName":"Other"      },
              "QCD":         { "process":QCD,         "color":color.QCD,          "texName":"Multijet"             },
-             "fakes":       { "process":fakes,       "color":color.fakes,        "texName":"Non-prompt #gamma" },
+             "fakes":       { "process":fakes,       "color":color.fakes,        "texName":"Hadronic #gamma/fake" },
 }
 
 processesSR = {
-               "signal":      { "process":signal,       "color":color.TTG,          "texName":"t#bar{t}#gamma (gen.#gamma, misid.e)" },
-               "DY_misID":    { "process":DY_misID,     "color":color.DY_misID,     "texName":"Drell-Yan (misid.e)"            },
-               "TT_misID":    { "process":TT_misID,     "color":color.TT_misID,     "texName":"t/t#bar{t} (misid.e)"            },
-               "other_misID": { "process":other_misID,  "color":color.Other_misID,  "texName":"W+jets, W#gamma, Z#gamma, Other (misid.e)" },
-               "WG":          { "process":WG,           "color":color.WGamma,       "texName":"W#gamma (gen.#gamma)"    },
-               "ZG":          { "process":ZG,           "color":color.ZGamma,       "texName":"Z#gamma (gen.#gamma)"    },
-               "other":       { "process":other,        "color":color.Other,        "texName":"t/t#bar{t}, Drell-Yan, W+jets, Other (gen.#gamma)"      },
+               "signal":      { "process":signal,       "color":color.TTG,          "texName":"t#bar{t}#gamma" },
+               "misID":       { "process":misID,        "color":color.DY_misID,     "texName":"Misid. e"            },
+               "WG":          { "process":WG,           "color":color.WGamma,       "texName":"W#gamma"    },
+               "ZG":          { "process":ZG,           "color":color.ZGamma,       "texName":"Z#gamma"    },
+               "other":       { "process":other,        "color":color.Other,        "texName":"Other"      },
                "QCD":         { "process":QCD,          "color":color.QCD,          "texName":"Multijet"             },
-               "fakes":       { "process":["fakes-DD"], "color":color.fakes,        "texName":"Non-prompt #gamma" },
+               "fakes":       { "process":["fakes-DD"], "color":color.fakes,        "texName":"Hadronic #gamma/fake" },
 }
 
 processesNoPhoton = {
@@ -62,43 +56,36 @@ processesNoPhoton = {
 }
 
 default_processes = {
-             "signal":      { "process":["TTG"]+signal,  "color":color.TTG,          "texName":"t#bar{t}#gamma (gen.#gamma, misid.e)" },
+             "signal":      { "process":["TTG"]+signal,  "color":color.TTG,          "texName":"t#bar{t}#gamma" },
              "DY":          { "process":["DY_LO"],       "color":color.DY,           "texName":"Drell-Yan"        },
-             "DY_misID":    { "process":DY_misID,        "color":color.DY_misID,     "texName":"Drell-Yan (misid.e)"            },
+             "misID":       { "process":misID,           "color":color.DY_misID,     "texName":"Misid. e"            },
              "TT":          { "process":["Top"],         "color":color.TT,           "texName":"t/t#bar{t}"     },
-             "TT_misID":    { "process":TT_misID,        "color":color.TT_misID,     "texName":"t/t#bar{t} (misid.e)"            },
-             "WG":          { "process":["WG"]+WG,       "color":color.WGamma,       "texName":"W#gamma (gen.#gamma)"    },
-             "ZG":          { "process":["ZG"]+ZG,       "color":color.ZGamma,       "texName":"Z#gamma (gen.#gamma)"    },
-             "WJets":       { "process":["WJets"],       "color":color.WJets,        "texName":"W+jets (gen.#gamma)"      },
-             "other":       { "process":["other"]+other, "color":color.Other,        "texName":"t/t#bar{t}, Drell-Yan, W+jets, Other (gen.#gamma)"      },
-             "other_misID": { "process":other_misID,     "color":color.Other_misID,  "texName":"W+jets, W#gamma, Z#gamma, Other (misid.e)" },
+             "WG":          { "process":["WG"]+WG,       "color":color.WGamma,       "texName":"W#gamma"    },
+             "ZG":          { "process":["ZG"]+ZG,       "color":color.ZGamma,       "texName":"Z#gamma"    },
+             "WJets":       { "process":["WJets"],       "color":color.WJets,        "texName":"W+jets"      },
+             "other":       { "process":["other"]+other, "color":color.Other,        "texName":"Other"      },
              "QCD":         { "process":QCD,             "color":color.QCD,          "texName":"Multijet"             },
-             "fakes":       { "process":fakes,           "color":color.fakes,        "texName":"Non-prompt #gamma" },
+             "fakes":       { "process":fakes,           "color":color.fakes,        "texName":"Hadronic #gamma/fake" },
 }
 
 processesWGPOI = {
-             "signal":      { "process":WG + ["WG_misID","WG_had"],          "color":color.WGamma,       "texName":"W#gamma (gen.#gamma)"    },
-             "TTG":         { "process":signal,      "color":color.TTG,          "texName":"t#bar{t}#gamma (gen.#gamma, misid.e)" },
-             "DY_misID":    { "process":DY_misID,    "color":color.DY_misID,     "texName":"Drell-Yan (misid.e)"            },
-             "TT_misID":    { "process":TT_misID,    "color":color.TT_misID,     "texName":"t/t#bar{t} (misid.e)"            },
-             "other_misID": { "process":[item for item in other_misID if not "WG" in item], "color":color.Other_misID,  "texName":"W+jets, W#gamma, Z#gamma, Other (misid.e)" },
-             "ZG":          { "process":ZG,          "color":color.ZGamma,       "texName":"Z#gamma (gen.#gamma)"    },
-             "other":       { "process":other,       "color":color.Other,        "texName":"t/t#bar{t}, Drell-Yan, W+jets, Other (gen.#gamma)"      },
+             "signal":      { "process":WG + ["WG_misID","WG_had"],          "color":color.WGamma,       "texName":"W#gamma"    },
+             "TTG":         { "process":signal,      "color":color.TTG,          "texName":"t#bar{t}#gamma" },
+             "misID":       { "process":misID,    "color":color.DY_misID,     "texName":"Misid. e"            },
+             "ZG":          { "process":ZG,          "color":color.ZGamma,       "texName":"Z#gamma"    },
+             "other":       { "process":other,       "color":color.Other,        "texName":"Other"      },
              "QCD":         { "process":QCD,         "color":color.QCD,          "texName":"Multijet"             },
-             "fakes":       { "process":[item for item in fakes if not "WG" in item],       "color":color.fakes,        "texName":"Non-prompt #gamma" },
+             "fakes":       { "process":[item for item in fakes if not "WG" in item],       "color":color.fakes,        "texName":"Hadronic #gamma/fake" },
 }
 
 processesMisIDPOI = {
-             "signal":      { "process":other_misID+TT_misID+DY_misID, "color":color.DY_misID,     "texName":"misid.e (tt, Drell-Yan, W#gamma, Z#gamma, other)" },
-             "TTG":         { "process":signal,                        "color":color.TTG,          "texName":"t#bar{t}#gamma (gen.#gamma, misid.e)" },
-             "DY_misID":    { "process":DY_misID,                      "color":color.DY_misID,     "texName":"Drell-Yan (misid.e)"            },
-             "TT_misID":    { "process":TT_misID,                      "color":color.TT_misID,     "texName":"t/t#bar{t} (misid.e)"            },
-             "WG":          { "process":WG,                            "color":color.WGamma,       "texName":"W#gamma (gen.#gamma)"    },
-             "ZG":          { "process":ZG,                            "color":color.ZGamma,       "texName":"Z#gamma (gen.#gamma)"    },
-             "other":       { "process":other,                         "color":color.Other,        "texName":"Other (gen.#gamma)"      },
-             "other_misID": { "process":other_misID,                   "color":color.Other_misID,  "texName":"W+jets, W#gamma, Z#gamma, Other (misid.e)" },
+             "signal":      { "process":misID, "color":color.DY_misID,     "texName":"Misid. e" },
+             "TTG":         { "process":signal,                        "color":color.TTG,          "texName":"t#bar{t}#gamma" },
+             "WG":          { "process":WG,                            "color":color.WGamma,       "texName":"W#gamma"    },
+             "ZG":          { "process":ZG,                            "color":color.ZGamma,       "texName":"Z#gamma"    },
+             "other":       { "process":other,                         "color":color.Other,        "texName":"Other"      },
              "QCD":         { "process":QCD,                           "color":color.QCD,          "texName":"Multijet"             },
-             "fakes":       { "process":fakes,                         "color":color.fakes,        "texName":"Non-prompt #gamma" },
+             "fakes":       { "process":fakes,                         "color":color.fakes,        "texName":"Hadronic #gamma/fake" },
 }
 
 processesDYPOI = {
@@ -154,6 +141,24 @@ signalRegions["SR3"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag"
                           "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                          }
 
+signalRegions["SR3B1"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,1), "nPhoton":(1,1) },
+                          "channels":   lepChannels,
+                          "regions":    regionsTTGloose,
+                          "inclRegion": inclRegionsTTGloose,
+                          "noPhotonCR": False,
+                          "processes":  processesSR,
+                          "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                         }
+
+signalRegions["SR3B2"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(2,-1), "nPhoton":(1,1) },
+                          "channels":   lepChannels,
+                          "regions":    regionsTTGloose,
+                          "inclRegion": inclRegionsTTGloose,
+                          "noPhotonCR": False,
+                          "processes":  processesSR,
+                          "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                         }
+
 signalRegions["SR3p"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
                           "channels":   lepChannels,
                           "regions":    regionsTTGloose,
@@ -169,6 +174,24 @@ signalRegions["SR4p"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag
                           "inclRegion": inclRegionsTTGloose,
                           "noPhotonCR": False,
                           "processes":  processes,
+                          "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                         }
+
+signalRegions["SR4pB1"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,1), "nPhoton":(1,1) },
+                          "channels":   lepChannels,
+                          "regions":    regionsTTGloose,
+                          "inclRegion": inclRegionsTTGloose,
+                          "noPhotonCR": False,
+                          "processes":  processesSR,
+                          "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                         }
+
+signalRegions["SR4pB2"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(2,-1), "nPhoton":(1,1) },
+                          "channels":   lepChannels,
+                          "regions":    regionsTTGloose,
+                          "inclRegion": inclRegionsTTGloose,
+                          "noPhotonCR": False,
+                          "processes":  processesSR,
                           "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                          }
 
@@ -361,6 +384,24 @@ signalRegions["SR3M3"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTa
                             "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                          }
 
+signalRegions["SR3B1M3"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,1), "nPhoton":(1,1) },
+                            "channels":   lepChannels,
+                            "regions":    m3PtlooseRegions,
+                            "inclRegion": m3Regions,
+                            "noPhotonCR": False,
+                            "processes":  processesSR,
+                            "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                         }
+
+signalRegions["SR3B2M3"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(2,-1), "nPhoton":(1,1) },
+                            "channels":   lepChannels,
+                            "regions":    m3PtlooseRegions,
+                            "inclRegion": m3Regions,
+                            "noPhotonCR": False,
+                            "processes":  processesSR,
+                            "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                         }
+
 signalRegions["SR3M3e"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
                             "channels":   ["e"],
                             "regions":    m3PtlooseRegions,
@@ -398,6 +439,24 @@ signalRegions["SR3pM3"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1), "nB
                          }
 
 signalRegions["SR4pM3"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
+                            "channels":   lepChannels,
+                            "regions":    m3PtlooseRegions,
+                            "inclRegion": m3Regions,
+                            "noPhotonCR": False,
+                            "processes":  processesSR,
+                            "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                         }
+
+signalRegions["SR4pB1M3"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,1), "nPhoton":(1,1) },
+                            "channels":   lepChannels,
+                            "regions":    m3PtlooseRegions,
+                            "inclRegion": m3Regions,
+                            "noPhotonCR": False,
+                            "processes":  processesSR,
+                            "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                         }
+
+signalRegions["SR4pB2M3"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(2,-1), "nPhoton":(1,1) },
                             "channels":   lepChannels,
                             "regions":    m3PtlooseRegions,
                             "inclRegion": m3Regions,
@@ -451,15 +510,13 @@ default_m3Window     = "all"
 default_photonIso    = None
 
 SSMSF_val = {}
-SSMSF_val[2016]    = u_float( 1.03, 0.09 )
-#SSMSF_val[2017]    = u_float( 1.14, 0.10 )
+SSMSF_val[2016]    = u_float( 1.02, 0.09 )
 SSMSF_val[2017]    = u_float( 1.22, 0.10 )
-SSMSF_val[2018]    = u_float( 1.14, 0.09 )
-#SSMSF_val["RunII"] = u_float( 1.08, 0.07 )
-SSMSF_val["RunII"] = u_float( 1.12, 0.07 )
+SSMSF_val[2018]    = u_float( 1.13, 0.10 )
+SSMSF_val["RunII"] = u_float( 1.17, 0.08 )
 
 WJetsSF_val = {}
-WJetsSF_val[2016]    = u_float( 1.14, 0.13 )
+WJetsSF_val[2016]    = u_float( 1.17, 0.13 )
 WJetsSF_val[2017]    = u_float( 1.25, 0.13 )
 WJetsSF_val[2018]    = u_float( 1.09, 0.13 )
 WJetsSF_val["RunII"] = u_float( 1.14, 0.13 )
@@ -596,9 +653,12 @@ misID2pSF_val[2017]    = u_float( 2.59, 0.34 )
 misID2pSF_val[2018]    = u_float( 1.56, 0.18 )
 
 misID3pSF_val = {}
-misID3pSF_val[2016]    = u_float( 2.12, 0.39 )
+#misID3pSF_val[2016]    = u_float( 2.12, 0.39 )
+#misID3pSF_val[2017]    = u_float( 2.27, 0.48 )
+#misID3pSF_val[2018]    = u_float( 1.47, 0.26 )
+misID3pSF_val[2016]    = u_float( 2.31, 0.39 )
 misID3pSF_val[2017]    = u_float( 2.27, 0.48 )
-misID3pSF_val[2018]    = u_float( 1.47, 0.26 )
+misID3pSF_val[2018]    = u_float( 1.53, 0.26 )
 
 misID4pSF_val = {}
 misID4pSF_val[2016]    = u_float( 1.92, 0.32 )
@@ -1066,6 +1126,22 @@ controlRegions["VG3"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,3), "nB
                            "processes":  processes,
                          }
 
+controlRegions["VGdR3"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1) },
+                           "channels":   lepChannels,
+                           "regions":    mLgdRRegions,
+                           "inclRegion": mLgRegions,
+                           "noPhotonCR": False,
+                           "processes":  processes,
+                         }
+
+controlRegions["VGAbsEta3"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1) },
+                           "channels":   lepChannels,
+                           "regions":    mLgAbsEtaRegions,
+                           "inclRegion": mLgRegions,
+                           "noPhotonCR": False,
+                           "processes":  processes,
+                         }
+
 controlRegions["WG3"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1) },
                            "channels":   lepChannels,
                            "regions":    highmLgPtRegions,
@@ -1108,6 +1184,22 @@ controlRegions["VG5"]  = { "parameters": { "zWindow":"offZeg", "nJet":(5,5), "nB
 controlRegions["VG4p"] = { "parameters": { "zWindow":"offZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1)  },
                            "channels":   lepChannels,
                            "regions":    mLgPtRegions,
+                           "inclRegion": mLgRegions,
+                           "noPhotonCR": False,
+                           "processes":  processes,
+                         }
+
+controlRegions["VGdR4p"] = { "parameters": { "zWindow":"offZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1)  },
+                           "channels":   lepChannels,
+                           "regions":    mLgdRRegions,
+                           "inclRegion": mLgRegions,
+                           "noPhotonCR": False,
+                           "processes":  processes,
+                         }
+
+controlRegions["VGAbsEta4p"] = { "parameters": { "zWindow":"offZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1)  },
+                           "channels":   lepChannels,
+                           "regions":    mLgAbsEtaRegions,
                            "inclRegion": mLgRegions,
                            "noPhotonCR": False,
                            "processes":  processes,
@@ -1211,6 +1303,22 @@ controlRegions["misDY3"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,3), "
                               "processes":  processes,
                             }
 
+controlRegions["misDYAbsEta3"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1) },
+                              "channels":   ["e"],
+                              "regions":    regionsTTGAbsEtaUnfolding,
+                              "inclRegion": inclRegionsTTG,
+                              "noPhotonCR": False,
+                              "processes":  processes,
+                            }
+
+controlRegions["misDYdR3"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1) },
+                              "channels":   ["e"],
+                              "regions":    misDYdRRegions,
+                              "inclRegion": inclRegionsTTG,
+                              "noPhotonCR": False,
+                              "processes":  processes,
+                            }
+
 controlRegions["misDY3p"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,-1), "nBTag":(0,0), "nPhoton":(1,1) },
                               "channels":   ["e"],
                               "regions":    regionsTTG,
@@ -1243,8 +1351,32 @@ controlRegions["misDY4p"] = { "parameters": { "zWindow":"onZeg", "nJet":(4,-1), 
                               "processes":  processes,
                             }
 
+controlRegions["misDYAbsEta4p"] = { "parameters": { "zWindow":"onZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1) },
+                              "channels":   ["e"],
+                              "regions":    regionsTTGAbsEtaUnfolding,
+                              "inclRegion": inclRegionsTTG,
+                              "noPhotonCR": False,
+                              "processes":  processes,
+                            }
+
+controlRegions["misDYdR4p"] = { "parameters": { "zWindow":"onZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1) },
+                              "channels":   ["e"],
+                              "regions":    misDYdRRegions,
+                              "inclRegion": inclRegionsTTG,
+                              "noPhotonCR": False,
+                              "processes":  processes,
+                            }
+
 # nPhoton1p nBTag2 nJet2 offZeg m(e,gamma) CR for misID ScaleFactor TTbar
 controlRegions["misTT2"] = { "parameters": { "zWindow":"all", "nJet":(2,2), "nBTag":(2,2), "nPhoton":(1,1) },
+                             "channels":   lepChannels,
+                             "regions":    regionsTTG,
+                             "inclRegion": inclRegionsTTG,
+                             "noPhotonCR": False,
+                             "processes":  processes,
+                           }
+
+controlRegions["misTT2p"] = { "parameters": { "zWindow":"all", "nJet":(2,2), "nBTag":(2,-1), "nPhoton":(1,1) },
                              "channels":   lepChannels,
                              "regions":    regionsTTG,
                              "inclRegion": inclRegionsTTG,
