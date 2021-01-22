@@ -181,9 +181,13 @@ cacheDir    = os.path.join( cache_directory, "modelling",  str(args.year), "incl
 PDF_cache   = MergingDirDB( os.path.join( cacheDir, "PDF" ) )
 scale_cache = MergingDirDB( os.path.join( cacheDir, "Scale" ) )
 PS_cache    = MergingDirDB( os.path.join( cacheDir, "PS" ) )
+ISR_cache    = MergingDirDB( os.path.join( cacheDir, "ISR" ) )
+FSR_cache    = MergingDirDB( os.path.join( cacheDir, "FSR" ) )
 if not PDF_cache:   raise
 if not scale_cache: raise
 if not PS_cache:    raise
+if not ISR_cache:    raise
+if not FSR_cache:    raise
 
 def wrapper(arg):
         r, c, s, inclusive = arg
@@ -242,6 +246,8 @@ logger.info("Combining...")
 PDF_unc     = []
 Scale_unc   = []
 PS_unc      = []
+ISR_unc      = []
+FSR_unc      = []
 
 logger.info("Getting inclusive yield")
 sigma_incl_central       = estimateIncl.cachedEstimate(noRegions[0], 'all', setupIncl )
@@ -343,10 +349,13 @@ for c in channels:
         # calculate the PS uncertainties
         if PS_variations:
             ps_scales        = []
+            isr_fsr_scales   = []
             for var in PS_variations:
 
                 logger.debug("Getting yield for region with varied weight aS")
                 sigma_reweight_PS     = estimate.cachedEstimate(region, c, setup.sysClone(sys={'reweight':[var]}))
+
+                isr_fsr_scales.append(sigma_reweight_PS.val)
 
                 unc = abs( sigma_reweight_PS - sigma_central ) / sigma_central if sigma_central > 0 else u_float(0)
                 ps_scales.append(unc.val)
@@ -355,8 +364,12 @@ for c in channels:
             logger.info( "FSR up/down: %f, %f"%(round(ps_scales[1], 3), round( ps_scales[3], 3) ) )
 
             PS_scale_rel = max(ps_scales)
+            ISR_scale_rel = 0.5*abs(isr_fsr_scales[0]-isr_fsr_scales[2])/sigma_central.val if sigma_central.val else 0
+            FSR_scale_rel = 0.5*abs(isr_fsr_scales[1]-isr_fsr_scales[3])/sigma_central.val if sigma_central.val else 0
         else:
             PS_scale_rel = 0.
+            ISR_scale_rel = 0.
+            FSR_scale_rel = 0.
 
         niceName = " ".join([c, region.__str__()])
         logger.info("Calculated PDF, PS and scale uncertainties for region %s in channel %s"%(region, c))
@@ -364,9 +377,13 @@ for c in channels:
         logger.info("Relative PDF uncertainty: %s"%delta_sigma_rel)
         logger.info("Relative scale uncertainty: %s"%scale_rel)
         logger.info("Relative PS uncertainty: %s"%PS_scale_rel)
+        logger.info("Relative FSR uncertainty: %s"%FSR_scale_rel)
+        logger.info("Relative ISR uncertainty: %s"%ISR_scale_rel)
                 
         PDF_unc.append(delta_sigma_rel)
         PS_unc.append(PS_scale_rel)
+        ISR_unc.append(ISR_scale_rel)
+        FSR_unc.append(FSR_scale_rel)
         Scale_unc.append(scale_rel)
 
         # Store results
@@ -374,6 +391,8 @@ for c in channels:
         PDF_cache.add(   key, delta_sigma_rel, overwrite=True )
         scale_cache.add( key, scale_rel,       overwrite=True )
         PS_cache.add(    key, PS_scale_rel,    overwrite=True )
+        ISR_cache.add(   key, ISR_scale_rel,    overwrite=True )
+        FSR_cache.add(   key, FSR_scale_rel,    overwrite=True )
 
 logger.info("Min. PDF uncertainty: %.3f"%min(PDF_unc))
 logger.info("Max. PDF uncertainty: %.3f"%max(PDF_unc))
@@ -381,6 +400,12 @@ logger.info("Av. PDF uncertainty: %.3f"%(sum(PDF_unc)/len(PDF_unc) if PDF_unc el
 logger.info("Min. PS uncertainty: %.3f"%min(PS_unc))
 logger.info("Max. PS uncertainty: %.3f"%max(PS_unc))
 logger.info("Av. PS uncertainty: %.3f"%(sum(PS_unc)/len(PS_unc) if PS_unc else 1.))
+logger.info("Min. ISR uncertainty: %.3f"%min(ISR_unc))
+logger.info("Max. ISR uncertainty: %.3f"%max(ISR_unc))
+logger.info("Av. ISR uncertainty: %.3f"%(sum(ISR_unc)/len(ISR_unc) if ISR_unc else 1.))
+logger.info("Min. FSR uncertainty: %.3f"%min(FSR_unc))
+logger.info("Max. FSR uncertainty: %.3f"%max(FSR_unc))
+logger.info("Av. FSR uncertainty: %.3f"%(sum(FSR_unc)/len(FSR_unc) if FSR_unc else 1.))
 logger.info("Min. scale uncertainty: %.3f"%min(Scale_unc))
 logger.info("Max. scale uncertainty: %.3f"%max(Scale_unc))
 logger.info("Av. scale uncertainty: %.3f"%(sum(Scale_unc)/len(Scale_unc) if Scale_unc else 1.))
