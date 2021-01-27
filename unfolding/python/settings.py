@@ -337,7 +337,7 @@ class expected_ptG_RunII:
 #        } 
         ]
 
-    unfolding_signal_input        = signal
+    unfolding_signal_input        = data
     unfolding_signal_input_systematic_bands          = [
 #       {'name' : 'stat',
 #        'label': "\pm 1\sigma (stat.)",
@@ -356,8 +356,8 @@ class expected_ptG_RunII:
        {'name' : 'total',
         'label': "\pm 1\sigma (tot.)",
         'ref': signal,
-        'up':  add_sigmas(signal, +1),
-        'down':add_sigmas(signal, -1),
+        'up':  add_sigmas(signal, +1, ref = data),
+        'down':add_sigmas(signal, -1, ref = data),
         'color':ROOT.kOrange-9,
         },
         ]
@@ -599,7 +599,7 @@ class observed_absEta_RunII:
 #        } 
         ]
 
-    unfolding_signal_input        = signal
+    unfolding_signal_input        = data
     unfolding_signal_input_systematic_bands          = [
 #       {'name' : 'stat',
 #        'label': "\pm 1\sigma (stat.)",
@@ -618,8 +618,8 @@ class observed_absEta_RunII:
        {'name' : 'total',
         'label': "\pm 1\sigma (tot.)",
         'ref': signal,
-        'up':  add_sigmas(signal, +1),
-        'down':add_sigmas(signal, -1),
+        'up':  add_sigmas(signal, +1, ref = data),
+        'down':add_sigmas(signal, -1, ref = data),
         'color':ROOT.kOrange-9,
         },
         ]
@@ -1255,7 +1255,7 @@ class observed_dRlg_RunII:
 #        } 
         ]
 
-    unfolding_signal_input        = signal
+    unfolding_signal_input        = data
     unfolding_signal_input_systematic_bands          = [
 #       {'name' : 'stat',
 #        'label': "\pm 1\sigma (stat.)",
@@ -1274,8 +1274,8 @@ class observed_dRlg_RunII:
        {'name' : 'total',
         'label': "\pm 1\sigma (tot.)",
         'ref': signal,
-        'up':  add_sigmas(signal, +1),
-        'down':add_sigmas(signal, -1),
+        'up':  add_sigmas(signal, +1, ref = data),
+        'down':add_sigmas(signal, -1, ref = data),
         'color':ROOT.kOrange-9,
         },
         ]

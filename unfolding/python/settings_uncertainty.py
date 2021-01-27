@@ -7,6 +7,20 @@ from Analysis.Tools.MergingDirDB      import MergingDirDB
 #from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import lumi_year
 # hard coded to remove dependency
 lumi_year = {2016: 35920.0, 2017: 41530.0, 2018: 59740.0}
+
+jesSyst_all  = ['FlavorQCD', 'RelativeBal', 'HF', 'BBEC1', 'EC2', 'Absolute']
+for y in ["2016","2017","2018"]:
+    jesSyst_all += ['Absolute_%s'%y, 'HF_%s'%y, 'EC2_%s'%y, 'RelativeSample_%s'%y, 'BBEC1_%s'%y]
+
+systematic_pairs  = [ ('photonSFUp',  'photonSFDown'), ('photonElectronVetoSFUp',  'photonElectronVetoSFDown'), ('eResUp', 'eResDown'), ('eScaleUp', 'eScaleDown'), ("jerUp","jerDown") ]
+systematic_pairs += [ ("TuneUp","TuneDown") ]
+systematic_pairs += [ ("TriggerUp", "TriggerDown"), ("BTag_SF_b_Up","BTag_SF_b_Down"), ("BTag_SF_l_Up","BTag_SF_l_Down"), ("LeptonTrackingTightSFUp","LeptonTrackingTightSFDown") ]
+systematic_pairs += [ ("LeptonTightSFUp","LeptonTightSFDown"), ("LeptonTightSFStatUp","LeptonTightSFStatDown"), ("LeptonTightSFSystUp","LeptonTightSFSystDown"), ("L1PrefireUp","L1PrefireDown"), ("PUUp","PUDown") ]
+systematic_pairs += [ ("jes"+v+"Up","jes"+v+"Down") for v in jesSyst_all ]
+
+all_systematics = ['nominal','reweightTopPt','erdOn','GluonMove','QCDbased'] + sum([list(p) for p in systematic_pairs],[])
+
+
 allUncertainties = [
     "DY_normalization", "EGammaResolution", "EGammaScale", "FSR", "GluonMove", "Gluon_splitting", "ISR", "Int_Luminosity_2016", "Int_Luminosity_2016_2017", "Int_Luminosity_2017",
     "Int_Luminosity_2017_2018", "Int_Luminosity_2018", "Int_Luminosity_corr", "JEC_Absolute", "JEC_Absolute_2016", "JEC_Absolute_2017", "JEC_Absolute_2018", "JEC_BBEC1", "JEC_BBEC1_2016",
@@ -28,15 +42,15 @@ allUncertainties = [
 def add_sigmas( h, sigmas, ref = None):
     if not h: return None
     ref_ = ref if ref is not None else h
-    res = h.Clone()
+    res = copy.deepcopy(h.Clone())
     for i in range(0, h.GetNbinsX()+2):
         res.SetBinContent( i, ref_.GetBinContent( i ) + sigmas*h.GetBinError( i ) )
     return res
 
 def add_error_from_Upvariation( h, ref ):
     if not h: return None
-    res = h.Clone()
-    for i in range(0, h.GetNbinsX()+2):
+    res = copy.deepcopy(h.Clone())
+    for i in range(1, h.GetNbinsX()+1):
         res.SetBinError( i, h.GetBinContent( i ) - ref.GetBinContent( i ) )
         res.SetBinContent( i, ref.GetBinContent( i ) )
     return res
@@ -72,9 +86,10 @@ class observed_ptG_2016:
 #  if False:
     expected        = False
     cache_directory = default_cache_directory 
+    corr_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
     signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties if not "2017" in u and not "2018" in u}
     mcStatUp_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
@@ -85,10 +100,12 @@ class observed_ptG_2016:
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
     dirDB           = MergingDirDB(cache_dir)
+    corrFitObj      = dirDB.get( corr_key )
+    signal_frozen   = dirDB.get( signal_key )
     uncertainties   = {}
     for u, k in uncertaintyUp_key.iteritems():
-        uncertainties[u] = add_error_from_Upvariation( dirDB.get( k ), signal )
-    mcStat        = add_error_from_Upvariation( dirDB.get( mcStatUp_key ), signal )
+        uncertainties[u] = add_error_from_Upvariation( dirDB.get( k ), signal_frozen )
+    mcStat        = add_error_from_Upvariation( dirDB.get( mcStatUp_key ), signal_frozen )
 
     years           = ["2016"]
 
@@ -161,8 +178,8 @@ class observed_ptG_2016:
         'color':ROOT.kOrange-9,
         } for u, h in uncertainties.iteritems()
         ]
-    unfolding_signal_input_MCStat          = [
-       {'name' : "MCStat",
+    unfolding_signal_input_MCStat          = {
+        'name' : "MCStat",
         'label': "\pm 1\sigma (MC stat.)",
         'matrix': "nominal",
         'ref': data,
@@ -170,16 +187,26 @@ class observed_ptG_2016:
         'down':add_sigmas(mcStat, -1, ref = data),
         'color':ROOT.kOrange-9,
         }
-        ]
+    unfolding_data_input_systematic        = {
+        'name' : "data",
+        'label': "\pm 1\sigma",
+        'matrix': "nominal",
+        'ref': data,
+        'up':  add_sigmas(data, +1),
+        'down':add_sigmas(data, -1),
+        'color':ROOT.kBlue-10,
+        }
+
 
 
 class observed_ptG_2017:
 #  if False:
     expected        = False
     cache_directory = default_cache_directory 
+    corr_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
     signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties if not "2016" in u and not "2018" in u}
     mcStatUp_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2017", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
@@ -190,10 +217,12 @@ class observed_ptG_2017:
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2017", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
     dirDB           = MergingDirDB(cache_dir)
+    corrFitObj      = dirDB.get( corr_key )
+    signal_frozen   = dirDB.get( signal_key )
     uncertainties   = {}
     for u, k in uncertaintyUp_key.iteritems():
-        uncertainties[u] = add_error_from_Upvariation( dirDB.get( k ), signal )
-    mcStat          = add_error_from_Upvariation( dirDB.get( mcStatUp_key ), signal )
+        uncertainties[u] = add_error_from_Upvariation( dirDB.get( k ), signal_frozen )
+    mcStat          = add_error_from_Upvariation( dirDB.get( mcStatUp_key ), signal_frozen )
 
     years           = ["2017"]
 
@@ -266,8 +295,8 @@ class observed_ptG_2017:
         'color':ROOT.kOrange-9,
         } for u, h in uncertainties.iteritems()
         ]
-    unfolding_signal_input_MCStat          = [
-       {'name' : "MCStat",
+    unfolding_signal_input_MCStat          = {
+        'name' : "MCStat",
         'label': "\pm 1\sigma (MC stat.)",
         'matrix': "nominal",
         'ref': data,
@@ -275,15 +304,25 @@ class observed_ptG_2017:
         'down':add_sigmas(mcStat, -1, ref = data),
         'color':ROOT.kOrange-9,
         }
-        ]
+    unfolding_data_input_systematic        = {
+        'name' : "data",
+        'label': "\pm 1\sigma",
+        'matrix': "nominal",
+        'ref': data,
+        'up':  add_sigmas(data, +1),
+        'down':add_sigmas(data, -1),
+        'color':ROOT.kBlue-10,
+        }
+
 
 class observed_ptG_2018:
 #  if False:
     expected        = False
     cache_directory = default_cache_directory 
+    corr_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
     signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties if not "2017" in u and not "2016" in u}
     mcStatUp_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2018", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
@@ -294,10 +333,12 @@ class observed_ptG_2018:
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2018", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
     dirDB           = MergingDirDB(cache_dir)
+    corrFitObj      = dirDB.get( corr_key )
+    signal_frozen   = dirDB.get( signal_key )
     uncertainties   = {}
     for u, k in uncertaintyUp_key.iteritems():
-        uncertainties[u] = add_error_from_Upvariation( dirDB.get( k ), signal )
-    mcStat          = add_error_from_Upvariation( dirDB.get( mcStatUp_key ), signal )
+        uncertainties[u] = add_error_from_Upvariation( dirDB.get( k ), signal_frozen )
+    mcStat          = add_error_from_Upvariation( dirDB.get( mcStatUp_key ), signal_frozen )
 
     years           = ["2018"]
 
@@ -370,8 +411,8 @@ class observed_ptG_2018:
         'color':ROOT.kOrange-9,
         } for u, h in uncertainties.iteritems()
         ]
-    unfolding_signal_input_MCStat          = [
-       {'name' : "MCStat",
+    unfolding_signal_input_MCStat          = {
+        'name' : "MCStat",
         'label': "\pm 1\sigma (MC stat.)",
         'matrix': "nominal",
         'ref': data,
@@ -379,12 +420,22 @@ class observed_ptG_2018:
         'down':add_sigmas(mcStat, -1, ref = data),
         'color':ROOT.kOrange-9,
         }
-        ]
+    unfolding_data_input_systematic        = {
+        'name' : "data",
+        'label': "\pm 1\sigma",
+        'matrix': "nominal",
+        'ref': data,
+        'up':  add_sigmas(data, +1),
+        'down':add_sigmas(data, -1),
+        'color':ROOT.kBlue-10,
+        }
+
 
 
 class expected_ptG_RunII:
   if False:
     cache_directory = default_cache_directory 
+    corr_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_data_%s"
     signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_signal_%s"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
@@ -400,10 +451,12 @@ class expected_ptG_RunII:
 
     cache_dir              = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected", "postFit", "freeze")
     dirDB                  = MergingDirDB(cache_dir)
+    corrFitObj      = dirDB.get( corr_key )
+    signal_frozen_histos   =  [ dirDB.get( signal_key%year ) for year in years ]
     uncertainties_histos   = {}
     for u, k in uncertaintyUp_key.iteritems():
-        uncertainties_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signal_histos[i] ) for i,year in enumerate(years)]
-    mcStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signal_histos[i] ) for i,year in enumerate(years) ]
+        uncertainties_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signal_frozen_histos[i] ) for i,year in enumerate(years)]
+    mcStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signal_frozen_histos[i] ) for i,year in enumerate(years) ]
 
     reco_variable   = "PhotonGood0_pt"
     reco_selection  = "SR3p"
@@ -457,7 +510,7 @@ class expected_ptG_RunII:
     unfolding_data_input_systematic_bands          = [
         ]
 
-    unfolding_signal_input        = signal
+    unfolding_signal_input        = data
     unfolding_signal_input_systematic_bands          = [
        {'name' : 'stat',
         'label': "\pm 1\sigma (stat.)",
@@ -470,9 +523,9 @@ class expected_ptG_RunII:
        {'name' : 'total',
         'label': "\pm 1\sigma (tot.)",
         'matrix': "nominal",
-        'ref': signal,
-        'up':  add_sigmas(signal, +1),
-        'down':add_sigmas(signal, -1),
+        'ref': data,
+        'up':  add_sigmas(signal, +1, ref = data),
+        'down':add_sigmas(signal, -1, ref = data),
         'color':ROOT.kOrange-9,
         },
         ]
@@ -486,8 +539,8 @@ class expected_ptG_RunII:
         'color':ROOT.kOrange-9,
         } for u, h in uncertainties.iteritems()
         ]
-    unfolding_signal_input_MCStat          = [
-       {'name' : "MCStat",
+    unfolding_signal_input_MCStat          = {
+        'name' : "MCStat",
         'label': "\pm 1\sigma (MC stat.)",
         'matrix': "nominal",
         'ref': data,
@@ -495,12 +548,22 @@ class expected_ptG_RunII:
         'down':add_sigmas(mcStat, -1, ref = data),
         'color':ROOT.kOrange-9,
         }
-        ]
+    unfolding_data_input_systematic        = {
+        'name' : "data",
+        'label': "\pm 1\sigma",
+        'matrix': "nominal",
+        'ref': data,
+        'up':  add_sigmas(data, +1),
+        'down':add_sigmas(data, -1),
+        'color':ROOT.kBlue-10,
+        }
+
 
 
 class observed_ptG_RunII:
 #  if False:
     cache_directory = default_cache_directory 
+    corr_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data_%s"
     signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal_%s"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
@@ -511,15 +574,18 @@ class observed_ptG_RunII:
 
     years           = ["2016", "2017", "2018"]
 
-    data_histos     =  [ dirDB.get( data_key%year ) for year in years ] 
-    signal_histos   =  [ dirDB.get( signal_key%year ) for year in years ] 
+    data_histos     =  [ dirDB.get( data_key%year ) for year in years ]
+    signal_histos   =  [ dirDB.get( signal_key%year ) for year in years ]
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "observed", "postFit", "freeze")
     dirDB           = MergingDirDB(cache_dir)
+    corrFitObj      =  dirDB.get( corr_key )
+
+    signal_frozen_histos   =  [ dirDB.get( signal_key%year ) for year in years ]
     uncertainties_histos   = {}
     for u, k in uncertaintyUp_key.iteritems():
-        uncertainties_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signal_histos[i] ) for i,year in enumerate(years)]
-    mcStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signal_histos[i] ) for i,year in enumerate(years) ] 
+        uncertainties_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signal_frozen_histos[i] ) for i,year in enumerate(years)]
+    mcStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signal_frozen_histos[i] ) for i,year in enumerate(years) ]
 
     reco_variable   = "PhotonGood0_pt"
     reco_selection  = "SR3p"
@@ -562,7 +628,7 @@ class observed_ptG_RunII:
     tex_gen  = "p^{gen}_{T}(#gamma) (GeV)"
     tex_unf  = "p^{fid.}_{T}(#gamma) (GeV)"
     tex_pur  = "p_{T}(#gamma) (GeV)"
-    texY     = 'Fiducial cross section (fb)'    
+    texY     = 'Fiducial cross section (fb)'
     y_range         = (.7, "auto") #(0.9, 9000)
     y_range_ratio   = (0.69,1.31)
     data_legendText = "Data (137/fb)"
@@ -601,8 +667,8 @@ class observed_ptG_RunII:
         'color':ROOT.kOrange-9,
         } for u, h in uncertainties.iteritems()
         ]
-    unfolding_signal_input_MCStat          = [
-       {'name' : "MCStat",
+    unfolding_signal_input_MCStat          = {
+        'name' : "MCStat",
         'label': "\pm 1\sigma (MC stat.)",
         'matrix': "nominal",
         'ref': data,
@@ -610,13 +676,22 @@ class observed_ptG_RunII:
         'down':add_sigmas(mcStat, -1, ref = data),
         'color':ROOT.kOrange-9,
         }
-        ]
+    unfolding_data_input_systematic        = {
+        'name' : "data",
+        'label': "\pm 1\sigma",
+        'matrix': "nominal",
+        'ref': data,
+        'up':  add_sigmas(data, +1),
+        'down':add_sigmas(data, -1),
+        'color':ROOT.kBlue-10,
+        }
 
 
 class expected_absEta_RunII:
   if False:
     expected        = True
     cache_directory = default_cache_directory 
+    corr_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_data_%s"
     signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_signal_%s"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
@@ -632,10 +707,12 @@ class expected_absEta_RunII:
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
     dirDB           = MergingDirDB(cache_dir)
+    corrFitObj      = dirDB.get( corr_key )
+    signal_frozen_histos   =  [ dirDB.get( signal_key%year ) for year in years ] 
     uncertainties_histos   = {}
     for u, k in uncertaintyUp_key.iteritems():
-        uncertainties_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signal_histos[i] ) for i,year in enumerate(years)]
-    mcStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signal_histos[i] ) for i,year in enumerate(years) ] 
+        uncertainties_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signal_frozen_histos[i] ) for i,year in enumerate(years)]
+    mcStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signal_frozen_histos[i] ) for i,year in enumerate(years) ] 
 
     reco_variable   = { "absEta_reco":"abs(PhotonGood0_eta)"}
     reco_selection  = "SR3p"
@@ -716,8 +793,8 @@ class expected_absEta_RunII:
         'color':ROOT.kOrange-9,
         } for u, h in uncertainties.iteritems()
         ]
-    unfolding_signal_input_MCStat          = [
-       {'name' : "MCStat",
+    unfolding_signal_input_MCStat          = {
+        'name' : "MCStat",
         'label': "\pm 1\sigma (MC stat.)",
         'matrix': "nominal",
         'ref': data,
@@ -725,13 +802,23 @@ class expected_absEta_RunII:
         'down':add_sigmas(mcStat, -1, ref = data),
         'color':ROOT.kOrange-9,
         }
-        ]
+    unfolding_data_input_systematic        = {
+        'name' : "data",
+        'label': "\pm 1\sigma",
+        'matrix': "nominal",
+        'ref': data,
+        'up':  add_sigmas(data, +1),
+        'down':add_sigmas(data, -1),
+        'color':ROOT.kBlue-10,
+        }
+
 
 
 class observed_absEta_RunII:
 #  if False:
     expected        = False
     cache_directory = default_cache_directory 
+    corr_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data_%s"
     signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal_%s"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
@@ -747,11 +834,12 @@ class observed_absEta_RunII:
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
     dirDB           = MergingDirDB(cache_dir)
+    corrFitObj      = dirDB.get( corr_key )
+    signal_frozen_histos   =  [ dirDB.get( signal_key%year ) for year in years ] 
     uncertainties_histos   = {}
     for u, k in uncertaintyUp_key.iteritems():
-        uncertainties_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signal_histos[i] ) for i,year in enumerate(years)]
-        print u, uncertainties_histos[u]
-    mcStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signal_histos[i] ) for i,year in enumerate(years) ] 
+        uncertainties_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signal_frozen_histos[i] ) for i,year in enumerate(years)]
+    mcStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signal_frozen_histos[i] ) for i,year in enumerate(years) ] 
 
     reco_variable   = { "absEta_reco":"abs(PhotonGood0_eta)"}
     reco_selection  = "SR3p"
@@ -804,7 +892,7 @@ class observed_absEta_RunII:
     unfolding_data_input_systematic_bands          = [
         ]
 
-    unfolding_signal_input        = signal
+    unfolding_signal_input        = data
     unfolding_signal_input_systematic_bands          = [
        {'name' : 'stat',
         'label': "\pm 1\sigma (stat.)",
@@ -817,9 +905,9 @@ class observed_absEta_RunII:
        {'name' : 'total',
         'label': "\pm 1\sigma (tot.)",
         'matrix': "nominal",
-        'ref': signal,
-        'up':  add_sigmas(signal, +1),
-        'down':add_sigmas(signal, -1),
+        'ref': data,
+        'up':  add_sigmas(signal, +1, ref = data),
+        'down':add_sigmas(signal, -1, ref = data),
         'color':ROOT.kOrange-9,
         },
         ]
@@ -833,8 +921,8 @@ class observed_absEta_RunII:
         'color':ROOT.kOrange-9,
         } for u, h in uncertainties.iteritems()
         ]
-    unfolding_signal_input_MCStat          = [
-       {'name' : "MCStat",
+    unfolding_signal_input_MCStat          = {
+        'name' : "MCStat",
         'label': "\pm 1\sigma (MC stat.)",
         'matrix': "nominal",
         'ref': data,
@@ -842,16 +930,26 @@ class observed_absEta_RunII:
         'down':add_sigmas(mcStat, -1, ref = data),
         'color':ROOT.kOrange-9,
         }
-        ]
+    unfolding_data_input_systematic        = {
+        'name' : "data",
+        'label': "\pm 1\sigma",
+        'matrix': "nominal",
+        'ref': data,
+        'up':  add_sigmas(data, +1),
+        'down':add_sigmas(data, -1),
+        'color':ROOT.kBlue-10,
+        }
+
 
 
 class observed_absEta_2016:
 #  if False:
     expected        = False
     cache_directory = default_cache_directory 
+    corr_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
     signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties if not "2017" in u and not "2018" in u}
     mcStatUp_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
@@ -862,10 +960,12 @@ class observed_absEta_2016:
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
     dirDB           = MergingDirDB(cache_dir)
+    corrFitObj      = dirDB.get( corr_key )
+    signal_frozen   = dirDB.get( signal_key )
     uncertainties   = {}
     for u, k in uncertaintyUp_key.iteritems():
-        uncertainties[u] = add_error_from_Upvariation( dirDB.get( k ), signal )
-    mcStat          = add_error_from_Upvariation( dirDB.get( mcStatUp_key ), signal )
+        uncertainties[u] = add_error_from_Upvariation( dirDB.get( k ), signal_frozen )
+    mcStat          = add_error_from_Upvariation( dirDB.get( mcStatUp_key ), signal_frozen )
 
     years           = ["2016"]
 
@@ -938,8 +1038,8 @@ class observed_absEta_2016:
         'color':ROOT.kOrange-9,
         } for u, h in uncertainties.iteritems()
         ]
-    unfolding_signal_input_MCStat          = [
-       {'name' : "MCStat",
+    unfolding_signal_input_MCStat          = {
+        'name' : "MCStat",
         'label': "\pm 1\sigma (MC stat.)",
         'matrix': "nominal",
         'ref': data,
@@ -947,16 +1047,26 @@ class observed_absEta_2016:
         'down':add_sigmas(mcStat, -1, ref = data),
         'color':ROOT.kOrange-9,
         }
-        ]
+    unfolding_data_input_systematic        = {
+        'name' : "data",
+        'label': "\pm 1\sigma",
+        'matrix': "nominal",
+        'ref': data,
+        'up':  add_sigmas(data, +1),
+        'down':add_sigmas(data, -1),
+        'color':ROOT.kBlue-10,
+        }
+
 
 
 class observed_absEta_2017:
 #  if False:
     expected        = False
     cache_directory = default_cache_directory 
+    corr_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
     signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties if not "2016" in u and not "2018" in u}
     mcStatUp_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2017", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
@@ -967,10 +1077,12 @@ class observed_absEta_2017:
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2017", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
     dirDB           = MergingDirDB(cache_dir)
+    corrFitObj      = dirDB.get( corr_key )
+    signal_frozen   = dirDB.get( signal_key )
     uncertainties   = {}
     for u, k in uncertaintyUp_key.iteritems():
-        uncertainties[u] = add_error_from_Upvariation( dirDB.get( k ), signal )
-    mcStat          = add_error_from_Upvariation( dirDB.get( mcStatUp_key ), signal )
+        uncertainties[u] = add_error_from_Upvariation( dirDB.get( k ), signal_frozen )
+    mcStat          = add_error_from_Upvariation( dirDB.get( mcStatUp_key ), signal_frozen )
 
     years           = ["2017"]
 
@@ -1043,8 +1155,8 @@ class observed_absEta_2017:
         'color':ROOT.kOrange-9,
         } for u, h in uncertainties.iteritems()
         ]
-    unfolding_signal_input_MCStat          = [
-       {'name' : "MCStat",
+    unfolding_signal_input_MCStat          = {
+        'name' : "MCStat",
         'label': "\pm 1\sigma (MC stat.)",
         'matrix': "nominal",
         'ref': data,
@@ -1052,16 +1164,26 @@ class observed_absEta_2017:
         'down':add_sigmas(mcStat, -1, ref = data),
         'color':ROOT.kOrange-9,
         }
-        ]
+    unfolding_data_input_systematic        = {
+        'name' : "data",
+        'label': "\pm 1\sigma",
+        'matrix': "nominal",
+        'ref': data,
+        'up':  add_sigmas(data, +1),
+        'down':add_sigmas(data, -1),
+        'color':ROOT.kBlue-10,
+        }
+
 
 
 class observed_absEta_2018:
 #  if False:
     expected        = False
     cache_directory = default_cache_directory 
+    corr_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
     signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties if not "2017" in u and not "2016" in u}
     mcStatUp_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2018", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
@@ -1072,10 +1194,12 @@ class observed_absEta_2018:
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2018", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
     dirDB           = MergingDirDB(cache_dir)
+    corrFitObj      = dirDB.get( corr_key )
+    signal_frozen   = dirDB.get( signal_key )
     uncertainties   = {}
     for u, k in uncertaintyUp_key.iteritems():
-        uncertainties[u] = add_error_from_Upvariation( dirDB.get( k ), signal )
-    mcStat          = add_error_from_Upvariation( dirDB.get( mcStatUp_key ), signal )
+        uncertainties[u] = add_error_from_Upvariation( dirDB.get( k ), signal_frozen )
+    mcStat          = add_error_from_Upvariation( dirDB.get( mcStatUp_key ), signal_frozen )
 
     years           = ["2018"]
 
@@ -1148,8 +1272,8 @@ class observed_absEta_2018:
         'color':ROOT.kOrange-9,
         } for u, h in uncertainties.iteritems()
         ]
-    unfolding_signal_input_MCStat          = [
-       {'name' : "MCStat",
+    unfolding_signal_input_MCStat          = {
+        'name' : "MCStat",
         'label': "\pm 1\sigma (MC stat.)",
         'matrix': "nominal",
         'ref': data,
@@ -1157,16 +1281,26 @@ class observed_absEta_2018:
         'down':add_sigmas(mcStat, -1, ref = data),
         'color':ROOT.kOrange-9,
         }
-        ]
+    unfolding_data_input_systematic        = {
+        'name' : "data",
+        'label': "\pm 1\sigma",
+        'matrix': "nominal",
+        'ref': data,
+        'up':  add_sigmas(data, +1),
+        'down':add_sigmas(data, -1),
+        'color':ROOT.kBlue-10,
+        }
+
 
 
 class observed_dRlg_2016:
 #  if False:
     expected        = False
     cache_directory = default_cache_directory 
+    corr_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
     signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties if not "2017" in u and not "2018" in u}
     mcStatUp_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
@@ -1177,10 +1311,12 @@ class observed_dRlg_2016:
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
     dirDB           = MergingDirDB(cache_dir)
+    corrFitObj      = dirDB.get( corr_key )
+    signal_frozen   = dirDB.get( signal_key )
     uncertainties   = {}
     for u, k in uncertaintyUp_key.iteritems():
-        uncertainties[u] = add_error_from_Upvariation( dirDB.get( k ), signal )
-    mcStat          = add_error_from_Upvariation( dirDB.get( mcStatUp_key ), signal )
+        uncertainties[u] = add_error_from_Upvariation( dirDB.get( k ), signal_frozen )
+    mcStat          = add_error_from_Upvariation( dirDB.get( mcStatUp_key ), signal_frozen )
 
     years           = ["2016"]
 
@@ -1260,9 +1396,8 @@ class observed_dRlg_2016:
         'color':ROOT.kOrange-9,
         } for u, h in uncertainties.iteritems()
         ]
-
-    unfolding_signal_input_MCStat          = [
-       {'name' : "MCStat",
+    unfolding_signal_input_MCStat          = {
+        'name' : "MCStat",
         'label': "\pm 1\sigma (MC stat.)",
         'matrix': "nominal",
         'ref': data,
@@ -1270,15 +1405,25 @@ class observed_dRlg_2016:
         'down':add_sigmas(mcStat, -1, ref = data),
         'color':ROOT.kOrange-9,
         }
-        ]
+    unfolding_data_input_systematic        = {
+        'name' : "data",
+        'label': "\pm 1\sigma",
+        'matrix': "nominal",
+        'ref': data,
+        'up':  add_sigmas(data, +1),
+        'down':add_sigmas(data, -1),
+        'color':ROOT.kBlue-10,
+        }
+
 
 class observed_dRlg_2017:
 #  if False:
     expected        = False
     cache_directory = default_cache_directory 
+    corr_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
     signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties if not "2016" in u and not "2018" in u}
     mcStatUp_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2017", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
@@ -1289,10 +1434,12 @@ class observed_dRlg_2017:
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2017", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
     dirDB           = MergingDirDB(cache_dir)
+    corrFitObj      = dirDB.get( corr_key )
+    signal_frozen   = dirDB.get( signal_key )
     uncertainties   = {}
     for u, k in uncertaintyUp_key.iteritems():
-        uncertainties[u] = add_error_from_Upvariation( dirDB.get( k ), signal )
-    mcStat          = add_error_from_Upvariation( dirDB.get( mcStatUp_key ), signal )
+        uncertainties[u] = add_error_from_Upvariation( dirDB.get( k ), signal_frozen )
+    mcStat          = add_error_from_Upvariation( dirDB.get( mcStatUp_key ), signal_frozen )
 
     years           = ["2017"]
 
@@ -1378,9 +1525,10 @@ class observed_dRlg_2018:
 #  if False:
     expected        = False
     cache_directory = default_cache_directory 
+    corr_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
     signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties if not "2017" in u and not "2016" in u}
     mcStatUp_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2018", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
@@ -1391,10 +1539,12 @@ class observed_dRlg_2018:
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2018", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
     dirDB           = MergingDirDB(cache_dir)
+    corrFitObj      = dirDB.get( corr_key )
+    signal_frozen   = dirDB.get( signal_key )
     uncertainties   = {}
     for u, k in uncertaintyUp_key.iteritems():
-        uncertainties[u] = add_error_from_Upvariation( dirDB.get( k ), signal )
-    mcStat          = add_error_from_Upvariation( dirDB.get( mcStatUp_key ), signal )
+        uncertainties[u] = add_error_from_Upvariation( dirDB.get( k ), signal_frozen )
+    mcStat          = add_error_from_Upvariation( dirDB.get( mcStatUp_key ), signal_frozen )
 
     years           = ["2018"]
 
@@ -1474,8 +1624,8 @@ class observed_dRlg_2018:
         'color':ROOT.kOrange-9,
         } for u, h in uncertainties.iteritems()
         ]
-    unfolding_signal_input_MCStat          = [
-       {'name' : "MCStat",
+    unfolding_signal_input_MCStat          = {
+        'name' : "MCStat",
         'label': "\pm 1\sigma (MC stat.)",
         'matrix': "nominal",
         'ref': data,
@@ -1483,13 +1633,23 @@ class observed_dRlg_2018:
         'down':add_sigmas(mcStat, -1, ref = data),
         'color':ROOT.kOrange-9,
         }
-        ]
+    unfolding_data_input_systematic        = {
+        'name' : "data",
+        'label': "\pm 1\sigma",
+        'matrix': "nominal",
+        'ref': data,
+        'up':  add_sigmas(data, +1),
+        'down':add_sigmas(data, -1),
+        'color':ROOT.kBlue-10,
+        }
+
 
 
 class expected_dRlg_RunII:
   if False:
     expected        = True
     cache_directory = default_cache_directory 
+    corr_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_data_%s"
     signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_signal_%s"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
@@ -1505,10 +1665,12 @@ class expected_dRlg_RunII:
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
     dirDB           = MergingDirDB(cache_dir)
+    corrFitObj      = dirDB.get( corr_key )
+    signal_frozen_histos   =  [ dirDB.get( signal_key%year ) for year in years ] 
     uncertainties_histos   = {}
     for u, k in uncertaintyUp_key.iteritems():
-        uncertainties_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signal_histos[i] ) for i,year in enumerate(years)]
-    mcStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signal_histos[i] ) for i,year in enumerate(years) ] 
+        uncertainties_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signal_frozen_histos[i] ) for i,year in enumerate(years)]
+    mcStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signal_frozen_histos[i] ) for i,year in enumerate(years) ] 
 
     reco_variable   = { "dRlg_reco":"sqrt((PhotonGood0_eta-LeptonTight0_eta)**2+acos(cos(PhotonGood0_phi-LeptonTight0_phi))**2)"}
     reco_selection  = "SR3p"
@@ -1594,8 +1756,8 @@ class expected_dRlg_RunII:
         'color':ROOT.kOrange-9,
         } for u, h in uncertainties.iteritems()
         ]
-    unfolding_signal_input_MCStat          = [
-       {'name' : "MCStat",
+    unfolding_signal_input_MCStat          = {
+        'name' : "MCStat",
         'label': "\pm 1\sigma (MC stat.)",
         'matrix': "nominal",
         'ref': data,
@@ -1603,13 +1765,23 @@ class expected_dRlg_RunII:
         'down':add_sigmas(mcStat, -1, ref = data),
         'color':ROOT.kOrange-9,
         }
-        ]
+    unfolding_data_input_systematic        = {
+        'name' : "data",
+        'label': "\pm 1\sigma",
+        'matrix': "nominal",
+        'ref': data,
+        'up':  add_sigmas(data, +1),
+        'down':add_sigmas(data, -1),
+        'color':ROOT.kBlue-10,
+        }
+
 
 
 class observed_dRlg_RunII:
 #  if False:
     expected        = False
     cache_directory = default_cache_directory 
+    corr_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data_%s"
     signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal_%s"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
@@ -1625,11 +1797,12 @@ class observed_dRlg_RunII:
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
     dirDB           = MergingDirDB(cache_dir)
+    corrFitObj      = dirDB.get( corr_key )
+    signal_frozen_histos   =  [ dirDB.get( signal_key%year ) for year in years ] 
     uncertainties_histos   = {}
     for u, k in uncertaintyUp_key.iteritems():
-        uncertainties_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signal_histos[i] ) for i,year in enumerate(years)]
-        print u, uncertainties_histos[u]
-    mcStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signal_histos[i] ) for i,year in enumerate(years) ] 
+        uncertainties_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signal_frozen_histos[i] ) for i,year in enumerate(years)]
+    mcStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signal_frozen_histos[i] ) for i,year in enumerate(years) ] 
 
     reco_variable   = { "dRlg_reco":"sqrt((PhotonGood0_eta-LeptonTight0_eta)**2+acos(cos(PhotonGood0_phi-LeptonTight0_phi))**2)"}
     reco_selection  = "SR3p"
@@ -1687,7 +1860,7 @@ class observed_dRlg_RunII:
     unfolding_data_input_systematic_bands          = [
         ]
 
-    unfolding_signal_input        = signal
+    unfolding_signal_input        = data
     unfolding_signal_input_systematic_bands          = [
        {'name' : 'stat',
         'label': "\pm 1\sigma (stat.)",
@@ -1700,9 +1873,9 @@ class observed_dRlg_RunII:
        {'name' : 'total',
         'label': "\pm 1\sigma (tot.)",
         'matrix': "nominal",
-        'ref': signal,
-        'up':  add_sigmas(signal, +1),
-        'down':add_sigmas(signal, -1),
+        'ref': data,
+        'up':  add_sigmas(signal, +1, ref = data),
+        'down':add_sigmas(signal, -1, ref = data),
         'color':ROOT.kOrange-9,
         },
         ]
@@ -1716,8 +1889,8 @@ class observed_dRlg_RunII:
         'color':ROOT.kOrange-9,
         } for u, h in uncertainties.iteritems()
         ]
-    unfolding_signal_input_MCStat          = [
-       {'name' : "MCStat",
+    unfolding_signal_input_MCStat          = {
+        'name' : "MCStat",
         'label': "\pm 1\sigma (MC stat.)",
         'matrix': "nominal",
         'ref': data,
@@ -1725,5 +1898,14 @@ class observed_dRlg_RunII:
         'down':add_sigmas(mcStat, -1, ref = data),
         'color':ROOT.kOrange-9,
         }
-        ]
+    unfolding_data_input_systematic        = {
+        'name' : "data",
+        'label': "\pm 1\sigma",
+        'matrix': "nominal",
+        'ref': data,
+        'up':  add_sigmas(data, +1),
+        'down':add_sigmas(data, -1),
+        'color':ROOT.kBlue-10,
+        }
+
 
