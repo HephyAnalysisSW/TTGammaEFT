@@ -19,7 +19,8 @@ git cms-init
 
 # This repository
 git clone https://github.com/HephyAnalysisSW/TTGammaEFT
-cd $CMSSW_BASE/src
-./TTGammaEFT/setup10X.sh
+cd $CMSSW_BASE/src/TTGammaEFT
+./setup10X.sh
+cd $CMSSW_BASE/src/
 scram b -j9
 ```
