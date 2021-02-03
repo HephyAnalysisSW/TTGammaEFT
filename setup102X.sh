@@ -25,7 +25,7 @@ cd $CMSSW_BASE/src
 git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
 cd HiggsAnalysis/CombinedLimit
 git fetch origin
-git checkout v8.0.1
+git checkout v8.1.0
 
 # for combineTools
 cd $CMSSW_BASE/src
