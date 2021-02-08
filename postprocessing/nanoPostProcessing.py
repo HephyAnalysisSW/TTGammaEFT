@@ -182,11 +182,11 @@ elif options.year == 2018:
 #    from Samples.nanoAOD.Autumn18_private_legacy_v1 import *
 #    from Samples.nanoAOD.Run2018_17Sep2018_private  import *
     if options.private:
-        #from TTGammaEFT.Samples.Autumn18_private_nanoAODv6      import *
+        from TTGammaEFT.Samples.Autumn18_private_nanoAODv6      import *
         from Samples.nanoAOD.Autumn18_private_fast_nanoAODv6      import *
     else:
         from TTGammaEFT.Samples.Autumn18_nanoAODv6      import *
-    #from Samples.nanoAOD.Run2018_nanoAODv6          import *
+    from Samples.nanoAOD.Run2018_nanoAODv6          import *
 
 # Load all samples to be post processed
 samples = map( eval, options.samples ) 
@@ -508,8 +508,6 @@ writeJetVariables     = NanoVars.getVariables( "Jet",      postprocessed=True,  
 writeBJetVariables    = NanoVars.getVariables( "BJet",     postprocessed=True,  data=sample.isData )
 writeLeptonVariables  = NanoVars.getVariables( "Lepton",   postprocessed=True,  data=sample.isData )
 writePhotonVariables  = NanoVars.getVariables( "Photon",   postprocessed=True,  data=sample.isData )
-
-assert False, ""
 
 # JEC Tags, (standard is "Total")
 jesTags = ['FlavorQCD', 'RelativeBal', 'HF', 'BBEC1', 'EC2', 'Absolute', 'Absolute_%i'%options.year, 'HF_%i'%options.year, 'EC2_%i'%options.year, 'RelativeSample_%i'%options.year, 'BBEC1_%i'%options.year, 'Total']
