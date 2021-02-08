@@ -421,10 +421,14 @@ def tauSelector( lepton_selection ):
             return True
         return func
 
-def photonSelector( selection, year=None ):
+def photonSelector( selection, version ):
     # According to AN-2017/197
-    idVar    = "cutBased"       if year==2016 else "cutBasedBitmap"
-    photonId = photonIdCutBased if year==2016 else photonIdCutBasedBitmap
+    if version == 2016:
+        idVar    = "cutBased"       
+        photonId = photonIdCutBased 
+    else:
+        idVar    =  "cutBasedBitmap"
+        photonId =  photonIdCutBasedBitmap
 
     if selection == "mva":
         def func(g, removedCuts=[], ptVar="pt"):

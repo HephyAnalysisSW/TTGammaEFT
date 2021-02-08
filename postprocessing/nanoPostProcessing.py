@@ -99,13 +99,12 @@ if len( filter( lambda x: x, [options.flagTTGamma, options.flagTTBar, options.fl
 
 # Logging
 import Analysis.Tools.logger as logger
-logdir  = "/tmp/lukas.lechner/%s/"%str(uuid.uuid4())
+logdir  = "/tmp/%s/%s/"%( os.environ['USER'], str(uuid.uuid4()) )
 logFile = '%s/%s_%s_%s_njob%s.txt'%(logdir, options.skim, '_'.join(options.samples), os.environ['USER'], str(0 if options.nJobs==1 else options.job) )
 if not os.path.exists( logdir ):
     try: os.makedirs( logdir )
     except: pass
 logger  = logger.get_logger(options.logLevel, logFile = logFile)
-
 
 import RootTools.core.logger as logger_rt
 logger_rt = logger_rt.get_logger(options.logLevel, logFile = None )
@@ -183,10 +182,11 @@ elif options.year == 2018:
 #    from Samples.nanoAOD.Autumn18_private_legacy_v1 import *
 #    from Samples.nanoAOD.Run2018_17Sep2018_private  import *
     if options.private:
-        from TTGammaEFT.Samples.Autumn18_private_nanoAODv6      import *
+        #from TTGammaEFT.Samples.Autumn18_private_nanoAODv6      import *
+        from Samples.nanoAOD.Autumn18_private_fast_nanoAODv6      import *
     else:
         from TTGammaEFT.Samples.Autumn18_nanoAODv6      import *
-    from Samples.nanoAOD.Run2018_nanoAODv6          import *
+    #from Samples.nanoAOD.Run2018_nanoAODv6          import *
 
 # Load all samples to be post processed
 samples = map( eval, options.samples ) 
@@ -467,7 +467,8 @@ else:
     elif options.year == 2018: lumi = 59.74
 
 # get nano variable lists
-NanoVars = NanoVariables( options.year )
+isFastSim = ( hasattr( sample, "isFastSim") and sample.isFastSim )
+NanoVars = NanoVariables( options.year, isFastSim = isFastSim)
 #VarString ... "var1/type,var2/type"
 #Variables ... ["var1/type","var2/type"]
 #VarList   ... ["var1", "var2"]
@@ -508,6 +509,8 @@ writeBJetVariables    = NanoVars.getVariables( "BJet",     postprocessed=True,  
 writeLeptonVariables  = NanoVars.getVariables( "Lepton",   postprocessed=True,  data=sample.isData )
 writePhotonVariables  = NanoVars.getVariables( "Photon",   postprocessed=True,  data=sample.isData )
 
+assert False, ""
+
 # JEC Tags, (standard is "Total")
 jesTags = ['FlavorQCD', 'RelativeBal', 'HF', 'BBEC1', 'EC2', 'Absolute', 'Absolute_%i'%options.year, 'HF_%i'%options.year, 'EC2_%i'%options.year, 'RelativeSample_%i'%options.year, 'BBEC1_%i'%options.year, 'Total']
 jesVariations = ["jes"+j+"Up" for j in jesTags] + ["jes"+j+"Down" for j in jesTags]
@@ -530,6 +533,30 @@ if not options.skipNanoTools:
 else:
     read_variables.extend( map( TreeVariable.fromString, ["MET_pt/F", "MET_phi/F"] ) )
     options.skipSyst = True # JME variations are obtained from nanoAOD 
+
+addReweights = False
+if hasattr( sample, "reweight_pkl" ):
+    addReweights = True
+    from Analysis.Tools.WeightInfo                   import WeightInfo
+    from Analysis.Tools.HyperPoly                    import HyperPoly
+    weightInfo = WeightInfo( sample.reweight_pkl )
+    ref_point_coordinates = [ weightInfo.ref_point_coordinates[var] for var in weightInfo.variables ]
+
+    def interpret_weight(weight_id):
+        str_s = weight_id.split('_')
+        res={}
+        for i in range(len(str_s)/2):
+            res[str_s[2*i]] = float(str_s[2*i+1].replace('m','-').replace('p','.'))
+        return res
+
+    hyperPoly  = HyperPoly( options.interpolationOrder )
+    basepoint_coordinates = map( lambda d: [d[v] for v in weightInfo.variables] , map( interpret_weight, weightInfo.data.keys()) )
+
+    hyperPoly.initialize( basepoint_coordinates, ref_point_coordinates )
+
+    read_variables.extend( ["nLHEReweightingWeight/I", "nLHEReweighting/I", "LHEReweighting[Weight/F]" ] ) # need to set alias later
+
+    logger.info("Adding reweights. Expect to read %i base point weights.", weightInfo.nid)
 
 read_variables += [ TreeVariable.fromString('nElectron/I'),
                     VectorTreeVariable.fromString('Electron[%s]'%readElectronVarString) ]
@@ -816,7 +843,7 @@ recoMuonSel_veto        = muonSelector( "veto" )
 #recoMuonSel_medium      = muonSelector( "medium" )
 recoMuonSel_tight       = muonSelector( "tight" )
 # Photon Selection
-recoPhotonSel_medium    = photonSelector( 'medium', year=options.year )
+recoPhotonSel_medium    = photonSelector( 'medium', version = 2016 if (options.year==2016 or isFastSim) else None )
 # Jet Selection
 recoJetSel              = jetSelector( options.year ) #pt_nom?
 
@@ -842,13 +869,20 @@ if not options.skipNanoTools:
     sample.isData = isData
     del nanoAODTools
 
+if addReweights:
+    sample.chain.SetAlias("nLHEReweighting",       "nLHEReweightingWeight")
+    sample.chain.SetAlias("LHEReweighting_Weight", "LHEReweightingWeight")
+    new_variables.append( TreeVariable.fromString("p[C/F]") )
+    new_variables[-1].nMax = HyperPoly.get_ndof(weightInfo.nvar, options.interpolationOrder)
+    new_variables.append( "chi2_ndof/F" )
+
 # MET Filter: TTreeFormula::Notify must be called from the chain of the actual sample, i.e. don't change the sample.chain between here and the loop.
 #MET_Filters_TTF = ROOT.TTreeFormula( "MET_Filters_TTF", MET_Filters_cut, sample.chain)
 #sample.chain.SetNotify( MET_Filters_TTF )
 
 # Define a reader
 #sel = "&&".join(skimConds) if options.skipNanoTools else "(1)"
-reader = sample.treeReader( variables=read_variables, selectionString="&&".join(skimConds) )
+reader = sample.treeReader( variables=map( lambda v: TreeVariable.fromString(v) if type(v)==type("") else v, read_variables), selectionString="&&".join(skimConds) )
 
 def getWPtWeight( wpt, weightHisto ):
     binx = weightHisto.FindBin( wpt )
@@ -870,7 +904,6 @@ def addCorrRelIso( ele, mu, photons ):
             e["pfRelIso03_all_corr"] = min( e["pfRelIso03_all"], g[0]["pfRelIso03_all"] )
     for m in mu:
         m["pfRelIso03_all_corr"] = m["pfRelIso03_all"]
-
 
 def addMissingVariables( coll, vars ):
     for p in coll:
@@ -902,13 +935,6 @@ def get4DVec( part ):
 def get2DVec( part ):
   vec = ROOT.TVector2( part["pt"]*cos(part["phi"]), part["pt"]*sin(part["phi"]) )
   return vec
-
-def interpret_weight(weight_id):
-    str_s = weight_id.split('_')
-    res={}
-    for i in range(len(str_s)/2):
-        res[str_s[2*i]] = float(str_s[2*i+1].replace('m','-').replace('p','.'))
-    return res
 
 def fill_vector_collection( event, collection_name, collection_varnames, objects):
     setattr( event, "n"+collection_name, len(objects) )
@@ -1176,6 +1202,28 @@ def filler( event ):
         fill_vector( event, "GenW0",  writeGenVarList, gW0 )
         fill_vector( event, "GenZ0",  writeGenVarList, gZ0 )
 
+        if addReweights:
+            reader.activateAllBranches()
+            # unfortunately the branch does not respect the nanoAOD convention
+            #sample.chain.SetBranchAddress("LHEReweightingWeight",  ROOT.AddressOf(reader.event, "LHEReweighting_Weight" ))
+            #sample.chain.SetBranchAddress("nLHEReweightingWeight", ROOT.AddressOf(reader.event, "nLHEReweighting" ))
+
+            weights  = [ r.LHEReweighting_Weight[i] for i in range(r.nLHEReweightingWeight) ]
+
+            coeff           = hyperPoly.get_parametrization( weights )
+            #print weights, coeff
+            event.np        = hyperPoly.ndof
+            event.chi2_ndof = hyperPoly.chi2_ndof( coeff, weights )
+
+            if event.chi2_ndof > 10**-6:
+                logger.warning( "chi2_ndof is large: %f", event.chi2_ndof )
+
+            for n in xrange( hyperPoly.ndof ):
+                event.p_C[n] = coeff[n]
+
+            if weightInfo.nid != r.nLHEReweightingWeight:
+                logger.error( "addReweights: pkl file has %i bas-points but nLHEReweightWeight=%i", w.nid, r.nLHEReweightingWeight )
+                raise RuntimeError("reweight_pkl and nLHEReweightWeight are inconsistent")
 
     elif isData:
         event.pTStitching = 1 # all other events
@@ -2231,7 +2279,7 @@ def filler( event ):
 # Create a maker. Maker class will be compiled. This instance will be used as a parent in the loop
 treeMaker_parent = TreeMaker(
     sequence  = [ filler ],
-    variables = [ TreeVariable.fromString(x) for x in new_variables ],
+    variables =  map( lambda v: TreeVariable.fromString(v) if type(v)==type("") else v, new_variables ),
     treeName = "Events"
     )
 
@@ -2247,9 +2295,7 @@ logger.info( "Splitting into %i ranges of %i events on average. FileBasedSplitti
         'Yes' if options.fileBasedSplitting else 'No',
         options.job)
 #Define all jobs
-jobs = [ (i, range) for i, range in enumerate( eventRanges ) ]
-
-#assert False, ""
+jobs = [ (i, eventRange) for i, eventRange in enumerate( eventRanges ) ]
 
 if options.fileBasedSplitting and len(eventRanges)>1:
     raise RuntimeError("Using fileBasedSplitting but have more than one event range!")
@@ -2286,8 +2332,13 @@ for ievtRange, eventRange in enumerate( eventRanges ):
     maker.start()
     # Do the thing
     reader.start()
+    while True:
+        if addReweights:
+            sample.chain.SetBranchStatus("*",1)
+            sample.chain.SetBranchAddress("LHEReweightingWeight",  ROOT.AddressOf(reader.event, "LHEReweighting_Weight" ))
+        run = reader.run()
+        if not run: break
 
-    while reader.run():
         maker.run()
         if isData and maker.event.jsonPassed_:
             if reader.event.run not in outputLumiList.keys():

@@ -23,7 +23,7 @@ class NanoVariables:
     """ Definition of variables in nanoAOD samples
     """
 
-    def __init__( self, year ):
+    def __init__( self, year, isFastSim = False):
 
         if year not in [ 2016, 2017, 2018 ]:
             raise Exception( "Variables not implemented for year %s"%year )
@@ -185,7 +185,7 @@ class NanoVariables:
                               Variable( "index", "I", read=False, write=True,  inData=True, inPlot=False, isSyst=False ),
                              ]
 
-        photonCutVarName = "cutBased" if year==2016 else "cutBasedBitmap"
+        photonCutVarName = "cutBased" if (year==2016 or isFastSim) else "cutBasedBitmap"
 
         self.PhotonVariables = [\
                                 Variable( "eta",               "F", read=True,  write=True,  inData=True,  inPlot=True, isSyst=False ),
