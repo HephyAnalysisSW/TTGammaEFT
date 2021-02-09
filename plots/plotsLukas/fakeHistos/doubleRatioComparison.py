@@ -73,17 +73,17 @@ os.environ["gammaSkim"]="True" #always false for QCD estimate
 if args.year == 2016:
     from TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed  import *
     from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import *
-    mc          = all_mc
+    mc          = all_noQCD #all_mc
     data_sample = Run2016
 elif args.year == 2017:
     from TTGammaEFT.Samples.nanoTuples_Fall17_private_semilep_postProcessed    import *
     from TTGammaEFT.Samples.nanoTuples_Run2017_14Dec2018_semilep_postProcessed import *
-    mc          = all_mc
+    mc          = all_noQCD #all_mc
     data_sample = Run2017
 elif args.year == 2018:
     from TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed  import *
     from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
-    mc          = all_mc
+    mc          = all_noQCD #all_mc
     data_sample = Run2018
 
 lumi_scale   = data_sample.lumi * 0.001
