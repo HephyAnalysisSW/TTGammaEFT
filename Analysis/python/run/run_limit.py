@@ -68,6 +68,7 @@ argParser.add_argument('--freezeR',             action='store_true',            
 argParser.add_argument('--freezeSigUnc',             action='store_true',                                                        help="add EFT uncertainty?")
 argParser.add_argument('--addPtBinnedUnc',             action='store_true',                                                        help="add EFT uncertainty?")
 argParser.add_argument('--notNormalized',             action='store_true',                                                        help="not normalized Scale uncertainties?")
+argParser.add_argument('--splitScale',             action='store_true',                                                        help="split scale uncertainties in sources")
 argParser.add_argument('--uncorrVG',              action='store_true',                                                        help="uncorrelate VGamma unc?")
 args=argParser.parse_args()
 
@@ -120,6 +121,7 @@ if not args.checkOnly:
 # Define SR, CR, channels and regions
 with0pCR = False
 with1pCR = False
+withSR = any( [x.startswith("SR") for x in args.useRegions] )
 setups = []
 
 if args.parameters and args.withbkg:
@@ -200,6 +202,7 @@ if args.freezeSigUnc:   regionNames.append("freezeSigUnc")
 if args.addPtBinnedUnc:   regionNames.append("addPtBinnedUnc")
 if args.notNormalized:   regionNames.append("notNormalized")
 if args.uncorrVG:   regionNames.append("uncorrVG")
+if args.splitScale:   regionNames.append("splitScale")
 
 vgCorr = ""
 if args.uncorrVG:
@@ -276,8 +279,11 @@ if args.parameters:
 # JEC Tags, (standard is "Total")
 jesTags = ['FlavorQCD', 'RelativeBal', 'HF', 'BBEC1', 'EC2', 'Absolute', 'Absolute_%i'%args.year, 'HF_%i'%args.year, 'EC2_%i'%args.year, 'RelativeSample_%i'%args.year, 'BBEC1_%i'%args.year]
 
-def getScaleUnc(name, r, channel, setup):
+def getScaleUnc(name, r, channel, setup, addon=None):
     key      = uniqueKey( name, r, channel, setup ) + tuple(str(args.year))
+    if addon:
+        addString = addon.replace("D","Down").replace("N","Nom").replace("U","Up")
+        key = tuple( list(key)+[addString] )
     scaleUnc = scaleUncCache.get( key )
 #    if scaleUnc > 0.5: scaleUnc = 0.5
     return scaleUnc #max(0.0004, scaleUnc)
@@ -328,21 +334,21 @@ def wrapper():
         if any( ["AbsEta" in cardRegions for cardRegions in args.useRegions] ):
             sigBin_thresh = eta_thresh
             sigVar = "abs(PhotonNoChgIsoNoSieie0_eta)"
-            sigIndex = 1
+            sigIndex = 0
         elif any( ["dR" in cardRegions for cardRegions in args.useRegions] ):
             sigBin_thresh = dR_thresh
             sigVar = "ltight0GammaNoSieieNoChgIsodR"
-            sigIndex = 1
+            sigIndex = 0
         else:
             sigBin_thresh = pTG_thresh
             sigVar = "PhotonNoChgIsoNoSieie0_pt"
-            sigIndex = 1
+            sigIndex = 0
 
         for i in range(len(sigBin_thresh)-1):
             freezeParams.append( "Signal_e_3_Bin%i_%s"%(i,str(args.year)) )
             freezeParams.append( "Signal_mu_3_Bin%i_%s"%(i,str(args.year)) )
             freezeParams.append( "Signal_mu_4p_Bin%i_%s"%(i,str(args.year)) )
-            if i != sigIndex:
+            if i != sigIndex or args.freezeR:
                 freezeParams.append( "Signal_e_4p_Bin%i_%s"%(i,str(args.year)) )
 
     if ( not os.path.exists(cardFileNameTxt) or ( not os.path.exists(cardFileNameShape) and not args.useTxt ) ) or args.overwrite:
@@ -351,6 +357,8 @@ def wrapper():
             print cardFileNameShape
             logger.info("Combine Card not found. Please run without --checkOnly first!")
             return
+
+        scaleSources = ["DD","DN","ND","NU","UN","UU"]
 
         counter=0
         c.reset()
@@ -389,7 +397,11 @@ def wrapper():
             c.addUncertainty( "erdOn",         shapeString)
             c.addUncertainty( "GluonMove",    shapeString)
             c.addUncertainty( "QCDbased",     shapeString)
-            c.addUncertainty( "Scale",         shapeString)
+            if args.splitScale:
+                for s in scaleSources:
+                    c.addUncertainty( "Scale_"+s,         shapeString)
+            else:
+                c.addUncertainty( "Scale",         shapeString)
             c.addUncertainty( "PDF",           shapeString)
 #            c.addUncertainty( "Parton_Showering",            shapeString)
             c.addUncertainty( "ISR",            shapeString)
@@ -410,41 +422,43 @@ def wrapper():
             if any( ["AbsEta" in cardRegions for cardRegions in args.useRegions] ):
                 sigBin_thresh = eta_thresh
                 sigVar = "abs(PhotonNoChgIsoNoSieie0_eta)"
-                sigIndex = 1
+                sigIndex = 0
             elif any( ["dR" in cardRegions for cardRegions in args.useRegions] ):
                 sigBin_thresh = dR_thresh
                 sigVar = "ltight0GammaNoSieieNoChgIsodR"
-                sigIndex = 1
+                sigIndex = 0
             else:
                 sigBin_thresh = pTG_thresh
                 sigVar = "PhotonNoChgIsoNoSieie0_pt"
-                sigIndex = 1
+                sigIndex = 0
 
             for i in range(len(sigBin_thresh)-1):
                 c.addUncertainty( "Signal_e_3_Bin%i_%s"%(i,str(args.year)), shapeString )
                 c.addUncertainty( "Signal_mu_3_Bin%i_%s"%(i,str(args.year)), shapeString )
                 c.addUncertainty( "Signal_mu_4p_Bin%i_%s"%(i,str(args.year)), shapeString )
-                if i != sigIndex:
+                if i != sigIndex or args.freezeR:
                     c.addUncertainty( "Signal_e_4p_Bin%i_%s"%(i,str(args.year)), shapeString )
 
                 freezeParams.append( "Signal_e_3_Bin%i_%s"%(i,str(args.year)) )
                 freezeParams.append( "Signal_mu_3_Bin%i_%s"%(i,str(args.year)) )
                 freezeParams.append( "Signal_mu_4p_Bin%i_%s"%(i,str(args.year)) )
-                if i != sigIndex:
+                if i != sigIndex or args.freezeR:
                     freezeParams.append( "Signal_e_4p_Bin%i_%s"%(i,str(args.year)) )
 
 
         default_misIDpT_unc = 0.40
         misIDPT_thresholds = [ 20, 35, 50, 65, 80, 120, 160, -999 ]
         misIDPT_regions = getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", misIDPT_thresholds )
-        if not args.inclRegion and with1pCR and not "VGAbsEta3" in args.useRegions and not "VGdR3" in args.useRegions:
+#        if not args.inclRegion and with1pCR and not "VGAbsEta3" in args.useRegions and not "VGdR3" in args.useRegions:
+        if with1pCR and not "VGAbsEta3" in args.useRegions and not "VGdR3" in args.useRegions and not "VGi3" in args.useRegions and not "misDYi3" in args.useRegions:
             for i in range(1, len(misIDPT_thresholds)-1):
                 c.addUncertainty( "misID_pT_Bin%i_%i"%(i,args.year), shapeString )
 
         default_WGpT_unc = 0.20
         WGPT_thresholds = [ 20, 65, 160, -999 ]
         WGPT_regions = getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", WGPT_thresholds )
-        if not args.inclRegion and with1pCR and not "VGAbsEta3" in args.useRegions and not "VGdR3" in args.useRegions:
+#        if not args.inclRegion and with1pCR and not "VGAbsEta3" in args.useRegions and not "VGdR3" in args.useRegions:
+        if with1pCR and not "VGAbsEta3" in args.useRegions and not "VGdR3" in args.useRegions and not "VGi3" in args.useRegions and not "misDYi3" in args.useRegions:
             for i in range(1, len(WGPT_thresholds)-1):
                 c.addUncertainty( "WGamma_pT_Bin%i%s"%(i,vgCorr), shapeString )
                 c.addUncertainty( "ZGamma_pT_Bin%i%s"%(i,vgCorr), shapeString )
@@ -552,7 +566,7 @@ def wrapper():
 #                        setup.split_processes['TT_pow_misID'][0].initCache( setup.defaultCacheDir() )
             for r in setup.regions:
                 for i_ch, channel in enumerate(setup.channels):
-                    if (args.useChannels and channel not in args.useChannels and not args.parameters) or (args.useChannels and channel not in args.useChannels and args.parameters and setup.signalregion): continue
+                    if (args.useChannels and channel not in args.useChannels and setup.signalregion): continue
                     if args.parameters:
                         # calc the ratios for the different samples (signal and background)
                         eftyield = 0
@@ -751,6 +765,12 @@ def wrapper():
                         wjets4p, wg4p, qcd0b4p, qcd1b4p= 0, 0, 0, 0
                         dyGenUnc, ttGenUnc, vgGenUnc, wjetsGenUnc, otherGenUnc, lowSieieUnc, highSieieUnc, misIDPtUnc = 0, 0, 0, 0, 0, 0, 0, 0
                         gluon, hadFakes17Unc, hadFakesUnc, wg, zg, misID4p, dy4p, zg4p, misIDUnc, qcdUnc, qcd0bUnc, qcd1bUnc, vgUnc, wgUnc, zgUnc, dyUnc, misExUnc, ttUnc, wjetsUnc, other0pUnc, otherUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
+                        scaleSourceUnc = {}
+                        if args.splitScale:
+                            for s in scaleSources:
+                                scaleSourceUnc[s] = 0
+
                         if not args.inclRegion and with1pCR and args.addPtBinnedUnc:
                             for i in range(len(sigBin_thresh)-1):
                                 locals()["Signal_e_3_bin%i_unc"%i] = 0
@@ -831,6 +851,7 @@ def wrapper():
                                     ttUnc    += y_scale * default_TT_unc
 
                                 if not args.inclRegion and signal and setup.signalregion:
+#                                if setup.signalregion:
 
                                     if args.addPtBinnedUnc:
                                       if ("PhotonGood0_pt" in r.vals.keys() or sigVar in r.vals.keys()):
@@ -872,38 +893,72 @@ def wrapper():
                                                     locals()["Signal_e_3_bin%i_unc"%pT_index] += y_scale * ratio["e"] * default_Signal_unc
                                                     locals()["Signal_mu_3_bin%i_unc"%pT_index] += y_scale * ratio["mu"] * default_Signal_unc
 
-                                if not args.inclRegion and e.name.count( "misID" ):
+#                                if not args.inclRegion and e.name.count( "misID" ):
+                                if e.name.count( "misID" ) and withSR  and not "VGi3" in args.useRegions and not "misDYi3" in args.useRegions:
                                     if ("PhotonGood0_pt" in r.vals.keys() or "PhotonNoChgIsoNoSieie0_pt" in r.vals.keys()):
                                         low, high = r.vals["PhotonGood0_pt" if "PhotonGood0_pt" in r.vals.keys() else "PhotonNoChgIsoNoSieie0_pt"]
                                         pT_indices = []
                                         for i_pt, thresh in enumerate(misIDPT_thresholds[:-1]):
                                             if (thresh >= low and thresh < high) or (misIDPT_thresholds[i_pt+1] > low and misIDPT_thresholds[i_pt+1] <= high) or (misIDPT_thresholds[i_pt+1] == -999 and (high == -999 or high > thresh)): pT_indices.append(i_pt)
+#                                    else:
+#                                        pT_indices = []
+
+                                        if pT_indices:
+                                            for pT_index in pT_indices:
+                                                if pT_index == 0: continue
+                                                locals()["misID_bin%i_unc"%pT_index] += y_scale * default_misIDpT_unc
+
                                     else:
-                                        pT_indices = []
+                                        for i_pt, thresh in enumerate(misIDPT_thresholds[:-1]):
+                                            if i_pt == 0: continue
+                                            print e.name, channel, setup.name, i_pt, thresh, misIDPT_regions[i_pt], r+misIDPT_regions[i_pt]
+                                            eMisID = e.cachedEstimate( r+misIDPT_regions[i_pt], channel, setup )
+                                            misIDFraction = eMisID.val / e.expYield.val if e.expYield.val else 0.
+                                            locals()["misID_bin%i_unc"%i_pt] += y_scale * misIDFraction * default_misIDpT_unc
 
-                                    if pT_indices:
-                                        for pT_index in pT_indices:
-                                            if pT_index == 0: continue
-                                            locals()["misID_bin%i_unc"%pT_index] += y_scale * default_misIDpT_unc
-
-                                if not args.inclRegion and (e.name.count( "WG" ) or e.name.count( "ZG" )):
+#                                if not args.inclRegion and (e.name.count( "WG" ) or e.name.count( "ZG" )):
+                                if (e.name.count( "WG" ) or e.name.count( "ZG" )) and withSR and not "VGi3" in args.useRegions and not "misDYi3" in args.useRegions:
                                     if ("PhotonGood0_pt" in r.vals.keys() or "PhotonNoChgIsoNoSieie0_pt" in r.vals.keys()):
                                         low, high = r.vals["PhotonGood0_pt" if "PhotonGood0_pt" in r.vals.keys() else "PhotonNoChgIsoNoSieie0_pt"]
                                         pT_indices = []
                                         for i_pt, thresh in enumerate(WGPT_thresholds[:-1]):
                                             if (thresh >= low and thresh < high) or (thresh <= low and thresh <= high and WGPT_thresholds[i_pt+1] >= low and WGPT_thresholds[i_pt+1] >= high) or (WGPT_thresholds[i_pt+1] > low and WGPT_thresholds[i_pt+1] <= high) or (WGPT_thresholds[i_pt+1] == -999 and (high == -999 or high > thresh)): pT_indices.append(i_pt)
+#                                    else:
+#                                        pT_indices = []
+
+                                        if pT_indices:
+                                            for pT_index in pT_indices:
+                                                if pT_index == 0: continue
+                                                if e.name.count( "WG" ):
+                                                    locals()["WGamma_bin%i_unc"%pT_index] += y_scale * default_WGpT_unc
+                                                if e.name.count( "ZG" ):
+                                                    locals()["ZGamma_bin%i_unc"%pT_index] += y_scale * default_WGpT_unc
+
                                     else:
-                                        pT_indices = []
-
-                                    if pT_indices:
-                                        for pT_index in pT_indices:
-                                            if pT_index == 0: continue
+                                        for i_pt, thresh in enumerate(WGPT_thresholds[:-1]):
+                                            if i_pt == 0: continue
+                                            print e.name, channel, setup.name, i_pt, thresh, WGPT_regions[i_pt], r+WGPT_regions[i_pt]
+                                            eWG = e.cachedEstimate( r+WGPT_regions[i_pt], channel, setup )
+                                            wgFraction = eWG.val / e.expYield.val if e.expYield.val else 0.
                                             if e.name.count( "WG" ):
-                                                locals()["WGamma_bin%i_unc"%pT_index] += y_scale * default_WGpT_unc
+                                                locals()["WGamma_bin%i_unc"%i_pt] += y_scale * wgFraction * default_WGpT_unc
                                             if e.name.count( "ZG" ):
-                                                locals()["ZGamma_bin%i_unc"%pT_index] += y_scale * default_WGpT_unc
+                                                locals()["ZGamma_bin%i_unc"%i_pt] += y_scale * wgFraction * default_WGpT_unc
 
-                                if e.expYield.val and "Unfold" in setup.name and not "Pt" in setup.name:
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                if False and e.expYield.val and "Unfold" in setup.name and not "Pt" in setup.name:
 #any( ["Unfold" in cardRegions and not "Pt" in cardRegions for cardRegions in args.useRegions] ):
                                     # add fractional pt dependent uncertainties to eta/dR unfolding distributions
                                     # misIDPT_thresholds = [ 20, 35, 50, 65, 80, 120, 160, -999 ]
@@ -947,18 +1002,21 @@ def wrapper():
                                         for i_pt, thresh in enumerate(misIDPT_thresholds[:-1]):
                                             if i_pt == 0: continue
                                             eMisID = e.cachedEstimate( r+misIDPT_regions[i_pt], channel, setup )
-                                            misIDFraction = eMisID.val / e.expYield.val
+                                            misIDFraction = eMisID.val / e.expYield.val if e.expYield.val else 0.
                                             locals()["misID_bin%i_unc"%i_pt] += y_scale * misIDFraction * default_misIDpT_unc
 
                                     if not args.inclRegion and (e.name.count( "WG" ) or e.name.count( "ZG" )):
                                         for i_pt, thresh in enumerate(WGPT_thresholds[:-1]):
                                             if i_pt == 0: continue
                                             eWG = e.cachedEstimate( r+WGPT_regions[i_pt], channel, setup )
-                                            wgFraction = eWG.val / e.expYield.val
+                                            wgFraction = eWG.val / e.expYield.val if e.expYield.val else 0.
                                             if e.name.count( "WG" ):
                                                 locals()["WGamma_bin%i_unc"%i_pt] += y_scale * wgFraction * default_WGpT_unc
                                             if e.name.count( "ZG" ):
                                                 locals()["ZGamma_bin%i_unc"%i_pt] += y_scale * wgFraction * default_WGpT_unc
+
+
+
 
 
 
@@ -1003,7 +1061,12 @@ def wrapper():
                                         gluonMove += y_scale * e.GluonMoveSystematic(   r_noM3, ch, stp ).val * ratio[setupKey+ch]
 
                                         uncName = e.name if not args.parameters and not args.notNormalized else e.name.replace("TTG","TTG_NLO")
-                                        scale   += y_scale * getScaleUnc( uncName, r_noM3, ch, stp ) * ratio[setupKey+ch]
+
+                                        if args.splitScale:
+                                            for s in scaleSources:
+                                                scaleSourceUnc[s] += y_scale * getScaleUnc( uncName, r_noM3, ch, stp, addon=s ) * ratio[setupKey+ch]
+                                        else:
+                                            scale   += y_scale * getScaleUnc( uncName, r_noM3, ch, stp ) * ratio[setupKey+ch]
                                         pdf     += y_scale * getPDFUnc(   uncName, r_noM3, ch, stp ) * ratio[setupKey+ch]
                                         uncName = e.name #PS weights not available in 2016 NLO sample
 #                                        ps      += y_scale * getPSUnc(    uncName, r_noM3, ch, stp ) * ratio[setupKey+ch]
@@ -1011,9 +1074,14 @@ def wrapper():
                                         fsr      += y_scale * getFSRUnc(    uncName, r_noM3, ch, stp ) * ratio[setupKey+ch]
 
 
-                                    elif "Top" in e.name and not "had" in e.name and not args.skipTuneUnc and setup.signalregion:
+                                    # no PDF/Scale unc for ttbar, as it is included in the ttbar cross section uncertainty
+                                    elif False and "Top" in e.name and not "had" in e.name and not args.skipTuneUnc and setup.signalregion:
                                         uncName = e.name.replace("Top","TT_pow")
-                                        scale   += y_scale * getScaleUnc( uncName, r_noM3, ch, stp ) * ratio[setupKey+ch]
+                                        if args.splitScale:
+                                            for s in scaleSources:
+                                                scaleSourceUnc[s] += y_scale * getScaleUnc( uncName, r_noM3, ch, stp, addon=s ) * ratio[setupKey+ch]
+                                        else:
+                                            scale   += y_scale * getScaleUnc( uncName, r_noM3, ch, stp ) * ratio[setupKey+ch]
                                         pdf     += y_scale * getPDFUnc(   uncName, r_noM3, ch, stp ) * ratio[setupKey+ch]
 #                                        ps      += y_scale * getPSUnc(    uncName, r_noM3, ch, stp ) * ratio[setupKey+ch]
 
@@ -1083,7 +1151,12 @@ def wrapper():
                         addUnc( c, "TT_normalization", binname, pName, ttUnc, expected.val, signal )
 
                         if with1pCR:
-                            addUnc( c, "Scale",         binname, pName, scale,   expected.val, signal )
+                            if args.splitScale:
+                                for sc in scaleSources:
+                                    print sc
+                                    addUnc( c, "Scale_"+sc,         binname, pName, scaleSourceUnc[sc],   expected.val, signal )
+                            else:
+                                addUnc( c, "Scale",         binname, pName, scale,   expected.val, signal )
                             addUnc( c, "PDF",           binname, pName, pdf,     expected.val, signal )
                             addUnc( c, "erdOn",         binname, pName, erdOn,   expected.val, signal )
                             addUnc( c, "QCDbased",         binname, pName, qcdBased,   expected.val, signal )
@@ -1122,16 +1195,16 @@ def wrapper():
                                 addUnc( c, "Signal_mu_3_Bin%i_%s"%(i,str(args.year)), binname, pName, locals()["Signal_mu_3_bin%i_unc"%i], expected.val, signal )
                                 addUnc( c, "Signal_e_3_Bin%i_%s"%(i,str(args.year)), binname, pName, locals()["Signal_e_3_bin%i_unc"%i], expected.val, signal )
                                 addUnc( c, "Signal_mu_4p_Bin%i_%s"%(i,str(args.year)), binname, pName, locals()["Signal_mu_4p_bin%i_unc"%i], expected.val, signal )
-                                if i != sigIndex:
+                                if i != sigIndex or args.freezeR:
                                     addUnc( c, "Signal_e_4p_Bin%i_%s"%(i,str(args.year)), binname, pName, locals()["Signal_e_4p_bin%i_unc"%i], expected.val, signal )
 
-                        if not args.inclRegion:
-                            for i in range(1, len(misIDPT_thresholds)-1):
-                                addUnc( c, "misID_pT_Bin%i_%i"%(i,args.year), binname, pName, locals()["misID_bin%i_unc"%i], expected.val, signal )
+#                        if not args.inclRegion:
+                        for i in range(1, len(misIDPT_thresholds)-1):
+                            addUnc( c, "misID_pT_Bin%i_%i"%(i,args.year), binname, pName, locals()["misID_bin%i_unc"%i], expected.val, signal )
 
-                            for i in range(1, len(WGPT_thresholds)-1):
-                                addUnc( c, "WGamma_pT_Bin%i%s"%(i,vgCorr), binname, pName, locals()["WGamma_bin%i_unc"%i], expected.val, signal )
-                                addUnc( c, "ZGamma_pT_Bin%i%s"%(i,vgCorr), binname, pName, locals()["ZGamma_bin%i_unc"%i], expected.val, signal )
+                        for i in range(1, len(WGPT_thresholds)-1):
+                            addUnc( c, "WGamma_pT_Bin%i%s"%(i,vgCorr), binname, pName, locals()["WGamma_bin%i_unc"%i], expected.val, signal )
+                            addUnc( c, "ZGamma_pT_Bin%i%s"%(i,vgCorr), binname, pName, locals()["ZGamma_bin%i_unc"%i], expected.val, signal )
 
 #                        if args.parameters:
 #                            addUnc( c, "MisID_normalization_%i"%args.year, binname, pName, misIDUnc, expected.val, signal )
@@ -1233,10 +1306,10 @@ def wrapper():
 #        c.goodnessOfFitTest(cardFileName)
         if not args.plot: sys.exit(0)
     else:
-        options = "--expectSignal=1"
+        options = " --expectSignal=1"
         options += " --rMin 0.5 --rMax 1.5 --cminDefaultMinimizerTolerance=0.01"
         if args.freezeR:
-            options = "--setParameters r=1 --freezeParameters r"
+            options += " --setParameters r=1 --freezeParameters r"
     res = c.calcLimit( cardFileName, options=options )
     options = ""
 
@@ -1245,7 +1318,7 @@ def wrapper():
             # options for running the bkg only fit with r=1
             options = " --customStartingPoint --expectSignal=1"
             if args.freezeR:
-                options += " --rMin 0.99 --rMax 1.01"
+                options += " --redefineSignalPOI Signal_mu_4p_Bin0_%i --freezeParameters r --setParameters r=1"%args.year
 #            options += " --rMin 0.5 --rMax 1.5 --cminDefaultMinimizerTolerance=0.01"
 
         else:

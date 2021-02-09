@@ -1,120 +1,126 @@
-#python run_limit_combined.py --overwrite --plot --inclRegion --dyPOI --useRegions DY2
-#python run_limit_combined.py --overwrite --plot --inclRegion --dyPOI --useRegions DY3
-#python run_limit_combined.py --overwrite --plot --inclRegion --dyPOI --useRegions DY4
-#python run_limit_combined.py --overwrite --plot --inclRegion --dyPOI --useRegions DY5
-#python run_limit_combined.py --overwrite --plot --inclRegion --dyPOI --useRegions DY2p
-#python run_limit_combined.py --overwrite --plot --inclRegion --dyPOI --useRegions DY3p
-#python run_limit_combined.py --overwrite --plot --inclRegion --dyPOI --useRegions DY4p
 
-#python run_limit_combined.py --overwrite --plot --inclRegion --wgPOI --useRegions misDY2 VG2 --addDYSF
-#python run_limit_combined.py --overwrite --plot --inclRegion --wgPOI --useRegions misDY3 VG3 --addDYSF
-#python run_limit_combined.py --overwrite --plot --inclRegion --wgPOI --useRegions misDY4 VG4 --addDYSF
-#python run_limit_combined.py --overwrite --plot --inclRegion --wgPOI --useRegions misDY5 VG5 --addDYSF
-#python run_limit_combined.py --overwrite --plot --inclRegion --wgPOI --useRegions misDY2p VG2p --addDYSF
-#python run_limit_combined.py --overwrite --plot --inclRegion --wgPOI --useRegions misDY3p VG3p --addDYSF
-#python run_limit_combined.py --overwrite --plot --inclRegion --wgPOI --useRegions misDY4p VG4p --addDYSF
-#python run_limit_combined.py --overwrite --plot --inclRegion --wgPOI --useRegions misDY4p VG4p misDY3 VG3 --addDYSF
+##python run_limit_combined.py --inclRegion --overwrite --plot --useRegions misDY3 VG3 SR3PtUnfold misDY4p VG4p SR4pPtUnfold --addDYSF
+##python run_limit_combined.py --inclRegion --overwrite --plot --useRegions misDY3 VG3 SR3M3 misDY4p VG4p SR4pM3 --addDYSF
+##python run_limit_combined.py --inclRegion --overwrite --plot --useRegions misDY3 VG3 SR3M3 misDY4p VG4p SR4pM3 --addDYSF --splitScale
+##python run_limit_combined.py --inclRegion --overwrite --plot --useRegions misDY3 VG3 SR3M3 misDY4p VG4p SR4pM3 --addDYSF --useChannels e
+##python run_limit_combined.py --inclRegion --overwrite --plot --useRegions misDY3 VG3 SR3M3 misDY4p VG4p SR4pM3 --addDYSF --useChannels mu
+##python run_limit_combined.py --inclRegion --overwrite --plot --useRegions misDY3 VG3 SR3M3 misDY4p VG4p SR4pM3 --addDYSF --uncorrVG
+##python run_limit_combined.py --inclRegion --overwrite --plot --useRegions misDY3 VG3 SR3M3 misDY4p VG4p SR4pM3 --addDYSF --addMisIDSF --expected
 
-python run_limit_combined.py --overwrite --expected --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
-python run_limit_combined.py --overwrite --expected --plot --useRegions SR3pFine --addDYSF
-python run_limit_combined.py --overwrite --expected --plot --useRegions SR3pEtaUnfold --addDYSF
-python run_limit_combined.py --overwrite --expected --plot --useRegions SR3pdRUnfold --addDYSF
-python run_limit_combined.py --overwrite --expected --plot --useRegions SR3pdPhiUnfold --addDYSF
+##python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 misDY4p VG4p --addDYSF
+##python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 misDY4p VG4p --expected --addDYSF --addMisIDSF
 
-python run_limit_combined.py --overwrite --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
-python run_limit_combined.py --overwrite --plot --useRegions SR3pFine --addDYSF
-python run_limit_combined.py --overwrite --plot --useRegions SR3pEtaUnfold --addDYSF
-python run_limit_combined.py --overwrite --plot --useRegions SR3pdRUnfold --addDYSF
-python run_limit_combined.py --overwrite --plot --useRegions SR3pdPhiUnfold --addDYSF
+##python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3M3 misDY4p VG4p SR4pM3 --addDYSF
+##python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3PtUnfold misDY4p VG4p SR4pPtUnfold --addDYSF
+##python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3AbsEtaUnfold misDY4p VG4p SR4pAbsEtaUnfold --addDYSF
+##python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3dRUnfold misDY4p VG4p SR4pdRUnfold --addDYSF
 
-#python run_limit_combined.py --overwrite --plot --inclRegion --useRegions misDY3 VG3 SR3M3 --addDYSF
-#python run_limit_combined.py --overwrite --plot --inclRegion --useRegions misDY3p VG3p SR3pM3 --addDYSF
-#python run_limit_combined.py --overwrite --plot --inclRegion --useRegions misDY4p VG4p SR4pM3 --addDYSF
-#python run_limit_combined.py --overwrite --plot --inclRegion --useRegions misDY3 misDY4p VG3 VG4p SR3M3 SR4pM3 --addDYSF
+##python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3M3 misDY4p VG4p SR4pM3 --addDYSF --splitScale
+##python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3PtUnfold misDY4p VG4p SR4pPtUnfold --addDYSF --splitScale
+##python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3AbsEtaUnfold misDY4p VG4p SR4pAbsEtaUnfold --addDYSF --splitScale
+##python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3dRUnfold misDY4p VG4p SR4pdRUnfold --addDYSF --splitScale
 
-#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3M3 --addDYSF
-#python run_limit_combined.py --overwrite --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
-#python run_limit_combined.py --overwrite --plot --useRegions misDY4p VG4p SR4pM3 --addDYSF
-#python run_limit_combined.py --overwrite --plot --useRegions misDY3 misDY4p VG3 VG4p SR3M3 SR4pM3 --addDYSF
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3M3 misDY4p VG4p SR4pM3 --addDYSF --addPtBinnedUnc --freezeSigUnc
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3PtUnfold misDY4p VG4p SR4pPtUnfold --addDYSF --addPtBinnedUnc --freezeSigUnc
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3AbsEtaUnfold misDY4p VG4p SR4pAbsEtaUnfold --addDYSF --addPtBinnedUnc --freezeSigUnc
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3dRUnfold misDY4p VG4p SR4pdRUnfold --addDYSF --addPtBinnedUnc --freezeSigUnc
 
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3M3 misDY4p VG4p SR4pM3 --addDYSF --addPtBinnedUnc
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3PtUnfold misDY4p VG4p SR4pPtUnfold --addDYSF --addPtBinnedUnc
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3AbsEtaUnfold misDY4p VG4p SR4pAbsEtaUnfold --addDYSF --addPtBinnedUnc
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3dRUnfold misDY4p VG4p SR4pdRUnfold --addDYSF --addPtBinnedUnc
 
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3 VG3 SR3M3 --addDYSF
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3p VG3p SR3pM3 --addDYSF
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY4p VG4p SR4pM3 --addDYSF
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3 misDY4p VG3 VG4p SR3M3 SR4pM3 --addDYSF
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3M3 misDY4p VG4p SR4pM3 --addDYSF --addPtBinnedUnc --freezeR --freezeSigUnc
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3PtUnfold misDY4p VG4p SR4pPtUnfold --addDYSF --addPtBinnedUnc --freezeR --freezeSigUnc
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3AbsEtaUnfold misDY4p VG4p SR4pAbsEtaUnfold --addDYSF --addPtBinnedUnc --freezeR --freezeSigUnc
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3dRUnfold misDY4p VG4p SR4pdRUnfold --addDYSF --addPtBinnedUnc --freezeR --freezeSigUnc
 
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY3 VG3 SR3M3 --addDYSF
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY4p VG4p SR4pM3 --addDYSF
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY3 misDY4p VG3 VG4p SR3M3 SR4pM3 --addDYSF
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3M3 misDY4p VG4p SR4pM3 --addDYSF --addPtBinnedUnc --freezeR
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3PtUnfold misDY4p VG4p SR4pPtUnfold --addDYSF --addPtBinnedUnc --freezeR
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3AbsEtaUnfold misDY4p VG4p SR4pAbsEtaUnfold --addDYSF --addPtBinnedUnc --freezeR
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3dRUnfold misDY4p VG4p SR4pdRUnfold --addDYSF --addPtBinnedUnc --freezeR
 
+##python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3M3 misDY4p VG4p SR4pM3 --expected --addDYSF --addMisIDSF
+##python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3PtUnfold misDY4p VG4p SR4pPtUnfold --expected --addDYSF --addMisIDSF
+##python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3AbsEtaUnfold misDY4p VG4p SR4pAbsEtaUnfold --expected --addDYSF --addMisIDSF
+##python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3dRUnfold misDY4p VG4p SR4pdRUnfold --expected --addDYSF --addMisIDSF
 
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 0.6
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 0.7
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 0.8
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 0.9
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 1.1
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 1.2
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 1.3
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 1.4
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3M3 misDY4p VG4p SR4pM3 --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeSigUnc
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3PtUnfold misDY4p VG4p SR4pPtUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeSigUnc
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3AbsEtaUnfold misDY4p VG4p SR4pAbsEtaUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeSigUnc
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3dRUnfold misDY4p VG4p SR4pdRUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeSigUnc
 
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3M3 misDY4p VG4p SR4pM3 --expected --addDYSF --addMisIDSF --addPtBinnedUnc
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3PtUnfold misDY4p VG4p SR4pPtUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3AbsEtaUnfold misDY4p VG4p SR4pAbsEtaUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3dRUnfold misDY4p VG4p SR4pdRUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc
 
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3p VG3p SR3pM3 --addDYSF --linTest 0.6
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3p VG3p SR3pM3 --addDYSF --linTest 0.7
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3p VG3p SR3pM3 --addDYSF --linTest 0.8
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3p VG3p SR3pM3 --addDYSF --linTest 0.9
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3p VG3p SR3pM3 --addDYSF --linTest 1.1
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3p VG3p SR3pM3 --addDYSF --linTest 1.2
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3p VG3p SR3pM3 --addDYSF --linTest 1.3
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3p VG3p SR3pM3 --addDYSF --linTest 1.4
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3M3 misDY4p VG4p SR4pM3 --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeR --freezeSigUnc
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3PtUnfold misDY4p VG4p SR4pPtUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeR --freezeSigUnc
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3AbsEtaUnfold misDY4p VG4p SR4pAbsEtaUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeR --freezeSigUnc
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3dRUnfold misDY4p VG4p SR4pdRUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeR --freezeSigUnc
 
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3M3 misDY4p VG4p SR4pM3 --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeR
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3PtUnfold misDY4p VG4p SR4pPtUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeR
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3AbsEtaUnfold misDY4p VG4p SR4pAbsEtaUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeR
+#python run_limit_combined.py --overwrite --plot --useRegions misDY3 VG3 SR3dRUnfold misDY4p VG4p SR4pdRUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeR
 
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY4p VG4p SR4pM3 --addDYSF --linTest 0.6
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY4p VG4p SR4pM3 --addDYSF --linTest 0.7
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY4p VG4p SR4pM3 --addDYSF --linTest 0.8
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY4p VG4p SR4pM3 --addDYSF --linTest 0.9
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY4p VG4p SR4pM3 --addDYSF --linTest 1.1
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY4p VG4p SR4pM3 --addDYSF --linTest 1.2
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY4p VG4p SR4pM3 --addDYSF --linTest 1.3
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY4p VG4p SR4pM3 --addDYSF --linTest 1.4
+#python run_limit_combined.py --overwrite --useRegions SR3PtUnfold --addDYSF --addPtBinnedUnc
+#python run_limit_combined.py --overwrite --useRegions SR4pPtUnfold --addDYSF --addPtBinnedUnc
+#python run_limit_combined.py --overwrite --useRegions SR3pPtUnfold --addDYSF --addPtBinnedUnc
+#python run_limit_combined.py --overwrite --useRegions SR3pAbsEtaUnfold --addDYSF --addPtBinnedUnc
+#python run_limit_combined.py --overwrite --useRegions SR3pdRUnfold --addDYSF --addPtBinnedUnc
 
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 0.6
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 0.7
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 0.8
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 0.9
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 1.1
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 1.2
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 1.3
-#python run_limit_combined.py --expected --overwrite --plot --inclRegion --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 1.4
+#python run_limit_combined.py --overwrite --useRegions SR3PtUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc
+#python run_limit_combined.py --overwrite --useRegions SR4pPtUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc
+#python run_limit_combined.py --overwrite --useRegions SR3pPtUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc
+#python run_limit_combined.py --overwrite --useRegions SR3pAbsEtaUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc
+#python run_limit_combined.py --overwrite --useRegions SR3pdRUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc
 
+#python run_limit_combined.py --overwrite --useRegions SR3PtUnfold --addDYSF --addPtBinnedUnc --freezeR
+#python run_limit_combined.py --overwrite --useRegions SR4pPtUnfold --addDYSF --addPtBinnedUnc --freezeR
+#python run_limit_combined.py --overwrite --useRegions SR3pPtUnfold --addDYSF --addPtBinnedUnc --freezeR
+#python run_limit_combined.py --overwrite --useRegions SR3pAbsEtaUnfold --addDYSF --addPtBinnedUnc --freezeR
+#python run_limit_combined.py --overwrite --useRegions SR3pdRUnfold --addDYSF --addPtBinnedUnc --freezeR
 
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF --linTest 0.6
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF --linTest 0.7
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF --linTest 0.8
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF --linTest 0.9
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF --linTest 1.1
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF --linTest 1.2
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF --linTest 1.3
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY3p VG3p SR3pM3 --addDYSF --linTest 1.4
+#python run_limit_combined.py --overwrite --useRegions SR3PtUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeR
+#python run_limit_combined.py --overwrite --useRegions SR4pPtUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeR
+#python run_limit_combined.py --overwrite --useRegions SR3pPtUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeR
+#python run_limit_combined.py --overwrite --useRegions SR3pAbsEtaUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeR
+#python run_limit_combined.py --overwrite --useRegions SR3pdRUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeR
 
+python run_limit_combined.py --overwrite --useRegions SR3PtUnfold --addDYSF --addPtBinnedUnc --freezeSigUnc
+python run_limit_combined.py --overwrite --useRegions SR4pPtUnfold --addDYSF --addPtBinnedUnc --freezeSigUnc
+python run_limit_combined.py --overwrite --useRegions SR3pPtUnfold --addDYSF --addPtBinnedUnc --freezeSigUnc
+python run_limit_combined.py --overwrite --useRegions SR3pAbsEtaUnfold --addDYSF --addPtBinnedUnc --freezeSigUnc
+python run_limit_combined.py --overwrite --useRegions SR3pdRUnfold --addDYSF --addPtBinnedUnc --freezeSigUnc
 
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY4p VG4p SR4pM3 --addDYSF --linTest 0.6
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY4p VG4p SR4pM3 --addDYSF --linTest 0.7
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY4p VG4p SR4pM3 --addDYSF --linTest 0.8
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY4p VG4p SR4pM3 --addDYSF --linTest 0.9
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY4p VG4p SR4pM3 --addDYSF --linTest 1.1
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY4p VG4p SR4pM3 --addDYSF --linTest 1.2
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY4p VG4p SR4pM3 --addDYSF --linTest 1.3
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY4p VG4p SR4pM3 --addDYSF --linTest 1.4
+python run_limit_combined.py --overwrite --useRegions SR3PtUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeSigUnc
+python run_limit_combined.py --overwrite --useRegions SR4pPtUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeSigUnc
+python run_limit_combined.py --overwrite --useRegions SR3pPtUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeSigUnc
+python run_limit_combined.py --overwrite --useRegions SR3pAbsEtaUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeSigUnc
+python run_limit_combined.py --overwrite --useRegions SR3pdRUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeSigUnc
 
+python run_limit_combined.py --overwrite --useRegions SR3PtUnfold --addDYSF --addPtBinnedUnc --freezeSigUnc --freezeR
+python run_limit_combined.py --overwrite --useRegions SR4pPtUnfold --addDYSF --addPtBinnedUnc --freezeSigUnc --freezeR
+python run_limit_combined.py --overwrite --useRegions SR3pPtUnfold --addDYSF --addPtBinnedUnc --freezeSigUnc --freezeR
+python run_limit_combined.py --overwrite --useRegions SR3pAbsEtaUnfold --addDYSF --addPtBinnedUnc --freezeSigUnc --freezeR
+python run_limit_combined.py --overwrite --useRegions SR3pdRUnfold --addDYSF --addPtBinnedUnc --freezeSigUnc --freezeR
 
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 0.6
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 0.7
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 0.8
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 0.9
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 1.1
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 1.2
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 1.3
-#python run_limit_combined.py --expected --overwrite --plot --useRegions misDY3 VG3 SR3M3 --addDYSF --linTest 1.4
+python run_limit_combined.py --overwrite --useRegions SR3PtUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeSigUnc --freezeR
+python run_limit_combined.py --overwrite --useRegions SR4pPtUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeSigUnc --freezeR
+python run_limit_combined.py --overwrite --useRegions SR3pPtUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeSigUnc --freezeR
+python run_limit_combined.py --overwrite --useRegions SR3pAbsEtaUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeSigUnc --freezeR
+python run_limit_combined.py --overwrite --useRegions SR3pdRUnfold --expected --addDYSF --addMisIDSF --addPtBinnedUnc --freezeSigUnc --freezeR
 
+##python run_limit_combined.py --overwrite --useRegions SR3PtUnfold --addDYSF
+##python run_limit_combined.py --overwrite --useRegions SR4pPtUnfold --addDYSF
+##python run_limit_combined.py --overwrite --useRegions SR3pPtUnfold --addDYSF
+##python run_limit_combined.py --overwrite --useRegions SR3pAbsEtaUnfold --addDYSF
+##python run_limit_combined.py --overwrite --useRegions SR3pdRUnfold --addDYSF
 
+##python run_limit_combined.py --overwrite --useRegions SR3PtUnfoldAll --expected --addDYSF --addMisIDSF
+##python run_limit_combined.py --overwrite --useRegions SR4pPtUnfoldAll --expected --addDYSF --addMisIDSF
+##python run_limit_combined.py --overwrite --useRegions SR3pPtUnfold --expected --addDYSF --addMisIDSF
+##python run_limit_combined.py --overwrite --useRegions SR3pAbsEtaUnfold --expected --addDYSF --addMisIDSF
+##python run_limit_combined.py --overwrite --useRegions SR3pdRUnfold --expected --addDYSF --addMisIDSF

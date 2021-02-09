@@ -388,11 +388,22 @@ for c in channels:
 
         # Store results
         key = uniqueKey( args.selectEstimator, region, c, setup ) + tuple(str(args.year))
+        scaleKeys   = []
+        scaleKeys.append(tuple( list(key)+["DownDown"] ))
+        scaleKeys.append(tuple( list(key)+["DownNom"] ))
+        scaleKeys.append(tuple( list(key)+["NomDown"] ))
+        scaleKeys.append(tuple( list(key)+["NomUp"] ))
+        scaleKeys.append(tuple( list(key)+["UpNom"] ))
+        scaleKeys.append(tuple( list(key)+["UpUp"] ))
+
         PDF_cache.add(   key, delta_sigma_rel, overwrite=True )
         scale_cache.add( key, scale_rel,       overwrite=True )
         PS_cache.add(    key, PS_scale_rel,    overwrite=True )
         ISR_cache.add(   key, ISR_scale_rel,    overwrite=True )
         FSR_cache.add(   key, FSR_scale_rel,    overwrite=True )
+        for i_s, var in enumerate(scales):
+            print i_s, var, scaleKeys[i_s]
+            scale_cache.add( scaleKeys[i_s], var,  overwrite=True )
 
 logger.info("Min. PDF uncertainty: %.3f"%min(PDF_unc))
 logger.info("Max. PDF uncertainty: %.3f"%max(PDF_unc))

@@ -51,7 +51,8 @@ if not args.controlRegion:
     sys.exit(0)
 
 additionalRegions = [None]
-if "Unfold" in args.controlRegion and not "Pt" in args.controlRegion and not "QCD" in args.selectEstimator and not "fakes" in args.selectEstimator:
+#if "Unfold" in args.controlRegion and not "Pt" in args.controlRegion and not "QCD" in args.selectEstimator and not "fakes" in args.selectEstimator:
+if not "Pt" in args.controlRegion and not "QCD" in args.selectEstimator and not "fakes" in args.selectEstimator:
     args.noInclusive = True
     pTG_thresh = [ 20, 35, 50, 65, 80, 100, 120, 140, 160, 200, 280, -999 ]
 #    additionalRegions += getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", pTG_thresh )
@@ -62,7 +63,7 @@ if "Unfold" in args.controlRegion and not "Pt" in args.controlRegion and not "QC
     additionalRegions += getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", misIDPT_thresholds )
 
 #    WGPT_thresholds = [ 20, 65, 160, -999 ]
-    WGPT_thresholds = [ 65, 160 ]
+    WGPT_thresholds = [ 20, 65, 160, -999 ]
     additionalRegions += getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", WGPT_thresholds )
 
 parameters       = allRegions[args.controlRegion]["parameters"]
@@ -72,6 +73,7 @@ if args.noInclusive:
     allPhotonRegions = allRegions[args.controlRegion]["regions"]
 else:
     allPhotonRegions = allRegions[args.controlRegion]["inclRegion"] + allRegions[args.controlRegion]["regions"] if photonSelection else allRegions[args.controlRegion]["regions"]
+#allPhotonRegions = allRegions[args.controlRegion]["inclRegion"]
 setup            = Setup( year=args.year, photonSelection=photonSelection and not "QCD" in args.selectEstimator, checkOnly=args.checkOnly, runOnLxPlus=args.runOnLxPlus ) #photonselection always false for qcd estimate
 
 # Select estimate
@@ -101,7 +103,7 @@ jobs=[]
 for channel in channels:
     for (ai, ar) in enumerate(additionalRegions):
         for (i, r) in enumerate(allPhotonRegions):
-            jobs.append((r if not ar else r+ar, channel, setup, None))
+            jobs.append((r if not ar or "PhotonGood0_pt" in r.vals.keys() or "PhotonNoChgIsoNoSieie0_pt" in r.vals.keys() else r+ar, channel, setup, None))
             if not estimate.isData and not args.noSystematics and not ar:
                 if "TTG" in args.selectEstimator:
                     jobs.extend(estimate.getSigSysJobs(r, channel, setup))

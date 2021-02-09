@@ -64,6 +64,7 @@ argParser.add_argument('--freezeR',             action='store_true',            
 argParser.add_argument('--freezeSigUnc',             action='store_true',                                                        help="add EFT uncertainty?")
 argParser.add_argument('--addPtBinnedUnc',             action='store_true',                                                        help="add EFT uncertainty?")
 argParser.add_argument('--notNormalized',             action='store_true',                                                        help="not normalized Scale uncertainties?")
+argParser.add_argument('--splitScale',             action='store_true',                                                        help="split scale uncertainties in sources")
 argParser.add_argument('--uncorrVG',              action='store_true',                                                        help="uncorrelate VGamma unc?")
 args=argParser.parse_args()
 
@@ -171,6 +172,7 @@ if args.freezeSigUnc:   regionNames.append("freezeSigUnc")
 if args.addPtBinnedUnc:   regionNames.append("addPtBinnedUnc")
 if args.notNormalized:   regionNames.append("notNormalized")
 if args.uncorrVG:   regionNames.append("uncorrVG")
+if args.splitScale:   regionNames.append("splitScale")
 
 if args.parameters:
     # load and define the EFT sample

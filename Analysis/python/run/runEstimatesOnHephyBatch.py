@@ -42,8 +42,8 @@ for name, cr in crs.items():
 #    if name=="SR3": continue
 #    if name=="SR3p": continue
 #    if name=="SR4p": continue
-    if not "SR" in name or "M3" in name: continue
-    if not "Unfold" in name or "M3" in name: continue
+    if not "SR" in name or not "M3" in name or not "B" in name: continue
+#    if not "Unfold" in name or "M3" in name: continue
 
 #    if not "3p" in name: continue
 #    if not "Table" in name: continue
