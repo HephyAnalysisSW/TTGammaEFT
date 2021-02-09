@@ -52,7 +52,10 @@ def sumNuisanceHistos( hists, corrObj, refHist ):
 
     for i in range( refUp.GetNbinsX() ):
         refUp.SetBinContent( i+1, math.sqrt( refUp.GetBinContent( i+1 ) ) )
+        refUp.SetBinError( i+1, 0 )
         refDown.SetBinContent( i+1, math.sqrt( refDown.GetBinContent( i+1 ) ) )
+        refDown.SetBinError( i+1, 0 )
+        refHist.SetBinError( i+1, 0 )
 
     refDown.Scale( -1 )
     refUp.Add( refHist )
