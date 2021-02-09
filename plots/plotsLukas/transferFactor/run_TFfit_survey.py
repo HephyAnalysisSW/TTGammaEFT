@@ -347,6 +347,13 @@ floatSFVal, floatSFErr = ROOT.Double(0), ROOT.Double(0)
 fitter.GetResult( 0, qcdTFVal,   qcdTFErr )
 fitter.GetResult( 1, floatSFVal, floatSFErr )
 
+chi = fitter.GetChisquare()
+nDOF = fitter.GetNDF()
+chipndof = float(chi)/float(nDOF) if nDOF > 0 else -1
+
+print chi, nDOF, chipndof
+print
+
 qcdTF   = u_float( qcdTFVal,   qcdTFErr )*nTotal/nQCD
 floatSF = u_float( floatSFVal, floatSFErr )*nTotal/nFloat
 
@@ -370,10 +377,16 @@ else:
     hist_float.legendText = floatSample.texName + " (SF %1.3f#pm %1.3f)"%(floatSF.val, floatSF.sigma)
 hist_float.style      = styles.fillStyle( floatSample.color )
 
+hist_null = hist_qcd.Clone()
+hist_null.Scale(0)
+hist_null.style = styles.lineStyle( ROOT.kWhite )
+hist_null.legendText = "#chi^{2} / ndf = %1.3f / %i"%(chi,nDOF)
+
 mTHistos[0].append( qcdHist )
 mTHistos_fit[0].append( hist_float )
 mTHistos_fit[0].append( hist_qcd )
 mTHistos_fit[0].append( hist_other )
+mTHistos_fit.append( [hist_null] )
 
 Plot.setDefaults()
 

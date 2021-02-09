@@ -65,6 +65,17 @@ estimate1b0p   = getattr(estimators1b0p, "QCD-DD")
 setup1b0p      = setup1b0p.sysClone( parameters=parameters1b0p )
 estimate1b0p.initCache(setup1b0p.defaultCacheDir())
 
+for nJet in [(2,2), (3,3), (4,-1)]:
+    nJetLow, nJetHigh = nJet
+    print nJetLow
+#    print "0b"
+#    estimate0b0p._nJetScaleFactor(args.mode, setup0b0p, evalForNJet=nJetLow, overwrite=True)
+    print "1b"
+    print estimate1b0p._nJetScaleFactor(args.mode, setup1b0p, evalForNJet=nJetLow, overwrite=True)
+
+sys.exit()
+
+
 cachedTF       = {}
 cachedTF["0b"] = {}
 cachedTF["1b"] = {}
@@ -84,8 +95,8 @@ for nJet in [(2,2), (3,3), (4,-1)]:
         cachedTF["1bMC"][nj][etakey] = {}
 
 if not args.nJetCorrected:
-    func0b = estimate0b0p._nJetFitFunction(args.mode, setup0b0p, overwrite=True)
-    func1b = estimate1b0p._nJetFitFunction(args.mode, setup1b0p, overwrite=True)
+    func0b = estimate0b0p._nJetFitFunction(args.mode, setup0b0p, overwrite=False)
+    func1b = estimate1b0p._nJetFitFunction(args.mode, setup1b0p, overwrite=False)
 
     line0b = ROOT.TLine( 2, func0b.Eval(1.5), 5, func0b.Eval(4.5) )
     line0b.SetLineWidth(3)
@@ -191,6 +202,18 @@ for nJet in [(2,2), (3,3), (4,-1)]:
                 cachedTF["0bMC"][nj][etakey][ptkey] = estimate0b0p.cachedQCDMCTransferFactor(args.mode, setup0b0p, qcdUpdates=qcdUpdate, checkOnly=False) * nJetSF_0b0p
                 cachedTF["1bMC"][nj][etakey][ptkey] = estimate1b0p.cachedQCDMCTransferFactor(args.mode, setup1b0p, qcdUpdates=qcdUpdate, checkOnly=False) * nJetSF_1b0p
 
+
+
+for x in cachedTF["0b"]["2"].keys():
+    for y in cachedTF["0b"]["2"][x].keys():
+        print args.year, args.mode, "0b", "2jet", x, y, cachedTF["0b"]["2"][x][y]
+
+print
+for x in cachedTF["1b"]["2"].keys():
+    for y in cachedTF["1b"]["2"][x].keys():
+        print args.year, args.mode, "1b", "2jet", x, y, cachedTF["1b"]["2"][x][y]
+
+sys.exit()
 
 # Text on the plots
 def drawObjects( lumi_scale, btags ):
