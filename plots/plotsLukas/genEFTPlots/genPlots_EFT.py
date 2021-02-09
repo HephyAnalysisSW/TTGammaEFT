@@ -71,6 +71,8 @@ def get_weight_string( parameters ):
 
 # define your plot selection via the python option --selection
 preSelection = cutInterpreter.cutString( args.selection + "-" + args.mode )
+print preSelection
+sys.exit()
 smweightString = "(%s)*ref_weight"%get_weight_string({})
 Histo = eftSample.get1DHistoFromDraw( "GenPhotonCMSUnfold0_pt", binning=[20,20,520],selectionString=preSelection, weightString=smweightString )
 

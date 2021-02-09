@@ -79,7 +79,7 @@ elif args.year == "RunII":
     import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
     from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
-mc = mc_samples.WG_NLO
+mc = mc_samples.WG
 #mc = mc_samples.WJets
 
 read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval/I",

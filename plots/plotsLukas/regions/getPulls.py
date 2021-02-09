@@ -172,6 +172,7 @@ for year, yVal in resPostFit.iteritems():
     resultpostfit[year] = {}
     resultprefit[year] = {}
     for bin, bVal in yVal.iteritems():
+        print bin
         if int(bin.replace("Bin","")) < 10: continue # only SR
         totalYieldSFPostFit[year][bin] = 0
         totalYieldSFPreFit[year][bin]  = 0
@@ -233,7 +234,10 @@ for year, yVal in resPostFit.iteritems():
                 resultpostfit[year][bin][n].append( sum(tmp_resultpostfit[n]) / totalYieldSFPostFit[year][bin] )
                 resultprefit[year][bin][n].append( sum(tmp_resultprefit[n]) / totalYieldSFPreFit[year][bin] )
 
-for n, nVal in resultprefit["dc_2016"]["Bin10"].iteritems():
-    pre = [ resultprefit[year][bin][n][0] for bin in resultprefit["dc_2016"].keys() for year in resultprefit.keys()]
-    post = [ resultpostfit[year][bin][n][0] for bin in resultpostfit["dc_2016"].keys() for year in resultpostfit.keys()]
+#for n, nVal in resultprefit["dc_2016"]["Bin10"].iteritems():
+for n, nVal in resultprefit["Bin0"]["Bin10"].iteritems():
+    pre = [ resultprefit[year][bin][n][0] for bin in resultprefit["Bin0"].keys() for year in resultprefit.keys()]
+    post = [ resultpostfit[year][bin][n][0] for bin in resultpostfit["Bin0"].keys() for year in resultpostfit.keys()]
+#    pre = [ resultprefit[year][bin][n][0] for bin in resultprefit["dc_2016"].keys() for year in resultprefit.keys()]
+#    post = [ resultpostfit[year][bin][n][0] for bin in resultpostfit["dc_2016"].keys() for year in resultpostfit.keys()]
     print n, "\t", "%f"%(min(pre)-1), "%f"%(max(pre)-1),"\t" , "%f"%(min(post)-1), "%f"%(max(post)-1) #, pre

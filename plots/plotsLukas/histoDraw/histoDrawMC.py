@@ -69,7 +69,7 @@ dirDB = MergingDirDB(cache_dir)
 if not dirDB: raise
 
 # Sample definition
-os.environ["gammaSkim"]="False" #always false for QCD estimate
+os.environ["gammaSkim"]="True"
 if args.year == 2016:
     import TTGammaEFT.Samples.nanoTuples_Summer16_private_semilep_postProcessed as mc_samples
     from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import Run2016 as data_sample
@@ -83,7 +83,7 @@ elif args.year == "RunII":
     import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
     from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
-mc          = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG_NLO, mc_samples.ZG, mc_samples.rest, mc_samples.QCD, mc_samples.GJets ]
+mc          = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest, mc_samples.QCD, mc_samples.GJets ]
 qcd         = mc_samples.QCD
 gjets       = mc_samples.GJets
 
@@ -111,8 +111,7 @@ ws17 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2017))" %(
 ws18 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2018))" %(ws, misIDSF_val[2018].val)
 weightStringAR = ws + ws16 + ws17 + ws18
 
-wsInv   = "(%s*weight*
-reweightHEM*reweightInvIsoTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSFInvIso*reweightLeptonTrackingTightSFInvIso*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF)"%lumiString
+wsInv   = "(%s*weight*reweightHEM*reweightInvIsoTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSFInvIso*reweightLeptonTrackingTightSFInvIso*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF)"%lumiString
 wsInv16 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2016))" %(wsInv, misIDSF_val[2016].val)
 wsInv17 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2017))" %(wsInv, misIDSF_val[2017].val)
 wsInv18 = "+(%s*(PhotonNoChgIsoNoSieie0_photonCatMagic==2)*(%f-1)*(year==2018))" %(wsInv, misIDSF_val[2018].val)
@@ -317,7 +316,7 @@ qcdTemplate            = qcdHist.Clone("QCDTemplate")
 qcdTemplate.style      = styles.fillStyle( color.QCD )
 qcdTemplate.notInLegend = True
 #qcdTemplate.legendText = "QCD template"
-qcdTemplate.Scale(1./ qcdTemplate.Integral() )
+#qcdTemplate.Scale(1./ qcdTemplate.Integral() )
 maxQCD = qcdTemplate.GetMaximum()
 
 # for template ratio pattern

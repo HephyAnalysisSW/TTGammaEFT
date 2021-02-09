@@ -85,7 +85,9 @@ args.plotNuisances = [
 
 
 args.plotNuisances = [
-    "Int_Luminosity_2016"
+#    "Int_Luminosity_2016",
+    "prop_binBin0_bin8",
+    "r",
 ]
 
 for n in args.plotNuisances:

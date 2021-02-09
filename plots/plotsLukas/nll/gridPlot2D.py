@@ -41,7 +41,7 @@ import RootTools.core.logger as logger_rt
 logger    = logger.get_logger(    args.logLevel, logFile = None)
 logger_rt = logger_rt.get_logger( args.logLevel, logFile = None)
 
-plot_directory_ = os.path.join( plot_directory, "nllPlots" )
+plot_directory_ = os.path.join( plot_directory, "nllPlotsApp" )
 
 if not os.path.isdir( plot_directory_ ):
     try: os.makedirs( plot_directory_ )

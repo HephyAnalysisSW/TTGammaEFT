@@ -68,7 +68,8 @@ logger.info("Plotting from cardfile %s"%cardFile)
 # replace the combineResults object by the substituted card object
 Results = CombineResults( cardFile=cardFile, plotDirectory=plotDirectory, year=args.year, isSearch=False )
 nuisances = [ p for p in Results.getPulls().keys() if p !="r" and not "prop" in p ]
-plotBins = [10,11,12,13,14,15,16,17,18,19,20,21]
+#plotBins = [10,11,12,13,14,15,16,17,18,19,20,21]
+plotBins = [34,35,36,37,38,39,40,41,42,43,44,45]
 
 # get region histograms
 if args.year == "combined":
@@ -224,7 +225,7 @@ for n in nuisances:
         print bl, min(bl + [999])
         print
 
-print hists.keys()
+#print hists.keys()
 sys.exit()
 
 #Results.htmlNuisanceReport()
@@ -332,7 +333,8 @@ for year, yVal in resPostFit.iteritems():
     resultpostfit[year] = {}
     resultprefit[year] = {}
     for bin, bVal in yVal.iteritems():
-        if int(bin.replace("Bin","")) < 10: continue # only SR
+#        if int(bin.replace("Bin","")) < 10: continue # only SR
+        if int(bin.replace("Bin","")) < 34: continue # only SR
         totalYieldSFPostFit[year][bin] = 0
         totalYieldSFPreFit[year][bin]  = 0
         totalSignalYieldSFPostFit[year][bin] = 0
@@ -393,7 +395,9 @@ for year, yVal in resPostFit.iteritems():
                 resultpostfit[year][bin][n].append( sum(tmp_resultpostfit[n]) / totalYieldSFPostFit[year][bin] )
                 resultprefit[year][bin][n].append( sum(tmp_resultprefit[n]) / totalYieldSFPreFit[year][bin] )
 
-for n, nVal in resultprefit["dc_2016"]["Bin10"].iteritems():
-    pre = [ resultprefit[year][bin][n][0] for bin in resultprefit["dc_2016"].keys() for year in resultprefit.keys()]
-    post = [ resultpostfit[year][bin][n][0] for bin in resultpostfit["dc_2016"].keys() for year in resultpostfit.keys()]
+b = "dc_2016" if args.year == "combined" else "Bin0"
+#for n, nVal in resultprefit[b]["Bin10"].iteritems():
+for n, nVal in resultprefit[b]["Bin34"].iteritems():
+    pre = [ resultprefit[year][bin][n][0] for bin in resultprefit[b].keys() for year in resultprefit.keys()]
+    post = [ resultpostfit[year][bin][n][0] for bin in resultpostfit[b].keys() for year in resultpostfit.keys()]
     print n, "\t", "%f"%(min(pre)-1), "%f"%(max(pre)-1),"\t" , "%f"%(min(post)-1), "%f"%(max(post)-1) #, pre

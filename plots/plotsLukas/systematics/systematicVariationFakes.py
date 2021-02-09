@@ -325,11 +325,11 @@ filterCutData = getFilterCut( args.year, isData=True,  skipBadChargedCandidate=T
 filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )
 
 blinding = []
-if args.year != 2016 and not "VGfake" in args.selection:
-    if "lowSieieNoChgIso" in args.addCut:
-        blinding += [ cutInterpreter.cutString( "lowSieieHighChgIso" ) ]
-    if "lowChgIsoNoSieie" in args.addCut:
-        blinding += [ cutInterpreter.cutString( "lowChgIsoHighSieie" ) ]
+#if args.year != 2016 and not "VGfake" in args.selection:
+#    if "lowSieieNoChgIso" in args.addCut:
+#        blinding += [ cutInterpreter.cutString( "lowSieieHighChgIso" ) ]
+#    if "lowChgIsoNoSieie" in args.addCut:
+#        blinding += [ cutInterpreter.cutString( "lowChgIsoHighSieie" ) ]
 
 
 data_sample.setSelectionString( [filterCutData]+blinding )
@@ -539,7 +539,7 @@ if args.variation == "central":
                         if addSF:
                             if setup.isPhotonSelection:
                                 if "DY" in s.name:
-                                    s.hist_SB_tmp.Scale(DYSF_val[args.year].val)
+                                    s.hist_SB_tmp.Scale(DYSF_val["RunII"].val)
                                 elif "ZG" in s.name:# and njets < 4:
                                     s.hist_SB_tmp.Scale(ZGSF_val[args.year].val)
                                 elif "WG" in s.name:# and njets > 3:
@@ -548,7 +548,7 @@ if args.variation == "central":
                                     s.hist_SB_tmp.Scale(SSMSF_val[args.year].val)
                             else:
                                 if "DY" in s.name:
-                                    s.hist_SB_tmp.Scale(DYSF_val[args.year].val)
+                                    s.hist_SB_tmp.Scale(DYSF_val["RunII"].val)
                                 elif "WJets" in s.name:
                                     s.hist_SB_tmp.Scale(WJetsSF_val[args.year].val)
 

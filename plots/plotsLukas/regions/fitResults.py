@@ -68,6 +68,9 @@ import RootTools.core.logger as logger_rt
 logger    = logger.get_logger(    args.logLevel, logFile = None )
 logger_rt = logger_rt.get_logger( args.logLevel, logFile = None )
 
+freezeR = "freezeR" in args.cardfile or (args.substituteCard and "freezeR" in args.substituteCard)
+print freezeR
+
 if args.year != "combined": args.year = int(args.year)
 # fix label (change later)
 args.preliminary = True
@@ -96,16 +99,19 @@ if args.expected: add += ["expected"]
 if args.linTest != 1: add += ["linTest"+str(args.linTest)]
 fit      = "_".join( ["postFit" if args.postFit else "preFit"] + add )
 
-plotDirectory = os.path.join(plot_directory, "fitPPA", str(args.year), fit, dirName)
+plotDirectory = os.path.join(plot_directory, "fitApp", str(args.year), fit, dirName)
 cardFile      = os.path.join( cache_directory, "analysis", str(args.year) if args.year != "combined" else "COMBINED", args.carddir, args.cardfile+".txt" )
 logger.info("Plotting from cardfile %s"%cardFile)
 
 # replace the combineResults object by the substituted card object
 Results = CombineResults( cardFile=cardFile, plotDirectory=plotDirectory, year=args.year, bkgOnly=args.bkgOnly, isSearch=False )
+
+
+if args.cacheHistogram:
+    fitObj = Results.getFitObject()
 #print Results.fitResult
 
-#allNuisances = Results.getNuisancesList( addRateParameter=args.postFit )
-#print Results.getPulls( postFit=True )["r"]
+#print [x for x in Results.getPulls( postFit=True ).keys() if x.startswith("Signal_")]
 #print Results.getNuisanceYields( "MisID_normalization_2016", postFit=False )["Bin0"]["Bin0"]
 #print Results.getEstimates( postFit=False, bin="Bin0", estimate="TT_misID" )
 
@@ -127,7 +133,10 @@ if args.substituteCard:
     if not args.noFreeze:
         freeze = Results.getPulls( postFit=True )
         setParameters = [ p+"="+str(freeze[p].val) for p in freeze.keys() if p.startswith("Signal_")]
-        freezeParameters = "--freezeParameters " + ",".join([p for p in freeze.keys() if p.startswith("Signal_")])
+        if freezeR: setParameters += ["r=1"]
+        freezePar = [p for p in freeze.keys() if p.startswith("Signal_")]
+        if freezeR: freezePar += ["r"]
+        freezeParameters = "--freezeParameters " + ",".join(freezePar)
 #    print
 #    print freezeParameters
 #    if args.year == "combined" and args.expected and "3pPt" in args.substituteCard:
@@ -151,21 +160,39 @@ if args.substituteCard:
 #        subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/2016/limits/cardFiles/defaultSetup/observed/SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc/SR3pdRUnfold_addDYSF_addPtBinnedUnc.txt"
 
     if setParameters and not args.noFreeze:
-        subCardFile = Results.createRebinnedResults( rebinnedCardFile, skipStatOnly=False, setParameters=",".join(setParameters), options="--rMin 0.5 --rMax 1.5 --cminDefaultMinimizerTolerance=0.01 "+freezeParameters )
+        options = "--rMin 0.5 --rMax 1.5 --cminDefaultMinimizerTolerance=0.1 --cminDefaultMinimizerStrategy=0 "+freezeParameters
+        if freezeR: options += " --redefineSignalPOI Signal_mu_4p_Bin0_%s"%(str(args.year) if args.year != "combined" else "2018")
+        subCardFile = Results.createRebinnedResults( rebinnedCardFile, skipStatOnly=True, setParameters=",".join(setParameters), options=options )
     else:
-        subCardFile = Results.createRebinnedResults( rebinnedCardFile, skipStatOnly=False, options="--rMin 0.5 --rMax 1.5 --cminDefaultMinimizerTolerance=0.01" )
+        options = "--rMin 0.5 --rMax 1.5 --cminDefaultMinimizerTolerance=0.1 --cminDefaultMinimizerStrategy=0 "
+        if freezeR:
+            options += " --redefineSignalPOI Signal_mu_4p_Bin0_%s --freezeParameters r"%(str(args.year) if args.year != "combined" else "2018")
+        subCardFile = Results.createRebinnedResults( rebinnedCardFile, skipStatOnly=True, setParameters="r=1,Signal_mu_4p_Bin0_%s=1"%(str(args.year) if args.year != "combined" else "2018") if freezeR else None, options=options )
 
+#    print subCardFile
+#    sys.exit()
 #    y = str(args.year).replace("combined","COMBINED")
-#    subCardFile = cardFile.replace(".txt","/")+args.substituteCard+".txt"
+#    subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/observed/SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc/SR3pdRUnfold_addDYSF_addPtBinnedUnc.txt"
+
+#    subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/observed/SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc/SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc.txt"
+#    subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/observed/SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc/SR3pdRUnfold_addDYSF_addPtBinnedUnc.txt"
+#    subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/observed/SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc/SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc.txt"
+
+#    subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/observed/SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc/SR3pPtUnfold_addDYSF_addPtBinnedUnc.txt"
+#    subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/observed/SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc/SR3pdRUnfold_addDYSF_addPtBinnedUnc.txt"
+#    subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/observed/SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc/SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc.txt"
+
+#    subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/observed/SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF/VG3_VG4p_misDY3_misDY4p_addDYSF.txt"
+#    subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/observed/SR3pdRUnfold_addDYSF_addPtBinnedUnc.txt"
 #    subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/2016/limits/cardFiles/defaultSetup/observed/SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc/SR3pPtUnfold_addDYSF_addPtBinnedUnc.txt"
 #    subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/2016/limits/cardFiles/defaultSetup/observed/SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF/SR3pPtUnfold_addDYSF.txt"
 #    subCardFile = "/scratch/lukas.lechner/TTGammaEFT/cache/analysis/COMBINED/limits/cardFiles/defaultSetup/expected/SR3pM3_VG3p_misDY3p_addDYSF/SR3pFine_addDYSF.txt"
     del Results
     Results     = CombineResults( cardFile=subCardFile, plotDirectory=plotDirectory, year=args.year, bkgOnly=args.bkgOnly, isSearch=False, rebinnedCardFile=rebinnedCardFile )
 
-labelFormater   = lambda x: ", ".join( [x.split(" ")[3].replace("PtUnfold","").replace("M3","").replace("VG","ZG+WG") if not "mLtight0Gamma" in x.split(" ")[2] else x.split(" ")[3].replace("VG","ZG") if "mLtight0Gamma0" in x.split(" ")[2] else x.split(" ")[3].replace("VG","WG"), x.split(" ")[1].replace("all","e+mu").replace("mu","#mu").replace("tight","")] )
+labelFormater   = lambda x: ", ".join( [x.split(" ")[3].replace("PtUnfold","").replace("dRUnfold","").replace("AbsEtaUnfold","").replace("M3","").replace("VG","ZG+WG") if not "mLtight0Gamma" in x.split(" ")[2] else x.split(" ")[3].replace("VG","ZG") if "mLtight0Gamma0" in x.split(" ")[2] else x.split(" ")[3].replace("VG","WG"), x.split(" ")[1].replace("all","e+mu").replace("mu","#mu").replace("tight","")] )
 labels = [ ( i, label ) for i, label in enumerate(Results.getBinLabels( labelFormater=lambda x:x.split(" "))[Results.channels[0]])]
-print labels
+#print labels
 # get list of labels
 
 if args.plotRegions:  labels = filter( lambda (i,(year, ch, lab, reg)): reg in args.plotRegions, labels )
@@ -181,7 +208,7 @@ for key, val in enumerate(crLabel):
     if "mLtight0Gamma" in tmpLabels[key]:
         if "mLtight0Gamma0" in tmpLabels[key]:
             crLabel[key] = val.replace("VG","ZG")
-            print crLabel[key]
+#            print crLabel[key]
         else:
             crLabel[key] = val.replace("VG","WG")
 
@@ -195,6 +222,8 @@ nBins     = len(labels) #int(len(crLabel)/3.) if args.year == "combined" else le
 
 if "misIDPOI" in args.cardfile:
     processes = processesMisIDPOI.keys()
+if "wgPOI" in args.cardfile:
+    processes = processesWGPOI.keys()
 elif not "ctZ" in args.cardfile:
     card = args.substituteCard if args.substituteCard else args.cardfile
     processes = [ cr for cr in card.split("_") if (not args.plotRegions or (args.plotRegions and cr in args.plotRegions)) and cr in allRegions.keys() ]
@@ -215,35 +244,17 @@ def replaceHistoBinning( hists ):
         else:
             thresh += [ reg[-1].vals.values()[0][1] ]
         xLabel = reg[0].vals.keys()[0]
-        print
-        print
-        print
-        print
-        print xLabel
-        print
-        print
-        print
-        print
-        if "PhotonGood0" in xLabel or "PhotonNoChgIsoNoSieie0" in xLabel or xLabel in ["ltight0GammaNoSieieNoChgIsodPhi", "ltight0GammaNoSieieNoChgIsodR", "photonNoSieieNoChgIsoJetdR"]:
-            if xLabel.endswith("_pt"):   xLabel = "p_{T}(#gamma) [GeV]"
-            if xLabel.endswith("_eta"):  xLabel = "#eta(#gamma)"
-            if xLabel.endswith("_eta)"): xLabel = "|#eta(#gamma)|"
-            if xLabel.endswith("dPhi"):  xLabel = "#Delta#phi(#gamma,l)"
-            if xLabel.endswith("dR") and xLabel.startswith("ltight"):    xLabel = "#DeltaR(#gamma,l)"
-            if xLabel.endswith("dR") and xLabel.startswith("photon"):    xLabel = "min. #DeltaR(#gamma,jet)"
 
-        print
-        print
-        print
-        print
-        print xLabel
-        print
-        print
-        print
-        print
+        if "PhotonGood0" in xLabel or "PhotonNoChgIsoNoSieie0" in xLabel or xLabel in ["ltight0GammaNoSieieNoChgIsodPhi", "ltight0GammaNoSieieNoChgIsodR", "photonNoSieieNoChgIsoJetdR"]:
+            if xLabel.endswith("_pt"):   xLabel = "p^{reco}_{T}(#gamma) (GeV)"
+            if xLabel.endswith("_eta"):  xLabel = "#eta^{reco}(#gamma)"
+            if xLabel.endswith("_eta)"): xLabel = "|#eta^{reco}(#gamma)|"
+            if xLabel.endswith("dPhi"):  xLabel = "#Delta#phi(#gamma,l)"
+            if xLabel.endswith("dR") and xLabel.startswith("ltight"):    xLabel = "#DeltaR(#gamma,l)^{reco}"
+            if xLabel.endswith("dR") and xLabel.startswith("photon"):    xLabel = "min. #DeltaR(#gamma,jet)^{reco}"
+
         differential = True
         ch = subCard[-1]
-        print hists.keys()
         for h_key, h in hists.iteritems():
             if isinstance( h, dict ):
                 h_sub_up = ROOT.TH1F(h["up"].GetName(), h["up"].GetName(), bins, array.array('d', thresh) )
@@ -253,7 +264,6 @@ def replaceHistoBinning( hists ):
                     h_sub_up.SetBinError( i+1, h["up"].GetBinError(i+1))
                     h_sub_down.SetBinContent( i+1, h["down"].GetBinContent(i+1))
                     h_sub_down.SetBinError( i+1, h["down"].GetBinError(i+1))
-                print h_key
                 if h_key != "totalStat":
                     h_sub_up.legendText = h["up"].legendText
                     h_sub_up.style = h["up"].style
@@ -273,8 +283,8 @@ def replaceHistoBinning( hists ):
 
 # region plot, sorted/not sorted, w/ or w/o +-1sigma changes in one nuisance
 def plotRegions( sorted=True ):
-#    if args.postFit and not args.substituteCard and not args.bkgSubstracted:
-#        Results.plotPOIScan( rMin=0, rMax=2, points=200, addLumi=None )
+    if args.postFit and not args.substituteCard and not args.bkgSubstracted:
+        Results.plotPOIScan( rMin=0, rMax=2, points=200, addLumi=None )
 #        Results.plotPOIScan( rMin=0, rMax=2, points=200, addLumi="Luminosity" )
 
     modelUnc = [
@@ -283,10 +293,84 @@ def plotRegions( sorted=True ):
             "Scale",
             "GluonMove",
             "PDF",
-            "Parton_Showering",
+            "ISR",
+            "FSR",
             "erdOn",
             ]
-    fakeUnc = [
+
+    if args.postFit and not freezeR:
+        modelUnc += [
+                "r",
+                ]
+
+    bkgUnc = []
+    if args.year == 2016 or args.year == "combined":
+        bkgUnc += [
+            "WGamma_nJet_dependence",
+            "WGamma_normalization",
+#            "WGamma_pT_Bin1",
+#            "WGamma_pT_Bin2",
+            "ZGamma_nJet_dependence",
+            "ZGamma_normalization",
+#            "ZGamma_pT_Bin1",
+#            "ZGamma_pT_Bin2",
+            "DY_normalization",
+            "MisID_extrapolation_2016",
+            "MisID_nJet_dependence_2016",
+            "MisID_normalization_2016",
+#            "misID_pT_Bin1_2016",
+#            "misID_pT_Bin2_2016",
+#            "misID_pT_Bin3_2016",
+#            "misID_pT_Bin4_2016",
+#            "misID_pT_Bin5_2016",
+#            "misID_pT_Bin6_2016",
+            ]
+
+    if args.year == 2017 or args.year == "combined":
+        bkgUnc += [
+            "fake_photon_model_2017",
+            "WGamma_nJet_dependence",
+            "WGamma_normalization",
+#            "WGamma_pT_Bin1",
+#            "WGamma_pT_Bin2",
+            "ZGamma_nJet_dependence",
+            "ZGamma_normalization",
+#            "ZGamma_pT_Bin1",
+#            "ZGamma_pT_Bin2",
+            "DY_normalization",
+            "MisID_extrapolation_2017",
+            "MisID_nJet_dependence_2017",
+            "MisID_normalization_2017",
+#            "misID_pT_Bin1_2017",
+#            "misID_pT_Bin2_2017",
+#            "misID_pT_Bin3_2017",
+#            "misID_pT_Bin4_2017",
+#            "misID_pT_Bin5_2017",
+#            "misID_pT_Bin6_2017",
+            ]
+
+    if args.year == 2018 or args.year == "combined":
+        bkgUnc += [
+            "WGamma_nJet_dependence",
+            "WGamma_normalization",
+#            "WGamma_pT_Bin1",
+#            "WGamma_pT_Bin2",
+            "ZGamma_nJet_dependence",
+            "ZGamma_normalization",
+#            "ZGamma_pT_Bin1",
+#            "ZGamma_pT_Bin2",
+            "DY_normalization",
+            "MisID_extrapolation_2018",
+            "MisID_nJet_dependence_2018",
+            "MisID_normalization_2018",
+#            "misID_pT_Bin1_2018",
+#            "misID_pT_Bin2_2018",
+#            "misID_pT_Bin3_2018",
+#            "misID_pT_Bin4_2018",
+#            "misID_pT_Bin5_2018",
+#            "misID_pT_Bin6_2018",
+            ]
+    bkgUnc += [
             "QCD_1b_nJet_dependence",
             "QCD_1b_normalization",
             "QCD_normalization",
@@ -294,77 +378,12 @@ def plotRegions( sorted=True ):
             "Other_normalization",
             "TT_normalization",
             ]
-
-    if args.year == 2017 or args.year == "combined":
-        fakeUnc += ["fake_photon_model_2017"]
-
-    bkgUnc = []
-    if args.year == 2016 or args.year == "combined":
+    if args.postFit and not freezeR:
         bkgUnc += [
-            "WGamma_nJet_dependence",
-            "WGamma_normalization",
-            "WGamma_pT_Bin1",
-            "WGamma_pT_Bin2",
-            "ZGamma_nJet_dependence",
-            "ZGamma_normalization",
-            "ZGamma_pT_Bin1",
-            "ZGamma_pT_Bin2",
-            "DY_normalization",
-            "MisID_extrapolation_2016",
-            "MisID_nJet_dependence_2016",
-            "MisID_normalization_2016",
-            "misID_pT_Bin1_2016",
-            "misID_pT_Bin2_2016",
-            "misID_pT_Bin3_2016",
-            "misID_pT_Bin4_2016",
-            "misID_pT_Bin5_2016",
-            "misID_pT_Bin6_2016",
-            ]
-
-    if args.year == 2017 or args.year == "combined":
-        bkgUnc += [
-            "WGamma_nJet_dependence",
-            "WGamma_normalization",
-            "WGamma_pT_Bin1",
-            "WGamma_pT_Bin2",
-            "ZGamma_nJet_dependence",
-            "ZGamma_normalization",
-            "ZGamma_pT_Bin1",
-            "ZGamma_pT_Bin2",
-            "DY_normalization",
-            "MisID_extrapolation_2017",
-            "MisID_nJet_dependence_2017",
-            "MisID_normalization_2017",
-            "misID_pT_Bin1_2017",
-            "misID_pT_Bin2_2017",
-            "misID_pT_Bin3_2017",
-            "misID_pT_Bin4_2017",
-            "misID_pT_Bin5_2017",
-            "misID_pT_Bin6_2017",
-            ]
-
-    if args.year == 2018 or args.year == "combined":
-        bkgUnc += [
-            "WGamma_nJet_dependence",
-            "WGamma_normalization",
-            "WGamma_pT_Bin1",
-            "WGamma_pT_Bin2",
-            "ZGamma_nJet_dependence",
-            "ZGamma_normalization",
-            "ZGamma_pT_Bin1",
-            "ZGamma_pT_Bin2",
-            "DY_normalization",
-            "MisID_extrapolation_2018",
-            "MisID_nJet_dependence_2018",
-            "MisID_normalization_2018",
-            "misID_pT_Bin1_2018",
-            "misID_pT_Bin2_2018",
-            "misID_pT_Bin3_2018",
-            "misID_pT_Bin4_2018",
-            "misID_pT_Bin5_2018",
-            "misID_pT_Bin6_2018",
-            ]
+                "r",
+                ]
     bkgUnc = list(set(bkgUnc))
+
     expUnc = []
     if args.year == 2016 or args.year == "combined":
         expUnc += [
@@ -470,17 +489,33 @@ def plotRegions( sorted=True ):
             "pixelSeed_veto_2018",
             "top_pt_reweighting",
             ]
+
+    if args.postFit and not freezeR:
+        expUnc += [
+                "r",
+                ]
     expUnc = list(set(expUnc))
 
     plotNuisances = []
     if args.plotNuisances:
-        plotNuisances = [ p for p in args.plotNuisances if p not in ["total","experimental","model","background","fakeModelling"]]
-        if "total" in args.plotNuisances:
+        plotNuisances = [ p for p in args.plotNuisances if p not in ["total","experimental","model","background","all","MCStat"]]
+        if "total" in args.plotNuisances or "all" in args.plotNuisances or "MCStat" in args.plotNuisances:
+            allNuisances = Results.getNuisancesList( addRateParameter=args.postFit )
+            if any( [ "prop" in n for n in allNuisances ] ):
+                allNuisances = [ n for n in allNuisances if not "prop" in n ] #+ ["stat"]
+#            if any( [ "Signal" in n for n in allNuisances ] ):
+#                allNuisances = [ n for n in allNuisances if not "Signal" in n ] #+ ["stat"]
+            if args.postFit and not freezeR: allNuisances += ["r"]
+            if args.cacheHistogram:
+                args.plotNuisances += allNuisances
+#            print allNuisances
+#            sys.exit()
             plotNuisances += allNuisances
+        if "all" in args.plotNuisances:
+            args.plotNuisances = [p for p in args.plotNuisances if p != "all"]
+            args.plotNuisances = list( set( args.plotNuisances ) )
         if "experimental" in args.plotNuisances:
             plotNuisances += expUnc
-        if "fakeModelling" in args.plotNuisances:
-            plotNuisances += fakeUnc
         if "model" in args.plotNuisances:
             plotNuisances += modelUnc
         if "background" in args.plotNuisances:
@@ -489,13 +524,18 @@ def plotRegions( sorted=True ):
         plotNuisances = list( set( plotNuisances ) )
     # get region histograms
     if args.year == "combined":
-        hists_tmp = Results.getRegionHistos( postFit=args.postFit, plotBins=plotBins, nuisances=plotNuisances, addStatOnlyHistos=True, bkgSubstracted=args.bkgSubstracted, labelFormater=labelFormater )
+        hists_tmp = Results.getRegionHistos( postFit=args.postFit, plotBins=plotBins, nuisances=plotNuisances, addStatOnlyHistos=False, bkgSubstracted=args.bkgSubstracted, labelFormater=labelFormater )
         for i, dir in enumerate(Results.channels if not args.plotYear else [key for key, val in Results.years.iteritems() if val == args.plotYear]):
-            print i, dir
+#            print i, dir
             if i == 0:
                 hists = {key:hist.Clone(str(i)+dir+key) for key, hist in hists_tmp[dir].iteritems() if not args.plotNuisances or key not in plotNuisances} #copy.deepcopy(hists_tmp)
                 if args.plotNuisances:
                     for n in plotNuisances:
+                        for i_b in range(hists_tmp[dir][n]["up"].GetNbinsX()):
+                            hists_tmp[dir][n]["up"].SetBinError( i_b+1, hists_tmp[dir][n]["up"].GetBinContent( i_b+1 ) - hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].GetBinContent( i_b+1 ) )
+                            hists_tmp[dir][n]["up"].SetBinContent( i_b+1, hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].GetBinContent( i_b+1 ) )
+                            hists_tmp[dir][n]["down"].SetBinError( i_b+1, hists_tmp[dir][n]["down"].GetBinContent( i_b+1 ) - hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].GetBinContent( i_b+1 ) )
+                            hists_tmp[dir][n]["down"].SetBinContent( i_b+1, hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].GetBinContent( i_b+1 ) )
                         hists.update( { n:{"up":hists_tmp[dir][n]["up"].Clone(str(i)+dir+n+"up"), "down":copy.deepcopy(hists_tmp[dir][n]["down"].Clone(str(i)+dir+n+"down"))} } )
                         hists[n]["up"].legendText = hists_tmp[dir][n]["up"].legendText
                         hists[n]["up"].style      = hists_tmp[dir][n]["up"].style
@@ -504,19 +544,56 @@ def plotRegions( sorted=True ):
             else:
                for key, hist in hists_tmp[dir].iteritems():
                     if args.plotNuisances and key in plotNuisances:
+                        for i_b in range(hist["up"].GetNbinsX()):
+                            hist["up"].SetBinError( i_b+1, hist["up"].GetBinContent( i_b+1 ) - hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].GetBinContent( i_b+1 ) )
+                            hist["up"].SetBinContent( i_b+1, hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].GetBinContent( i_b+1 ) )
+                            hist["down"].SetBinError( i_b+1, hist["down"].GetBinContent( i_b+1 ) - hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].GetBinContent( i_b+1 ) )
+                            hist["down"].SetBinContent( i_b+1, hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].GetBinContent( i_b+1 ) )
                         hists[key]["up"].Add(hist["up"].Clone(str(i)+dir+key+"up"))
                         hists[key]["down"].Add(hist["down"].Clone(str(i)+dir+key+"down"))
                     else:
                         hists[key].Add(hist.Clone(str(i)+dir+key))
 
+        if args.plotNuisances:
+            for n in plotNuisances:
+                for i_b in range(hists[n]["up"].GetNbinsX()):
+                    hists[n]["up"].SetBinContent( i_b+1, hists[n]["up"].GetBinContent(i_b+1) + hists[n]["up"].GetBinError(i_b+1) )
+                    hists[n]["down"].SetBinContent( i_b+1, hists[n]["down"].GetBinContent(i_b+1) - hists[n]["down"].GetBinError(i_b+1) )
+                    hists[n]["up"].SetBinError( i_b+1, 0 )
+                    hists[n]["down"].SetBinError( i_b+1, 0 )
+#                    print n, i_b, hists[n]["up"].GetBinContent( i_b+1 ), hists["signal"].GetBinContent( i_b+1 )
     else:
-        hists = Results.getRegionHistos( postFit=args.postFit, plotBins=plotBins, nuisances=plotNuisances, addStatOnlyHistos=True, bkgSubstracted=args.bkgSubstracted, labelFormater=labelFormater )["Bin0"]
+        hists = Results.getRegionHistos( postFit=args.postFit, plotBins=plotBins, nuisances=plotNuisances, addStatOnlyHistos=False, bkgSubstracted=args.bkgSubstracted, labelFormater=labelFormater )["Bin0"]
 
     addHists = []
     if args.plotNuisances:
-        if "total" in args.plotNuisances:
+        if "total" in args.plotNuisances or "MCStat" in args.plotNuisances:
             addHists += ["totalUnc"]
             hists["totalUnc"] = Results.sumNuisanceHistos(hists, nuisances=allNuisances, addStatUnc=False, postFit=args.postFit, bkgSubstracted=args.bkgSubstracted)
+            hists["totalUnc"]["up"].legendText = "Total Systematics (#pm1#sigma)"
+            hists["totalUnc"]["down"].legendText = None
+            hists["totalUnc"]["up"].style = styles.lineStyle( ROOT.kRed-2, width=2, dashed=True, errors=False )
+            hists["totalUnc"]["down"].style = styles.lineStyle( ROOT.kRed-2, width=2, dashed=True, errors=False )
+        if "MCStat" in args.plotNuisances:
+            addHists += ["MCStatUnc"]
+            mcstatUp = hists["signal" if args.bkgSubstracted else "total"].Clone()
+            mcstatDown = hists["signal" if args.bkgSubstracted else "total"].Clone()
+            mcstatUp.Scale(0)
+            mcstatDown.Scale(0)
+            for i in range(mcstatUp.GetNbinsX()):
+                err = hists["signal" if args.bkgSubstracted else "total"].GetBinError(i+1)**2 - ( hists["totalUnc"]["up"].GetBinContent(i+1)-hists["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1) )**2
+                print i, err, "tot err", hists["signal" if args.bkgSubstracted else "total"].GetBinError(i+1), "sum err", hists["totalUnc"]["up"].GetBinContent(i+1)-hists["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1), "sum", hists["totalUnc"]["up"].GetBinContent(i+1), "tot", hists["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1)
+                err = math.sqrt(err) if err>0 else 0
+#                print i, err, hists["totalUnc"]["up"].GetBinContent(i+1)-hists["total"].GetBinContent(i+1), hists["total"].GetBinError(i+1)
+                mcstatUp.SetBinContent( i+1, hists["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1) + err )
+                mcstatDown.SetBinContent( i+1, hists["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1) - err )
+                mcstatUp.SetBinError( i+1, 0 )
+                mcstatDown.SetBinError( i+1, 0 )
+            hists["MCStatUnc"] = {"up":mcstatUp, "down":mcstatDown}
+            hists["MCStatUnc"]["up"].legendText = "MC Stat (#pm1#sigma)"
+            hists["MCStatUnc"]["down"].legendText = None
+            hists["MCStatUnc"]["up"].style = styles.lineStyle( ROOT.kGreen-2, width=2, dashed=True, errors=False )
+            hists["MCStatUnc"]["down"].style = styles.lineStyle( ROOT.kGreen-2, width=2, dashed=True, errors=False )
         if "experimental" in args.plotNuisances:
             addHists += ["expUnc"]
             hists["expUnc"] = Results.sumNuisanceHistos(hists, nuisances=expUnc, addStatUnc=False, postFit=args.postFit, bkgSubstracted=args.bkgSubstracted)
@@ -533,14 +610,6 @@ def plotRegions( sorted=True ):
             hists["bkgUnc"]["up"].style = styles.lineStyle( ROOT.kRed+1, width=2, dashed=True, errors=False )
             hists["bkgUnc"]["down"].style = styles.lineStyle( ROOT.kRed+1, width=2, dashed=True, errors=False )
 #            hists["bkgUnc"]["down"].style = styles.lineStyle( ROOT.kOrange+1, width=2, dashed=True, errors=False )
-        if "fakeModelling" in args.plotNuisances:
-            addHists += ["fakeUnc"]
-            hists["fakeUnc"] = Results.sumNuisanceHistos(hists, nuisances=fakeUnc, addStatUnc=False, postFit=args.postFit, bkgSubstracted=args.bkgSubstracted)
-            hists["fakeUnc"]["up"].legendText = "Fake Modelling (#pm1#sigma)"
-            hists["fakeUnc"]["down"].legendText = None
-            hists["fakeUnc"]["up"].style = styles.lineStyle( ROOT.kRed+1, width=2, dashed=True, errors=False )
-            hists["fakeUnc"]["down"].style = styles.lineStyle( ROOT.kRed+1, width=2, dashed=True, errors=False )
-#            hists["fakeUnc"]["down"].style = styles.lineStyle( ROOT.kOrange+1, width=2, dashed=True, errors=False )
         if "model" in args.plotNuisances:
             addHists += ["modelUnc"]
             hists["modelUnc"] = Results.sumNuisanceHistos(hists, nuisances=modelUnc, addStatUnc=False, postFit=args.postFit, bkgSubstracted=args.bkgSubstracted)
@@ -564,12 +633,17 @@ def plotRegions( sorted=True ):
         differential = True
 #        ch = subCard[-1]
 
-    minMax = 0.29 #0.19 if args.postFit else 0.9
+    if args.year == "combined":
+        minMax = 0.09 if args.postFit else 0.29
+    else:
+        minMax = 0.19 if args.postFit else 0.29
+#    minMax = 0.29
+#    minMax = 0.1
     if args.bkgSubstracted:
-        minMax = 0.49 #0.19 if args.postFit else 0.9
+        minMax = 0.29 #0.19 if args.postFit else 0.9
         ratioCenter = None
-        boxes,     ratio_boxes     = getErrorBoxes(   copy.copy(hists["signal"]), minMax, lineColor=ROOT.kOrange-2, fillColor=ROOT.kOrange-2, hashcode=1001, ratioCenter=ratioCenter )
-        boxes_stat, ratio_boxes_stat = getErrorBoxes( copy.copy(hists["signal_stat"]), minMax, lineColor=ROOT.kAzure-3, fillColor=ROOT.kAzure-3, hashcode=1001, ratioCenter=ratioCenter )
+        boxes,     ratio_boxes     = getErrorBoxes(   copy.copy(hists["signal"]), minMax, lineColor=ROOT.kOrange-9, fillColor=ROOT.kOrange-9, hashcode=1001, ratioCenter=ratioCenter )
+        boxes_stat, ratio_boxes_stat = getErrorBoxes( copy.copy(hists["data"]), minMax, lineColor=ROOT.kBlue-10, fillColor=ROOT.kBlue-10, hashcode=1001, ratioCenter=ratioCenter )
     else:
 #        boxes,     ratio_boxes       = getUncertaintyBoxes( copy.copy(hists["total"]), minMax, lineColor=ROOT.kGray+3, fillColor=ROOT.kGray+3, hashcode=formatSettings(nBins)["hashcode"] )
         boxes,     ratio_boxes       = getUncertaintyBoxes( copy.copy(hists["total"]), minMax, lineColor=ROOT.kGray+3, fillColor=ROOT.kGray+3, hashcode=formatSettings(nBins)["hashcode"] )
@@ -580,24 +654,37 @@ def plotRegions( sorted=True ):
     hists["data"].legendText   = "Observed" if not args.bkgSubstracted else "bkg-sub. data (#color[61]{stat}, #color[92]{total} error, %s)"%(ch.replace("mu","#mu") if ch != "all" else "e+#mu")
     hists["data"].legendOption = "p" if args.bkgSubstracted else "p"
 
-    uncHist = hists["data"].Clone()
-    uncHist.Scale(0)
-    uncHist.style = styles.hashStyle(hashCode=3244)
-    uncHist.legendText = "Uncertainty"
+    if args.bkgSubstracted:
+        uncHist = hists["data"].Clone()
+        uncHist.Scale(0)
+        uncHist.style = styles.fillStyle(ROOT.kOrange-9, errors=False)
+        uncHist.legendText = "#pm 1#sigma (tot.)"
+
+        uncHist_stat = hists["data"].Clone()
+        uncHist_stat.Scale(0)
+        uncHist_stat.style = styles.fillStyle(ROOT.kBlue-10, errors=False)
+        uncHist_stat.legendText = "#pm 1#sigma (stat.)"
+
+    else:
+        uncHist = hists["data"].Clone()
+        uncHist.Scale(0)
+        uncHist.style = styles.hashStyle(hashCode=3244)
+        uncHist.legendText = "Uncertainty"
 
     if args.bkgSubstracted:
-        hists["signal"].style      = styles.lineStyle( ROOT.kOrange+7, width=2, errors=False )
-        hists["signal"].legendText = "t#bar{t}#gamma SM prediction"# (detector level)"
+        hists["signal"].style      = styles.lineStyle( ROOT.kBlue, width=2, errors=False )
+        hists["signal"].legendText = "Observation"# (detector level)"
 
     else:
         for h_key, h in hists.iteritems():
             if "total" in h_key or h_key not in processes: continue
+            print h_key, default_processes[h_key]["texName"], default_processes[h_key]["color"]
             hists[h_key].legendText  = default_processes[h_key]["texName"]
             hists[h_key].style = styles.fillStyle( default_processes[h_key]["color"], errors=False )
             hists[h_key].LabelsOption("v","X")
 
 
-    print hists.keys()
+#    print hists.keys()
     # some settings and things like e.g. uncertainty boxes
     drawObjects_       = drawObjects( nBins=nBins, isData=(not args.expected), lumi_scale=lumi_scale, postFit=args.postFit, cardfile=args.substituteCard if args.substituteCard else args.cardfile, preliminary=args.preliminary )
     drawObjects_      += boxes 
@@ -613,6 +700,9 @@ def plotRegions( sorted=True ):
         histModifications += [lambda h: h.GetYaxis().SetLabelSize(formatSettings(nBins)["ylabelsize"])]
         histModifications += [lambda h: h.GetYaxis().SetTitleOffset(formatSettings(nBins)["textoffset"])]
         histModifications += [ setPTBinLabels(ptLabels, crName, fac=formatSettings(nBins)["offsetfactor"]*hists["total"].GetMaximum())]
+
+    elif args.bkgSubstracted and not "PtUnfold" in args.cardfile:
+        histModifications += [lambda h: h.GetYaxis().SetTitleOffset(formatSettings(nBins)["textoffset"]*1.5)]
 
     ratioHistModifications  = []
     if not differential:
@@ -663,9 +753,13 @@ def plotRegions( sorted=True ):
 #            print "_".join(name+addon)
 #            dirDB.add( "_".join(name+addon), hists["dataDown"], overwrite=True )
 
+        # corr Hist
+        name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, "correlationFitObject"]
+        dirDB.add( "_".join(name), fitObj, overwrite=True )
+
         # data histogram
         name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, "data"]
-        print "_".join(name+addon)
+#        print "_".join(name+addon)
         dirDB.add( "_".join(name+addon), hists["data"], overwrite=True )
 
 #        if args.bkgSubstracted:
@@ -682,50 +776,72 @@ def plotRegions( sorted=True ):
         # bkg substracted total histogram (signal) with total error
         name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, "signal"]
         print "_".join(name+addon)
+
+        print "signal"
+        for i in range(hists["signal"].GetNbinsX()):
+            print hists["signal"].GetBinContent( i+1 )
+
         dirDB.add( "_".join(name+addon), hists["signal"], overwrite=True )
 
         # bkg substracted total histogram (signal) with stat error
-        name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, "signal_stat"]
-        print "_".join(name+addon)
-        dirDB.add( "_".join(name+addon), hists["signal_stat"], overwrite=True )
+#        name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, "signal_stat"]
+#        print "_".join(name+addon)
+#        dirDB.add( "_".join(name+addon), hists["signal_stat"], overwrite=True )
         name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, "total"]
         print "_".join(name+addon)
         dirDB.add( "_".join(name+addon), hists["total"], overwrite=True )
-        # bkg substracted total histogram (total) with stat error
-        name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, "total_stat"]
-        print "_".join(name+addon)
-        dirDB.add( "_".join(name+addon), hists["total_stat"], overwrite=True )
+#        # bkg substracted total histogram (total) with stat error
+#        name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, "total_stat"]
+#        print "_".join(name+addon)
+#        dirDB.add( "_".join(name+addon), hists["total_stat"], overwrite=True )
         if args.plotNuisances:
           for n in args.plotNuisances:
+            if n == "all": continue
             if n == "experimental": nu = "expUnc"
             elif n == "background": nu = "bkgUnc"
             elif n == "fakeModelling": nu = "fakeUnc"
             elif n == "model": nu = "modelUnc"
+            elif n == "total": nu = "totalUnc"
+            elif n == "MCStat": nu = "MCStatUnc"
             else: nu = n
+            print n, nu
             name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, n+"_Up"]
             print "_".join(name+addon)
+
             dirDB.add( "_".join(name+addon), hists[nu]["up"], overwrite=True )
             name = ["bkgSubtracted" if args.bkgSubstracted else "total", args.substituteCard, args.cardfile, n+"_Down"]
             print "_".join(name+addon)
             dirDB.add( "_".join(name+addon), hists[nu]["down"], overwrite=True )
 
+        sys.exit(0)
+
     # get histo list
-    plots, ratioHistos = Results.getRegionHistoList( hists, processes=processes, noData=False, addNuisanceHistos=addHists, sorted=sorted and not args.bkgSubstracted, bkgSubstracted=args.bkgSubstracted, directory="dc_2016" if args.year=="combined" else "Bin0" )
+    plots, ratioHistos = Results.getRegionHistoList( hists, processes=processes, noData=args.bkgSubstracted, addNuisanceHistos=addHists, sorted=sorted and not args.bkgSubstracted, bkgSubstracted=args.bkgSubstracted, directory="dc_2016" if args.year=="combined" else "Bin0" )
+#    print plots
+#    print ratioHistos
     if not args.bkgSubstracted: plots.append([uncHist])
+    else:
+        plots.append([uncHist])
+        plots.append([uncHist_stat])
+
+#    print plots, ratioHistos
     if args.plotRegionPlot:
 
         plotting.draw(
             Plot.fromHisto( plotName,
                     plots,
                     texX = "" if not differential else xLabel,
-                    texY = "Observed - Background" if args.bkgSubstracted else "Number of Events",
+#                    texY = "Observed - Background" if args.bkgSubstracted else "Number of Events",
+                    texY = "Number of Events",
             ),
-            logX = False, logY = True, sorting = False, 
+            logX = False, logY = True if not args.bkgSubstracted or "PtUnfold" in plotName else False, sorting = False, 
             plot_directory    = plotDirectory,
-            legend            = [ (0.17, 0.84 if args.bkgSubstracted else formatSettings(nBins)["legylower"], 0.93, 0.9), formatSettings(nBins)["legcolumns"] ] if not differential else [(0.20,0.67,0.85,0.9),1] if args.plotNuisances else (0.20,0.80,0.85,0.9),
+            legend            = [ (0.17, 0.84 if args.bkgSubstracted else formatSettings(nBins)["legylower"], 0.93, 0.9), formatSettings(nBins)["legcolumns"] ] if not differential else [(0.20,0.67,0.85,0.9),1] if args.plotNuisances else (0.20,0.75,0.85,0.9),
             widths            = { "x_width":formatSettings(nBins)["padwidth"], "y_width":formatSettings(nBins)["padheight"], "y_ratio_width":formatSettings(nBins)["padratio"] } if not differential else {},
-            yRange            = ( 3, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ) if not differential else "auto",
-            ratio             = { "yRange": (1-minMax, 1+minMax), "texY":"Obs./Pred.", "histos":ratioHistos, "drawObjects":ratio_boxes + ratio_boxes_stat if args.bkgSubstracted else ratio_boxes, "histModifications":ratioHistModifications },
+            yRange            = ( 3, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ) if not differential else (70,"auto") if args.bkgSubstracted else "auto",
+            ratio             = { "yRange": (1-minMax, 1+minMax), "texY":"Uncertainty" if args.bkgSubstracted else "Obs./Pred.", "histos":ratioHistos, "drawObjects":ratio_boxes + ratio_boxes_stat if args.bkgSubstracted else ratio_boxes, "histModifications":ratioHistModifications },
+#            ratio             = { "yRange": (1-minMax, 1+minMax), "texY":"Obs./Pred.", "histos":ratioHistos, "drawObjects":ratio_boxes if args.bkgSubstracted else ratio_boxes, "histModifications":ratioHistModifications },
+#            drawObjects       = drawObjects_ if not differential else drawObjectsDiff(lumi_scale) + boxes + boxes_stat if args.bkgSubstracted else drawObjectsDiff(lumi_scale) + boxes,
             drawObjects       = drawObjects_ if not differential else drawObjectsDiff(lumi_scale) + boxes + boxes_stat if args.bkgSubstracted else drawObjectsDiff(lumi_scale) + boxes,
             histModifications = histModifications,
             copyIndexPHP      = True,

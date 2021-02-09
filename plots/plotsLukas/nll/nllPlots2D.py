@@ -61,6 +61,11 @@ logger_rt = logger_rt.get_logger( args.logLevel, logFile = None)
 from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed  import *
 eftSample = TTG_2WC_ref
 
+if not args.xyRange[0]: args.xyRange[0] = -0.6
+if not args.xyRange[1]: args.xyRange[1] = 0.6
+if not args.xyRange[2]: args.xyRange[2] = -0.62
+if not args.xyRange[3]: args.xyRange[3] = 0.7
+
 regionNames = []
 for reg in allRegions.keys():
     if reg in args.useRegions:
@@ -79,7 +84,7 @@ cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
 print cacheFileName
 
-directory = os.path.join( plot_directory, "nllPlotsPPA", str(args.year), "_".join( regionNames ))
+directory = os.path.join( plot_directory, "nllPlotsApp", str(args.year), "_".join( regionNames ))
 addon = "expected" if args.expected else "observed"
 plot_directory_ = os.path.join( directory, addon )
 
@@ -98,6 +103,8 @@ yRange = eftParameterRange[args.variables[1]]
 
 xRange = [ el for el in xRange if abs(el) <= 0.6 ]
 yRange = [ el for el in yRange if abs(el) <= 0.6 ]
+xRange += [ 0.7 ]
+yRange += [ 0.7 ]
 
 
 #xRange       = np.linspace( -1.0, 1.0, 30, endpoint=False)
@@ -142,7 +149,7 @@ points += [ (varX, 0) for varX in xRange] #1D plots
 points += [ (varX, varY) for varY in yRange for varX in xRange] #2D plots
 
 nllData  = [ (varx, vary, getNllData( varx, vary )) for (varx, vary) in points ]
-nllData  = [ x for x in nllData if x[2]]
+nllData  = [ x for x in nllData if x[2] ]
 
 if args.expected:
     sm_nll   = getNllData(0,0)
@@ -156,12 +163,16 @@ else:
 
 #nllData  = [ (x, y, -2*(nll - sm_nll) if -2*(nll - sm_nll) < 20 and -2*(nll - sm_nll) > 0 else 20) for x, y, nll in nllData ]
 nllData  = [ (x, y, 2*(nll - sm_nll) ) for x, y, nll in nllData ]
+nllData  += [ (x, -0.7, 40) for x in xRange ]
+nllData  += [ (x, 0.7, 40) for x in xRange ]
+nllData  += [ (-0.7, x, 40) for x in yRange ]
+nllData  += [ (0.7, x, 40) for x in yRange ]
 
-if args.year == "RunII":
-    nllData  += [ (0.6, x, 30) for x in xRange ]
-    nllData  += [ (-0.6, x, 30) for x in xRange ]
-    nllData  += [ (x, 0.6, 30) for x in xRange ]
-    nllData  += [ (x, -0.6, 30) for x in xRange ]
+#if args.year == "RunII":
+#    nllData  += [ (0.6, x, 30) for x in xRange ]
+#    nllData  += [ (-0.6, x, 30) for x in xRange ]
+#    nllData  += [ (x, 0.6, 30) for x in xRange ]
+#    nllData  += [ (x, -0.6, 30) for x in xRange ]
 
 if args.expected:
     nllData  = [ x for x in nllData if x[2] > 0 ]
@@ -250,8 +261,10 @@ if not None in args.zRange:
     hist.GetZaxis().SetRangeUser( args.zRange[0], args.zRange[1] )
 if not None in args.xyRange[:2]:
     hist.GetXaxis().SetRangeUser( args.xyRange[0], args.xyRange[1] )
+#    hist.GetXaxis().SetLimits( args.xyRange[0], args.xyRange[1] )
 if not None in args.xyRange[2:]:
     hist.GetYaxis().SetRangeUser( args.xyRange[2], args.xyRange[3] )
+#    hist.GetYaxis().SetLimits( args.xyRange[2], args.xyRange[3] )
 
 xTitle = args.variables[0].replace("c", "C_{").replace("I", "}^{[Im]").replace('p','#phi') + '}'
 yTitle = args.variables[1].replace("c", "C_{").replace("I", "}^{[Im]").replace('p','#phi') + '}'
@@ -288,10 +301,32 @@ SMpoint.SetMarkerSize(2)
 SMpoint.SetMarkerColor(ROOT.kOrange+1)
 BFpoint.SetMarkerStyle(29)
 BFpoint.SetMarkerSize(3)
-BFpoint.SetMarkerColor(ROOT.kCyan-9)
+BFpoint.SetMarkerColor(ROOT.kCyan-3)
+#BFpoint.SetMarkerColor(ROOT.kGreen-3)
 
 SMpoint.Draw("p same")
 BFpoint.Draw("p same")
+
+cont_p2.At(0).SetLineColor(ROOT.kOrange+7)
+cont_p2.At(0).SetLineWidth(3)
+cont_p1.At(0).SetLineColor(ROOT.kSpring-1)
+cont_p1.At(0).SetLineWidth(3)
+
+leg = ROOT.TLegend(0.15,0.75,0.87,0.87)
+if args.contours:
+    leg.SetNColumns(2)
+leg.SetBorderSize(0)
+leg.SetTextSize(0.03)
+leg.SetFillStyle(0)
+leg.AddEntry( SMpoint, "Standard Model","p")
+if args.contours:
+#    leg.AddEntry( ROOT.TObject(), " ","")
+    leg.AddEntry( cont_p1.At(0), "68%s CL"%"%", "l")
+leg.AddEntry( BFpoint, "Best Fit","p")
+if args.contours:
+#    leg.AddEntry( ROOT.TObject(), " ","")
+    leg.AddEntry( cont_p2.At(0), "95%s CL"%"%", "l")
+leg.Draw()
 
 
 latex1 = ROOT.TLatex()
@@ -315,8 +350,10 @@ latex2.SetTextAlign(11)
 # Redraw axis, otherwise the filled graphes overlay
 pads.RedrawAxis()
 l = ROOT.TLine()
-l.DrawLine(cans.GetUxmin(), cans.GetUymax(), cans.GetUxmax(), cans.GetUymax());
-l.DrawLine(cans.GetUxmax(), cans.GetUymin(), cans.GetUxmax(), cans.GetUymax());
+#l.DrawLine(cans.GetUxmin(), cans.GetUymax(), cans.GetUxmax(), cans.GetUymax());
+#l.DrawLine(cans.GetUxmax(), cans.GetUymin(), cans.GetUxmax(), cans.GetUymax());
+l.DrawLine(args.xyRange[0], args.xyRange[3], args.xyRange[1], args.xyRange[3]);
+l.DrawLine(args.xyRange[1], args.xyRange[2], args.xyRange[1], args.xyRange[3]);
 
 plotname = "_".join(args.variables)
 if args.withbkg: plotname += "_wBkg"

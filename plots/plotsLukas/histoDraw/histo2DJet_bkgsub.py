@@ -78,7 +78,7 @@ elif args.year == "RunII":
     import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
     from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
-mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG_NLO, mc_samples.ZG, mc_samples.rest ]
+mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
 
 lumi_scale   = data_sample.lumi * 0.001
 lumiString = "(35.92*(year==2016)+41.53*(year==2017)+59.74*(year==2018))"

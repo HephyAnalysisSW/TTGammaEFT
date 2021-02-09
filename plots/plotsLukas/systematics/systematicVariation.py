@@ -170,6 +170,17 @@ elif "4p" in args.selection:
     ZGSF_val    = ZG4pSF_val
     QCDSF_val   = QCD4pSF_val
 
+if args.selection.startswith("SR") and args.year == "RunII":
+    misIDSF_val[2016] *= 0.95*0.90
+    misIDSF_val[2017] *= 1.01*1.08
+    misIDSF_val[2018] *= 1.05*1.06
+
+if args.selection.startswith("SR") and args.year == 2018:
+    misIDSF_val[2018] *= 1.05*1.06
+
+if args.selection.startswith("SR") and args.year == 2017:
+    misIDSF_val[2017] *= 1.01*1.08
+
 QCDTF_updates_2J = copy.deepcopy(QCDTF_updates)
 
 # Accounting for 
@@ -389,6 +400,7 @@ else:
 
 lep = args.mode.replace("mu","#mu") if args.mode != "all" else "l"
 replaceLabel = {
+    "nBTagGood": "N_{b-tag}",
     "nElectronTight": "yield",
     "PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt": "chg.Iso(#gamma) [GeV]",
     "PhotonNoChgIsoNoSieie0_sieie": "#sigma_{i#eta i#eta}(#gamma)",
@@ -420,6 +432,7 @@ replaceLabel = {
 }
 
 replaceVariable = {
+    "nBTagGood":          "nBTagGoodInvLepIso",
     "nElectronTight":     "nElectronTightInvIso",
     "ltight0GammadR":     "linvtight0GammadR",
     "ltight0GammadPhi":   "linvtight0GammadPhi",
@@ -476,6 +489,13 @@ if args.variation == "central":
         if args.photonCat: normalization_selection_string += "&&" + cutInterpreter.cutString( g )  
         mc_normalization_weight_string = MC_WEIGHT(variations[args.variation], lumi_scale, returntype="string")
         s.setWeightString( mc_normalization_weight_string )
+        print s.weightString
+        print s.selectionString
+        print normalization_selection_string
+        print
+        print
+        print
+        print
         key = (s.name, "AR", args.variable, "_".join(map(str,args.binning)), s.weightString, s.selectionString, normalization_selection_string, args.variation)
 #        print s.name, g, dirDB.contains(key)
         if not dirDB.contains(key) or args.overwrite:
@@ -546,16 +566,18 @@ if args.variation == "central":
                         if addSF:
                             if setup.isPhotonSelection:
                                 if "DY" in s.name:
-                                    s.hist_SB_tmp.Scale(DYSF_val[args.year].val)
-                                elif "ZG" in s.name:# and njets < 4:
+                                    s.hist_SB_tmp.Scale(DYSF_val["RunII"].val)
+#                                    s.hist_SB_tmp.Scale(DYSF_val[args.year].val)
+                                elif "ZG" in s.name:
                                     s.hist_SB_tmp.Scale(ZGSF_val[args.year].val)
-                                elif "WG" in s.name:# and njets > 3:
+                                elif "WG" in s.name:
                                     s.hist_SB_tmp.Scale(WGSF_val[args.year].val)
                                 elif "TTG" in s.name:
                                     s.hist_SB_tmp.Scale(SSMSF_val[args.year].val)
                             else:
                                 if "DY" in s.name:
-                                    s.hist_SB_tmp.Scale(DYSF_val[args.year].val)
+                                    s.hist_SB_tmp.Scale(DYSF_val["RunII"].val)
+#                                    s.hist_SB_tmp.Scale(DYSF_val[args.year].val)
                                 elif "WJets" in s.name:
                                     s.hist_SB_tmp.Scale(WJetsSF_val[args.year].val)
 
@@ -691,16 +713,18 @@ for s in mc:
                 if addSF:
                     if setup.isPhotonSelection:
                         if "DY" in s.name:
-                            s.hist[variation][g].Scale(DYSF_val[args.year].val)
-                        elif "ZG" in s.name:# and njets < 4:
+                            s.hist[variation][g].Scale(DYSF_val["RunII"].val)
+#                            s.hist[variation][g].Scale(DYSF_val[args.year].val)
+                        elif "ZG" in s.name:
                             s.hist[variation][g].Scale(ZGSF_val[args.year].val)
-                        elif "WG" in s.name:# and njets > 3:
+                        elif "WG" in s.name:
                             s.hist[variation][g].Scale(WGSF_val[args.year].val)
                         elif "TTG" in s.name:
                             s.hist[variation][g].Scale(SSMSF_val[args.year].val)
                     else:
                         if "DY" in s.name:
-                            s.hist[variation][g].Scale(DYSF_val[args.year].val)
+                            s.hist[variation][g].Scale(DYSF_val["RunII"].val)
+#                            s.hist[variation][g].Scale(DYSF_val[args.year].val)
                         elif "WJets" in s.name:
                             s.hist[variation][g].Scale(WJetsSF_val[args.year].val)
 
@@ -796,7 +820,7 @@ mc_histo_list   = {variation:[s.hist[variation]["all" if variation != "central" 
 # for central (=no variation), we store plot_data_1, plot_mc_1, plot_data_2, plot_mc_2, ...
 if args.photonCat:
     catHists = [mc[0].hist["central"][g] for g in genCat]
-    catSettings = { "noChgIsoNoSieiephotoncat0":{"texName":"Genuine #gamma",  "color":color.gen  },
+    catSettings = { "noChgIsoNoSieiephotoncat0":{"texName":"Other (Gen. #gamma)" if args.splitWG else "Genuine #gamma",  "color":color.gen  },
                     "noChgIsoNoSieiephotoncat2":{"texName":"Misid. e",     "color":color.misID},
                     "noChgIsoNoSieiephotoncat134":{"texName":"Hadronic #gamma/fake",  "color":color.fakes  }}
 #                    "noChgIsoNoSieiephotoncat1":{"texName":"had #gamma",  "color":color.had  },
@@ -815,7 +839,9 @@ if args.photonCat:
         mc_samples.ZG.hist["central"]["noChgIsoNoSieiephotoncat0"].legendText = "Z#gamma (Gen.#gamma)"
         catHists.append(mc_samples.WG.hist["central"]["noChgIsoNoSieiephotoncat0"])
         catHists.append(mc_samples.ZG.hist["central"]["noChgIsoNoSieiephotoncat0"])
-    mc_histo_list["central"] = catHists + [qcdHist]
+        mc_histo_list["central"] = catHists[:1] + catHists[3:] + catHists[1:3] + [qcdHist]
+    else:
+        mc_histo_list["central"] = catHists + [qcdHist]
 
 # copy styles and tex
 data_histo_list[0].style = styles.errorStyle( ROOT.kBlack )
@@ -928,12 +954,15 @@ for log in [True, False]:
         ratioHistModifications += [lambda h: h.GetYaxis().SetTitleOffset(2. if log else 2.3)]
 
 
-        if args.selection.startswith("TT") or args.selection.startswith("WJets") or args.selection.startswith("misDY"):
+        if args.selection.startswith("TT") or args.selection.startswith("misDY"):
             ratio = {'yRange':(0.51,1.49), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
+        elif args.selection.startswith("WJets"):
+            ratio = {'yRange':(0.51,1.49), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
+#            ratio = {'yRange':(0.81,1.19), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
         else:
             ratio = {'yRange':(0.76,1.24), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
 
-        ratio = {'yRange':(0.51,1.49), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
+#        ratio = {'yRange':(0.51,1.49), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
         print args.selection
         print ratio
         selDir = args.selection
@@ -944,7 +973,7 @@ for log in [True, False]:
         plot_directory_ = os.path.join( plot_directory, "systematics", str(args.year), args.plot_directory, selDir, "postfit" if args.postfit else "prefit", args.mode+modeAddon, "log" if log else "lin" )
         plotting.draw( plot,
                        plot_directory = plot_directory_,
-                       logX = False, logY = log, sorting = not (args.mode == "e" and plot.name == "mLtight0Gamma" and args.photonCat) ,
+                       logX = False, logY = log, sorting = not ((args.mode == "e" and plot.name == "mLtight0Gamma" and args.photonCat) or args.splitWG) ,
                        yRange = (7, 1e5) if plot.name == "PhotonGood0_pt" and args.mode =="all" and args.year == 2016 and log and args.selection == "SR3p" else (3,"auto"),
                        ratio = ratio,
 #                       drawObjects = drawObjects( lumi_scale ),

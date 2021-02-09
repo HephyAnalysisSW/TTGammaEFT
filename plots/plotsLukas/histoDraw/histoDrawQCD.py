@@ -88,8 +88,8 @@ elif args.year == "RunII":
     import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
     from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
-#mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG_NLO, mc_samples.ZG, mc_samples.rest ]
-mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.ZG, mc_samples.rest ]
+mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
+#mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.ZG, mc_samples.rest ]
 
 read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval/I",
                      "reweightPU/F", "reweightPUDown/F", "reweightPUUp/F", "reweightPUVDown/F", "reweightPUVUp/F",
@@ -156,6 +156,7 @@ print misIDSF_val
 
 filterCutData = getFilterCut( args.year, isData=True,  skipBadChargedCandidate=True )#, skipVertexFilter=True )
 filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )#, skipVertexFilter=True )
+
 #tr            = TriggerSelector( args.year, singleLepton=True )
 #triggerCutMc  = tr.getSelection( "MC" )
 
@@ -169,10 +170,7 @@ if args.small:
 print data_sample.selectionString
 
 for s in mc:
-    if "WJets" in s.name:
-        s.setSelectionString( [ filterCutMc, "pTStitching==1" ] )
-    else:
-        s.setSelectionString( [ filterCutMc, "pTStitching==1", "overlapRemoval==1" ] )
+    s.setSelectionString( [ filterCutMc, "pTStitching==1", "overlapRemoval==1" ] )
     s.read_variables = read_variables_MC
     sampleWeight     = "1"
     if args.small:           
@@ -404,6 +402,7 @@ for s in mc:
     s.hist.style         = styles.fillStyle( s.color )
     s.hist.legendText    = s.texName
 
+
 if args.photonCat:
     for g in genCat:
         hists[g].style = styles.fillStyle( catSettings[g]["color"] )
@@ -539,8 +538,8 @@ qcdHist.legendText     = "Multijet"
 qcdTemplate            = qcdHist.Clone("QCDTemplate")
 qcdTemplate.style      = styles.fillStyle( color.QCD )
 qcdTemplate.legendText = "Template (%i)"%int(sbInt)
-if not skipQCD:
-    qcdTemplate.Scale(1./ qcdTemplate.Integral() )
+#if not skipQCD:
+#    qcdTemplate.Scale(1./ qcdTemplate.Integral() )
 maxQCD = qcdTemplate.GetMaximum()
 
 if args.photonCat:
@@ -548,6 +547,12 @@ if args.photonCat:
 else:
     histos     = [[s.hist    for s in mc] + [qcdHist], [dataHist]]
 histos_SB  = [[s.hist_SB for s in mc],             [dataHist_SB], [qcdTemplate], [oneHist]]
+
+if args.variable == "nJetGood":
+    for hL in histos:
+        for h in hL:
+            for i in range(h.GetNbinsX()):
+                h.GetXaxis().SetBinLabel( i+1, str(int(args.binning[1]+i)) )
 
 Plot.setDefaults()
 
@@ -562,6 +567,23 @@ replaceLabel = {
     "LeptonTight0_eta": "#eta(%s)"%lep,
     "LeptonTight0_phi": "#phi(%s)"%lep,
     "LeptonTight0_pt": "p_{T}(%s) [GeV]"%lep,
+
+    "LeptonTight0_ip3d": "IP3D (%s)"%lep,
+    "LeptonTight0_sip3d": "SIP3D (%s)"%lep,
+    "LeptonTight0_lostHits": "lost hits (%s)"%lep,
+    "LeptonTight0_dr03EcalRecHitSumEt": "#Delta R_{0.3} ECAL Rec. Hit SumEt (%s)"%lep,
+    "LeptonTight0_dr03HcalDepth1TowerSumEt": "#Delta R_{0.3} HCAL depth 1 Tower SumEt (%s)"%lep,
+    "LeptonTight0_dr03TkSumPt": "#Delta R_{0.3} Tk SumEt (%s)"%lep,
+    "LeptonTight0_dxy": "#Delta xy (%s)"%lep,
+    "LeptonTight0_dz": "#Delta z (%s)"%lep,
+    "LeptonTight0_r9": "R_{9} (%s)"%lep,
+    "LeptonTight0_hoe": "H/E (%s)"%lep,
+    "LeptonTight0_eInvMinusPInv": "1/E - 1/p (%s)"%lep,
+    "LeptonTight0_convVeto": "conversion veto (%s)"%lep,
+    "LeptonTight0_sieie": "#sigma_{i#eta i#eta} (%s)"%lep,
+    "LeptonTight0_pfRelIso03_all": "rel.Iso^{all}_{0.3} (%s)"%lep,
+    "LeptonTight0_pfRelIso03_chg": "rel.Iso^{chg}_{0.3} (%s)"%lep,
+
     "m3": "M_{3} [GeV]",
     "ht": "H_{T} [GeV]",
     "lpTight": "L_{p}",
@@ -579,7 +601,7 @@ replaceLabel = {
     "PhotonGood0_phi": "#phi(#gamma)",
     "ltight0GammadPhi": "#Delta#phi(%s,#gamma)"%lep,
     "ltight0GammadR": "#DeltaR(%s,#gamma)"%lep,
-    "photonJetdR": "min #Delta#phi(j,#gamma)",
+    "photonJetdR": "min #DeltaR(j,#gamma)",
 }
 
 plots = []
@@ -592,10 +614,17 @@ for plot in plots:
 
     for log in [True, False]:
 
+        histModifications  = []
+        histModifications += [lambda h: h.GetYaxis().SetTitleOffset(1.6 if log else 2.2)]
+
+        ratioHistModifications  = []
+        ratioHistModifications += [lambda h: h.GetYaxis().SetTitleOffset(1.6 if log else 2.2)]
+
+
         if "sideband" in plot.name:
-            ratio = {'histos':[(2,3)], 'logY':log, 'texY': 'Template', 'yRange': (0.03, maxQCD*2) if log else (0.001, maxQCD*1.2)}
+            ratio = {'histos':[(2,3)], 'logY':log, 'texY': 'Template', 'yRange': (0.03, maxQCD*2) if log else (0.001, maxQCD*1.2), "histModifications":ratioHistModifications}
         else:
-            ratio = {'yRange':(0.1,1.9)}
+            ratio = {'yRange':(0.1,1.9), "histModifications":ratioHistModifications}
 #            ratio = {'yRange':(0.65,1.35)}
 
         selDir = args.selection
@@ -611,6 +640,7 @@ for plot in plots:
                        ratio = ratio,
                        drawObjects = drawObjects( lumi_scale ),
                        legend = legend,
+                       histModifications = histModifications,
                        copyIndexPHP = True,
                        )
 

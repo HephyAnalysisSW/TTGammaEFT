@@ -27,7 +27,7 @@ loggerChoices = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTS
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",           action="store",      default="INFO", nargs="?", choices=loggerChoices,                  help="Log level for logging")
-argParser.add_argument("--year",               action="store",      default="2016",   type=str,  choices=["2016","2017","2018","RunII"],               help="which year?")
+argParser.add_argument("--year",               action="store",      default="RunII",   type=str,  choices=["2016","2017","2018","RunII"],               help="which year?")
 argParser.add_argument("--label",              action="store",      default="Region SR3p",  type=str, nargs="*",                            help="which region label?")
 args = argParser.parse_args()
 
@@ -47,12 +47,13 @@ logger_rt = logger_rt.get_logger(args.logLevel, logFile = None)
 if args.year == 2016:   lumi_scale = 35.92
 elif args.year == 2017: lumi_scale = 41.53
 elif args.year == 2018: lumi_scale = 59.74
+else: lumi_scale = 35.92 + 41.53 + 59.74
 
 CR_para = allRegions["SR3pTable"]["parameters"]
 regions = allRegions["SR3pTable"]["inclRegion"] + allRegions["SR3pTable"]["regions"]
 channels = ["all"]
 
-mc  = ["TTG","Top","WG_NLO","ZG","WJets","DY_LO","GQCD","other","all_mc"]
+mc  = ["TTG","Top","WG","ZG","WJets","DY_LO","GQCD","other","all_mc"]
 allEst = []
 allEst += [s for s in mc]
 allEst += [s+"_gen" for s in mc]
@@ -62,35 +63,58 @@ allEst += [s+"_hp" for s in mc]
 allEst += [s+"_fake" for s in mc]
 allEst += [s+"_PU" for s in mc]
 
-setup          = Setup(year=args.year, photonSelection=True, checkOnly=False)
-estimators     = EstimatorList(setup)
-allEstimators  = estimators.constructEstimatorList( allEst )
-for estimate in allEstimators:
-    estimate.initCache(setup.defaultCacheDir())
 
-setup = setup.sysClone(parameters=CR_para)
+years = [2016,2017,2018] if args.year == "RunII" else [args.year]
+setup = {}
+estimators = {}
+allEstimators = {}
+for y in years:
+    setup[y]          = Setup(year=y, photonSelection=True, checkOnly=True)
+    estimators[y]     = EstimatorList(setup[y])
+    allEstimators[y]  = estimators[y].constructEstimatorList( allEst )
+    for estimate in allEstimators[y]:
+        estimate.initCache(setup[y].defaultCacheDir())
+
+    setup[y] = setup[y].sysClone(parameters=CR_para)
 
 def getVals(proc, ptRegion):
         print proc, ptRegion
         ests = [proc+s for s in ["", "_gen","_misID","_had","_hp","_fake","_PU"]]
         filteredEsts = []
         for est in ests:
-            filteredEsts.append( [e for e in allEstimators if e.name == est ][0] )
-        hadProc =  [ e for e in allEstimators if e.name == proc+"_had" ][0]
-        procVals = []
+            filteredEsts.append( [e for e in allEstimators[years[0]] if e.name == est ][0] )
+        hadProc =  [ e for e in allEstimators[years[0]] if e.name == proc+"_had" ][0]
+
         reg = regions[:2] if ptRegion == "low" else regions[2:]
+        procVals = []
+
         for r in reg:
-            hadEst = hadProc.cachedEstimate(r, "all", setup, overwrite=False, checkOnly=False).val
+            res = {}
             for e in filteredEsts:
-                res = e.cachedEstimate(r, "all", setup, overwrite=False, checkOnly=False).val
+                res[e.name] = 0
+
+            res["had"+hadProc.name] = 0
+
+            for y in years:
+                filteredEsts = []
+                for est in ests:
+                    filteredEsts.append( [e for e in allEstimators[y] if e.name == est ][0] )
+                hadProc =  [ e for e in allEstimators[y] if e.name == proc+"_had" ][0]
+
+                res["had"+hadProc.name] += hadProc.cachedEstimate(r, "all", setup[y], overwrite=False, checkOnly=False).val
+                for e in filteredEsts:
+                    res[e.name] += e.cachedEstimate(r, "all", setup[y], overwrite=False, checkOnly=False).val
+
+
+            for e in filteredEsts:
                 if e.name.endswith("_hp") or e.name.endswith("_fake") or e.name.endswith("_PU"):
-                    res *= 100./ hadEst if hadEst > 0 else 0.
-                procVals.append(float(res))
+                    res[e.name] *= 100./ res["had"+hadProc.name] if res["had"+hadProc.name] > 0 else 0.
+                procVals.append(float(res[e.name]))
         return tuple(procVals)
 
 def printYieldTable():
 
-    with open("logs/SR3pTable_%s.log"%(args.year), "w") as f:
+    with open("logs/SR3pTable_%s.log"%str(args.year), "w") as f:
     
         f.write("\\begin{frame}\n")
         f.write("\\frametitle{Yields - %s}\n\n"%args.label)
@@ -99,11 +123,11 @@ def printYieldTable():
         f.write("\\centering\n")
 
         f.write("\\resizebox{0.9\\textwidth}{!}{\n")
-        f.write("\\begin{tabular}{c||c||c|c|c||c||c|c|c|}\n")
+        f.write("\\begin{tabular}{c||c||c|c|c||c||c|c|c}\n")
         f.write("\\hline\n")
-        f.write("\\multicolumn{9}{c}{%i, $\\nJet\\geq 3$, $e$+$\\mu$ channel}\\\\ \n"%args.year)
+        f.write("\\multicolumn{9}{c}{%s, $\\nJet\\geq 3$, $e$+$\\mu$ channel}\\\\ \n"%str(args.year))
         f.write("\\hline\n")
-        f.write("& \\multicolumn{4}{c||}{inclusive} & \\multicolumn{4}{c||}{20 $\\leq$ \\pT($\\gamma$) $<$ 120 GeV} \\\\ \n")
+        f.write("& \\multicolumn{4}{c||}{inclusive} & \\multicolumn{4}{c}{20 $\\leq$ \\pT($\\gamma$) $<$ 120 GeV} \\\\ \n")
         f.write("\\hline\n")
         f.write(" Sample & \\textbf{events} & $\\gamma$ & misID e & had $\\gamma$ / fake / PU $\\gamma$ & \\textbf{events} & $\\gamma$ & misID e & had $\\gamma$ / fake / PU $\\gamma$ \\\\ \n")
         f.write("\\hline\n")
@@ -113,7 +137,7 @@ def printYieldTable():
         f.write("\\hline\n")
         f.write("t($\\gamma$)/tW($\\gamma$)/tt & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent )  & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent ) \\\\ \n"%getVals("Top", ptRegion="low"))
         f.write("\\hline\n")
-        f.write("W$\\gamma$ & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent )  & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent ) \\\\ \n"%getVals("WG_NLO", ptRegion="low"))
+        f.write("W$\\gamma$ & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent )  & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent ) \\\\ \n"%getVals("WG", ptRegion="low"))
         f.write("\\hline\n")
         f.write("Z$\\gamma$ & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent ) & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent ) \\\\ \n"%getVals("ZG", ptRegion="low"))
         f.write("\\hline\n")
@@ -138,7 +162,7 @@ def printYieldTable():
         f.write("\\hline\n")
         f.write("t($\\gamma$)/tW($\\gamma$)/tt & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent )  & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent ) \\\\ \n"%getVals("Top", ptRegion="high"))
         f.write("\\hline\n")
-        f.write("W$\\gamma$ & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent )  & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent ) \\\\ \n"%getVals("WG_NLO", ptRegion="high"))
+        f.write("W$\\gamma$ & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent )  & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent ) \\\\ \n"%getVals("WG", ptRegion="high"))
         f.write("\\hline\n")
         f.write("Z$\\gamma$ & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent ) & \\textbf{%.2f} & %.2f & %.2f & %.2f (%.1f percent /%.1f percent /%.1f percent ) \\\\ \n"%getVals("ZG", ptRegion="high"))
         f.write("\\hline\n")

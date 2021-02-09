@@ -11,9 +11,9 @@ hists = [
     "SR3pdRUnfold",
 ]
 
-year            = 2016
-#year            = "combined"
-cache_dir       = os.path.join(cache_directory, "unfolding", str(year), "bkgSubstracted", "expected" if expected else "observed")
+#year            = 2016
+year            = "combined"
+cache_dir       = os.path.join(cache_directory, "unfolding", str(year), "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
 dirDB           = MergingDirDB(cache_dir)
 
 if year == "combined": years = [2016,2017,2018]
@@ -23,13 +23,13 @@ for h in hists:
     for y in years:
 
         if year == "combined":
-            data_key        = "bkgSubtracted_%s_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_data_%i"%(h,y)
-            signal_key      = "bkgSubtracted_%s_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_signal_%i"%(h,y)
-            signal_stat_key = "bkgSubtracted_%s_addDYSF_addMisIDSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_signal_stat_%i"%(h,y)
+            data_key        = "bkgSubtracted_%s_addDYSF_addPtBinnedUnc_%s_%s_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data_%i"%(h,h.replace("3p","3"),h.replace("3p","4p"),y)
+            signal_key      = "bkgSubtracted_%s_addDYSF_addPtBinnedUnc_%s_%s_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal_%i"%(h,h.replace("3p","3"),h.replace("3p","4p"),y)
+            signal_stat_key = "bkgSubtracted_%s_addDYSF_addPtBinnedUnc_%s_%s_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal_stat_%i"%(h,h.replace("3p","3"),h.replace("3p","4p"),y)
         else:
-            data_key        = "bkgSubtracted_%s_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_data"%h
-            signal_key      = "bkgSubtracted_%s_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal"%h
-            signal_stat_key = "bkgSubtracted_%s_addDYSF_SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_signal_stat"%h
+            data_key        = "bkgSubtracted_%s_addDYSF_addPtBinnedUnc_%s_%s_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"%(h,h.replace("3p","3"),h.replace("3p","4p"))
+            signal_key      = "bkgSubtracted_%s_addDYSF_addPtBinnedUnc_%s_%s_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"%(h,h.replace("3p","3"),h.replace("3p","4p"))
+            signal_stat_key = "bkgSubtracted_%s_addDYSF_addPtBinnedUnc_%s_%s_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal_stat"%(h,h.replace("3p","3"),h.replace("3p","4p"))
 
         data            = dirDB.get( data_key )
         signal          = dirDB.get( signal_key )

@@ -79,7 +79,7 @@ if args.withEFTUnc: baseDir = os.path.join( baseDir, "withEFTUnc" )
 cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
 
-directory = os.path.join( plot_directory, "nllPlotsPPA", str(args.year), "_".join( regionNames ))
+directory = os.path.join( plot_directory, "nllPlotsApp", str(args.year), "_".join( regionNames ))
 addon = "comb"
 if args.plotData: addon += "_check"
 plot_directory_ = os.path.join( directory, addon )

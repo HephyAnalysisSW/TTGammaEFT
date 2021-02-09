@@ -76,6 +76,18 @@ def convDRLabel( lab ):
         low = rang[0]
         return "#Delta R(l,#gamma) #geq %.2f"%float(low)
 
+def convDRpLabel( lab ):
+    rang = lab.split("_")[0].split("ltight0GammadR")[1].split("To")
+    if len(rang) > 1:
+        low, high = rang[0], rang[1]
+        if low != "0":
+            return "%.2f #leq #Delta R(l,#gamma) < %.2f"%(float(low), float(high))
+        else:
+            return "#Delta R(l,#gamma) < %.2f"%float(high)
+    else:
+        low = rang[0]
+        return "#Delta R(l,#gamma) #geq %.2f"%float(low)
+
 def convDPhiLabel( lab ):
     rang = lab.split("_")[0].split("ltight0GammaNoSieieNoChgIsodPhi")[1].split("To")
     if len(rang) > 1:
@@ -119,6 +131,8 @@ def convLabel( lab ):
         return convNPhotonLabel( lab )
     elif "ltight0GammaNoSieieNoChgIsodR" in lab:
         return convDRLabel( lab )
+    elif "ltight0GammadR" in lab:
+        return convDRpLabel( lab )
     elif "ltight0GammaNoSieieNoChgIsodPhi" in lab:
         return convDPhiLabel( lab )
     elif "eta" in lab:
@@ -209,10 +223,10 @@ def drawObjects( nBins, isData, lumi_scale, postFit, cardfile, preliminary ):
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
     addon = "post-fit" if postFit else "pre-fit"
-    if "incl" in cardfile: addon += ", inclusive"
+#    if "incl" in cardfile: addon += ", inclusive"
     lines = [
       (0.15, 0.945, "CMS (%s)"%addon) if not preliminary else (0.15, 0.945, "CMS #bf{#it{Preliminary}} #bf{(%s)}"%addon),
-      (formatSettings(nBins)["legylower"], 0.945, "#bf{%3.1f fb^{-1} (13 TeV)}"%lumi_scale )
+      (formatSettings(nBins)["laboff"], 0.945, "#bf{%3.1f fb^{-1} (13 TeV)}"%lumi_scale )
     ]
     return [tex.DrawLatex(*l) for l in lines]
 
@@ -352,10 +366,28 @@ def formatSettings( nBins ):
         settings["hashcode"] = 3144
         settings["legcolumns"] = 6
         settings["legylower"] = 0.83
+        settings["laboff"] = 0.83
         settings["textoffset"] = 0.8
         settings["offsetfactor"] = 20
         settings["ptlabelsize"] = 0.015
         settings["heightFactor"] = 100
+    elif nBins>31:
+        settings["textsize"] = 32
+        settings["xlabelsize"] = 22
+        settings["ylabelsize"] = 28
+        settings["padwidth"] = 2200
+        settings["padheight"] = 1000
+        settings["padratio"] = 300
+        settings["hashcode"] = 3244
+        settings["legcolumns"] = 5
+        settings["legylower"] = 0.8
+        settings["laboff"] = 0.81
+        settings["textoffset"] = 1
+#        settings["offsetfactor"] = 20 # bkg only
+        settings["offsetfactor"] = 120 # SR
+        settings["ptlabelsize"] = 0.02
+#        settings["heightFactor"] = 300 #bkg only
+        settings["heightFactor"] = 1500 #SR
     elif nBins>25:
         settings["textsize"] = 32
         settings["xlabelsize"] = 22
@@ -364,8 +396,9 @@ def formatSettings( nBins ):
         settings["padheight"] = 1000
         settings["padratio"] = 300
         settings["hashcode"] = 3244
-        settings["legcolumns"] = 4
-        settings["legylower"] = 0.75
+        settings["legcolumns"] = 5
+        settings["legylower"] = 0.8
+        settings["laboff"] = 0.75
         settings["textoffset"] = 1.3
 #        settings["offsetfactor"] = 20 # bkg only
         settings["offsetfactor"] = 90 # SR
@@ -380,8 +413,9 @@ def formatSettings( nBins ):
         settings["padheight"] = 700
         settings["padratio"] = 250
         settings["hashcode"] = 3344
-        settings["legcolumns"] = 4
-        settings["legylower"] = 0.75
+        settings["legcolumns"] = 5
+        settings["legylower"] = 0.8
+        settings["laboff"] = 0.75
         settings["textoffset"] = 1.3
         settings["offsetfactor"] = 52
         settings["ptlabelsize"] = 0.022

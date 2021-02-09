@@ -79,7 +79,7 @@ cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
 print cacheFileName
 
-directory = os.path.join( plot_directory, "nllPlotsPPA", str(args.year), "_".join( regionNames ))
+directory = os.path.join( plot_directory, "nllPlotsApp", str(args.year), "_".join( regionNames ))
 addon = "expected" if args.expected else "observed"
 if args.plotData: addon += "_check"
 plot_directory_ = os.path.join( directory, addon )
