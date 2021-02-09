@@ -33,7 +33,7 @@ all_systematics  = ['nominal'] + sum([list(p) for p in systematic_pairs],[])
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",           action="store",      default="INFO", nargs="?", choices=loggerChoices,                        help="Log level for logging")
-argParser.add_argument("--plot_directory",     action="store",      default="v49",                                              help="plot sub-directory")
+argParser.add_argument("--plot_directory",     action="store",      default="v49_v2",                                              help="plot sub-directory")
 argParser.add_argument("--prefix",             action="store",      default=None,  type=str,                                                 help="for debugging")
 argParser.add_argument("--small",              action="store_true",                                                                          help="Run only on a small subset of the data?")
 argParser.add_argument("--inclusive_samples",  action="store_true",                                                                          help="use inclusive samples?")
@@ -736,6 +736,7 @@ unfolding_systematic = unfolding_signal_output.Clone()
 unfolding_systematic.style = styles.lineStyle(ROOT.kRed, errors=True) 
 for i_bin in range(unfolding_systematic.GetNbinsX()+2):
     unfolding_systematic.SetBinError( i_bin, 0 )
+
 for pair in systematic_pairs: 
     unfolding_signal_output_systematic_up   = getOutput(unfold[pair[0]], unfolding_signal_input_subtracted, "unfolding_signal_input_subtracted_"+pair[0])
     unfolding_signal_output_systematic_up.Scale(1./settings.lumi_factor)

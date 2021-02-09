@@ -1,4 +1,4 @@
-import os
+import os, math
 import copy
 import ROOT
 import array
@@ -36,8 +36,12 @@ allUncertainties = [
     "light_flavor_2016", "light_flavor_2017_2018", "misID_pT_Bin1_2016", "misID_pT_Bin1_2017", "misID_pT_Bin1_2018", "misID_pT_Bin2_2016", "misID_pT_Bin2_2017", "misID_pT_Bin2_2018",
     "misID_pT_Bin3_2016", "misID_pT_Bin3_2017", "misID_pT_Bin3_2018", "misID_pT_Bin4_2016", "misID_pT_Bin4_2017", "misID_pT_Bin4_2018", "misID_pT_Bin5_2016", "misID_pT_Bin5_2017",
     "misID_pT_Bin5_2018", "misID_pT_Bin6_2016", "misID_pT_Bin6_2017", "misID_pT_Bin6_2018", "muon_ID_extrapolation", "muon_ID_sta_2016", "muon_ID_sta_2017", "muon_ID_sta_2018", "muon_ID_syst",
-    "photon_ID", "pixelSeed_veto_2016", "pixelSeed_veto_2017", "pixelSeed_veto_2018", "top_pt_reweighting", "r",
+    "photon_ID", "pixelSeed_veto_2016", "pixelSeed_veto_2017", "pixelSeed_veto_2018", "top_pt_reweighting", # "r",
     ]
+
+signal_uncertainty_ptG = ['Signal_mu_3_Bin6_2016', 'Signal_mu_3_Bin6_2017', 'Signal_mu_3_Bin6_2018', 'Signal_e_3_Bin9_2018', 'Signal_e_3_Bin6_2018', 'Signal_e_3_Bin0_2016', 'Signal_e_3_Bin0_2017', 'Signal_e_3_Bin0_2018', 'Signal_mu_4p_Bin5_2017', 'Signal_mu_4p_Bin5_2016', 'Signal_mu_3_Bin1_2018', 'Signal_mu_3_Bin1_2017', 'Signal_mu_3_Bin1_2016', 'Signal_mu_4p_Bin6_2016', 'Signal_mu_4p_Bin6_2017', 'Signal_mu_4p_Bin6_2018', 'Signal_mu_4p_Bin8_2018', 'Signal_mu_4p_Bin8_2016', 'Signal_mu_4p_Bin8_2017', 'Signal_mu_3_Bin9_2017', 'Signal_mu_3_Bin9_2016', 'Signal_mu_3_Bin9_2018', 'Signal_mu_4p_Bin3_2018', 'Signal_mu_4p_Bin3_2017', 'Signal_mu_4p_Bin3_2016', 'Signal_e_3_Bin10_2016', 'Signal_e_3_Bin10_2017', 'Signal_mu_3_Bin7_2018', 'Signal_mu_3_Bin7_2017', 'Signal_mu_3_Bin7_2016', 'Signal_e_3_Bin10_2018', 'Signal_mu_3_Bin0_2018', 'Signal_mu_3_Bin0_2016', 'Signal_mu_3_Bin0_2017', 'Signal_e_3_Bin6_2016', 'Signal_e_4p_Bin3_2018', 'Signal_e_4p_Bin3_2016', 'Signal_e_3_Bin1_2017', 'Signal_e_3_Bin1_2016', 'Signal_e_3_Bin1_2018', 'Signal_e_4p_Bin5_2018', 'Signal_e_4p_Bin5_2017', 'Signal_e_4p_Bin5_2016', 'Signal_mu_3_Bin4_2018', 'Signal_e_4p_Bin7_2018', 'Signal_e_4p_Bin1_2018', 'Signal_e_4p_Bin1_2017', 'Signal_e_4p_Bin1_2016', 'Signal_e_4p_Bin7_2017', 'Signal_e_4p_Bin7_2016', 'Signal_mu_3_Bin4_2016', 'Signal_mu_3_Bin4_2017', 'Signal_e_4p_Bin4_2018', 'Signal_e_4p_Bin4_2016', 'Signal_e_4p_Bin4_2017', 'Signal_mu_4p_Bin10_2018', 'Signal_e_3_Bin2_2016', 'Signal_e_3_Bin2_2017', 'Signal_e_3_Bin2_2018', 'Signal_mu_4p_Bin4_2016', 'Signal_mu_4p_Bin4_2017', 'Signal_mu_4p_Bin4_2018', 'Signal_mu_3_Bin8_2016', 'Signal_mu_3_Bin8_2017', 'Signal_e_4p_Bin2_2016', 'Signal_mu_3_Bin8_2018', 'Signal_e_4p_Bin6_2016', 'Signal_e_4p_Bin6_2017', 'Signal_e_3_Bin4_2016', 'Signal_e_3_Bin4_2017', 'Signal_e_3_Bin4_2018', 'Signal_e_4p_Bin6_2018', 'Signal_mu_3_Bin2_2016', 'Signal_mu_3_Bin2_2017', 'Signal_mu_4p_Bin2_2016', 'Signal_mu_4p_Bin2_2017', 'Signal_mu_4p_Bin2_2018', 'Signal_mu_3_Bin10_2018', 'Signal_mu_3_Bin10_2016', 'Signal_mu_3_Bin10_2017', 'Signal_mu_4p_Bin5_2018', 'Signal_mu_4p_Bin7_2017', 'Signal_mu_4p_Bin7_2016', 'Signal_mu_4p_Bin7_2018', 'Signal_mu_4p_Bin10_2016', 'Signal_e_3_Bin7_2017', 'Signal_e_3_Bin7_2016', 'Signal_mu_4p_Bin10_2017', 'Signal_e_3_Bin7_2018', 'Signal_mu_3_Bin3_2018', 'Signal_mu_3_Bin3_2017', 'Signal_mu_3_Bin3_2016', 'Signal_e_4p_Bin9_2017', 'Signal_e_4p_Bin9_2016', 'Signal_e_4p_Bin9_2018', 'Signal_e_3_Bin3_2017', 'Signal_e_3_Bin3_2016', 'Signal_e_4p_Bin10_2018', 'Signal_e_4p_Bin10_2016', 'Signal_e_4p_Bin10_2017', 'Signal_e_3_Bin3_2018', 'Signal_e_4p_Bin2_2017', 'Signal_e_3_Bin9_2016', 'Signal_mu_3_Bin5_2018', 'Signal_e_3_Bin8_2018', 'Signal_mu_3_Bin5_2017', 'Signal_mu_3_Bin5_2016', 'Signal_e_3_Bin9_2017', 'Signal_e_3_Bin8_2017', 'Signal_e_3_Bin6_2017', 'Signal_e_4p_Bin3_2017', 'Signal_e_3_Bin5_2018', 'Signal_e_3_Bin5_2017', 'Signal_e_3_Bin5_2016', 'Signal_e_4p_Bin8_2016', 'Signal_e_4p_Bin8_2017', 'Signal_mu_4p_Bin0_2016', 'Signal_mu_4p_Bin0_2017', 'Signal_mu_4p_Bin0_2018', 'Signal_e_4p_Bin8_2018', 'Signal_e_4p_Bin2_2018', 'Signal_mu_4p_Bin9_2018', 'Signal_mu_3_Bin2_2018', 'Signal_mu_4p_Bin9_2017', 'Signal_mu_4p_Bin9_2016', 'Signal_e_3_Bin8_2016', 'Signal_mu_4p_Bin1_2017', 'Signal_mu_4p_Bin1_2016', 'Signal_mu_4p_Bin1_2018']
+signal_uncertainty_absEta = ['Signal_mu_3_Bin6_2016', 'Signal_mu_3_Bin6_2017', 'Signal_mu_3_Bin6_2018', 'Signal_e_3_Bin9_2018', 'Signal_e_3_Bin6_2018', 'Signal_e_3_Bin0_2016', 'Signal_e_3_Bin0_2017', 'Signal_e_3_Bin0_2018', 'Signal_mu_4p_Bin5_2018', 'Signal_mu_3_Bin1_2018', 'Signal_mu_3_Bin1_2016', 'Signal_mu_4p_Bin6_2016', 'Signal_mu_4p_Bin6_2017', 'Signal_mu_4p_Bin6_2018', 'Signal_mu_4p_Bin8_2018', 'Signal_mu_4p_Bin8_2016', 'Signal_mu_4p_Bin8_2017', 'Signal_mu_3_Bin9_2017', 'Signal_mu_3_Bin9_2016', 'Signal_mu_3_Bin9_2018', 'Signal_mu_4p_Bin3_2018', 'Signal_mu_4p_Bin3_2017', 'Signal_mu_4p_Bin3_2016', 'Signal_mu_3_Bin7_2018', 'Signal_mu_3_Bin7_2017', 'Signal_mu_3_Bin7_2016', 'Signal_mu_3_Bin0_2018', 'Signal_mu_3_Bin0_2016', 'Signal_mu_3_Bin0_2017', 'Signal_e_3_Bin6_2016', 'Signal_e_4p_Bin3_2018', 'Signal_e_4p_Bin3_2016', 'Signal_e_3_Bin1_2017', 'Signal_e_3_Bin1_2016', 'Signal_e_3_Bin1_2018', 'Signal_e_4p_Bin5_2018', 'Signal_e_4p_Bin5_2017', 'Signal_e_4p_Bin5_2016', 'Signal_mu_3_Bin4_2018', 'Signal_e_4p_Bin7_2018', 'Signal_e_4p_Bin1_2018', 'Signal_e_4p_Bin1_2017', 'Signal_e_4p_Bin1_2016', 'Signal_e_4p_Bin7_2017', 'Signal_e_4p_Bin7_2016', 'Signal_mu_3_Bin4_2016', 'Signal_mu_3_Bin4_2017', 'Signal_e_4p_Bin4_2018', 'Signal_e_4p_Bin4_2016', 'Signal_e_4p_Bin4_2017', 'Signal_e_3_Bin2_2016', 'Signal_e_3_Bin2_2017', 'Signal_e_3_Bin2_2018', 'Signal_mu_4p_Bin4_2016', 'Signal_mu_4p_Bin4_2017', 'Signal_mu_4p_Bin4_2018', 'Signal_mu_3_Bin8_2016', 'Signal_mu_3_Bin8_2017', 'Signal_e_4p_Bin2_2016', 'Signal_mu_3_Bin8_2018', 'Signal_e_4p_Bin6_2016', 'Signal_e_4p_Bin6_2017', 'Signal_e_3_Bin4_2016', 'Signal_e_3_Bin4_2017', 'Signal_e_3_Bin4_2018', 'Signal_e_4p_Bin6_2018', 'Signal_mu_3_Bin2_2016', 'Signal_mu_3_Bin2_2017', 'Signal_mu_4p_Bin5_2017', 'Signal_mu_4p_Bin5_2016', 'Signal_mu_4p_Bin2_2016', 'Signal_mu_4p_Bin2_2017', 'Signal_mu_4p_Bin2_2018', 'Signal_mu_4p_Bin7_2017', 'Signal_mu_4p_Bin7_2016', 'Signal_mu_4p_Bin7_2018', 'Signal_e_3_Bin7_2017', 'Signal_e_3_Bin7_2016', 'Signal_e_3_Bin7_2018', 'Signal_mu_3_Bin1_2017', 'Signal_mu_3_Bin3_2018', 'Signal_mu_3_Bin3_2017', 'Signal_mu_3_Bin3_2016', 'Signal_e_4p_Bin9_2017', 'Signal_e_4p_Bin9_2016', 'Signal_e_4p_Bin9_2018', 'Signal_e_3_Bin3_2017', 'Signal_e_3_Bin3_2016', 'Signal_e_3_Bin3_2018', 'Signal_mu_4p_Bin9_2017', 'Signal_e_4p_Bin2_2017', 'Signal_e_3_Bin9_2017', 'Signal_e_3_Bin9_2016', 'Signal_mu_3_Bin5_2018', 'Signal_e_3_Bin8_2018', 'Signal_mu_3_Bin5_2017', 'Signal_mu_3_Bin5_2016', 'Signal_e_3_Bin8_2017', 'Signal_e_3_Bin6_2017', 'Signal_e_4p_Bin3_2017', 'Signal_e_3_Bin5_2018', 'Signal_e_3_Bin5_2017', 'Signal_e_3_Bin5_2016', 'Signal_e_4p_Bin8_2016', 'Signal_e_4p_Bin8_2017', 'Signal_mu_4p_Bin0_2016', 'Signal_mu_4p_Bin0_2017', 'Signal_mu_4p_Bin0_2018', 'Signal_mu_4p_Bin1_2016', 'Signal_e_4p_Bin8_2018', 'Signal_e_4p_Bin2_2018', 'Signal_mu_4p_Bin9_2018', 'Signal_mu_3_Bin2_2018', 'Signal_mu_4p_Bin9_2016', 'Signal_e_3_Bin8_2016', 'Signal_mu_4p_Bin1_2017', 'Signal_mu_4p_Bin1_2018']
+signal_uncertainty_dRlg = ['Signal_mu_3_Bin6_2016', 'Signal_mu_3_Bin6_2017', 'Signal_e_3_Bin6_2017', 'Signal_mu_4p_Bin11_2018', 'Signal_mu_3_Bin6_2018', 'Signal_e_3_Bin9_2018', 'Signal_e_3_Bin6_2018', 'Signal_e_3_Bin0_2016', 'Signal_e_3_Bin0_2017', 'Signal_mu_3_Bin5_2018', 'Signal_e_3_Bin0_2018', 'Signal_mu_4p_Bin5_2017', 'Signal_mu_4p_Bin5_2016', 'Signal_mu_4p_Bin5_2018', 'Signal_mu_3_Bin1_2018', 'Signal_mu_3_Bin1_2017', 'Signal_mu_3_Bin1_2016', 'Signal_mu_4p_Bin6_2016', 'Signal_mu_4p_Bin6_2017', 'Signal_mu_4p_Bin6_2018', 'Signal_e_3_Bin13_2017', 'Signal_e_3_Bin13_2016', 'Signal_e_3_Bin13_2018', 'Signal_mu_4p_Bin8_2018', 'Signal_mu_4p_Bin8_2016', 'Signal_mu_4p_Bin8_2017', 'Signal_e_4p_Bin12_2018', 'Signal_e_4p_Bin12_2016', 'Signal_e_4p_Bin12_2017', 'Signal_e_4p_Bin13_2017', 'Signal_e_4p_Bin13_2016', 'Signal_mu_3_Bin9_2017', 'Signal_mu_3_Bin9_2016', 'Signal_mu_3_Bin13_2016', 'Signal_mu_3_Bin9_2018', 'Signal_e_4p_Bin13_2018', 'Signal_mu_4p_Bin3_2018', 'Signal_mu_4p_Bin3_2017', 'Signal_mu_4p_Bin3_2016', 'Signal_e_3_Bin10_2016', 'Signal_e_3_Bin10_2017', 'Signal_mu_3_Bin7_2018', 'Signal_mu_3_Bin7_2017', 'Signal_mu_3_Bin7_2016', 'Signal_e_3_Bin10_2018', 'Signal_mu_3_Bin0_2018', 'Signal_mu_3_Bin0_2016', 'Signal_mu_3_Bin0_2017', 'Signal_mu_3_Bin2_2018', 'Signal_e_3_Bin6_2016', 'Signal_e_4p_Bin3_2016', 'Signal_e_3_Bin1_2017', 'Signal_e_3_Bin1_2016', 'Signal_e_3_Bin1_2018', 'Signal_e_4p_Bin5_2018', 'Signal_e_4p_Bin5_2017', 'Signal_e_4p_Bin5_2016', 'Signal_mu_3_Bin4_2018', 'Signal_e_4p_Bin7_2018', 'Signal_e_4p_Bin1_2018', 'Signal_e_4p_Bin1_2017', 'Signal_e_4p_Bin1_2016', 'Signal_e_4p_Bin7_2017', 'Signal_mu_3_Bin4_2017', 'Signal_mu_3_Bin4_2016', 'Signal_e_4p_Bin7_2016', 'Signal_e_4p_Bin4_2018', 'Signal_e_4p_Bin4_2016', 'Signal_e_4p_Bin4_2017', 'Signal_mu_4p_Bin10_2018', 'Signal_e_3_Bin2_2016', 'Signal_e_3_Bin2_2017', 'Signal_e_3_Bin2_2018', 'Signal_e_3_Bin12_2016', 'Signal_e_3_Bin12_2018', 'Signal_mu_4p_Bin4_2016', 'Signal_mu_4p_Bin4_2017', 'Signal_mu_4p_Bin4_2018', 'Signal_mu_3_Bin8_2016', 'Signal_mu_3_Bin8_2017', 'Signal_e_4p_Bin2_2016', 'Signal_mu_3_Bin8_2018', 'Signal_e_4p_Bin6_2016', 'Signal_e_4p_Bin6_2017', 'Signal_e_3_Bin4_2016', 'Signal_e_3_Bin4_2017', 'Signal_e_3_Bin4_2018', 'Signal_e_4p_Bin6_2018', 'Signal_mu_3_Bin2_2016', 'Signal_mu_3_Bin2_2017', 'Signal_e_4p_Bin11_2018', 'Signal_e_4p_Bin11_2017', 'Signal_e_4p_Bin11_2016', 'Signal_mu_4p_Bin2_2016', 'Signal_mu_4p_Bin2_2017', 'Signal_mu_4p_Bin2_2018', 'Signal_mu_3_Bin10_2018', 'Signal_mu_3_Bin10_2016', 'Signal_mu_3_Bin10_2017', 'Signal_mu_3_Bin12_2018', 'Signal_mu_4p_Bin7_2017', 'Signal_mu_4p_Bin7_2016', 'Signal_mu_4p_Bin7_2018', 'Signal_mu_3_Bin12_2016', 'Signal_mu_3_Bin12_2017', 'Signal_mu_3_Bin11_2018', 'Signal_e_3_Bin7_2017', 'Signal_e_3_Bin7_2016', 'Signal_mu_4p_Bin10_2017', 'Signal_e_3_Bin7_2018', 'Signal_mu_3_Bin11_2017', 'Signal_mu_3_Bin11_2016', 'Signal_mu_4p_Bin12_2016', 'Signal_mu_4p_Bin12_2017', 'Signal_mu_4p_Bin12_2018', 'Signal_e_3_Bin11_2017', 'Signal_e_3_Bin11_2016', 'Signal_mu_3_Bin3_2018', 'Signal_mu_3_Bin3_2017', 'Signal_mu_3_Bin3_2016', 'Signal_e_3_Bin11_2018', 'Signal_e_4p_Bin9_2017', 'Signal_e_4p_Bin9_2016', 'Signal_e_4p_Bin9_2018', 'Signal_e_3_Bin3_2017', 'Signal_e_3_Bin3_2016', 'Signal_e_4p_Bin10_2018', 'Signal_mu_4p_Bin13_2017', 'Signal_mu_4p_Bin13_2016', 'Signal_mu_4p_Bin13_2018', 'Signal_e_4p_Bin10_2016', 'Signal_e_4p_Bin10_2017', 'Signal_e_3_Bin3_2018', 'Signal_mu_3_Bin13_2017', 'Signal_e_4p_Bin2_2017', 'Signal_e_3_Bin9_2016', 'Signal_mu_4p_Bin11_2017', 'Signal_mu_4p_Bin11_2016', 'Signal_e_3_Bin12_2017', 'Signal_mu_3_Bin5_2017', 'Signal_mu_3_Bin5_2016', 'Signal_e_3_Bin9_2017', 'Signal_e_3_Bin8_2017', 'Signal_mu_3_Bin13_2018', 'Signal_e_4p_Bin3_2018', 'Signal_e_4p_Bin3_2017', 'Signal_e_3_Bin5_2018', 'Signal_e_3_Bin5_2017', 'Signal_e_3_Bin5_2016', 'Signal_e_4p_Bin8_2016', 'Signal_e_4p_Bin8_2017', 'Signal_mu_4p_Bin0_2016', 'Signal_mu_4p_Bin0_2017', 'Signal_mu_4p_Bin0_2018', 'Signal_e_4p_Bin8_2018', 'Signal_e_4p_Bin2_2018', 'Signal_mu_4p_Bin9_2018', 'Signal_mu_4p_Bin9_2017', 'Signal_mu_4p_Bin9_2016', 'Signal_mu_4p_Bin10_2016', 'Signal_e_3_Bin8_2018', 'Signal_e_3_Bin8_2016', 'Signal_mu_4p_Bin1_2017', 'Signal_mu_4p_Bin1_2016', 'Signal_mu_4p_Bin1_2018']
 
 def add_sigmas( h, sigmas, ref = None):
     if not h: return None
@@ -45,7 +49,15 @@ def add_sigmas( h, sigmas, ref = None):
     res = copy.deepcopy(h.Clone())
     for i in range(0, h.GetNbinsX()+2):
         res.SetBinContent( i, ref_.GetBinContent( i ) + sigmas*h.GetBinError( i ) )
+        res.SetBinError( i, ref_.GetBinError( i ) )
     return res
+
+#def replace_data_error( h ):
+#    if not h: return None
+#    res = copy.deepcopy(h.Clone())
+#    for i in range(1, res.GetNbinsX()+1):
+#        res.SetBinError( i, math.sqrt(res.GetBinContent( i )) )
+#    return res
 
 def add_error_from_Upvariation( h, ref ):
     if not h: return None
@@ -61,7 +73,7 @@ def thresholds_from_histo( histo ):
 
 def merge_x( histos, bin_threshold_years):
 
-    input_bins = []    
+    input_bins = []
     for i_year, bins_in_year in enumerate(map( lambda h: range(1, h.GetNbinsX()+1), histos )):
         for i_t, bin_in_year in enumerate(bins_in_year):
             input_bins.append( (i_year, bin_in_year) )
@@ -69,13 +81,12 @@ def merge_x( histos, bin_threshold_years):
     assert len(input_bins) == len(bin_threshold_years)-1, "Inconsistent number of input thresholds!"
 
     output = ROOT.TH1D(histos[0].GetName(), histos[0].GetTitle(), len(bin_threshold_years)-1, array.array('d', bin_threshold_years))
-    
+
     for i_bin_output, (i_year, bin_input) in enumerate(input_bins):
         output.SetBinContent( i_bin_output + 1, histos[i_year].GetBinContent(bin_input) )  
         output.SetBinError ( i_bin_output + 1, histos[i_year].GetBinError (bin_input) ) 
 
     # Note: Leave overflows empty 
-        
     return output
 
 #default_cache_directory = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache_read/"
@@ -83,14 +94,15 @@ def merge_x( histos, bin_threshold_years):
 default_cache_directory = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/"
 
 class observed_ptG_2016:
-#  if False:
+  if False:
+    uncertainties = allUncertainties + signal_uncertainty_ptG
     expected        = False
     cache_directory = default_cache_directory 
-    corr_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
-    data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
-    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties if not "2017" in u and not "2018" in u}
-    mcStatUp_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
+    corr_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_correlationFitObject"
+    data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_data"
+    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_signal"
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_%s_Up"%u for u in uncertainties if not "2017" in u and not "2018" in u}
+    mcStatUp_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_MCStat_Up"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
     dirDB           = MergingDirDB(cache_dir)
@@ -98,8 +110,8 @@ class observed_ptG_2016:
     data            = dirDB.get( data_key )
     signal          = dirDB.get( signal_key )
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
-    dirDB           = MergingDirDB(cache_dir)
+#    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
+#    dirDB           = MergingDirDB(cache_dir)
     corrFitObj      = dirDB.get( corr_key )
     signal_frozen   = dirDB.get( signal_key )
     uncertainties   = {}
@@ -200,14 +212,15 @@ class observed_ptG_2016:
 
 
 class observed_ptG_2017:
-#  if False:
+  if False:
+    uncertainties = allUncertainties + signal_uncertainty_ptG
     expected        = False
     cache_directory = default_cache_directory 
-    corr_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
-    data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
-    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties if not "2016" in u and not "2018" in u}
-    mcStatUp_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
+    corr_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_correlationFitObject"
+    data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_data"
+    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_signal"
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_%s_Up"%u for u in uncertainties if not "2016" in u and not "2018" in u}
+    mcStatUp_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_MCStat_Up"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2017", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
     dirDB           = MergingDirDB(cache_dir)
@@ -215,8 +228,8 @@ class observed_ptG_2017:
     data            = dirDB.get( data_key )
     signal          = dirDB.get( signal_key )
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "2017", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
-    dirDB           = MergingDirDB(cache_dir)
+#    cache_dir       = os.path.join(cache_directory, "unfolding", "2017", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
+#    dirDB           = MergingDirDB(cache_dir)
     corrFitObj      = dirDB.get( corr_key )
     signal_frozen   = dirDB.get( signal_key )
     uncertainties   = {}
@@ -316,14 +329,15 @@ class observed_ptG_2017:
 
 
 class observed_ptG_2018:
-#  if False:
+  if False:
+    uncertainties = allUncertainties + signal_uncertainty_ptG
     expected        = False
     cache_directory = default_cache_directory 
-    corr_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
-    data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
-    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties if not "2017" in u and not "2016" in u}
-    mcStatUp_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
+    corr_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_correlationFitObject"
+    data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_data"
+    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_signal"
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_%s_Up"%u for u in uncertainties if not "2017" in u and not "2016" in u}
+    mcStatUp_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_MCStat_Up"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2018", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
     dirDB           = MergingDirDB(cache_dir)
@@ -331,8 +345,8 @@ class observed_ptG_2018:
     data            = dirDB.get( data_key )
     signal          = dirDB.get( signal_key )
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "2018", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
-    dirDB           = MergingDirDB(cache_dir)
+#    cache_dir       = os.path.join(cache_directory, "unfolding", "2018", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
+#    dirDB           = MergingDirDB(cache_dir)
     corrFitObj      = dirDB.get( corr_key )
     signal_frozen   = dirDB.get( signal_key )
     uncertainties   = {}
@@ -434,12 +448,13 @@ class observed_ptG_2018:
 
 class expected_ptG_RunII:
   if False:
+    uncertainties = allUncertainties + signal_uncertainty_ptG
     cache_directory = default_cache_directory 
-    corr_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_correlationFitObject"
-    data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_data_%s"
-    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_signal_%s"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
-    mcStatUp_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_MCStat_Up_%s"
+    corr_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_correlationFitObject"
+    data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_data_%s"
+    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_signal_%s"
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_%s_Up"%u for u in uncertainties}
+    mcStatUp_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_MCStat_Up_%s"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected", "postFit", "noFreeze")
     dirDB           = MergingDirDB(cache_dir)
@@ -449,8 +464,8 @@ class expected_ptG_RunII:
     data_histos     =  [ dirDB.get( data_key%year ) for year in years ]
     signal_histos   =  [ dirDB.get( signal_key%year ) for year in years ]
 
-    cache_dir              = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected", "postFit", "freeze")
-    dirDB                  = MergingDirDB(cache_dir)
+#    cache_dir              = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected", "postFit", "freeze")
+#    dirDB                  = MergingDirDB(cache_dir)
     corrFitObj      = dirDB.get( corr_key )
     signal_frozen_histos   =  [ dirDB.get( signal_key%year ) for year in years ]
     uncertainties_histos   = {}
@@ -562,34 +577,35 @@ class expected_ptG_RunII:
 
 class observed_ptG_RunII:
 #  if False:
+    uncertainties = allUncertainties + signal_uncertainty_ptG + ['Signal_e_4p_Bin0_2016', 'Signal_e_4p_Bin0_2017', 'Signal_e_4p_Bin0_2018']
     cache_directory = default_cache_directory 
-    corr_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
-    data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data_%s"
-    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal_%s"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
-    mcStatUp_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up_%s"
-
-    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "observed", "postFit", "noFreeze")
-    dirDB           = MergingDirDB(cache_dir)
+    corr_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_correlationFitObject"
+    data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_data_%s"
+    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_signal_%s"
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_%s_Up"%u for u in uncertainties}
+    mcStatUp_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_MCStat_Up_%s"
 
     years           = ["2016", "2017", "2018"]
 
+    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "observed", "postFit", "noFreeze")
+    dirDB           = MergingDirDB(cache_dir)
     data_histos     =  [ dirDB.get( data_key%year ) for year in years ]
     signal_histos   =  [ dirDB.get( signal_key%year ) for year in years ]
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "observed", "postFit", "freeze")
-    dirDB           = MergingDirDB(cache_dir)
+#    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "observed", "postFit", "freeze")
+#    dirDB           = MergingDirDB(cache_dir)
     corrFitObj      =  dirDB.get( corr_key )
 
-    signal_frozen_histos   =  [ dirDB.get( signal_key%year ) for year in years ]
+    signal_frozen_histos  =  [ dirDB.get( signal_key%year ) for year in years ]
     uncertainties_histos   = {}
     for u, k in uncertaintyUp_key.iteritems():
+#        print u, [ dirDB.contains( k+"_"+year ) for i,year in enumerate(years)]
         uncertainties_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signal_frozen_histos[i] ) for i,year in enumerate(years)]
     mcStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signal_frozen_histos[i] ) for i,year in enumerate(years) ]
 
     reco_variable   = "PhotonGood0_pt"
     reco_selection  = "SR3p"
-    
+
     assert len(set( map( thresholds_from_histo, data_histos)))==1, "Not all data histos have the same x-axis binning!"
     assert len(set( map( thresholds_from_histo, signal_histos)))==1, "Not all signal histos have the same x-axis binning!"
 
@@ -636,9 +652,11 @@ class observed_ptG_RunII:
 
     lumi_factor               = (lumi_year[2016]+lumi_year[2017]+lumi_year[2018])/1000.
     unfolding_data_input      = data
+    unfolding_signal_input        = data
+
     unfolding_data_input_systematic_bands          = [
         ]
-    unfolding_signal_input        = data
+
     unfolding_signal_input_systematic_bands          = [
        {'name' : 'stat',
         'label': "\pm 1\sigma (stat.)",
@@ -689,13 +707,14 @@ class observed_ptG_RunII:
 
 class expected_absEta_RunII:
   if False:
+    uncertainties = allUncertainties + signal_uncertainty_absEta
     expected        = True
     cache_directory = default_cache_directory 
-    corr_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_correlationFitObject"
-    data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_data_%s"
-    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_signal_%s"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
-    mcStatUp_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_MCStat_Up_%s"
+    corr_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_correlationFitObject"
+    data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_data_%s"
+    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_signal_%s"
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_%s_Up"%u for u in uncertainties}
+    mcStatUp_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_MCStat_Up_%s"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
     dirDB           = MergingDirDB(cache_dir)
@@ -705,8 +724,8 @@ class expected_absEta_RunII:
     data_histos     =  [ dirDB.get( data_key%year ) for year in years ]
     signal_histos   =  [ dirDB.get( signal_key%year ) for year in years ]
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
-    dirDB           = MergingDirDB(cache_dir)
+#    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
+#    dirDB           = MergingDirDB(cache_dir)
     corrFitObj      = dirDB.get( corr_key )
     signal_frozen_histos   =  [ dirDB.get( signal_key%year ) for year in years ] 
     uncertainties_histos   = {}
@@ -815,14 +834,15 @@ class expected_absEta_RunII:
 
 
 class observed_absEta_RunII:
-#  if False:
+  if False:
+    uncertainties = allUncertainties + signal_uncertainty_absEta
     expected        = False
     cache_directory = default_cache_directory 
-    corr_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
-    data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data_%s"
-    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal_%s"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
-    mcStatUp_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up_%s"
+    corr_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_correlationFitObject"
+    data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_data_%s"
+    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_signal_%s"
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_%s_Up"%u for u in uncertainties}
+    mcStatUp_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_MCStat_Up_%s"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
     dirDB           = MergingDirDB(cache_dir)
@@ -832,8 +852,8 @@ class observed_absEta_RunII:
     data_histos     =  [ dirDB.get( data_key%year ) for year in years ]
     signal_histos   =  [ dirDB.get( signal_key%year ) for year in years ]
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
-    dirDB           = MergingDirDB(cache_dir)
+#    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
+#    dirDB           = MergingDirDB(cache_dir)
     corrFitObj      = dirDB.get( corr_key )
     signal_frozen_histos   =  [ dirDB.get( signal_key%year ) for year in years ] 
     uncertainties_histos   = {}
@@ -943,14 +963,15 @@ class observed_absEta_RunII:
 
 
 class observed_absEta_2016:
-#  if False:
+  if False:
+    uncertainties = allUncertainties + signal_uncertainty_absEta
     expected        = False
     cache_directory = default_cache_directory 
-    corr_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
-    data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
-    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties if not "2017" in u and not "2018" in u}
-    mcStatUp_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
+    corr_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_correlationFitObject"
+    data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_data"
+    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_signal"
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_%s_Up"%u for u in uncertainties if not "2017" in u and not "2018" in u}
+    mcStatUp_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_MCStat_Up"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
     dirDB           = MergingDirDB(cache_dir)
@@ -958,8 +979,8 @@ class observed_absEta_2016:
     data            = dirDB.get( data_key )
     signal          = dirDB.get( signal_key )
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
-    dirDB           = MergingDirDB(cache_dir)
+#    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
+#    dirDB           = MergingDirDB(cache_dir)
     corrFitObj      = dirDB.get( corr_key )
     signal_frozen   = dirDB.get( signal_key )
     uncertainties   = {}
@@ -1060,14 +1081,15 @@ class observed_absEta_2016:
 
 
 class observed_absEta_2017:
-#  if False:
+  if False:
+    uncertainties = allUncertainties + signal_uncertainty_absEta
     expected        = False
     cache_directory = default_cache_directory 
-    corr_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
-    data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
-    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties if not "2016" in u and not "2018" in u}
-    mcStatUp_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
+    corr_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_correlationFitObject"
+    data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_data"
+    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_signal"
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_%s_Up"%u for u in uncertainties if not "2016" in u and not "2018" in u}
+    mcStatUp_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_MCStat_Up"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2017", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
     dirDB           = MergingDirDB(cache_dir)
@@ -1075,8 +1097,8 @@ class observed_absEta_2017:
     data            = dirDB.get( data_key )
     signal          = dirDB.get( signal_key )
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "2017", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
-    dirDB           = MergingDirDB(cache_dir)
+#    cache_dir       = os.path.join(cache_directory, "unfolding", "2017", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
+#    dirDB           = MergingDirDB(cache_dir)
     corrFitObj      = dirDB.get( corr_key )
     signal_frozen   = dirDB.get( signal_key )
     uncertainties   = {}
@@ -1177,14 +1199,15 @@ class observed_absEta_2017:
 
 
 class observed_absEta_2018:
-#  if False:
+  if False:
+    uncertainties = allUncertainties + signal_uncertainty_absEta
     expected        = False
     cache_directory = default_cache_directory 
-    corr_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
-    data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
-    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties if not "2017" in u and not "2016" in u}
-    mcStatUp_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
+    corr_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_correlationFitObject"
+    data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_data"
+    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_signal"
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_%s_Up"%u for u in uncertainties if not "2017" in u and not "2016" in u}
+    mcStatUp_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_MCStat_Up"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2018", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
     dirDB           = MergingDirDB(cache_dir)
@@ -1192,8 +1215,8 @@ class observed_absEta_2018:
     data            = dirDB.get( data_key )
     signal          = dirDB.get( signal_key )
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "2018", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
-    dirDB           = MergingDirDB(cache_dir)
+#    cache_dir       = os.path.join(cache_directory, "unfolding", "2018", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
+#    dirDB           = MergingDirDB(cache_dir)
     corrFitObj      = dirDB.get( corr_key )
     signal_frozen   = dirDB.get( signal_key )
     uncertainties   = {}
@@ -1294,14 +1317,15 @@ class observed_absEta_2018:
 
 
 class observed_dRlg_2016:
-#  if False:
+  if False:
+    uncertainties = allUncertainties + signal_uncertainty_dRlg
     expected        = False
     cache_directory = default_cache_directory 
-    corr_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
-    data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
-    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties if not "2017" in u and not "2018" in u}
-    mcStatUp_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
+    corr_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_correlationFitObject"
+    data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_data"
+    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_signal"
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_%s_Up"%u for u in uncertainties if not "2017" in u and not "2018" in u}
+    mcStatUp_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_MCStat_Up"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
     dirDB           = MergingDirDB(cache_dir)
@@ -1309,8 +1333,8 @@ class observed_dRlg_2016:
     data            = dirDB.get( data_key )
     signal          = dirDB.get( signal_key )
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
-    dirDB           = MergingDirDB(cache_dir)
+#    cache_dir       = os.path.join(cache_directory, "unfolding", "2016", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
+#    dirDB           = MergingDirDB(cache_dir)
     corrFitObj      = dirDB.get( corr_key )
     signal_frozen   = dirDB.get( signal_key )
     uncertainties   = {}
@@ -1417,14 +1441,15 @@ class observed_dRlg_2016:
 
 
 class observed_dRlg_2017:
-#  if False:
+  if False:
+    uncertainties = allUncertainties + signal_uncertainty_dRlg
     expected        = False
     cache_directory = default_cache_directory 
-    corr_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
-    data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
-    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties if not "2016" in u and not "2018" in u}
-    mcStatUp_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
+    corr_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_correlationFitObject"
+    data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_data"
+    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_signal"
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_%s_Up"%u for u in uncertainties if not "2016" in u and not "2018" in u}
+    mcStatUp_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_MCStat_Up"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2017", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
     dirDB           = MergingDirDB(cache_dir)
@@ -1432,8 +1457,8 @@ class observed_dRlg_2017:
     data            = dirDB.get( data_key )
     signal          = dirDB.get( signal_key )
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "2017", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
-    dirDB           = MergingDirDB(cache_dir)
+#    cache_dir       = os.path.join(cache_directory, "unfolding", "2017", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
+#    dirDB           = MergingDirDB(cache_dir)
     corrFitObj      = dirDB.get( corr_key )
     signal_frozen   = dirDB.get( signal_key )
     uncertainties   = {}
@@ -1522,14 +1547,15 @@ class observed_dRlg_2017:
 
 
 class observed_dRlg_2018:
-#  if False:
+  if False:
+    uncertainties = allUncertainties + signal_uncertainty_dRlg
     expected        = False
     cache_directory = default_cache_directory 
-    corr_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
-    data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
-    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties if not "2017" in u and not "2016" in u}
-    mcStatUp_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
+    corr_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_correlationFitObject"
+    data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_data"
+    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_signal"
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_%s_Up"%u for u in uncertainties if not "2017" in u and not "2016" in u}
+    mcStatUp_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_MCStat_Up"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "2018", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
     dirDB           = MergingDirDB(cache_dir)
@@ -1537,8 +1563,8 @@ class observed_dRlg_2018:
     data            = dirDB.get( data_key )
     signal          = dirDB.get( signal_key )
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "2018", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
-    dirDB           = MergingDirDB(cache_dir)
+#    cache_dir       = os.path.join(cache_directory, "unfolding", "2018", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
+#    dirDB           = MergingDirDB(cache_dir)
     corrFitObj      = dirDB.get( corr_key )
     signal_frozen   = dirDB.get( signal_key )
     uncertainties   = {}
@@ -1647,13 +1673,14 @@ class observed_dRlg_2018:
 
 class expected_dRlg_RunII:
   if False:
+    uncertainties = allUncertainties + signal_uncertainty_dRlg
     expected        = True
     cache_directory = default_cache_directory 
-    corr_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_correlationFitObject"
-    data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_data_%s"
-    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_signal_%s"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
-    mcStatUp_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_MCStat_Up_%s"
+    corr_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_correlationFitObject"
+    data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_data_%s"
+    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_signal_%s"
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_%s_Up"%u for u in uncertainties}
+    mcStatUp_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_freezeR_addPtBinnedUnc_MCStat_Up_%s"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
     dirDB           = MergingDirDB(cache_dir)
@@ -1663,8 +1690,8 @@ class expected_dRlg_RunII:
     data_histos     =  [ dirDB.get( data_key%year ) for year in years ]
     signal_histos   =  [ dirDB.get( signal_key%year ) for year in years ]
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
-    dirDB           = MergingDirDB(cache_dir)
+#    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
+#    dirDB           = MergingDirDB(cache_dir)
     corrFitObj      = dirDB.get( corr_key )
     signal_frozen_histos   =  [ dirDB.get( signal_key%year ) for year in years ] 
     uncertainties_histos   = {}
@@ -1779,13 +1806,14 @@ class expected_dRlg_RunII:
 
 class observed_dRlg_RunII:
 #  if False:
+    uncertainties = allUncertainties + signal_uncertainty_dRlg + ['Signal_e_4p_Bin0_2016', 'Signal_e_4p_Bin0_2017', 'Signal_e_4p_Bin0_2018']
     expected        = False
     cache_directory = default_cache_directory 
-    corr_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
-    data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data_%s"
-    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal_%s"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in allUncertainties}
-    mcStatUp_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up_%s"
+    corr_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_correlationFitObject"
+    data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_data_%s"
+    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_signal_%s"
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_%s_Up"%u for u in uncertainties}
+    mcStatUp_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_freezeR_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_MCStat_Up_%s"
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit", "noFreeze")
     dirDB           = MergingDirDB(cache_dir)
@@ -1795,12 +1823,13 @@ class observed_dRlg_RunII:
     data_histos     =  [ dirDB.get( data_key%year ) for year in years ]
     signal_histos   =  [ dirDB.get( signal_key%year ) for year in years ]
 
-    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
-    dirDB           = MergingDirDB(cache_dir)
+#    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "expected" if expected else "observed", "postFit", "freeze")
+#    dirDB           = MergingDirDB(cache_dir)
     corrFitObj      = dirDB.get( corr_key )
     signal_frozen_histos   =  [ dirDB.get( signal_key%year ) for year in years ] 
     uncertainties_histos   = {}
     for u, k in uncertaintyUp_key.iteritems():
+#        print u, [ dirDB.contains( k+"_"+year ) for i,year in enumerate(years)]
         uncertainties_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signal_frozen_histos[i] ) for i,year in enumerate(years)]
     mcStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signal_frozen_histos[i] ) for i,year in enumerate(years) ] 
 

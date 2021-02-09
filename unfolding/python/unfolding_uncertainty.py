@@ -337,7 +337,7 @@ elif not args.systematic is None:
 #        sys.exit()
         # fiducial seletion
         fiducial_selection_str = cutInterpreter.cutString(settings.fiducial_selection)+"&&overlapRemoval==1"
-        if not args.inclusive_samples:
+        if not args.inclusive_samples and useSystematic not in ["TuneUp","TuneDown","erdOn","GluonMove","QCDbased"]:
             fiducial_selection_str+="&&pTStitching==1"
 
         ttreeFormulas = {
@@ -784,8 +784,8 @@ for logY in [True, False]:
     )
 
 # input plot subtracted
-boxes = []
-ratio_boxes = []
+boxes_sb = []
+ratio_boxes_sb = []
 for band in reversed(settings.unfolding_signal_input_systematic_bands):
     # subtraction of nominal f_out 
     band['ref_subtracted']  = fout_subtraction(band['ref'])
@@ -804,7 +804,7 @@ for band in reversed(settings.unfolding_signal_input_systematic_bands):
         if hasattr( settings, "plot_range_x_fiducial") and band['ref'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
             pass
         else:
-            boxes.append(copy.deepcopy(box))
+            boxes_sb.append(copy.deepcopy(box))
             stuff.append(copy.deepcopy(box))
         if band['ref'].GetBinContent(i)!=0:
             ratio_box = ROOT.TBox( band['ref_subtracted'].GetXaxis().GetBinLowEdge(i),
@@ -818,7 +818,7 @@ for band in reversed(settings.unfolding_signal_input_systematic_bands):
             if hasattr( settings, "plot_range_x_fiducial") and band['ref_subtracted'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
                 pass
             else:
-                ratio_boxes.append(copy.deepcopy(ratio_box))
+                ratio_boxes_sb.append(copy.deepcopy(ratio_box))
                 stuff.append(copy.deepcopy(ratio_box))
 
 unfolding_signal_input_subtracted   = fout_subtraction( settings.unfolding_signal_input )
@@ -827,6 +827,7 @@ unfolding_signal_input_subtracted.legendText   = settings.signal_legendText
 reco_spectrum_subtracted.style = styles.lineStyle( ROOT.kRed+1, width = 2)
 reco_spectrum_subtracted.legendText = "Simulation"
 ratio_line = ROOT.TLine(reco_spectrum_subtracted.GetXaxis().GetXmin(), 1, reco_spectrum_subtracted.GetXaxis().GetXmax(),1)
+
 
 for logY in [True, False]:
     plotting.draw(
@@ -843,9 +844,9 @@ for logY in [True, False]:
         #legend = None,
         legend         = [ (0.20,0.75,0.9,0.91), 2 ],
         yRange = settings.y_range,
-        ratio = {'yRange': (0.3, 1.7), 'texY':'Sim. / Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes+[ratio_line]},
-        drawObjects = drawObjects()+boxes,
-        #drawObjects = boxes,
+        ratio = {'yRange': (0.3, 1.7), 'texY':'Sim. / Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes_sb+[ratio_line]},
+        drawObjects = drawObjects()+boxes_sb,
+        #drawObjects = boxes_sb,
         redrawHistos = True,
     )
 
@@ -871,12 +872,6 @@ for band in settings.unfolding_signal_input_systematics + [settings.unfolding_si
     band['ref_unfolded']  = getOutput(unfold[band['matrix']], band['ref_subtracted'],  "unfolding_%s_output"%band['name'])
     band['down_unfolded'] = getOutput(unfold[band['matrix']], band['down_subtracted'], "unfolding_%s_down_output"%band['name'])
     band['up_unfolded']   = getOutput(unfold[band['matrix']], band['up_subtracted'],   "unfolding_%s_up_output"%band['name'])
-
-    for i in range(1, band['ref_unfolded'].GetNbinsX()+1):
-        nom = band['ref_unfolded'].GetBinContent(i)
-        err = 0.5*(band['up_unfolded'].GetBinContent(i)-band['down_unfolded'].GetBinContent(i))
-        band['down_unfolded'].SetBinContent( i, nom-err )
-        band['up_unfolded'].SetBinContent( i, nom+err )
 
     band['ref_unfolded'].Scale(1./settings.lumi_factor)
     band['down_unfolded'].Scale(1./settings.lumi_factor)
@@ -1077,9 +1072,17 @@ boxes_syst = []
 ratio_boxes_syst = []
 for i in range(1, totalUncertainty_unfolded['ref'].GetNbinsX()+1):
 
-    total_sys_uncertainty = ( sqrt(  ( 0.5*( totalUncertainty_unfolded['up'].GetBinContent(i)-totalUncertainty_unfolded['down'].GetBinContent(i) ) )**2
-                                 + ( 0.5*( mcStat_unfolded['up'].GetBinContent(i)-mcStat_unfolded['down'].GetBinContent(i) ) )**2 )
-                                 + ( 0.5*( stat_unfolded['up'].GetBinContent(i)-stat_unfolded['down'].GetBinContent(i) ) ) ) #**2 )
+#    total_sys_uncertainty = ( sqrt(  ( 0.5*( totalUncertainty_unfolded['up'].GetBinContent(i)-totalUncertainty_unfolded['down'].GetBinContent(i) ) )**2
+#                                 + ( 0.5*( mcStat_unfolded['up'].GetBinContent(i)-mcStat_unfolded['down'].GetBinContent(i) ) )**2 )
+#                                 + ( 0.5*abs( stat_unfolded['up'].GetBinContent(i)-stat_unfolded['down'].GetBinContent(i) ) ) )
+
+#    total_sys_uncertainty = sqrt(  ( 0.5*( totalUncertainty_unfolded['up'].GetBinContent(i)-totalUncertainty_unfolded['down'].GetBinContent(i) ) )**2
+#                                 + ( 0.5*( mcStat_unfolded['up'].GetBinContent(i)-mcStat_unfolded['down'].GetBinContent(i) ) )**2
+#                                 + ( 0.5*( stat_unfolded['up'].GetBinContent(i)-stat_unfolded['down'].GetBinContent(i) ) )**2 )
+
+    total_sys_uncertainty = sqrt(  ( 0.5*( totalUncertainty_unfolded['up'].GetBinContent(i)-totalUncertainty_unfolded['down'].GetBinContent(i) ) )**2
+                                 + ( 0.5*( mcStat_unfolded['up'].GetBinContent(i)-mcStat_unfolded['down'].GetBinContent(i) ) )**2
+                                 + ( 0.5*( stat_unfolded['up'].GetBinContent(i)-stat_unfolded['down'].GetBinContent(i) ) )**2 )
 
     box = ROOT.TBox( totalUncertainty_unfolded['ref'].GetXaxis().GetBinLowEdge(i),  
                      max(0, unfolding_signal_output.GetBinContent(i) - total_sys_uncertainty),
@@ -1140,19 +1143,19 @@ unfolding_systematic.style = styles.lineStyle(ROOT.kRed, errors=True)
 for i_bin in range(unfolding_systematic.GetNbinsX()+2):
     unfolding_systematic.SetBinError( i_bin, 0 )
 
-if False:
-  for pair in systematic_pairs: 
-    unfolding_signal_output_systematic_up   = getOutput(unfold[pair[0]], unfolding_signal_input_subtracted, "unfolding_signal_input_subtracted_"+pair[0])
-    unfolding_signal_output_systematic_up.Scale(1./settings.lumi_factor)
-    unfolding_signal_output_systematic_down = getOutput(unfold[pair[1]], unfolding_signal_input_subtracted, "unfolding_signal_input_subtracted_"+pair[1])
-    unfolding_signal_output_systematic_down.Scale(1./settings.lumi_factor)
-    # Add unfolding systematics quadrature
+# do not add extra uncertainties for now FIXME
+#for pair in systematic_pairs: 
+#    unfolding_signal_output_systematic_up   = getOutput(unfold[pair[0]], unfolding_signal_input_subtracted, "unfolding_signal_input_subtracted_"+pair[0])
+#    unfolding_signal_output_systematic_up.Scale(1./settings.lumi_factor)
+#    unfolding_signal_output_systematic_down = getOutput(unfold[pair[1]], unfolding_signal_input_subtracted, "unfolding_signal_input_subtracted_"+pair[1])
+#    unfolding_signal_output_systematic_down.Scale(1./settings.lumi_factor)
+#    # Add unfolding systematics quadrature
 
-    for i_bin in range(unfolding_systematic.GetNbinsX()+2):
-        unfolding_systematic.SetBinError( i_bin, 
-            sqrt( unfolding_systematic.GetBinError(i_bin)**2 # what it was before
-                 +(0.5*(unfolding_signal_output_systematic_up.GetBinContent(i_bin)-unfolding_signal_output_systematic_down.GetBinContent(i_bin)))**2 # contribution from pair
-                ))
+#    for i_bin in range(unfolding_systematic.GetNbinsX()+2):
+#        unfolding_systematic.SetBinError( i_bin, 
+#            sqrt( unfolding_systematic.GetBinError(i_bin)**2 # what it was before
+#                 +(0.5*(unfolding_signal_output_systematic_up.GetBinContent(i_bin)-unfolding_signal_output_systematic_down.GetBinContent(i_bin)))**2 # contribution from pair
+#                ))
 
 # Make a plot of the unfolding systematics on the unfolded MC spectrum
 for logY in [True, False]:
@@ -1171,11 +1174,10 @@ for logY in [True, False]:
     )
 
 # unfolding the error bands
-boxes = []
-ratio_boxes = []
+boxes_uf = []
+ratio_boxes_uf = []
 for band in reversed(settings.unfolding_signal_input_systematic_bands):
     band['ref_unfolded']  = getOutput(unfold['nominal'], band['ref_subtracted'], "band_%s_ref_unfolded"%band['name'])
-
     band['up_unfolded']   = getOutput(unfold['nominal'], band['up_subtracted'],   "band_%s_up_unfolded"%band['name'])
     band['down_unfolded'] = getOutput(unfold['nominal'], band['down_subtracted'], "band_%s_down_unfolded"%band['name'])
 
@@ -1186,8 +1188,11 @@ for band in reversed(settings.unfolding_signal_input_systematic_bands):
 
         # add the unfolding-systematic to the total
         if band['name'] == 'total':
-            total_sys_uncertainty = sqrt( (0.5*(band['up_unfolded'].GetBinContent(i)-band['down_unfolded'].GetBinContent(i)))**2
-                                     + unfolding_systematic.GetBinError(i)**2 )
+
+            total_sys_uncertainty = 0.5*abs(band['up_unfolded'].GetBinContent(i)-band['down_unfolded'].GetBinContent(i))
+#            total_sys_uncertainty = sqrt( (0.5*(band['up_unfolded'].GetBinContent(i)-band['down_unfolded'].GetBinContent(i)))**2
+#                                     + unfolding_systematic.GetBinError(i)**2 )
+
             box = ROOT.TBox( band['ref_unfolded'].GetXaxis().GetBinLowEdge(i),  
                              max(0, band['ref_unfolded'].GetBinContent(i) - total_sys_uncertainty),
                              band['ref_unfolded'].GetXaxis().GetBinUpEdge(i),
@@ -1206,13 +1211,15 @@ for band in reversed(settings.unfolding_signal_input_systematic_bands):
         if hasattr( settings, "plot_range_x_fiducial") and band['ref_unfolded'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
             pass
         else:
-            boxes.append(copy.deepcopy(box))
+            boxes_uf.append(copy.deepcopy(box))
             stuff.append(copy.deepcopy(box))
 
         if band['ref_unfolded'].GetBinContent(i)!=0: 
             if band['name'] == 'total':
-                total_sys_uncertainty = sqrt( (0.5*(band['up_unfolded'].GetBinContent(i)-band['down_unfolded'].GetBinContent(i)))**2
-                                         + unfolding_systematic.GetBinError(i)**2 )
+
+                total_sys_uncertainty = 0.5*abs(band['up_unfolded'].GetBinContent(i)-band['down_unfolded'].GetBinContent(i))
+#                total_sys_uncertainty = sqrt( (0.5*(band['up_unfolded'].GetBinContent(i)-band['down_unfolded'].GetBinContent(i)))**2 )
+#                                         + unfolding_systematic.GetBinError(i)**2 )
                 ratio_box = ROOT.TBox( 
                                  band['ref_unfolded'].GetXaxis().GetBinLowEdge(i),  
                                  max(0, band['ref_unfolded'].GetBinContent(i) - total_sys_uncertainty)/band['ref_unfolded'].GetBinContent(i),
@@ -1232,7 +1239,8 @@ for band in reversed(settings.unfolding_signal_input_systematic_bands):
             if hasattr( settings, "plot_range_x_fiducial") and band['ref_unfolded'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
                 pass
             else:
-                ratio_boxes.append(copy.deepcopy(ratio_box))
+                ratio_boxes_uf.append(copy.deepcopy(ratio_box))
+                stuff.append(copy.deepcopy(ratio_box))
 
 empty = unfolding_signal_output.Clone()
 for i in range(1, empty.GetNbinsX()+1):
@@ -1270,9 +1278,9 @@ for logY in [True,False]:
         histModifications = hist_mod,
         legend         = [ (0.20,0.75,0.9,0.91), 2 ],
         yRange = settings.y_range,
-        ratio = {'yRange': settings.y_range_ratio, 'texY':'Sim. / Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes+[ratio_line]} ,
-        drawObjects = drawObjects()+boxes,
-        #drawObjects = boxes,
+        ratio = {'yRange': settings.y_range_ratio, 'texY':'Sim. / Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes_uf+[ratio_line]} ,
+        drawObjects = drawObjects()+boxes_uf,
+        #drawObjects = boxes_uf,
         redrawHistos = True,
     )
 
