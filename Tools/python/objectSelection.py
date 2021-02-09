@@ -591,6 +591,14 @@ def genPhotonSelector( photon_selection=None ):
             return True
         return func
 
+    elif photon_selection == 'EECMSUnfolding':
+        def func(g):
+            if g["pt"]       < 20:     return False
+            if abs(g["eta"]) < 1.479:  return False
+            if abs(g["eta"]) > 2.4:    return False
+            return True
+        return func
+
     else:
         # general gen-photon selection
         def func(g):
