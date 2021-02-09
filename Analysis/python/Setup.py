@@ -84,8 +84,12 @@ class Setup:
             else:
                 import TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed as mc_samples
         elif year == "RunII" and not checkOnly:
-            from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data
-            import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
+            if private:
+                from TTGammaEFT.Samples.nanoTuples_RunII_private_postProcessed import RunII as data
+                import TTGammaEFT.Samples.nanoTuples_RunII_private_postProcessed as mc_samples
+            else:
+                from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data
+                import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
 
         if checkOnly:
             self.processes = {}

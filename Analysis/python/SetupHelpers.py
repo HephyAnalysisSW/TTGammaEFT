@@ -204,6 +204,15 @@ signalRegions["SR3PtUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,3),
                               "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                              }
 
+signalRegions["SR3PtUnfoldEFT"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
+                              "channels":   lepChannels,
+                              "regions":    regionsTTGlooseUnfoldingEFT,
+                              "inclRegion": inclRegionsTTGloose,
+                              "noPhotonCR": False,
+                              "processes":  processesSR,
+                              "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                             }
+
 signalRegions["SR3PtUnfoldAll"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag":(1,-1), "nPhoton":(1,1) },
                               "channels":   ["all"],
                               "regions":    regionsTTGlooseUnfolding,
@@ -225,6 +234,15 @@ signalRegions["SR3pPtUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1
 signalRegions["SR4pPtUnfold"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
                               "channels":   lepChannels,
                               "regions":    regionsTTGlooseUnfolding,
+                              "inclRegion": inclRegionsTTGloose,
+                              "noPhotonCR": False,
+                              "processes":  processesSR,
+                              "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                             }
+
+signalRegions["SR4pPtUnfoldEFT"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
+                              "channels":   lepChannels,
+                              "regions":    regionsTTGlooseUnfoldingEFT,
                               "inclRegion": inclRegionsTTGloose,
                               "noPhotonCR": False,
                               "processes":  processesSR,
@@ -1121,6 +1139,14 @@ controlRegions["VG2"]  = { "parameters": { "zWindow":"offZeg", "nJet":(2,2), "nB
 controlRegions["VG3"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1) },
                            "channels":   lepChannels,
                            "regions":    mLgPtRegions,
+                           "inclRegion": mLgPtRegions, #bin inclusive fit in pt
+                           "noPhotonCR": False,
+                           "processes":  processes,
+                         }
+
+controlRegions["VGi3"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1) },
+                           "channels":   lepChannels,
+                           "regions":    mLgPtRegions,
                            "inclRegion": mLgRegions,
                            "noPhotonCR": False,
                            "processes":  processes,
@@ -1182,6 +1208,14 @@ controlRegions["VG5"]  = { "parameters": { "zWindow":"offZeg", "nJet":(5,5), "nB
                          }
 
 controlRegions["VG4p"] = { "parameters": { "zWindow":"offZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1)  },
+                           "channels":   lepChannels,
+                           "regions":    mLgPtRegions,
+                           "inclRegion": mLgPtRegions, #bin inclusive fit in pt
+                           "noPhotonCR": False,
+                           "processes":  processes,
+                         }
+
+controlRegions["VGi4p"] = { "parameters": { "zWindow":"offZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1)  },
                            "channels":   lepChannels,
                            "regions":    mLgPtRegions,
                            "inclRegion": mLgRegions,
@@ -1298,6 +1332,14 @@ controlRegions["misDY2p"]  = { "parameters": { "zWindow":"onZeg", "nJet":(2,-1),
 controlRegions["misDY3"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1) },
                               "channels":   ["e"],
                               "regions":    regionsTTG,
+                              "inclRegion": regionsTTG, #bin inclusive fit in pt
+                              "noPhotonCR": False,
+                              "processes":  processes,
+                            }
+
+controlRegions["misDYi3"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1) },
+                              "channels":   ["e"],
+                              "regions":    regionsTTG,
                               "inclRegion": inclRegionsTTG,
                               "noPhotonCR": False,
                               "processes":  processes,
@@ -1344,6 +1386,14 @@ controlRegions["misDY5"]  = { "parameters": { "zWindow":"onZeg", "nJet":(5,5), "
                             }
 
 controlRegions["misDY4p"] = { "parameters": { "zWindow":"onZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1) },
+                              "channels":   ["e"],
+                              "regions":    regionsTTG,
+                              "inclRegion": regionsTTG, #bin inclusive fit in pt
+                              "noPhotonCR": False,
+                              "processes":  processes,
+                            }
+
+controlRegions["misDYi4p"] = { "parameters": { "zWindow":"onZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1) },
                               "channels":   ["e"],
                               "regions":    regionsTTG,
                               "inclRegion": inclRegionsTTG,

@@ -48,16 +48,8 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         weight_MC_SR = selection_MC_SR["weightStr"]
         weight_MC_CR = selection_MC_SR["weightStr"].replace("reweightTrigger","reweightInvIsoTrigger").replace("reweightLeptonTrackingTightSF","reweightLeptonTrackingTightSFInvIso").replace("reweightLeptonTightSF","reweightLeptonTightSFInvIso") # w/ misID SF
 
-        print
-        print
-        print channel, qcdUpdates
-        print weight_MC_SR
-        print cut_MC_SR
-        print cut_MC_CR
         # The QCD yield in the CR with SR weight (sic)
         yield_QCD_CR = self.yieldFromCache(setup, "GJets",  channel, cut_MC_CR,   weight_MC_CR,   overwrite=overwrite)#*setup.dataLumi/1000.
-
-        print "GJets CR", yield_QCD_CR
 
         if channel == "e":
             yield_QCD_CR     += self.yieldFromCache(setup, "QCD_e",    channel, cut_MC_CR,   weight_MC_CR,   overwrite=overwrite)#*setup.dataLumi/1000.
@@ -66,11 +58,8 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         else:
             raise Exception("No QCD MC known for MC based TF and channel %s!"%channel)
 
-        print "GJets + QCD CR", yield_QCD_CR
         # The QCD yield in the signal regions
         yield_QCD_SR    = self.yieldFromCache(setup, "GJets",  channel, cut_MC_SR,   weight_MC_SR,  overwrite=overwrite)#*setup.lumi/1000.
-
-        print "GJets SR", yield_QCD_SR
 
         if channel == "e":
             yield_QCD_SR     += self.yieldFromCache(setup, "QCD_e",    channel, cut_MC_SR,   weight_MC_SR,  overwrite=overwrite)#*setup.lumi/1000.
@@ -79,15 +68,7 @@ class DataDrivenQCDEstimate(SystematicEstimator):
         else:
             raise Exception("No QCD MC known for MC based TF and channel %s!"%channel)
 
-        print "GJets + QCD SR", yield_QCD_SR
-
         transferFac = yield_QCD_SR/yield_QCD_CR if yield_QCD_CR > 0 else u_float(0, 0)
-
-        print "transfer factor", transferFac
-        print
-        print
-        print
-        print
 
         logger.info("yield QCD + GJets CR:         " + str(yield_QCD_CR))
         logger.info("yield QCD + GJets SR:         " + str(yield_QCD_SR))
@@ -473,8 +454,8 @@ class DataDrivenQCDEstimate(SystematicEstimator):
 
         # inclusive qcd mc tf if not otherwise stated
         qcdUpdate = copy.deepcopy(qcdUpdates) if qcdUpdates else QCDTF_updates
-        qcdUpdate["CR"]["nJet"] = setup.parameters["nJet"]
-        qcdUpdate["SR"]["nJet"] = setup.parameters["nJet"]
+        qcdUpdate["CR"]["nJet"] = setup.parameters["nJet"] if not evalForNJet else (evalForNJet,evalForNJet if evalForNJet != 4 else -1)
+        qcdUpdate["SR"]["nJet"] = setup.parameters["nJet"] if not evalForNJet else (evalForNJet,evalForNJet if evalForNJet != 4 else -1)
         tfnjet = self.cachedQCDMCTransferFactor( channel, setup, qcdUpdates=qcdUpdate, overwrite=overwrite ).val
 
         # inclusive 2 jet qcd mc tf if not otherwise stated
