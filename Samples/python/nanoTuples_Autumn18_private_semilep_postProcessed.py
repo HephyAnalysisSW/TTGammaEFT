@@ -129,6 +129,7 @@ dirs["other"]           += dirs["VV"]
 dirs["other"]           += dirs["WW"]   + dirs["WZ"]  + dirs["ZZ"]
 #dirs["other"]           += dirs["GluGlu"]
 
+#dirs["QCD_mu"]           = [ "QCD_Mu_pt20to30", "QCD_Mu_pt30to50", "QCD_Mu_pt50to80", "QCD_Mu_pt80to120", "QCD_Mu_pt120to170_comb", "QCD_Mu_pt170to300", "QCD_Mu_pt300to470_comb", "QCD_Mu_pt470to600", "QCD_Mu_pt600to800", "QCD_Mu_pt800to1000_ext", "QCD_Mu_pt1000toInf" ]
 dirs["QCD_mu"]           = [ "QCD_Mu_pt15to20", "QCD_Mu_pt20to30", "QCD_Mu_pt30to50", "QCD_Mu_pt50to80", "QCD_Mu_pt80to120", "QCD_Mu_pt120to170_comb", "QCD_Mu_pt170to300", "QCD_Mu_pt300to470_comb", "QCD_Mu_pt470to600", "QCD_Mu_pt600to800", "QCD_Mu_pt800to1000_ext", "QCD_Mu_pt1000toInf" ]
 dirs["QCD_e"]            = [ "QCD_Ele_pt20to30", "QCD_Ele_pt30to50", "QCD_Ele_pt50to80", "QCD_Ele_pt80to120", "QCD_Ele_pt120to170", "QCD_Ele_pt170to300", "QCD_Ele_pt300toInf" ]
 dirs["QCD_e"]           += [ "QCD_bcToE_pt20to30", "QCD_bcToE_pt30to80", "QCD_bcToE_pt80to170", "QCD_bcToE_pt170to250", "QCD_bcToE_pt250toInf" ]

@@ -51,6 +51,7 @@ dirs["ttGamma_1l_ctZm1"]    = [ "ttGamma_SemiLept_restrict_ctZm1" ]
 dirs["ttGamma_1l_ctZIm1"]   = [ "ttGamma_SemiLept_restrict_ctZIm1" ]
 #dirs["ttGamma_1l_ctWIm1"]   = [ "ttGamma_SemiLept_restrict_ctWIm1" ]
 dirs["ttGamma_1l_SM"]       = [ "ttGamma_SemiLept_restrict_SM" ]
+dirs["ttGamma_1l_SM_v2"]       = [ "ttGamma_SemiLept_restrict_SM_v2" ]
 
 dirs["ttGamma_2WC"]      = [ "ttGamma_SemiLept_restrict_ref_rwgt_2WC", "ttGamma_Dilept_restrict_ref_rwgt_2WC" ]
 
@@ -165,6 +166,7 @@ TTG_SemiLep_ctZm1 = Sample.fromDirectory( name="TTG_SemiLep_ctZm1", treeName="Ev
 TTG_SemiLep_ctZIm1 = Sample.fromDirectory( name="TTG_SemiLep_ctZIm1", treeName="Events", isData=False, color=color.TTG, texName="tt#gamma", directory=directories["ttGamma_1l_ctZIm1"])
 #TTG_SemiLep_ctWIm1 = Sample.fromDirectory( name="TTG_SemiLep_ctWIm1", treeName="Events", isData=False, color=color.TTG, texName="tt#gamma", directory=directories["ttGamma_1l_ctWIm1"])
 TTG_SemiLep_SM = Sample.fromDirectory( name="TTG_SemiLep_SM", treeName="Events", isData=False, color=color.TTG, texName="tt#gamma", directory=directories["ttGamma_1l_SM"])
+TTG_SemiLep_SM_v2 = Sample.fromDirectory( name="TTG_SemiLep_SM", treeName="Events", isData=False, color=color.TTG, texName="tt#gamma", directory=directories["ttGamma_1l_SM_v2"])
 
 all = [
 #    TTG_2WC_ref,

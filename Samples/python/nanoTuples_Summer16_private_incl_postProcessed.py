@@ -47,6 +47,7 @@ logger.info( "Loading MC samples from directory %s", os.path.join( data_director
 # Directories
 dirs = {}
 
+dirs["TTGNLO"]           = ["TTGJets_comb"]
 dirs["TTGLep"]           = ["TTGLep_LO", "TTGLep_ptG100To200_LO", "TTGLep_ptG200_LO"]
 dirs["TTGSemiLep"]       = ["TTGSingleLep_LO", "TTGSingleLep_ptG100To200_LO", "TTGSingleLep_ptG200_LO"]
 dirs["TTG"]              = ["TTGLep_LO", "TTGLep_ptG100To200_LO", "TTGLep_ptG200_LO", "TTGSingleLep_LO", "TTGSingleLep_ptG100To200_LO", "TTGSingleLep_ptG200_LO", "TTGHad_LO", "TTGHad_ptG100To200_LO", "TTGHad_ptG200_LO"]
@@ -58,9 +59,13 @@ dirs["TTG"]              = ["TTGLep_LO", "TTGLep_ptG100To200_LO", "TTGLep_ptG200
 directories = { key : [ os.path.join( data_directory_, postprocessing_directory_, dir) for dir in dirs[key] ] for key in dirs.keys() }
 
 # Samples
+TTG_NLO         = getMCSample(name="TTG_NLO",          redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTGNLO"], noCheckProxy=True, fromDPM=fromDPM)
 TTG             = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG"], noCheckProxy=True, fromDPM=fromDPM)
 TTGSemiLep      = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTGSemiLep"], noCheckProxy=True, fromDPM=fromDPM)
 TTGLep          = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTGLep"], noCheckProxy=True, fromDPM=fromDPM)
+
+#print TTG_NLO.getYieldFromDraw(selectionString="1") #(Sum$(abs(LHEPart_pdgId)==11)+Sum$(abs(LHEPart_pdgId)==13)+Sum$(abs(LHEPart_pdgId)==15))==2")
+print TTG.getYieldFromDraw(selectionString="pTStitching==1&&(Sum$(abs(LHEPart_pdgId)==11)+Sum$(abs(LHEPart_pdgId)==13)+Sum$(abs(LHEPart_pdgId)==15))==2", weightString="weight")
 
 signals = []
 

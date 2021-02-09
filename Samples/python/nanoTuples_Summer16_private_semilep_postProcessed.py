@@ -142,6 +142,8 @@ dirs["GJets"]            = ["GJets_HT40to100_comb", "GJets_HT100to200_comb", "GJ
 
 dirs["GQCD"]             = dirs["QCD_mu"] + dirs["QCD_e"] + dirs["GJets"]
 
+dirs["diboson"]          = dirs["VV"] + dirs["WW"] + dirs["WZ"] + dirs["ZZ"]
+
 dirs["other"]            = []
 dirs["other"]           += dirs["TZQ"] # + dirs["THQ"]  + dirs["TWZ"]  + dirs["THW"]
 dirs["other"]           += dirs["TTW"]  + dirs["TTZ"]#  + dirs["TTH"]
@@ -212,6 +214,7 @@ QCD_e           = getMCSample(name="QCD_e",            redirector=redirector, co
 QCD_mu          = getMCSample(name="QCD_mu",           redirector=redirector, color=color.QCD,             texName="Multijet",         directory=directories["QCD_mu"], noCheckProxy=True, fromDPM=fromDPM)
 GJets           = getMCSample(name="GJets",            redirector=redirector, color=color.GJets,           texName="#gamma+jets",       directory=directories["GJets"], noCheckProxy=True, fromDPM=fromDPM)
 other           = getMCSample(name="otherold",            redirector=redirector, color=color.Other,           texName="Other",             directory=directories["other"], noCheckProxy=True, fromDPM=fromDPM)
+diboson         = getMCSample(name="diboson",            redirector=redirector, color=color.Other,           texName="Diboson",             directory=directories["diboson"], noCheckProxy=True, fromDPM=fromDPM)
 
 VG              = getMCSample(name="VG",               redirector=redirector, color=color.WGamma,          texName="V+#gamma",          directory=directories["VG"], noCheckProxy=True, fromDPM=fromDPM)
 rest            = getMCSample(name="other",            redirector=redirector, color=color.Other,           texName="Other",             directory=directories["rest"], noCheckProxy=True, fromDPM=fromDPM)
@@ -229,6 +232,20 @@ all_noOther_noTT = getMCSample(name="all_noOther_noTT", redirector=redirector, c
 signals = []
 
 if __name__ == "__main__":
+
+    sel = "nLeptonTight==1&&(1)&&nLeptonVetoIsoCorr==1&&nJetGood>=3&&nBTagGood>=1&&nPhotonGood==1&&nPhotonNoChgIsoNoSieie==1&&triggered==1&&pTStitching==1&&PhotonGood0_photonCatMagic==0"
+    sel += "&&Flag_goodVertices&&Flag_globalSuperTightHalo2016Filter&&Flag_HBHENoiseFilter&&Flag_HBHENoiseIsoFilter&&Flag_EcalDeadCellTriggerPrimitiveFilter&&Flag_BadPFMuonFilter&&PV_ndof>4&&sqrt(PV_x*PV_x+PV_y*PV_y)<=2&&abs(PV_z)<=24"
+    weight = "(35.92*weight*reweightHEM*reweightTrigger*reweightL1Prefire*reweightPU*reweightLeptonTightSF*reweightLeptonTrackingTightSF*reweightPhotonSF*reweightPhotonElectronVetoSF*reweightBTag_SF)"
+    print "WJets nOR", WJets.getYieldFromDraw(selectionString=sel, weightString=weight)
+    print "TT nOR", TT_pow.getYieldFromDraw(selectionString=sel, weightString=weight)
+    print "DY nOR", DY_LO.getYieldFromDraw(selectionString=sel, weightString=weight)
+
+    sel += "&&overlapRemoval==1"
+
+    print "WJets wOR", WJets.getYieldFromDraw(selectionString=sel, weightString=weight)
+    print "TT wOR", TT_pow.getYieldFromDraw(selectionString=sel, weightString=weight)
+    print "DY wOR", DY_LO.getYieldFromDraw(selectionString=sel, weightString=weight)
+
 
     def get_parser():
         """ Argument parser for post-processing module.

@@ -21,9 +21,9 @@ class postprocessing_locations:
     Run2017_semilep = "TTGammaEFT_PP_2017_TTG_Data_v49/semilep/"
     Run2018_semilep = "TTGammaEFT_PP_2018_TTG_Data_v49/semilep/"
 
-    MC2016_incl  = "TTGammaEFT_PP_2016_TTG_private_v49/incl/"
-    MC2017_incl  = "TTGammaEFT_PP_2017_TTG_private_v49/incl/"
-    MC2018_incl  = "TTGammaEFT_PP_2018_TTG_private_v49/incl/"
+    MC2016_incl  = "TTGammaEFT_PP_2016_TTG_private_v49/inclusive/"
+    MC2017_incl  = "TTGammaEFT_PP_2017_TTG_private_v49/inclusive/"
+    MC2018_incl  = "TTGammaEFT_PP_2018_TTG_private_v49/inclusive/"
 
     EFT             = "TTGammaEFT_PP_EFT_TTG_v14/gen/"
 #    EFT             = "TTGammaEFT_PP_EFT_TTG_v7/gen/"
