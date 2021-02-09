@@ -9,6 +9,7 @@ import os
 import subprocess
 import shutil
 import uuid
+import copy
 
 from math                                        import sqrt
 from operator                                    import mul
@@ -157,6 +158,7 @@ genJetSel_ATLASUnfold    = genJetSelector(    "ATLASUnfolding" )
 # CMS Unfolding
 genLeptonSel_CMSUnfold = genLeptonSelector( "CMSUnfolding" )
 genPhotonSel_CMSUnfold = genPhotonSelector( "CMSUnfolding" )
+genPhotonEESel_CMSUnfold = genPhotonSelector( "EECMSUnfolding" )
 genJetSel_CMSUnfold    = genJetSelector(    "CMSUnfolding" )
 
 # variables
@@ -243,6 +245,8 @@ new_variables += [ "GenBJetCMSUnfold0_" + var for var in genJetVarStringWrite.sp
 new_variables += [ "GenBJetCMSUnfold1_" + var for var in genJetVarStringWrite.split(",") ]
 new_variables += [ "nGenJetsCMSUnfold/I" ]
 new_variables += [ "nGenBJetCMSUnfold/I" ]
+new_variables += [ "nGenJetsEECMSUnfold/I" ]
+new_variables += [ "nGenBJetEECMSUnfold/I" ]
 new_variables += [ "nGenLeptonCMSUnfold/I" ]
 new_variables += [ "nGenMuonCMSUnfold/I" ]
 new_variables += [ "nGenElectronCMSUnfold/I" ]
@@ -255,8 +259,10 @@ new_variables += [ "nLeptonVetoIsoCorr/I" ]
 new_variables += [ "nJetGood/I" ]
 new_variables += [ "nBTagGood/I" ]
 new_variables += [ "nPhotonGood/I" ]
+new_variables += [ "nPhotonEEGood/I" ]
 new_variables += [ "nPhotonNoChgIsoNoSieie/I" ]
 new_variables += [ "PhotonGood0_"  + var for var in genPhotonVarStringWrite.split(",") ]
+new_variables += [ "PhotonEEGood0_"  + var for var in genPhotonVarStringWrite.split(",") ]
 new_variables += [ "PhotonNoChgIsoNoSieie0_"  + var for var in genPhotonVarStringWrite.split(",") ]
 new_variables += [ "LeptonTight0_" + var for var in genLeptonVarStringWrite.split(",") ]
 
@@ -549,6 +555,7 @@ def filler( event ):
     GenLeptonATLASUnfold = list( filter( lambda l: abs(l["motherPdgId"]) in [ 11, 13, 15, 23, 24, 25 ] and genLeptonSel_ATLASUnfold( l ), GenLepton ) )
 
     GenPhotonCMSUnfold   = list( filter( lambda p: genPhotonSel_CMSUnfold(p)   and p["status"]==1, GenPhoton ) )
+    GenPhotonEECMSUnfold   = list( filter( lambda p: genPhotonEESel_CMSUnfold(p)   and p["status"]==1, GenPhoton ) )
     GenPhotonATLASUnfold = list( filter( lambda p: genPhotonSel_ATLASUnfold(p) and p["status"]==1, GenPhoton ) )
 
     GenJetCMSUnfold   = list( filter( lambda j: genJetSel_CMSUnfold(j),   GenJet ) )
@@ -562,6 +569,11 @@ def filler( event ):
         GenP["photonLepdR"] =  min( [999] + [ deltaR( GenP, j ) for j in GenLeptonCMSUnfold ] )
         GenP["photonAlldR"] =  min( [999] + [ deltaR( GenP, j ) for j in GenParticlesIso if abs(GenP["pt"]-j["pt"])>0.01 and j["pdgId"] != 22 ] )
 
+    for GenP in GenPhotonEECMSUnfold:
+        GenP["photonJetdR"] =  min( [999] + [ deltaR( GenP, j ) for j in GenJetCMSUnfold ] )
+        GenP["photonLepdR"] =  min( [999] + [ deltaR( GenP, j ) for j in GenLeptonCMSUnfold ] )
+        GenP["photonAlldR"] =  min( [999] + [ deltaR( GenP, j ) for j in GenParticlesIso if abs(GenP["pt"]-j["pt"])>0.01 and j["pdgId"] != 22 ] )
+
     for GenP in GenPhotonATLASUnfold:
         GenP["photonJetdR"] =  min( [999] + [ deltaR( GenP, j ) for j in GenJetATLASUnfold ] )
         GenP["photonLepdR"] =  min( [999] + [ deltaR( GenP, j ) for j in GenLeptonATLASUnfold ] )
@@ -570,6 +582,9 @@ def filler( event ):
     # Isolated
     GenPhotonCMSUnfold = filter( lambda g: g["photonAlldR"] > 0.1, GenPhotonCMSUnfold )
     GenPhotonCMSUnfold = filter( lambda g: abs(g["grandmotherPdgId"]) in range(37)+[2212] and abs(g["motherPdgId"]) in range(37)+[2212], GenPhotonCMSUnfold )
+
+    GenPhotonEECMSUnfold = filter( lambda g: g["photonAlldR"] > 0.1, GenPhotonEECMSUnfold )
+    GenPhotonEECMSUnfold = filter( lambda g: abs(g["grandmotherPdgId"]) in range(37)+[2212] and abs(g["motherPdgId"]) in range(37)+[2212], GenPhotonEECMSUnfold )
 
     GenPhotonATLASUnfold = filter( lambda g: g["relIso03_all"] < 0.1, GenPhotonATLASUnfold )
     GenPhotonATLASUnfold = filter( lambda g: abs(g["grandmotherPdgId"]) in range(37)+[2212] and abs(g["motherPdgId"]) in range(37)+[2212], GenPhotonATLASUnfold )
@@ -590,12 +605,26 @@ def filler( event ):
         GenJ["jetPhotondR"] =  min( [999] + [ deltaR( GenJ, p ) for p in GenPhotonCMSUnfold ] )
         GenJ["jetLepdR"]    =  min( [999] + [ deltaR( GenJ, p ) for p in GenLeptonCMSUnfold ] )
 
+    GenJetEECMSUnfold = copy.deepcopy( GenJetCMSUnfold )
+    for GenJ in GenJetEECMSUnfold:
+        GenJ["jetPhotondR"] =  min( [999] + [ deltaR( GenJ, p ) for p in GenPhotonEECMSUnfold ] )
+
+    GenBJetEECMSUnfold = copy.deepcopy( GenBJetCMSUnfold )
+    for GenJ in GenBJetEECMSUnfold:
+        GenJ["jetPhotondR"] =  min( [999] + [ deltaR( GenJ, p ) for p in GenPhotonEECMSUnfold ] )
+
     # CMS Unfolding cleaning
     GenPhotonCMSUnfold = filter( lambda g: g["photonLepdR"] > 0.1, GenPhotonCMSUnfold )
     GenJetCMSUnfold    = filter( lambda g: g["jetPhotondR"] > 0.1, GenJetCMSUnfold )
     GenBJetCMSUnfold   = filter( lambda g: g["jetPhotondR"] > 0.1, GenBJetCMSUnfold )
     GenJetCMSUnfold    = filter( lambda g: g["jetLepdR"] > 0.4,    GenJetCMSUnfold )
     GenBJetCMSUnfold   = filter( lambda g: g["jetLepdR"] > 0.4,    GenBJetCMSUnfold )
+
+    GenPhotonEECMSUnfold = filter( lambda g: g["photonLepdR"] > 0.1, GenPhotonEECMSUnfold )
+    GenJetEECMSUnfold    = filter( lambda g: g["jetPhotondR"] > 0.1, GenJetEECMSUnfold )
+    GenBJetEECMSUnfold   = filter( lambda g: g["jetPhotondR"] > 0.1, GenBJetEECMSUnfold )
+    GenJetEECMSUnfold    = filter( lambda g: g["jetLepdR"] > 0.4,    GenJetEECMSUnfold )
+    GenBJetEECMSUnfold   = filter( lambda g: g["jetLepdR"] > 0.4,    GenBJetEECMSUnfold )
 
     # ATLAS Unfolding cleaning
     GenPhotonATLASUnfold = filter( lambda g: g["photonLepdR"] > 1.0, GenPhotonATLASUnfold )
@@ -609,6 +638,10 @@ def filler( event ):
     if genP0: fill_vector( event, "GenPhotonCMSUnfold0",  genPhotonVars, genP0 )
     if genP0: fill_vector( event, "PhotonGood0",          genPhotonVars, genP0 )
     if genP0: fill_vector( event, "PhotonNoChgIsoNoSieie0",          genPhotonVars, genP0 )
+
+    GenPhotonEECMSUnfold.sort( key = lambda p: -p["pt"] )
+    genP0 = ( GenPhotonEECMSUnfold[:1] + [None] )[0]
+    if genP0: fill_vector( event, "PhotonEEGood0",          genPhotonVars, genP0 )
 
     GenPhotonATLASUnfold.sort( key = lambda p: -p["pt"] )
     genP0 = ( GenPhotonATLASUnfold[:1] + [None] )[0]
@@ -636,6 +669,10 @@ def filler( event ):
     event.nGenPhotonCMSUnfold   = len(GenPhotonCMSUnfold)
     event.nGenBJetCMSUnfold     = len(GenBJetCMSUnfold)
     event.nGenJetsCMSUnfold     = len(GenJetCMSUnfold)
+
+    event.nPhotonEEGood         = len(GenPhotonEECMSUnfold)
+    event.nGenBJetEECMSUnfold   = len(GenBJetEECMSUnfold)
+    event.nGenJetsEECMSUnfold   = len(GenJetEECMSUnfold)
 
     # use reco naming for easier handling
     event.nLeptonTight         = event.nGenLeptonCMSUnfold
