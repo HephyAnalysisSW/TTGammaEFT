@@ -548,7 +548,10 @@ if hasattr( sample, "reweight_pkl" ):
         return res
 
     hyperPoly  = HyperPoly( options.interpolationOrder )
-    basepoint_coordinates = map( lambda d: [d[v] for v in weightInfo.variables] , map( interpret_weight, weightInfo.data.keys()) )
+
+    weightInfo_data = list(weightInfo.data.iteritems())
+    weightInfo_data.sort( key = lambda w: w[1] )
+    basepoint_coordinates = map( lambda d: [d[v] for v in weightInfo.variables] , map( lambda w: interpret_weight(w[0]), weightInfo_data) )
 
     hyperPoly.initialize( basepoint_coordinates, ref_point_coordinates )
 
