@@ -23,7 +23,7 @@ loggerChoices = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTS
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",           action="store",      default="INFO", nargs="?", choices=loggerChoices,                        help="Log level for logging")
-argParser.add_argument("--plot_directory",     action="store",      default="102X_TTG_ppv49_v1",                                             help="plot sub-directory")
+argParser.add_argument("--plot_directory",     action="store",      default="102X_TTG_ppv49_v2",                                             help="plot sub-directory")
 argParser.add_argument("--distribution",       action="store",      default="pT", choices=["pT","dR","eta"],                                                           help="plot sub-directory")
 argParser.add_argument("--plotYear",           action="store",      default=None,                                                            help="plot sub-directory")
 args = argParser.parse_args()
@@ -40,7 +40,8 @@ def drawObjects( lumi_scale ):
     tex.SetNDC()
     tex.SetTextSize(0.03)
     tex.SetTextAlign(11) # align right
-    line = (0.65, 0.95, "%3.1f fb{}^{-1} (13 TeV)" % lumi_scale)
+#    line = (0.65, 0.95, "%3.1f fb{}^{-1} (13 TeV)" % lumi_scale)
+    line = (0.67, 0.95, "%i fb{}^{-1} (13 TeV)" % lumi_scale)
     lines = [
       (0.15, 0.95, "CMS #bf{#it{Preliminary}}"),
       line

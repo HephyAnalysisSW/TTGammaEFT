@@ -185,7 +185,7 @@ def drawDivisions( labels, misIDPOI=False ):
             if not any( [(("SR" in lab) or ("mis" in lab and misIDPOI)) for lab in labels] ) or all( ["SR" in lab for lab in labels] ): continue
             lines2.append( (min+(i_reg+1)*diff,  0., min+(i_reg+1)*diff, formatSettings(nBins)["legylower"]) )
             done = True
-        if i_reg != nBins-1 and reg.split(",")[0] != labels[i_reg+1].split(",")[0]:
+        if i_reg != nBins-1 and reg.split(",")[0].replace("WG","VG").replace("ZG","VG").replace("ZG+WG","VG") != labels[i_reg+1].split(",")[0].replace("WG","VG").replace("ZG","VG").replace("ZG+WG","VG"):
             lines.append( (min+(i_reg+1)*diff,  0., min+(i_reg+1)*diff, formatSettings(nBins)["legylower"]) )
     return [line.DrawLineNDC(*l) for l in lines] + [line2.DrawLineNDC(*l) for l in lines2]
 
@@ -201,7 +201,7 @@ def drawPTDivisions( labels, ptLabels ):
     line.SetLineStyle(5)
     lines = []
     for i_pt, pt in enumerate(ptLabels):
-        if i_pt != nBins-1 and pt != ptLabels[i_pt+1] and labels[i_pt].split(",")[0] == labels[i_pt+1].split(",")[0]:
+        if i_pt != nBins-1 and pt != ptLabels[i_pt+1] and labels[i_pt].split(",")[0].replace("WG","VG").replace("ZG","VG").replace("ZG+WG","VG") == labels[i_pt+1].split(",")[0].replace("WG","VG").replace("ZG","VG").replace("ZG+WG","VG"):
             lines.append( (min+(i_pt+1)*diff,  0., min+(i_pt+1)*diff, formatSettings(nBins)["legylower"]) )
     return [line.DrawLineNDC(*l) for l in lines]
 
@@ -210,7 +210,11 @@ def drawObjectsDiff( lumi_scale ):
     tex.SetNDC()
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
-    line = (0.60, 0.95, '%3.1f fb{}^{-1} (13 TeV)' % lumi_scale)
+#    line = (0.60, 0.95, '%3.1f fb{}^{-1} (13 TeV)' % lumi_scale)
+    if isinstance(lumi_scale, int):
+        line = (0.67, 0.95, '%i fb{}^{-1} (13 TeV)' % lumi_scale)
+    else:
+        line = (0.65, 0.95, '%3.1f fb{}^{-1} (13 TeV)' % lumi_scale)
     lines = [
       (0.15, 0.95, 'CMS #bf{#it{Preliminary}}'),
       line
@@ -225,9 +229,16 @@ def drawObjects( nBins, isData, lumi_scale, postFit, cardfile, preliminary ):
     addon = "post-fit" if postFit else "pre-fit"
 #    if "incl" in cardfile: addon += ", inclusive"
     lines = [
-      (0.15, 0.945, "CMS (%s)"%addon) if not preliminary else (0.15, 0.945, "CMS #bf{#it{Preliminary}} #bf{(%s)}"%addon),
-      (formatSettings(nBins)["laboff"], 0.945, "#bf{%3.1f fb^{-1} (13 TeV)}"%lumi_scale )
+#      (0.15, 0.945, "CMS (%s)"%addon) if not preliminary else (0.15, 0.945, "CMS #bf{#it{Preliminary}} #bf{(%s)}"%addon),
+      (0.15, 0.945, "CMS") if not preliminary else (0.15, 0.945, "CMS #bf{#it{Preliminary}}"),
+#      (formatSettings(nBins)["laboff"], 0.945, "#bf{%3.1f fb^{-1} (13 TeV)}"%lumi_scale )
+#      (formatSettings(nBins)["laboff"], 0.945, "#bf{%i fb^{-1} (13 TeV)}"%lumi_scale )
     ]
+
+    if isinstance(lumi_scale, int):
+        lines += [(formatSettings(nBins)["laboff"]+0.01, 0.945, "%i fb^{-1} (13 TeV)"%lumi_scale )]
+    else:
+        lines += [(formatSettings(nBins)["laboff"], 0.945, "%3.1f fb^{-1} (13 TeV)"%lumi_scale )]
     return [tex.DrawLatex(*l) for l in lines]
 
 
@@ -239,8 +250,10 @@ def drawCoObjects( lumi_scale, bkgOnly, postFit, incl, preliminary ):
     addon = "post-fit" if postFit else "pre-fit"
     if incl: addon += ", inclusive"
     lines = [
-      ( (0.25, 0.945, "CMS (%s)"%addon) if not preliminary else (0.25, 0.945, "CMS #bf{#it{Preliminary}} #bf{(%s)}"%addon)),
-      (0.7, 0.945, "#bf{%3.1f fb^{-1} (13 TeV)}"%lumi_scale )
+#      ( (0.25, 0.945, "CMS (%s)"%addon) if not preliminary else (0.25, 0.945, "CMS #bf{#it{Preliminary}} #bf{(%s)}"%addon)),
+      ( (0.25, 0.945, "CMS") if not preliminary else (0.25, 0.945, "CMS #bf{#it{Preliminary}}")),
+#      (0.7, 0.945, "#bf{%3.1f fb^{-1} (13 TeV)}"%lumi_scale )
+      (0.7, 0.945, "%i fb^{-1} (13 TeV)"%lumi_scale )
     ]
     return [tex.DrawLatex(*l) for l in lines]
 

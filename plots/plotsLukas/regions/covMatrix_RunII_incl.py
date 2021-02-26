@@ -23,7 +23,7 @@ loggerChoices = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTS
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",           action="store",      default="INFO", nargs="?", choices=loggerChoices,                        help="Log level for logging")
-argParser.add_argument("--plot_directory",     action="store",      default="102X_TTG_ppv49_v1",                                             help="plot sub-directory")
+argParser.add_argument("--plot_directory",     action="store",      default="102X_TTG_ppv49_v2",                                             help="plot sub-directory")
 argParser.add_argument("--distribution",       action="store",      default="pT", choices=["pT","dR","eta"],                                                           help="plot sub-directory")
 argParser.add_argument("--plotYear",           action="store",      default=None,                                                            help="plot sub-directory")
 args = argParser.parse_args()
@@ -40,7 +40,7 @@ def drawObjects( lumi_scale ):
     tex.SetNDC()
     tex.SetTextSize(0.03)
     tex.SetTextAlign(11) # align right
-    line = (0.65, 0.95, "%3.1f fb{}^{-1} (13 TeV)" % lumi_scale)
+    line = (0.67, 0.95, "%i fb{}^{-1} (13 TeV)" % lumi_scale)
     lines = [
       (0.15, 0.95, "CMS #bf{#it{Preliminary}}"),
       line
@@ -50,7 +50,8 @@ def drawObjects( lumi_scale ):
 
 lumi_scale = 35.92 + 41.53 + 59.74
 
-rootfile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/observed/SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_incl_shapeCard_FD.root"
+#rootfile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/observed/SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_incl_shapeCard_FD.root"
+rootfile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/observed/SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_freezeR_addPtBinnedUnc_shapeCard_FD.root"
 rootfile = ROOT.TFile( rootfile, "READ")
 
 fitResult = rootfile.Get("fit_s")
@@ -58,15 +59,15 @@ covHist = fitResult.correlationHist()
 covHist.GetZaxis().SetRangeUser(-1,1)
 covHist.LabelsOption("v","X")
 
-axisRange = len( [ i for i in range( covHist.GetNbinsX() ) if not "prop" in covHist.GetXaxis().GetBinLabel(i+1) ] )
+axisRange =  covHist.GetNbinsX() #len( [ i for i in range( covHist.GetNbinsX() ) if not "prop" in covHist.GetXaxis().GetBinLabel(i+1) ] )
 covHist_red = ROOT.TH2F("cov","cov", axisRange, 0, axisRange, axisRange, 0, axisRange)
 
 i_red = 0
 for i in range( covHist.GetNbinsX() ):
-    if "prop" in covHist.GetXaxis().GetBinLabel(i+1): continue
+#    if "prop" in covHist.GetXaxis().GetBinLabel(i+1): continue
     j_red = 0
     for j in range( covHist.GetNbinsY() ):
-        if "prop" in covHist.GetYaxis().GetBinLabel(j+1): continue
+#        if "prop" in covHist.GetYaxis().GetBinLabel(j+1): continue
         covHist_red.SetBinContent(i_red+1,j_red+1, float("%.3f"%covHist.GetBinContent(i+1,j+1)))
         lab = covHist.GetYaxis().GetBinLabel(j+1)
         covHist_red.GetYaxis().SetBinLabel(j_red+1, lab )
@@ -97,7 +98,7 @@ histModifications += [lambda h: h.GetZaxis().SetLabelSize(0.03)]
 histModifications += [lambda h: h.GetXaxis().SetTickSize(0)]
 histModifications += [lambda h: h.GetYaxis().SetTickSize(0)]
 
-plot_directory_ = os.path.join( plot_directory, "covMatrix", "RunII", args.plot_directory, "inclusive" )
+plot_directory_ = os.path.join( plot_directory, "corrMatrix", "RunII", args.plot_directory, "pT" )
 
 plotting.draw2D( plot,
     plot_directory = plot_directory_,
