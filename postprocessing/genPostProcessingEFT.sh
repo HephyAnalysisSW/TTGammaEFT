@@ -54,5 +54,5 @@
 #python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v14 --sample ttGamma_SemiLept_restrict_ctWIm1 #SPLIT100
 #python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v14 --sample ttGamma_SemiLept_restrict_SM #SPLIT100
 
-python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v14 --sample ttGamma_SemiLept_restrict_SM #SPLIT250
+python genPostProcessingEFT.py --processingEra TTGammaEFT_PP_EFT_TTG_v14 --sample ttGamma_SemiLept_restrict_SM #SPLIT100
 

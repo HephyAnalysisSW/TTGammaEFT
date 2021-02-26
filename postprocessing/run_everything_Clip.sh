@@ -5,7 +5,7 @@
 
 #submit --title mc16dmg --walltime 47:59:00 "nanoPostProcessing_Summer16_private_diMuGamma.sh"
 #submit --title mc16sg --walltime 7:59:00 "nanoPostProcessing_Summer16_private_semilepGamma.sh"
-#submit --title mc16s  --walltime 47:59:00 "nanoPostProcessing_Summer16_private_semilep.sh"
+#submit --title mc16s  --walltime 7:59:00 "nanoPostProcessing_Summer16_private_semilep.sh"
 #submit --title mc16psg --walltime 7:59:00 "nanoPostProcessing_Summer16_private_semilepGamma_priv.sh"
 
 #submit --title d16dmg  --walltime 47:59:00 "nanoPostProcessing_Run2016_private_diMuGamma.sh"
