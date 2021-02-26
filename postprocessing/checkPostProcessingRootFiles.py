@@ -10,7 +10,6 @@ from RootTools.core.standard import *
 
 # User specific
 from TTGammaEFT.Tools.user   import dpm_directory, postprocessing_output_directory
-redirector        = 'root://hephyse.oeaw.ac.at/'
 
 # environment
 hostname   = os.getenv("HOSTNAME").lower()
@@ -47,6 +46,7 @@ file          = os.path.expandvars( "$CMSSW_BASE/src/TTGammaEFT/postprocessing/%
 dictList      = getDataDictList( file )
 isData        = "Run" in args.file
 execCommand   = []
+allFiles = []
 for ppEntry in dictList:
     sample = ppEntry['sample']
     logger.debug("Checking sample %s" %sample)
@@ -58,6 +58,8 @@ for ppEntry in dictList:
         files     = os.listdir(dirPath) if os.path.exists(dirPath) else []
         rootFiles = filter( lambda file: file.endswith(".root") and not file.startswith("nanoAOD"), files )
         rootFiles = [ item.split(".root")[0] for item in rootFiles ]
+        allFiles += [os.path.join(dirPath,r+".root") for r in rootFiles]
+
     else:
         dirPath = os.path.join( dpm_directory, 'postprocessed', ppEntry["dir"], ppEntry["skim"], sample  )
         p = subprocess.Popen( ["dpns-ls -l %s" %dirPath], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
@@ -71,9 +73,6 @@ for ppEntry in dictList:
 
     if len(rootFiles) != ppEntry['nFiles']:
         logger.debug("Not all files of sample %s processed: %i of %i" %(sample, len(rootFiles), ppEntry["nFiles"]) )
-#        if len(rootFiles) > ppEntry['nFiles']:
-#            os.system(" ".join(["xrdfs", redirector, "rm", "/cms" + dirPath.split("/cms")[1] + "/" + sample + ".root" ]) )
-#            os.system(" ".join(["dpns-ls", dirPath + "/" + sample + ".root" ]) )
         missingFiles = [ int( item.split("_")[-1] ) if item.split("_")[-1].isdigit() else item for item in rootFiles ]
         missingFiles = list( set( range( ppEntry['nFiles'] ) ) - set( missingFiles ) )
         missingFiles.sort()
@@ -89,4 +88,10 @@ if args.createExec:
         for line in execCommand:
             f.write(line + "\n")
         f.write("\n")
+
+
+#    with open( "allFiles.sh", "a" ) as f:
+#        for line in allFiles:
+#            f.write(line + "\n")
+#        f.write("\n")
 
