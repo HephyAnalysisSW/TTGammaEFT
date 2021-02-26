@@ -68,6 +68,7 @@ dirs["TTG_NLO"]          = ["TTGJets"]
 dirs["TTGSemiLep"]       = ["TTGSingleLep_LO", "TTGSingleLep_ptG100To200_LO", "TTGSingleLep_ptG200_LO"]
 dirs["TTGLep"]           = ["TTGLep_LO", "TTGLep_ptG100To200_LO", "TTGLep_ptG200_LO"]
 dirs["TTG"]              = ["TTGLep_LO", "TTGLep_ptG100To200_LO", "TTGLep_ptG200_LO", "TTGSingleLep_LO", "TTGSingleLep_ptG100To200_LO", "TTGSingleLep_ptG200_LO", "TTGHad_LO", "TTGHad_ptG100To200_LO", "TTGHad_ptG200_LO"]
+dirs["TTG_Herwig"]       = ["TTGSingleLep_LO_Herwig", "TTGLep_LO_Herwig"]
 dirs["TTG_sys_incl"]       = ["TTGSingleLep_LO", "TTGLep_LO"]
 #dirs["TTGSemiLep"]       = ["TTGSingleLep_LO"]
 #dirs["TTGLep"]           = ["TTGLep_LO"]
@@ -170,6 +171,7 @@ TTGSemiLep       = getMCSample(name="TTGSemiLep",              redirector=redire
 TTGLep           = getMCSample(name="TTGLep",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTGLep"], noCheckProxy=True, fromDPM=fromDPM)
 TTG_NLO          = getMCSample(name="TTG_NLO",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma (NLO)",    directory=directories["TTG_NLO"], noCheckProxy=True, fromDPM=fromDPM)
 TTG              = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG"], noCheckProxy=True, fromDPM=fromDPM)
+TTG_Herwig       = getMCSample(name="TTG_Herwig",       redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_Herwig"], noCheckProxy=True, fromDPM=fromDPM)
 TTG_sys_incl     = getMCSample(name="TTG_sys",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_sys_incl"], noCheckProxy=True, fromDPM=fromDPM)
 TTG_TuneUp       = getMCSample(name="TTG_TuneUp",       redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_TuneUp"], noCheckProxy=True, fromDPM=fromDPM)
 TTG_TuneDown     = getMCSample(name="TTG_TuneDown",     redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_TuneDown"], noCheckProxy=True, fromDPM=fromDPM)

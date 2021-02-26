@@ -74,6 +74,7 @@ dirs["TTGLep"]           = ["TTGLep_LO", "TTGLep_ptG100To200_LO", "TTGLep_ptG200
 dirs["TTGSemiLep"]       = ["TTGSingleLep_LO", "TTGSingleLep_ptG100To200_LO", "TTGSingleLep_ptG200_LO"]
 dirs["TTG"]              = ["TTGLep_LO", "TTGLep_ptG100To200_LO", "TTGLep_ptG200_LO", "TTGSingleLep_LO", "TTGSingleLep_ptG100To200_LO", "TTGSingleLep_ptG200_LO", "TTGHad_LO", "TTGHad_ptG100To200_LO", "TTGHad_ptG200_LO"]
 dirs["TTG_sys_incl"]     = ["TTGLep_LO", "TTGSingleLep_LO"]
+dirs["TTG_Herwig"]       = ["TTGLep_LO_Herwig", "TTGSingleLep_LO_Herwig"]
 #dirs["TTGLep"]           = ["TTGLep_LO"]
 #dirs["TTGSemiLep"]       = ["TTGSingleLep_LO"]
 #dirs["TTG"]              = ["TTGLep_LO", "TTGSingleLep_LO", "TTGHad_LO"]
@@ -188,6 +189,7 @@ ST_tch           = getMCSample(name="ST_tch",           redirector=redirector, c
 ST_sch           = getMCSample(name="ST_sch",           redirector=redirector, color=color.T,               texName="t (s-ch)",          directory=directories["st_sch"], noCheckProxy=True, fromDPM=fromDPM)
 TTG_NLO         = getMCSample(name="TTG_NLO",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma (NLO)",    directory=directories["TTG_NLO"], noCheckProxy=True, fromDPM=fromDPM)
 TTG             = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG"], noCheckProxy=True, fromDPM=fromDPM)
+TTG_Herwig      = getMCSample(name="TTG_Herwig",         redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_Herwig"], noCheckProxy=True, fromDPM=fromDPM)
 TTG_sys_incl    = getMCSample(name="TTG_sys",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_sys_incl"], noCheckProxy=True, fromDPM=fromDPM)
 #TTG_med    = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_med"], noCheckProxy=True, fromDPM=fromDPM)
 #TTG_high    = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG_high"], noCheckProxy=True, fromDPM=fromDPM)
