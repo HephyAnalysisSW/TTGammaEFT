@@ -1298,7 +1298,7 @@ def wrapper():
     res = None
 
     if args.parameters:
-        options = "--expectSignal=1 --freezeParameters r --setParameters r=1 --X-rtd REMOVE_CONSTANT_ZERO_POINT=1"
+        options = "--expectSignal=1 --setParameters r=1"
         nll          = c.calcNLL( fname=cardFileName, options=options )
         nllCache.add( sEFTConfig, nll, overwrite=True )
         print nll
