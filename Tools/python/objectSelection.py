@@ -642,8 +642,8 @@ def filterGenTops( genParts ):
     tops = list( filter( lambda l: abs(l['pdgId']) == 6 and l['status'] == 62, genParts ) )
     return tops
 
-def filterGenBJets( genJets ):
-    bjets = list( filter( lambda j: abs(j['partonFlavour']) == 5, genJets ) )
+def filterGenBJets( genJets, variable="partonFlavour" ):
+    bjets = list( filter( lambda j: abs(j[variable]) == 5, genJets ) )
     return bjets
 
 # Pythia status flags:
