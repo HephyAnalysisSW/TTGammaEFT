@@ -170,7 +170,7 @@ class cardFileWriter:
     def mfs(self, f):
         return str(round(float(f),self.precision))
 
-    def writeToFile(self, fname, shapeFile=False, noMCStat=False, poisThresh=20):
+    def writeToFile(self, fname, shapeFile=False, noMCStat=False, poisThresh=0):
         import datetime, os
         if not self.checkCompleteness():
             print "Incomplete specification."
@@ -248,7 +248,7 @@ class cardFileWriter:
     def makeHist(self, name):
         return ROOT.TH1F(name, name, len(self.bins), 0, len(self.bins))
 
-    def writeToShapeFile(self, fname, noMCStat=False, poisThresh=20):
+    def writeToShapeFile(self, fname, noMCStat=False, poisThresh=0):
         bins        = natural_sort(self.bins)
         processes   = []
         nuisances   = [ u for u in self.uncertainties if (not 'stat' in u.lower() and (self.uncertaintyString[u] == 'shape' or self.uncertaintyString[u] == 'flatParam'))  ] # stat uncertainties are treated differently
@@ -518,7 +518,8 @@ class cardFileWriter:
 
         assert os.path.exists(filename), "File not found: %s"%filename
 
-        combineCommand  = "cd "+uniqueDirname+";combine --robustHesse 1 --robustFit 1 --forceRecreateNLL -M FitDiagnostics --saveShapes --saveNormalizations --saveOverall --saveWithUncertainties %s %s"%(options,filename)
+#        combineCommand  = "cd "+uniqueDirname+";combine --robustHesse 1 --robustFit 1 --forceRecreateNLL -M FitDiagnostics --saveShapes --saveNormalizations --saveOverall --saveWithUncertainties %s %s"%(options,filename)
+        combineCommand  = "cd "+uniqueDirname+";combine --forceRecreateNLL -M FitDiagnostics --saveShapes --saveNormalizations --saveOverall --saveWithUncertainties %s %s"%(options,filename)
         combineCommand +=";python diffNuisances.py  fitDiagnostics.root &> nuisances.txt"
         combineCommand +=";python diffNuisances.py -a fitDiagnostics.root &> nuisances_full.txt"
         if bonly:

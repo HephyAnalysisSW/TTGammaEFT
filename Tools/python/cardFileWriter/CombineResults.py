@@ -1426,7 +1426,8 @@ class CombineResults:
         shutil.rmtree(uniqueDirname)
         # rewrite content in a similar way to the combine fit results
         self.__rewriteRebinnedFile( copy.deepcopy(resShapeFile.replace(".txt","_FD.root")), postfit=True, nBins=nBins )
-        self.__rewriteRebinnedFile( copy.deepcopy(resShapeFile.replace(".txt","_statOnly_FD.root")), postfit=True, nBins=nBins, statOnly=True )
+        if not skipStatOnly:
+            self.__rewriteRebinnedFile( copy.deepcopy(resShapeFile.replace(".txt","_statOnly_FD.root")), postfit=True, nBins=nBins, statOnly=True )
 
         return resTxtFile
 
