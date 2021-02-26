@@ -223,7 +223,11 @@ def drawObjects( lumi_scale ):
     tex.SetNDC()
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
-    line = (0.65, 0.95, "%3.1f fb{}^{-1} (13 TeV)" % lumi_scale)
+#    line = (0.65, 0.95, "%3.1f fb{}^{-1} (13 TeV)" % lumi_scale)
+    if isinstance( lumi_scale, int ):
+        line = (0.67, 0.95, "%i fb{}^{-1} (13 TeV)" % lumi_scale)
+    else:
+        line = (0.65, 0.95, "%3.1f fb{}^{-1} (13 TeV)" % lumi_scale)
     lines = [
       (0.15, 0.95, "CMS #bf{#it{Preliminary}}" if args.paperPlot else "CMS #bf{#it{Preliminary}} (%s)"%args.selection.replace("fake","SR")),
       line
@@ -320,6 +324,7 @@ read_variables = [ "weight/F",
                  ]
 
 lumi_scale   = data_sample.lumi * 0.001
+if args.year == "RunII": lumi_scale = int(lumi_scale)
 
 filterCutData = getFilterCut( args.year, isData=True,  skipBadChargedCandidate=True )
 filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )

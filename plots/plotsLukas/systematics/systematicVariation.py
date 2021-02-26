@@ -241,7 +241,11 @@ def drawObjects( lumi_scale, log=False ):
     tex.SetNDC()
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
-    line = (0.65, 0.95, "%3.1f fb{}^{-1} (13 TeV)" % lumi_scale)
+#    line = (0.65, 0.95, "%3.1f fb{}^{-1} (13 TeV)" % lumi_scale)
+    if isinstance( lumi_scale, int ):
+        line = (0.67, 0.95, "%i fb{}^{-1} (13 TeV)" % lumi_scale)
+    else:
+        line = (0.65, 0.95, "%3.1f fb{}^{-1} (13 TeV)" % lumi_scale)
     lines = [
       (0.235 if not log and (args.selection.startswith("WJets") or args.selection.startswith("TT")) else 0.15, 0.95, "CMS #bf{#it{Preliminary}}%s"%(" (%s)"%(replaceRegionNaming[args.selection.replace("fake","SR")] if args.selection.replace("fake","SR") in replaceRegionNaming.keys() else args.selection.replace("fake","SR")) if not args.paperPlot else "" )),
       line
@@ -335,6 +339,7 @@ read_variables = [ "weight/F",
                  ]
 
 lumi_scale   = data_sample.lumi * 0.001
+if args.year == "RunII": lumi_scale = int(lumi_scale)
 
 filterCutData = getFilterCut( args.year, isData=True,  skipBadChargedCandidate=True )
 filterCutMc   = getFilterCut( args.year, isData=False, skipBadChargedCandidate=True )
@@ -961,6 +966,7 @@ for log in [True, False]:
 #            ratio = {'yRange':(0.81,1.19), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
         else:
             ratio = {'yRange':(0.76,1.24), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
+        ratio = {'yRange':(0.76,1.24), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
 
 #        ratio = {'yRange':(0.51,1.49), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
         print args.selection
