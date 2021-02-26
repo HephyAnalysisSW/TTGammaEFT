@@ -79,7 +79,7 @@ regionNamesExp = copy.deepcopy(regionNames)
 if args.year == 2016:   lumi_scale = 35.92
 elif args.year == 2017: lumi_scale = 41.53
 elif args.year == 2018: lumi_scale = 59.74
-elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
+elif args.year == "RunII": lumi_scale = int(35.92 + 41.53 + 59.74)
 
 baseDir       = os.path.join( cache_directory, "analysis",  str(args.year) if args.year != "RunII" else "COMBINED", "limits", "withbkg" if args.withbkg else "withoutbkg" )
 if args.withEFTUnc: baseDir = os.path.join( baseDir, "withEFTUnc" )
@@ -216,10 +216,10 @@ def plot1D( dat, datExp, var, xmin, xmax, lumi_scale ):
     # however due to the fitting the value can be e.g. 0.1648 in the profiled one and 0.1651 in the non-profiled one
     # make the profiled one slightly worse to compensate for that
     # ugly but works
-    x68min = func.GetX( 0.989, xmin, 0 ) - 0.005
-    x68max = func.GetX( 0.989, 0, xmax ) + 0.005
-    x95min = func.GetX( 3.84, xmin, 0 ) - 0.005
-    x95max = func.GetX( 3.84, 0, xmax ) + 0.005
+    x68min = func.GetX( 0.989, xmin, 0 ) - 0.006
+    x68max = func.GetX( 0.989, 0, xmax ) + 0.006
+    x95min = func.GetX( 3.84, xmin, 0 ) - 0.006
+    x95max = func.GetX( 3.84, 0, xmax ) + 0.006
 
 #    x68min = round( abs(x68min), 2 ) if x68min > 0 else -round( abs( x68min), 2 )
 #    x68max = round( abs(x68max), 2 ) if x68max > 0 else -round( abs( x68max), 2 )
@@ -353,7 +353,10 @@ def plot1D( dat, datExp, var, xmin, xmax, lumi_scale ):
 
     addon = ""
     latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Preliminary} ' + addon),
-    latex1.DrawLatex(0.64, 0.91, '#bf{%3.1f fb{}^{-1} (13 TeV)}' % lumi_scale)
+    if isinstance(lumi_scale, int):
+        latex1.DrawLatex(0.66, 0.91, '#bf{%i fb{}^{-1} (13 TeV)}' % lumi_scale)
+    else:
+        latex1.DrawLatex(0.64, 0.91, '#bf{%3.1f fb{}^{-1} (13 TeV)}' % lumi_scale)
 
     # Redraw axis, otherwise the filled graphes overlay
     cans.RedrawAxis()

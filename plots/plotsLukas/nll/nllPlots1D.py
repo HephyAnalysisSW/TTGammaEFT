@@ -95,7 +95,7 @@ if not os.path.isdir( plot_directory_ ):
 if args.year == 2016:   lumi_scale = 35.92
 elif args.year == 2017: lumi_scale = 41.53
 elif args.year == 2018: lumi_scale = 59.74
-elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
+elif args.year == "RunII": lumi_scale = int(35.92 + 41.53 + 59.74)
 
 #binning range
 xRange = eftParameterRange[args.variables] 
@@ -329,7 +329,10 @@ def plot1D( dat, var, xmin, xmax ):
         latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Simulation Preliminary} ' + addon),
     else:
         latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Preliminary} ' + addon),
-    latex1.DrawLatex(0.64, 0.91, '#bf{%3.1f fb{}^{-1} (13 TeV)}' % lumi_scale)
+    if isinstance(lumi_scale, int):
+        latex1.DrawLatex(0.66, 0.91, '#bf{%i fb{}^{-1} (13 TeV)}' % lumi_scale)
+    else:
+        latex1.DrawLatex(0.64, 0.91, '#bf{%3.1f fb{}^{-1} (13 TeV)}' % lumi_scale)
 
     # Redraw axis, otherwise the filled graphes overlay
     cans.RedrawAxis()

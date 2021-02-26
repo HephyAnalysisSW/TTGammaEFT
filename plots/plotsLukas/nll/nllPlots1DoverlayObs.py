@@ -91,7 +91,7 @@ if not os.path.isdir( plot_directory_ ):
 if args.year == 2016:   lumi_scale = 35.92
 elif args.year == 2017: lumi_scale = 41.53
 elif args.year == 2018: lumi_scale = 59.74
-elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
+elif args.year == "RunII": lumi_scale = int(35.92 + 41.53 + 59.74)
 
 #binning range
 xRange = eftParameterRange[args.variables] 
@@ -191,16 +191,16 @@ def plot1D( dat, datExp, var, xmin, xmax ):
 
     ym = func.GetMinimum(xmin, xmax)
     xm = func.GetX(ym, xmin, xmax )
-#    nDat = []
-#    for (x,d) in dat: nDat.append((x,d-ym))
-#    del xhist
-#    xhist = toGraph( var, var, nDat )
-##    polString = "[0]*(x-%f)**2+[1]*(x-%f)**3+[2]*(x-%f)**4+[3]*(x-%f)**5+[4]*(x-%f)**6"%(xm,xm,xm,xm,xm) #+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
+    nDat = []
+    for (x,d) in dat: nDat.append((x,d-ym))
+    del xhist
+    xhist = toGraph( var, var, nDat )
 #    polString = "[0]*(x-%f)**2+[1]*(x-%f)**3+[2]*(x-%f)**4+[3]*(x-%f)**5+[4]*(x-%f)**6"%(xm,xm,xm,xm,xm) #+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
-#    del func
-#    dat = nDat
-#    func  = ROOT.TF1("func", polString, xmin, xmax )
-#    xhist.Fit(func,"NO")
+    polString = "[0]*(x-%f)**2+[1]*(x-%f)**3+[2]*(x-%f)**4+[3]*(x-%f)**5+[4]*(x-%f)**6"%(xm,xm,xm,xm,xm) #+[7]*x**9+[8]*x**10+[9]*x**11+[10]*x**12"
+    del func
+    dat = nDat
+    func  = ROOT.TF1("func", polString, xmin, xmax )
+    xhist.Fit(func,"NO")
 
     x68min = func.GetX( 0.989, xmin, xm )
     x68max = func.GetX( 0.989, xm, xmax )
@@ -441,7 +441,10 @@ def plot1D( dat, datExp, var, xmin, xmax ):
 
     addon = ""
     latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Preliminary} ' + addon),
-    latex1.DrawLatex(0.64, 0.91, '#bf{%3.1f fb{}^{-1} (13 TeV)}' % lumi_scale)
+    if isinstance(lumi_scale, int):
+        latex1.DrawLatex(0.66, 0.91, '#bf{%i fb{}^{-1} (13 TeV)}' % lumi_scale)
+    else:
+        latex1.DrawLatex(0.64, 0.91, '#bf{%3.1f fb{}^{-1} (13 TeV)}' % lumi_scale)
 
     # Redraw axis, otherwise the filled graphes overlay
     cans.RedrawAxis()
