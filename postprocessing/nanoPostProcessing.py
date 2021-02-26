@@ -87,9 +87,10 @@ options = get_parser().parse_args()
 
 stitching = False
 # combine ttg samples is they are nominal
-if "TTG" in options.samples[0] and not "Tune" in options.samples[0] and not "TTGJets" in options.samples[0] and not "erd" in options.samples[0] and not "QCDbased" in options.samples[0] and not "GluonMove" in options.samples[0] and not "ptG" in options.samples[0]:
+if "TTG" in options.samples[0] and not "Herwig" in options.samples[0] and not "Tune" in options.samples[0] and not "TTGJets" in options.samples[0] and not "erd" in options.samples[0] and not "QCDbased" in options.samples[0] and not "GluonMove" in options.samples[0] and not "ptG" in options.samples[0]:
     stitching = True
 
+isHerwig = "Herwig" in options.samples[0]
 # B-Tagger
 tagger = 'DeepCSV'
 #tagger = 'CSVv2'
@@ -296,6 +297,7 @@ if not os.path.exists( output_directory ):
 
 # checking overwrite or file exists
 sel = "&&".join(skimConds)
+print sel
 nEvents = sample.getYieldFromDraw(weightString="1", selectionString=sel)['val']
 if not options.overwrite:
     if os.path.isfile(targetFilePath):
@@ -306,16 +308,18 @@ if not options.overwrite:
             existingSample = Sample.fromFiles( "existing", targetFilePath, treeName = "Events" )
             nEventsExist = existingSample.getYieldFromDraw(weightString="1")['val']
             if nEvents == nEventsExist:
-                logger.info( "File already processed. Normalization file check ok! Skipping." ) # Everything is fine, no overwriting
+                logger.info( "File already processed. Normalization file check ok: %s! Skipping."%nEventsExist ) # Everything is fine, no overwriting
                 sys.exit(0)
             else:
                 logger.info( "Target events not equal to processing sample events! Is: %s, should be: %s!"%(nEventsExist, nEvents) )
-                logger.info( "Removing file from target." )
-                os.remove( targetFilePath )
+#                sys.exit(0)
+#                logger.info( "Removing file from target." )
+#                os.remove( targetFilePath )
                 logger.info( "Reprocessing." )
         else:
             logger.info( "File corrupt. Removing file from target." )
-            os.remove( targetFilePath )
+#            sys.exit(0)
+#            os.remove( targetFilePath )
             logger.info( "Reprocessing." )
     else:
         logger.info( "Sample not processed yet." )
@@ -1045,7 +1049,7 @@ def filler( event ):
         GenPhotonATLASUnfold = filter( lambda g: genPhotonSel_ATLASUnfold(g), GenPhotonATLASUnfold )
 
         GenJetATLASUnfold    = filter( lambda j: genJetSel_ATLASUnfold(j), gJets                   )
-        GenBJetATLASUnfold   = filter( lambda j: genJetSel_ATLASUnfold(j), filterGenBJets( gJets ) )
+        GenBJetATLASUnfold   = filter( lambda j: genJetSel_ATLASUnfold(j), filterGenBJets( gJets, variable="hadronFlavour" if isHerwig else "partonFlavour" ) )
 
         # ATLAS Unfolding cleaning
         GenJetATLASUnfold    = deltaRCleaning( GenJetATLASUnfold,    GenPhotonATLASUnfold, dRCut=0.4 )
@@ -1099,7 +1103,7 @@ def filler( event ):
         GenPhotonCMSUnfold = filter( lambda g: genPhotonSel_CMSUnfold(g), GenPhotonCMSUnfold )
 
         GenJetCMSUnfold    = filter( lambda j: genJetSel_CMSUnfold(j), gJets                   )
-        GenBJetCMSUnfold   = filter( lambda j: genJetSel_CMSUnfold(j), filterGenBJets( gJets ) )
+        GenBJetCMSUnfold   = filter( lambda j: genJetSel_CMSUnfold(j), filterGenBJets( gJets, variable="hadronFlavour" if isHerwig else "partonFlavour" ) )
 
         # CMS Unfolding cleaning
         GenPhotonCMSUnfold = deltaRCleaning( GenPhotonCMSUnfold, GenLeptonCMSUnfold, dRCut=0.4 )
@@ -1135,7 +1139,7 @@ def filler( event ):
         GenPhoton   = list( filter( lambda g: genPhotonSel(g), GenPhoton                                  ) )
         GenTop      = list( filter( lambda t: genJetSel(t),    filterGenTops( gPart )                     ) )
         GenJet      = list( filter( lambda j: genJetSel(j),    gJets                                      ) )
-        GenBJet     = list( filter( lambda j: genJetSel(j),    filterGenBJets( gJets )                    ) )
+        GenBJet     = list( filter( lambda j: genJetSel(j),    filterGenBJets( gJets, variable="hadronFlavour" if isHerwig else "partonFlavour" )                    ) )
 
         # Store
         GenElectron.sort( key = lambda p: -p['pt'] )
@@ -2363,9 +2367,9 @@ if nEvents == nEventsExist:
     logger.info( "All events processed!")
 elif not options.small:
     logger.info( "Error: Target events not equal to processing sample events! Is: %s, should be: %s!"%(nEventsExist, nEvents) )
-    logger.info( "Removing file from target." )
-    os.remove( targetFilePath )
-    logger.info( "Sorry." )
+#    logger.info( "Removing file from target." )
+#    os.remove( targetFilePath )
+#    logger.info( "Sorry." )
 
 # There is a double free corruption due to stupid ROOT memory management which leads to a non-zero exit code
 # Thus the job is resubmitted on condor even if the output is ok
