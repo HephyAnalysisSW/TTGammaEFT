@@ -95,7 +95,11 @@ lowmLgPtRegions = getRegions2D( "PhotonGood0_pt", pTG_thresh, "mLtight0Gamma", m
 lowmLgRegions   = getRegionsFromThresholds( "mLtight0Gamma", mlg_tresh )
 
 mlg_tresh = [ 0, mLgThresh, -999 ]
+mlglow_tresh = [ 0, mLgThresh ]
+mlghigh_tresh = [ mLgThresh, -999 ]
 mLgPtRegions = getRegions2D( "PhotonGood0_pt", pTG_thresh, "mLtight0Gamma", mlg_tresh ) + getRegionsFromThresholds( "PhotonGood0_pt", highpTG_thresh )
+mLglowPtRegions = getRegions2D( "PhotonGood0_pt", pTG_thresh, "mLtight0Gamma", mlglow_tresh )
+mLghighPtRegions = getRegions2D( "PhotonGood0_pt", pTG_thresh, "mLtight0Gamma", mlghigh_tresh ) + getRegionsFromThresholds( "PhotonGood0_pt", highpTG_thresh )
 mLgRegions   = getRegionsFromThresholds( "mLtight0Gamma", mlg_tresh )
 
 pTG_thresh = [ 20, 35, 50, 65, 80 ]
