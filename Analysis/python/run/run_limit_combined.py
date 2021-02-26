@@ -66,6 +66,7 @@ argParser.add_argument('--addPtBinnedUnc',             action='store_true',     
 argParser.add_argument('--notNormalized',             action='store_true',                                                        help="not normalized Scale uncertainties?")
 argParser.add_argument('--splitScale',             action='store_true',                                                        help="split scale uncertainties in sources")
 argParser.add_argument('--uncorrVG',              action='store_true',                                                        help="uncorrelate VGamma unc?")
+argParser.add_argument('--noSystematics',              action='store_true',                                                        help="run fit without systematics?")
 args=argParser.parse_args()
 
 if args.linTest != 1: args.expected = True
@@ -173,6 +174,7 @@ if args.addPtBinnedUnc:   regionNames.append("addPtBinnedUnc")
 if args.notNormalized:   regionNames.append("notNormalized")
 if args.uncorrVG:   regionNames.append("uncorrVG")
 if args.splitScale:   regionNames.append("splitScale")
+if args.noSystematics:   regionNames.append("noSyst")
 
 if args.parameters:
     # load and define the EFT sample

@@ -411,7 +411,7 @@ def wrapper():
 ##            c.addUncertainty( "photon_ID_AltSig_2016",      shapeString)
 
 
-        default_Signal_unc = 5.
+        default_Signal_unc = 6.
         pTG_thresh = [ 20, 35, 50, 65, 80, 100, 120, 140, 160, 200, 280, -999 ]
 #[ 20, 35, 50, 65, 80, 120, 160, 200, 260, 320, -999 ]
         eta_thresh = list(np.linspace(start=0, stop=1.35, num=10)) + [1.4442]
@@ -810,11 +810,11 @@ def wrapper():
                                 ratio["4pmu"] = 1
                                 if "3p" in setup.name:
                                     ratio["3"] = e.cachedEstimate( r_noM3, channel,   setup3 ).val / y_noM3 if y_noM3 else 1.
-                                    ratio["3e"] = e.cachedEstimate( r_noM3, "e",   setup3 ).val / y_noM3 if channel == "all" and y_noM3 else 1.
-                                    ratio["3mu"] = e.cachedEstimate( r_noM3, "mu",   setup3 ).val / y_noM3 if channel == "all" and y_noM3 else 1.
+                                    ratio["3e"] = e.cachedEstimate( r_noM3, "e",   setup3 ).val / y_noM3 if channel == "all" and y_noM3 else ratio["3"]
+                                    ratio["3mu"] = e.cachedEstimate( r_noM3, "mu",   setup3 ).val / y_noM3 if channel == "all" and y_noM3 else ratio["3"]
                                     ratio["4p"] = e.cachedEstimate( r_noM3, channel,   setup4p ).val / y_noM3 if y_noM3 else 1.
-                                    ratio["4pe"] = e.cachedEstimate( r_noM3, "e",   setup4p ).val / y_noM3 if channel == "all" and y_noM3 else 1.
-                                    ratio["4pmu"] = e.cachedEstimate( r_noM3, "mu",   setup4p ).val / y_noM3 if channel == "all" and y_noM3 else 1.
+                                    ratio["4pe"] = e.cachedEstimate( r_noM3, "e",   setup4p ).val / y_noM3 if channel == "all" and y_noM3 else ratio["4p"]
+                                    ratio["4pmu"] = e.cachedEstimate( r_noM3, "mu",   setup4p ).val / y_noM3 if channel == "all" and y_noM3 else ratio["4p"]
                                 allCh = [channel] if channel != "all" else ["e","mu"]
                                 allSetups = {setup.nJet:setup} if not "3p" in setup.name else {"3":setup3, "4p":setup4p}
                                 for ch in allCh:
