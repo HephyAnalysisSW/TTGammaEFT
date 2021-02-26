@@ -741,7 +741,7 @@ class Setup:
 
 
 if __name__ == "__main__":
-    setup = Setup( year=2016, private=True )
+    setup = Setup( year=2016, private=False )
     for name, dict in allRegions.items():
 #        if not "wjetsec3" in name.lower() and not "wjetsbarrel3" in name.lower(): continue
         if not "sr3p" in name.lower(): continue
