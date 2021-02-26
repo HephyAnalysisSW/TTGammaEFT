@@ -205,7 +205,7 @@ latex1.SetTextAlign(11)
 
 #if args.preliminary:
 latex1.DrawLatex(0.03,0.94,'CMS #bf{#it{Preliminary}}')
-latex1.DrawLatex(0.68,0.94, "137.2 fb{}^{-1} (13 TeV)")
+latex1.DrawLatex(0.70,0.94, "137 fb{}^{-1} (13 TeV)")
 #else:
 #    latex1.DrawLatex(0.03,0.94,'CMS')
 
