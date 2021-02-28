@@ -99,7 +99,7 @@ if args.expected: add += ["expected"]
 if args.linTest != 1: add += ["linTest"+str(args.linTest)]
 fit      = "_".join( ["postFit" if args.postFit else "preFit"] + add )
 
-plotDirectory = os.path.join(plot_directory, "fitAppNew", str(args.year), fit, dirName)
+plotDirectory = os.path.join(plot_directory, "fitAppSort", str(args.year), fit, dirName)
 cardFile      = os.path.join( cache_directory, "analysis", str(args.year) if args.year != "combined" else "COMBINED", args.carddir, args.cardfile+".txt" )
 logger.info("Plotting from cardfile %s"%cardFile)
 
@@ -592,7 +592,7 @@ def plotRegions( sorted=True ):
         minMax = 0.09 if args.postFit else 0.29
     else:
         minMax = 0.19 if args.postFit else 0.29
-    minMax = 0.19
+    minMax = 0.09
     if args.bkgSubstracted:
         if "PtUn" in args.cardfile:
             minMax = 0.24 #0.19 if args.postFit else 0.9
@@ -638,7 +638,7 @@ def plotRegions( sorted=True ):
             if "total" in h_key or h_key not in processes: continue
             print h_key, default_processes[h_key]["texName"], default_processes[h_key]["color"]
             hists[h_key].legendText  = default_processes[h_key]["texName"]
-            hists[h_key].style = styles.fillStyle( default_processes[h_key]["color"], errors=False )
+            hists[h_key].style = styles.fillStyle( default_processes[h_key]["color"], lineWidth = 1, errors=False )
             hists[h_key].LabelsOption("v","X")
 
     # some settings and things like e.g. uncertainty boxes
@@ -740,7 +740,7 @@ def plotRegions( sorted=True ):
         sys.exit(0)
 
     # get histo list
-    plots, ratioHistos = Results.getRegionHistoList( hists, processes=processes, noData=args.bkgSubstracted, addNuisanceHistos=addHists, sorted=sorted and not args.bkgSubstracted, bkgSubstracted=args.bkgSubstracted, directory="dc_2016" if args.year=="combined" else "Bin0" )
+    plots, ratioHistos = Results.getRegionHistoList( hists, processes=processes, noData=args.bkgSubstracted, addNuisanceHistos=addHists, sorted=sorted and not args.bkgSubstracted, unsortProcesses=True, bkgSubstracted=args.bkgSubstracted, directory="dc_2016" if args.year=="combined" else "Bin0" )
     if not args.bkgSubstracted: plots.append([uncHist])
     else:
         plots.append([uncHist])
@@ -756,10 +756,11 @@ def plotRegions( sorted=True ):
                     texY = "Number of Events",
             ),
             logX = False, logY = True if not args.bkgSubstracted or "PtUnfold" in plotName else False, sorting = False, 
+#            logX = False, logY = True if not args.bkgSubstracted or "PtUnfold" in plotName else False, sorting = True, 
             plot_directory    = plotDirectory,
             legend            = [ (0.17, 0.84 if args.bkgSubstracted else formatSettings(nBins)["legylower"], 0.93, 0.9), formatSettings(nBins)["legcolumns"] ] if not differential else [(0.20,0.67,0.85,0.9),1] if args.plotNuisances else (0.20,0.75,0.85,0.9),
             widths            = { "x_width":formatSettings(nBins)["padwidth"], "y_width":formatSettings(nBins)["padheight"], "y_ratio_width":formatSettings(nBins)["padratio"] } if not differential else {},
-            yRange            = ( 3, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ) if not differential else (30,"auto") if args.bkgSubstracted else "auto",
+            yRange            = ( 7, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ) if not differential else (30,"auto") if args.bkgSubstracted else "auto",
             ratio             = { "yRange": (1-minMax, 1+minMax), "texY":"Uncertainty" if args.bkgSubstracted else "Obs./Pred.", "histos":ratioHistos, "drawObjects":ratio_boxes + ratio_boxes_stat if args.bkgSubstracted else ratio_boxes, "histModifications":ratioHistModifications },
 #            ratio             = { "yRange": (1-minMax, 1+minMax), "texY":"Obs./Pred.", "histos":ratioHistos, "drawObjects":ratio_boxes if args.bkgSubstracted else ratio_boxes, "histModifications":ratioHistModifications },
 #            drawObjects       = drawObjects_ if not differential else drawObjectsDiff(lumi_scale) + boxes + boxes_stat if args.bkgSubstracted else drawObjectsDiff(lumi_scale) + boxes,
@@ -857,6 +858,7 @@ def plotImpacts():
 
 if args.plotRegionPlot or args.cacheHistogram:
     plotRegions( sorted=True )
+#    plotRegions( sorted=False )
 if args.plotImpacts and args.postFit:
     plotImpacts()
 if args.plotCovMatrix:
