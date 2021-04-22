@@ -129,13 +129,15 @@ submission.add_table(tableF4b)
 ###
 tabSF = Table("Table 4")
 
-tabSF.description = "Extracted scale factors for the contribution from misidentified electrons for the three data-taking periods, and the Z$\gamma$ ,W$\gamma$ simulations."
+tabSF.description = "Extracted scale factors for the contribution from misidentified electrons for the three data-taking periods, and the Z$\gamma$, W$\gamma$ simulations."
 tabSF.location = "Table 4"
 
 sfType = Variable( "Scale factor", is_independent=True, is_binned=False, units="")
 sfType.values = ["Misidentified electrons 2016", "Misidentified electrons 2017", "Misidentified electrons 2018", "Z$\gamma$ normalization", "W$\gamma$ normalization"]
 value     = Variable( "Value", is_independent=False, is_binned=False, units="")
 value.values = [2.22, 1.83, 1.59, 0.83, 1.2]
+value.add_qualifier("SQRT(S)","13","TeV")
+value.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 unc = Uncertainty( "total" )
 unc.is_symmetric = True
 unc.values = [0.28, 0.24, 0.18, 0.10, 0.09]
@@ -176,21 +178,29 @@ submission.add_table(tableF6)
 ###
 tabXSec = Table("Equation 2")
 
-tabXSec.description = "The measured inclusive ttgamma cross section in the fiducial phase space compared to the prediction from simulation using Madgraph_aMC@NLO at a center-of-mass energy of 13 TeV"
+tabXSec.description = "The measured inclusive ttgamma cross section in the fiducial phase space compared to the prediction from simulation using Madgraph_aMC@NLO at a center-of-mass energy of 13 TeV."
 tabXSec.location = "Equation 2"
 
 data = np.loadtxt("../xsec/xsec.txt", skiprows=1)
 
 xsecType = Variable( "", is_independent=True, is_binned=False, units="")
-xsecType.values = ["Experimental", "Theoretical-Madgraph-aMC@NLO"]
+xsecType.values = ["Experimental", "Theoretical (MG5_aMC@NLO + Pythia8)"]
 xsec     = Variable( "Cross section", is_independent=False, is_binned=False, units="fb")
 xsec.values = [data[0][0], data[1][0]]
+xsec.add_qualifier("SQRT(S)","13","TeV")
+xsec.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 tot     = Variable( "Total uncertainty", is_independent=False, is_binned=False, units="fb")
 tot.values = [data[0][1], data[1][1]]
+tot.add_qualifier("SQRT(S)","13","TeV")
+tot.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 stat     = Variable( "Stat. uncertainty", is_independent=False, is_binned=False, units="fb")
 stat.values = [data[0][2], ""]
+stat.add_qualifier("SQRT(S)","13","TeV")
+stat.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 syst     = Variable( "Syst. uncertainty", is_independent=False, is_binned=False, units="fb")
 syst.values = [data[0][3], ""]
+syst.add_qualifier("SQRT(S)","13","TeV")
+syst.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 
 tabXSec.add_variable(xsecType)
 tabXSec.add_variable(xsec)
@@ -215,12 +225,20 @@ ssmType = Variable( "", is_independent=True, is_binned=False)
 ssmType.values = ["e+jets", "$\mu$+jets", "l+jets"]
 ssm     = Variable( "Signal strength modifier", is_independent=False, is_binned=False)
 ssm.values = ["%.3f"%datassm[0][0], "%.3f"%datassm[1][0], "%.3f"%datassm[2][0]]
+ssm.add_qualifier("SQRT(S)","13","TeV")
+ssm.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 tot     = Variable( "Total uncertainty", is_independent=False, is_binned=False)
 tot.values = ["$^{+%.3f}_{%.3f}$"%(datassm[0][1],datassm[0][2]), "$^{+%.3f}_{%.3f}$"%(datassm[1][1],datassm[1][2]), "$^{+%.3f}_{%.3f}$"%(datassm[2][1],datassm[2][2])]
+tot.add_qualifier("SQRT(S)","13","TeV")
+tot.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 stat     = Variable( "Stat. uncertainty", is_independent=False, is_binned=False)
 stat.values = ["$\pm$%.3f"%datassm[0][3], "$\pm$%.3f"%datassm[1][3], "$\pm$%.3f"%datassm[2][3]]
+stat.add_qualifier("SQRT(S)","13","TeV")
+stat.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 syst     = Variable( "Syst. uncertainty", is_independent=False, is_binned=False)
 syst.values = ["$^{+%.3f}_{%.3f}$"%(datassm[0][4],datassm[0][5]), "$^{+%.3f}_{%.3f}$"%(datassm[1][4],datassm[1][5]), "$^{+%.3f}_{%.3f}$"%(datassm[2][4],datassm[2][5])]
+syst.add_qualifier("SQRT(S)","13","TeV")
+syst.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 
 tabssm.add_variable(ssmType)
 tabssm.add_variable(ssm)
@@ -274,7 +292,7 @@ submission.add_table(tableUnfdR)
 ### Fig 9a
 ###
 
-tableCov = convertCovMatrixToYaml("../unfolding/covMatrix_observed_ptG_RunII.root", "Figure 9a", "$p_{T}(\gamma)$", "GeV")
+tableCov = convertCovMatrixToYaml("../unfolding/covMatrix_observed_ptG_RunII.root", "Figure 9a", "$p_{T}(\gamma)$", "$p_{T}(\gamma)$ ", "GeV")
 tableCov.description = "The covariance matrix of the unfolded differential measurement for $p_{T}(\gamma)$."
 tableCov.location = "Data from Figure 9 (top left)"
 tableCov.add_image("../figures/unfolding/v49_uncertainty_Herwigv2/observed_ptG_RunII/covMatrix_ptg.png")
@@ -286,7 +304,7 @@ submission.add_table(tableCov)
 ### Fig 9b
 ###
 
-tableCovEta = convertCovMatrixToYaml("../unfolding/covMatrix_observed_absEta_RunII.root", "Figure 9b", "$|\eta(\gamma)|$", "")
+tableCovEta = convertCovMatrixToYaml("../unfolding/covMatrix_observed_absEta_RunII.root", "Figure 9b", "$|\eta(\gamma)|$", "$|\eta(\gamma)|$ ", "")
 tableCovEta.description = "The covariance matrix of the unfolded differential measurement for $|\eta(\gamma)|$."
 tableCovEta.location = "Data from Figure 9 (top right)"
 tableCovEta.add_image("../figures/unfolding/v49_uncertainty_Herwigv2/observed_absEta_RunII/covMatrix_eta.png")
@@ -298,7 +316,7 @@ submission.add_table(tableCovEta)
 ### Fig 9c
 ###
 
-tableCovdR = convertCovMatrixToYaml("../unfolding/covMatrix_observed_dRlg_RunII.root", "Figure 9c", "$\Delta R(l,\gamma)$", "")
+tableCovdR = convertCovMatrixToYaml("../unfolding/covMatrix_observed_dRlg_RunII.root", "Figure 9c", "$\Delta R(l,\gamma)$", "$\Delta R(l,\gamma)$ ", "")
 tableCovdR.description = "The covariance matrix of the unfolded differential measurement for $\Delta R(l,\gamma)$."
 tableCovdR.location = "Data from Figure 9 (bottom)"
 tableCovdR.add_image("../figures/unfolding/v49_uncertainty_Herwigv2/observed_dRlg_RunII/covMatrix_dR.png")
@@ -318,8 +336,12 @@ clType = Variable( "Wilson coefficient", is_independent=True, is_binned=False)
 clType.values = ["$c_{tZ}$ (expected)", "$c^{I}_{tZ}$ (expected)", "$c_{tZ}$ (observed)", "$c^{I}_{tZ}$ (observed)"]
 cl68     = Variable( "68% CL interval", is_independent=False, is_binned=False)
 cl68.values = ["[-0.19, 0.21]", "[-0.20, 0.20]", "[-0.35, -0.16]", "[-0.35, -0.16], [0.17, 0.35]"]
+cl68.add_qualifier("SQRT(S)","13","TeV")
+cl68.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 cl95     = Variable( "95% CL interval", is_independent=False, is_binned=False)
 cl95.values = ["[-0.29, 0.32]", "[-0.30, 0.31]", "[-0.42, 0.38]", "[-0.42, 0.42]"]
+cl95.add_qualifier("SQRT(S)","13","TeV")
+cl95.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 
 tabcl.add_variable(clType)
 tabcl.add_variable(cl68)
@@ -344,8 +366,12 @@ wcctZ     = Variable( "$c_{tZ}$", is_independent=True, is_binned=False, units="$
 wcctZ.values = datactZobs[:,0]
 nllctZexp     = Variable( "-2$\Delta$ L (expected)", is_independent=False, is_binned=False)
 nllctZexp.values = datactZexp[:,1]
+nllctZexp.add_qualifier("SQRT(S)","13","TeV")
+nllctZexp.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 nllctZobs     = Variable( "-2$\Delta$ L (observed)", is_independent=False, is_binned=False)
 nllctZobs.values = datactZobs[:,1]
+nllctZobs.add_qualifier("SQRT(S)","13","TeV")
+nllctZobs.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 
 tabctZ.add_variable(wcctZ)
 tabctZ.add_variable(nllctZexp)
@@ -371,8 +397,12 @@ wcctZI     = Variable( "$c^{I}_{tZ}$", is_independent=True, is_binned=False, uni
 wcctZI.values = datactZIobs[:,0]
 nllctZIexp     = Variable( "-2$\Delta$ L (expected)", is_independent=False, is_binned=False)
 nllctZIexp.values = datactZIexp[:,1]
+nllctZIexp.add_qualifier("SQRT(S)","13","TeV")
+nllctZIexp.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 nllctZIobs     = Variable( "-2$\Delta$ L (observed)", is_independent=False, is_binned=False)
 nllctZIobs.values = datactZIobs[:,1]
+nllctZIobs.add_qualifier("SQRT(S)","13","TeV")
+nllctZIobs.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 
 tabctZI.add_variable(wcctZI)
 tabctZI.add_variable(nllctZIexp)
@@ -399,6 +429,8 @@ wcctZI     = Variable( "$c^{I}_{tZ}$", is_independent=True, is_binned=False, uni
 wcctZI.values = datactZctZIobs[:,1]
 nllctZctZIobs     = Variable( "-2$\Delta$ L (observed)", is_independent=False, is_binned=False)
 nllctZctZIobs.values = datactZctZIobs[:,2]
+nllctZctZIobs.add_qualifier("SQRT(S)","13","TeV")
+nllctZctZIobs.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 
 tabctZctZI.add_variable(wcctZ)
 tabctZctZI.add_variable(wcctZI)

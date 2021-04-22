@@ -1,4 +1,5 @@
 import numpy as np
+from math import sqrt
 import ROOT
 from hepdata_lib import Submission, Table, Variable, RootFileReader, Uncertainty
 
@@ -316,11 +317,15 @@ def convertCRPlotToYaml():
 
     rootfile = ROOT.TFile("../regionPlots/CR_incl.root","READ")
     totHist = rootfile.Get("0dc_2016total")
+    datHist = rootfile.Get("0dc_2016data")
 
     unc = []
+    statunc = []
     relunc = []
     for i, i_tot in enumerate(tot["y"]):
         u = totHist.GetBinError(i+1)
+        ustat = datHist.GetBinError(i+1)
+        statunc.append(ustat)
         unc.append(u)
         relunc.append(u*100./i_tot)
 
@@ -402,10 +407,24 @@ def convertCRPlotToYaml():
     yother.values = other["y"]
     yother.add_qualifier("SQRT(S)","13","TeV")
     yother.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
-    yunc = Variable( "Total uncertainty", is_independent=False, is_binned=False)
+
+
+    yunc = Uncertainty( "syst" )
+    yunc.is_symmetric = True
     yunc.values = unc
-    yunc.add_qualifier("SQRT(S)","13","TeV")
-    yunc.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+
+    ystatunc = Uncertainty( "stat" )
+    ystatunc.is_symmetric = True
+    ystatunc.values = statunc
+
+    ydata.uncertainties.append(ystatunc)
+    ytot.uncertainties.append(yunc)
+
+
+#    yunc = Variable( "Total uncertainty", is_independent=False, is_binned=False)
+#    yunc.values = unc
+#    yunc.add_qualifier("SQRT(S)","13","TeV")
+#    yunc.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
     #yrelunc = Variable( "Rel. uncertainty (%)", is_independent=False, is_binned=False)
     #yrelunc.values = relunc
 
@@ -420,7 +439,7 @@ def convertCRPlotToYaml():
     tab.add_variable(yqcd)
     tab.add_variable(yttg)
     tab.add_variable(yother)
-    tab.add_variable(yunc)
+#    tab.add_variable(yunc)
 
     return tab
 
@@ -446,12 +465,16 @@ def convertSRPlotToYaml():
 
     rootfile = ROOT.TFile("../regionPlots/SR_incl.root","READ")
     totHist = rootfile.Get("0dc_2016total")
+    datHist = rootfile.Get("0dc_2016data")
 
     unc = []
+    statunc = []
     relunc = []
     for i, i_tot in enumerate(tot["y"]):
         u = totHist.GetBinError(i+1)
+        ustat = datHist.GetBinError(i+1)
         unc.append(u)
+        statunc.append(ustat)
         relunc.append(u*100./i_tot)
 
     crBinLabel = [
@@ -510,12 +533,24 @@ def convertSRPlotToYaml():
     yother.values = other["y"]
     yother.add_qualifier("SQRT(S)","13","TeV")
     yother.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
-    yunc = Variable( "Total uncertainty", is_independent=False, is_binned=False)
-    yunc.values = unc
-    yunc.add_qualifier("SQRT(S)","13","TeV")
-    yunc.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+#    yunc = Variable( "Total uncertainty", is_independent=False, is_binned=False)
+#    yunc.values = unc
+#    yunc.add_qualifier("SQRT(S)","13","TeV")
+#    yunc.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
     #yrelunc = Variable( "Rel. uncertainty (%)", is_independent=False, is_binned=False)
     #yrelunc.values = relunc
+
+    yunc = Uncertainty( "syst" )
+    yunc.is_symmetric = True
+    yunc.values = unc
+
+    ystatunc = Uncertainty( "stat" )
+    ystatunc.is_symmetric = True
+    ystatunc.values = statunc
+
+    ydata.uncertainties.append(ystatunc)
+    ytot.uncertainties.append(yunc)
+
 
     tab.add_variable(xbins)
     tab.add_variable(ydata)
@@ -528,13 +563,13 @@ def convertSRPlotToYaml():
     tab.add_variable(ywg)
     tab.add_variable(yqcd)
     tab.add_variable(yzg)
-    tab.add_variable(yunc)
+#    tab.add_variable(yunc)
 
     return tab
 
 
 
-def convertCovMatrixToYaml( rootfile, label, variable, unit ):
+def convertCovMatrixToYaml( rootfile, label, variablex, variabley, unit ):
 
     tab = Table(label)
 
@@ -542,13 +577,13 @@ def convertCovMatrixToYaml( rootfile, label, variable, unit ):
 
     cov = reader.read_hist_2d("output_covMatrix")
 
-    xbins = Variable( variable, is_independent=True, is_binned=True, units=unit)
+    xbins = Variable( variablex, is_independent=True, is_binned=True, units=unit)
     xbins.values = cov["x_edges"]
-    ybins = Variable( variable, is_independent=True, is_binned=True, units=unit)
+    ybins = Variable( variabley, is_independent=True, is_binned=True, units=unit)
     ybins.values = cov["y_edges"]
 
     data = Variable( "Covariance", is_independent=False, is_binned=False, units="events$^2$")
-    data.values = [abs(z) for z in cov["z"]]
+    data.values = cov["z"]
     data.add_qualifier("SQRT(S)","13","TeV")
     data.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 
@@ -572,18 +607,21 @@ def convertUnfoldingHistToYaml( rootfile, label, variable, unit ):
     simHpp = reader.read_hist_1d("fiducial_spectrum_Hpp")
     simH7 = reader.read_hist_1d("fiducial_spectrum_H7")
     totalUncUp = reader.read_hist_1d("totalUncertainty_up")
-    totalUncDown = reader.read_hist_1d("totalUncertainty_down")
-    statUncUp = reader.read_hist_1d("totalUncertaintySource_up")
-    statUncDown = reader.read_hist_1d("totalUncertaintySource_down")
+    mcstatUncUp = reader.read_hist_1d("mcStat_up")
+    matrixUncUp = reader.read_hist_1d("totalMatrixVariationUnc_up")
+    statUncUp = reader.read_hist_1d("stat_up")
 
     totunc = []
     reltotunc = []
     statunc = []
     relstatunc = []
     for i, i_up in enumerate(totalUncUp["y"]):
-        utot = abs(i_up-totalUncDown["y"][i])*0.5
-        ustat = abs(statUncUp["y"][i]-statUncDown["y"][i])*0.5
         tot = data["y"][i]
+        utot = (i_up - tot)**2
+        utot += (mcstatUncUp["y"][i] - tot)**2
+        utot += matrixUncUp["y"][i]**2
+        utot = sqrt(utot)
+        ustat = statUncUp["y"][i] - tot
         totunc.append(utot)
         statunc.append(ustat)
         reltotunc.append(utot*100./tot)
@@ -595,6 +633,20 @@ def convertUnfoldingHistToYaml( rootfile, label, variable, unit ):
     ydata.values = data["y"]
     ydata.add_qualifier("SQRT(S)","13","TeV")
     ydata.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+
+
+    yunc = Uncertainty( "total" )
+    yunc.is_symmetric = True
+    yunc.values = totunc
+
+    ystatunc = Uncertainty( "stat" )
+    ystatunc.is_symmetric = True
+    ystatunc.values = statunc
+
+    ydata.uncertainties.append(ystatunc)
+    ydata.uncertainties.append(yunc)
+
+
     ysimP8 = Variable( "Simulation MG5_aMC + Pythia8", is_independent=False, is_binned=False)
     ysimP8.values = simP8["y"]
     ysimP8.add_qualifier("SQRT(S)","13","TeV")
@@ -608,24 +660,11 @@ def convertUnfoldingHistToYaml( rootfile, label, variable, unit ):
     ysimHpp.add_qualifier("SQRT(S)","13","TeV")
     ysimHpp.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 
-    ytotunc = Variable( "Total uncertainty", is_independent=False, is_binned=False)
-    ytotunc.values = totunc
-    ytotunc.add_qualifier("SQRT(S)","13","TeV")
-    ytotunc.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
-    ystatunc = Variable( "Stat. uncertainty", is_independent=False, is_binned=False)
-    ystatunc.values = statunc
-    ystatunc.add_qualifier("SQRT(S)","13","TeV")
-    ystatunc.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
-    #yrelunc = Variable( "Rel. uncertainty (%)", is_independent=False, is_binned=False)
-    #yrelunc.values = relunc
-
     tab.add_variable(xbins)
     tab.add_variable(ydata)
     tab.add_variable(ysimP8)
     tab.add_variable(ysimH7)
     tab.add_variable(ysimHpp)
-    tab.add_variable(ystatunc)
-    tab.add_variable(ytotunc)
 
     return tab
 
