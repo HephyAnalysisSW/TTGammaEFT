@@ -73,7 +73,8 @@ if options.small:
     options.nJobs = 200
 
 # Load all samples to be post processed
-from TTGammaEFT.Samples.genTuples_TTGamma_EFT import *
+#from TTGammaEFT.Samples.genTuples_TTGamma_EFT import *
+from TTGammaEFT.Samples.genTuples_TTGamma_Herwig import *
 samples = map( eval, options.samples ) 
     
 if len(samples)==0:
@@ -282,7 +283,8 @@ if options.addReweights:
 products = {
     "lhe":{"type":"LHEEventProduct", "label":("externalLHEProducer")},
     "gp":{"type":"vector<reco::GenParticle>", "label":("genParticles")},
-    "genJets":{"type":"vector<reco::GenJet>", "label":("ak4GenJets")},
+#    "genJets":{"type":"vector<reco::GenJet>", "label":("ak4GenJets")},
+    "genJets":{"type":"vector<reco::GenJet>", "label":("ak4GenJetsNoNu")},
     "genMET":{"type":"vector<reco::GenMET>",  "label":("genMetTrue")},
 }
 
@@ -481,7 +483,8 @@ def filler( event ):
         GenLepton.append( genLep )
 
     # Gen photons: particle-level isolated gen photons
-    GenPhotonAll = [ ( search.ascend(l), l ) for l in filter( lambda p: abs( p.pdgId() ) == 22 and p.pt() > 5 and search.isLast(p), genPart ) ]
+    GenPhotonAll = [ ( search.ascend(l), l ) for l in filter( lambda p: abs( p.pdgId() ) == 22 and p.pt() > 1 and search.isLast(p), genPart ) ]
+#    GenPhotonAll = [ ( search.ascend(l), l ) for l in filter( lambda p: abs( p.pdgId() ) == 22 and search.isLast(p), genPart ) ]
     GenPhotonAll.sort( key = lambda p: -p[1].pt() )
     GenPhoton    = []
 
@@ -520,7 +523,10 @@ def filler( event ):
     GenBJet = [ b for b in filter( lambda p: abs(p.pdgId()) == 5,  genPart ) ]
 
     for GenJ in GenJet:
-        GenJ["isBJet"] = min( [999] + [ deltaR2( GenJ, {"eta":b.eta(), "phi":b.phi() } ) for b in GenBJet ] ) < 0.04
+        GenJ["isBJet"] = min( [999] + [ deltaR2( GenJ, {"eta":b.eta(), "phi":b.phi() } ) for b in GenBJet ] ) < 0.16
+#        GenJ["parton"] = [ p.pdgId() for p in filter( lambda x: abs( x.pdgId() ) not in [12,14,16] and x.status() == 1, genPart ) if deltaR2( GenJ, {"eta":p.eta(), "phi":p.phi() } ) < 0.16 ]
+#        GenJ["parton"] = [ p.pdgId() for p in filter( lambda x: abs( x.pdgId() ) not in [12,14,16], genPart ) if deltaR2( GenJ, {"eta":p.eta(), "phi":p.phi() } ) < 0.16 ]
+#        print GenJ["parton"]
 
     # gen b jets
     GenBJet = list( filter( lambda j: j["isBJet"], GenJet ) )
@@ -531,7 +537,7 @@ def filler( event ):
         GenP["photonLepdR"] =  min( [999] + [ deltaR( GenP, j ) for j in GenLepton ] )
         GenP["photonAlldR"] =  min( [999] + [ deltaR( GenP, j ) for j in GenParticlesIso if abs(GenP["pt"]-j["pt"])>0.01 and j["pdgId"] != 22 ] )
 
-    fill_vector_collection( event, "GenPhoton", genPhotonVars, GenPhoton ) 
+    fill_vector_collection( event, "GenPhoton", genPhotonVars, filter( lambda p: p["pt"] >= 5, GenPhoton ) )
     fill_vector_collection( event, "GenLepton", genLeptonVars, GenLepton )
     fill_vector_collection( event, "GenJet",    genJetVars,    GenJet )
     fill_vector_collection( event, "GenBJet",   genJetVars,    GenBJet )
@@ -539,7 +545,7 @@ def filler( event ):
     event.nGenElectron = len( filter( lambda l: abs( l["pdgId"] ) == 11, GenLepton ) )
     event.nGenMuon     = len( filter( lambda l: abs( l["pdgId"] ) == 13, GenLepton ) )
     event.nGenLepton   = len(GenLepton)
-    event.nGenPhoton   = len(GenPhoton)
+    event.nGenPhoton   = len(filter( lambda p: p["pt"] >= 5, GenPhoton ))
     event.nGenBJet     = len(GenBJet)
     event.nGenJets     = len(GenJet)
     event.nGenBJet = len( GenBJet )
@@ -549,6 +555,15 @@ def filler( event ):
     ##############################################
 
     # Analysis specific variables
+
+    for il, genL in enumerate(GenLepton):
+        if abs(genL["motherPdgId"]) not in [ 11, 13, 15, 23, 24, 25 ]: continue
+        for genP in GenPhoton:
+            if deltaR(genL,genP) < 0.1:
+                dressedL = get4DVec(GenLepton[il]) + get4DVec(genP)
+                GenLepton[il]["pt"] = dressedL.Pt()
+                GenLepton[il]["eta"] = dressedL.Eta()
+                GenLepton[il]["phi"] = dressedL.Phi()
 
     # no meson mother
     GenLeptonCMSUnfold   = list( filter( lambda l: abs(l["motherPdgId"]) in [ 11, 13, 15, 23, 24, 25 ] and genLeptonSel_CMSUnfold( l ), GenLepton ) )
@@ -597,9 +612,11 @@ def filler( event ):
         GenJ["jetPhotondR"] =  min( [999] + [ deltaR( GenJ, p ) for p in GenPhotonATLASUnfold ] )
         GenJ["jetLepdR"]    =  min( [999] + [ deltaR( GenJ, p ) for p in GenLeptonATLASUnfold ] )
 
-    for GenJ in GenJetCMSUnfold:
+    for i_j, GenJ in enumerate(GenJetCMSUnfold):
         GenJ["jetPhotondR"] =  min( [999] + [ deltaR( GenJ, p ) for p in GenPhotonCMSUnfold ] )
         GenJ["jetLepdR"]    =  min( [999] + [ deltaR( GenJ, p ) for p in GenLeptonCMSUnfold ] )
+#        GenJ["jetJetdR"]    =  min( [999] + [ deltaR( GenJ, p ) for i_p, p in enumerate(GenJetCMSUnfold) if i_p != i_j ] )
+#        print GenJ["jetJetdR"]
 
     for GenJ in GenBJetCMSUnfold:
         GenJ["jetPhotondR"] =  min( [999] + [ deltaR( GenJ, p ) for p in GenPhotonCMSUnfold ] )
@@ -614,7 +631,7 @@ def filler( event ):
         GenJ["jetPhotondR"] =  min( [999] + [ deltaR( GenJ, p ) for p in GenPhotonEECMSUnfold ] )
 
     # CMS Unfolding cleaning
-    GenPhotonCMSUnfold = filter( lambda g: g["photonLepdR"] > 0.1, GenPhotonCMSUnfold )
+    GenPhotonCMSUnfold = filter( lambda g: g["photonLepdR"] > 0.4, GenPhotonCMSUnfold )
     GenJetCMSUnfold    = filter( lambda g: g["jetPhotondR"] > 0.1, GenJetCMSUnfold )
     GenBJetCMSUnfold   = filter( lambda g: g["jetPhotondR"] > 0.1, GenBJetCMSUnfold )
     GenJetCMSUnfold    = filter( lambda g: g["jetLepdR"] > 0.4,    GenJetCMSUnfold )
