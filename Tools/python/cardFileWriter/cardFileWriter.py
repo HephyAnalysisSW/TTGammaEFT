@@ -464,7 +464,9 @@ class cardFileWriter:
           filename = fname if fname else os.path.join(uniqueDirname, ustr+".txt")
           self.writeToFile(filename)
 
-        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit -n Nominal --saveNLL --forceRecreateNLL %s %s"%(options,filename)
+        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit -n Nominal --saveNLL --freezeParameters r --X-rtd REMOVE_CONSTANT_ZERO_POINT=1 --cminDefaultMinimizerStrategy=0 --cminDefaultMinimizerTolerance=0.01 --forceRecreateNLL %s %s"%(options,filename)
+#        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit -n Nominal --saveNLL --freezeParameters r --X-rtd REMOVE_CONSTANT_ZERO_POINT=1 --cminDefaultMinimizerTolerance=0.001 --forceRecreateNLL %s %s"%(options,filename)
+#        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit -n Nominal --saveNLL --freezeParameters r --X-rtd REMOVE_CONSTANT_ZERO_POINT=1 --forceRecreateNLL %s %s"%(options,filename)
 #        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit -n Nominal --saveNLL --forceRecreateNLL --freezeParameters r %s %s"%(options,filename)
 #        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit -n Nominal --saveNLL --cminDefaultMinimizerStrategy=0 --cminDefaultMinimizerTolerance=0.01 %s %s"%(options,filename)
 #        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit --algo grid --points 100 --rMin 0. --rMax 2.0 -n Nominal --saveNLL --forceRecreateNLL %s %s"%(options,filename)
