@@ -606,7 +606,7 @@ def convertCovMatrixToYaml( rootfile, label, variablex, variabley, unit ):
     ybins = Variable( variabley, is_independent=True, is_binned=True, units=unit)
     ybins.values = cov["y_edges"]
 
-    data = Variable( "Total covariance", is_independent=False, is_binned=False, units="events$^2$")
+    data = Variable( "Total covariance", is_independent=False, is_binned=False, units="fb$^2$")
     data.values = cov["z"]
     data.add_qualifier("SQRT(S)","13","TeV")
     data.add_qualifier("LUMINOSITY","137","fb$^{-1}$")

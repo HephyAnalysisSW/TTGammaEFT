@@ -9,7 +9,7 @@ submission = Submission()
 ###
 
 tableF2a = convertSRHistToYaml("../systPlots/SR3p_PhotonGood0_pt_all.root", "Figure 2a", "$p_{T}(\gamma)$", "GeV")
-tableF2a.description = "Distribution of $p_{T}(\gamma)$ in the SR3p signal region."
+tableF2a.description = "Distribution of $p_{T}(\gamma)$ in the $N_{jet}\geq 3$ signal region."
 tableF2a.location = "Data from Figure 2 (top left) "
 tableF2a.add_image("../figures/PhotonGood0_pt.png")
 tableF2a.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
@@ -24,7 +24,7 @@ submission.add_table(tableF2a)
 ###
 
 tableF2b = convertSRHistToYaml("../systPlots/SR3p_mT_all.root", "Figure 2b", "$m_{T}(W)$", "GeV")
-tableF2b.description = "Distribution of $m_{T}(W)$ in the SR3p signal region."
+tableF2b.description = "Distribution of $m_{T}(W)$ in the $N_{jet}\geq 3$ signal region."
 tableF2b.location = "Data from Figure 2 (top center)"
 tableF2b.add_image("../figures/mT.png")
 tableF2b.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
@@ -40,7 +40,7 @@ submission.add_table(tableF2b)
 ###
 
 tableF2c = convertSRHistToYaml("../systPlots/SR3p_m3_all.root", "Figure 2c", "$M_{3}$", "GeV")
-tableF2c.description = "Distribution of $M_{3}$ in the SR3p signal region."
+tableF2c.description = "Distribution of $M_{3}$ in the $N_{jet}\geq 3$ signal region."
 tableF2c.location = "Data from Figure 2 (top right)"
 tableF2c.add_image("../figures/m3.png")
 tableF2c.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
@@ -56,7 +56,7 @@ submission.add_table(tableF2c)
 ###
 
 tableF2d = convertSRHistToYaml("../systPlots/SR3p_mLtight0Gamma_all.root", "Figure 2d", "$m(l,\gamma)$", "GeV")
-tableF2d.description = "Distribution of $m(l,\gamma)$ in the SR3p signal region."
+tableF2d.description = "Distribution of $m(l,\gamma)$ in the $N_{jet}\geq 3$ signal region."
 tableF2d.location = "Data from Figure 2 (bottom left)"
 tableF2d.add_image("../figures/mLtight0Gamma.png")
 tableF2d.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
@@ -72,7 +72,7 @@ submission.add_table(tableF2d)
 ###
 
 tableF2e = convertSRHistToYaml("../systPlots/SR3p_ltight0GammadR_all.root", "Figure 2e", "$\Delta R(l,\gamma)$", "")
-tableF2e.description = "Distribution of $\Delta R(l,\gamma)$ in the SR3p signal region."
+tableF2e.description = "Distribution of $\Delta R(l,\gamma)$ in the $N_{jet}\geq 3$ signal region."
 tableF2e.location = "Data from Figure 2 (bottom center)"
 tableF2e.add_image("../figures/ltight0GammadR.png")
 tableF2e.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
@@ -88,7 +88,7 @@ submission.add_table(tableF2e)
 ###
 
 tableF2f = convertSRHistToYaml("../systPlots/SR3p_photonJetdR_all.root", "Figure 2f", "$\Delta R(j,\gamma)$", "")
-tableF2f.description = "Distribution of $\Delta R(j,\gamma)$ in the SR3p signal region."
+tableF2f.description = "Distribution of $\Delta R(j,\gamma)$ in the $N_{jet}\geq 3$ signal region."
 tableF2f.location = "Data from Figure 2 (bottom right)"
 tableF2f.add_image("../figures/photonJetdR.png")
 tableF2f.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
