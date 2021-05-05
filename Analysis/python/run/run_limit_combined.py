@@ -67,6 +67,7 @@ argParser.add_argument('--notNormalized',             action='store_true',      
 argParser.add_argument('--splitScale',             action='store_true',                                                        help="split scale uncertainties in sources")
 argParser.add_argument('--uncorrVG',              action='store_true',                                                        help="uncorrelate VGamma unc?")
 argParser.add_argument('--noSystematics',              action='store_true',                                                        help="run fit without systematics?")
+argParser.add_argument('--splitMisIDExt',              action='store_true',                                                        help="run fit without systematics?")
 args=argParser.parse_args()
 
 if args.linTest != 1: args.expected = True
@@ -175,6 +176,7 @@ if args.notNormalized:   regionNames.append("notNormalized")
 if args.uncorrVG:   regionNames.append("uncorrVG")
 if args.splitScale:   regionNames.append("splitScale")
 if args.noSystematics:   regionNames.append("noSyst")
+if args.splitMisIDExt:   regionNames.append("splitMisIDExt")
 
 if args.parameters:
     # load and define the EFT sample
@@ -195,7 +197,7 @@ if args.parameters:
     configlist.append("expected" if args.expected else "observed")
 
     sEFTConfig = "_".join(configlist)
-    if not args.overwrite and nllCache.contains( sEFTConfig ) and abs(nllCache.get(sEFTConfig)["nll0"])>0.1: sys.exit(0)
+#    if not args.overwrite and nllCache.contains( sEFTConfig ) and abs(nllCache.get(sEFTConfig)["nll0"])>0.1: sys.exit(0)
 
 
 years = [2016,2017,2018]
@@ -257,6 +259,15 @@ def wrapper():
         nllCache.add( sEFTConfig, nll, overwrite=True )
         print nll
         print sEFTConfig
+        res = c.calcLimit( cardFileName, options=options+"  --freezeParameters r" )
+        Results = CombineResults( cardFile=cardFileNameTxt, plotDirectory="./", year="combined", bkgOnly=args.bkgOnly, isSearch=False )
+        postFit = Results.getPulls( postFit=True )
+        if "EFT_nJet" in postFit.keys():
+            freezeParams = "EFT_nJet=%f,r=1"%postFit["EFT_nJet"].val
+            print freezeParams
+            c.calcNuisances( cardFileName, bonly=False, options="--expectSignal=1 --freezeParameters EFT_nJet,r --setParameters %s --rMin 0.999 --rMax 1.001 --cminDefaultMinimizerTolerance=0.001"%freezeParams )
+        else:
+            c.calcNuisances( cardFileName, bonly=False, options="--expectSignal=1 --freezeParameters r --setParameters r=1 --rMin 0.999 --rMax 1.001 --cminDefaultMinimizerTolerance=0.001" )
     else:
         options = ""
         if args.freezeR:

@@ -17,7 +17,7 @@ from TTGammaEFT.Tools.user               import combineReleaseLocation, cardfile
 from Analysis.Tools.MergingDirDB         import MergingDirDB
 from Analysis.Tools.u_float              import u_float
 from TTGammaEFT.Tools.cardFileWriter       import cardFileWriter
-from Analysis.Tools.cardFileWriter.CombineResults      import CombineResults
+from TTGammaEFT.Tools.cardFileWriter.CombineResults      import CombineResults
 from Analysis.Tools.getPostFit           import getPrePostFitFromMLF, getFitResults
 from TTGammaEFT.Tools.cutInterpreter     import cutInterpreter
 
@@ -70,6 +70,7 @@ argParser.add_argument('--addPtBinnedUnc',             action='store_true',     
 argParser.add_argument('--notNormalized',             action='store_true',                                                        help="not normalized Scale uncertainties?")
 argParser.add_argument('--splitScale',             action='store_true',                                                        help="split scale uncertainties in sources")
 argParser.add_argument('--uncorrVG',              action='store_true',                                                        help="uncorrelate VGamma unc?")
+argParser.add_argument('--splitMisIDExt',              action='store_true',                                                        help="uncorrelate VGamma unc?")
 args=argParser.parse_args()
 
 if args.year != "RunII": args.year = int(args.year)
@@ -203,6 +204,7 @@ if args.addPtBinnedUnc:   regionNames.append("addPtBinnedUnc")
 if args.notNormalized:   regionNames.append("notNormalized")
 if args.uncorrVG:   regionNames.append("uncorrVG")
 if args.splitScale:   regionNames.append("splitScale")
+if args.splitMisIDExt:   regionNames.append("splitMisIDExt")
 
 vgCorr = ""
 if args.uncorrVG:
@@ -240,7 +242,6 @@ if args.parameters:
 
     cacheFileName        = os.path.join( baseDir, "calculatednll" )
     nllCache             = MergingDirDB( cacheFileName )
-    print cacheFileName
     cacheFileName        = os.path.join( baseDir, "calculatedLimits" )
     limitCache           = MergingDirDB( cacheFileName )
     cacheFileName        = os.path.join( baseDir, "calculatedSignifs" )
@@ -250,7 +251,6 @@ if args.parameters:
     baseDir              = os.path.join( cache_directory, "analysis", "eft" )
     cacheFileName        = os.path.join( baseDir, 'TTG_2WC_ref' )
     yieldCache_TTG       = MergingDirDB( cacheFileName )
-    print yieldCache_TTG
 #    cacheFileName        = os.path.join( baseDir, 'TT_2WC_ref' )
 #    yieldCache_TT        = MergingDirDB( cacheFileName )
     cacheFileName        = os.path.join( baseDir, 'tWG_2WC_ref' )
@@ -324,7 +324,7 @@ def wrapper():
     cardFileName      = cardFileNameTxt
     print cardFileName
 
-    pTG_thresh = [ 20, 35, 50, 65, 80, 100, 120, 140, 160, 200, 280, -999 ]
+    pTG_thresh = [ 20, 35, 50, 65, 80, 100, 120, 140, 160, 200, 280, 320, -999 ]
 #[ 20, 35, 50, 65, 80, 120, 160, 200, 260, 320, -999 ]
     eta_thresh = list(np.linspace(start=0, stop=1.35, num=10)) + [1.4442]
     dR_thresh = [ 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, -999 ]
@@ -412,7 +412,7 @@ def wrapper():
 
 
         default_Signal_unc = 6.
-        pTG_thresh = [ 20, 35, 50, 65, 80, 100, 120, 140, 160, 200, 280, -999 ]
+        pTG_thresh = [ 20, 35, 50, 65, 80, 100, 120, 140, 160, 200, 280, 320, -999 ]
 #[ 20, 35, 50, 65, 80, 120, 160, 200, 260, 320, -999 ]
         eta_thresh = list(np.linspace(start=0, stop=1.35, num=10)) + [1.4442]
         dR_thresh = [ 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, -999 ]
@@ -489,11 +489,12 @@ def wrapper():
             c.addUncertainty( "fake_photon_model_2017",      shapeString )
 
         default_WG_unc    = 0.3
+#        default_WG_unc    = 0.7
         if with1pCR and not args.wgPOI:
 #            if args.parameters:
 #                c.addUncertainty( "WGamma_normalization",   shapeString )
 #            else:
-                c.addFreeParameter("WGamma_normalization%s"%vgCorr, '*WG*', 1, '[0.,2.]')
+                c.addFreeParameter("WGamma_normalization%s"%vgCorr, '*WG*', 1, '[0.,5.]')
 
         default_ZG_unc    = 0.3
         c.addUncertainty( "ZGamma_normalization%s"%vgCorr,      shapeString )
@@ -506,7 +507,13 @@ def wrapper():
         c.addUncertainty( "Other_normalization",      shapeString )
 
         default_misIDext_unc    = 0.1
-        c.addUncertainty( "MisID_extrapolation_%i"%args.year,      shapeString )
+        if not args.splitMisIDExt:
+            c.addUncertainty( "MisID_extrapolation_%i"%args.year,      shapeString )
+        else:
+            c.addUncertainty( "MisID3e_extrapolation_%i"%args.year,      shapeString )
+            c.addUncertainty( "MisID3mu_extrapolation_%i"%args.year,      shapeString )
+            c.addUncertainty( "MisID4pe_extrapolation_%i"%args.year,      shapeString )
+            c.addUncertainty( "MisID4pmu_extrapolation_%i"%args.year,      shapeString )
 
         default_misID4p_unc    = 0.2
         default_ZG4p_unc    = 0.4
@@ -520,6 +527,7 @@ def wrapper():
                 c.addUncertainty( "ZGamma_nJet_dependence%s"%vgCorr,      shapeString )
                 c.addUncertainty( "QCD_0b_nJet_dependence",      shapeString )
                 c.addUncertainty( "QCD_1b_nJet_dependence",      shapeString )
+#                c.addUncertainty( "DY_nJet_dependence",      shapeString )
                 c.addUncertainty( "WGamma_nJet_dependence%s"%vgCorr,      shapeString )
 
         default_DY_unc    = 0.08
@@ -537,7 +545,7 @@ def wrapper():
 #            if args.parameters:
 #                c.addUncertainty( "MisID_normalization_%i"%args.year, shapeString )
 #            else:
-                c.addFreeParameter("MisID_normalization_%i"%args.year, '*misID*', 1, '[0.,2.]')
+                c.addFreeParameter("MisID_normalization_%i"%args.year, '*misID*', 1, '[0.,5.]')
            #c.addFreeParameter("misID_%i"%args.year, 'misID', 1, '[0,2]')
 
         for setup in setups:
@@ -590,10 +598,12 @@ def wrapper():
                         else:
                             schR = [channel]
                         for sp in spR:
+                            sp = sp.replace("All","")
                             for sch in schR:
                                 smyieldkey  =  (sp, str(r),sch, "ctZ_0_ctZI_0")
                                 yieldkey    =  (sp, str(r),sch, str(eft))
                                 # signal 
+                                print smyieldkey
                                 smyield     +=  yieldCache_TTG.get(smyieldkey)["val"]
                                 eftyield    +=  yieldCache_TTG.get(yieldkey)["val"]
 
@@ -803,11 +813,11 @@ def wrapper():
                                 ratio["e"] = e.cachedEstimate( r_noM3, "e",   setup ).val / y_noM3 if channel == "all" and y_noM3 else 1.
                                 ratio["mu"] = e.cachedEstimate( r_noM3, "mu",   setup ).val / y_noM3 if channel == "all" and y_noM3 else 1.
                                 ratio["3"] = 1
-                                ratio["3e"] = 1
-                                ratio["3mu"] = 1
+                                ratio["3e"] = 1 if channel != "all" else ratio["e"]
+                                ratio["3mu"] = 1 if channel != "all" else ratio["mu"]
                                 ratio["4p"] = 1
-                                ratio["4pe"] = 1
-                                ratio["4pmu"] = 1
+                                ratio["4pe"] = 1 if channel != "all" else ratio["e"]
+                                ratio["4pmu"] = 1 if channel != "all" else ratio["mu"]
                                 if "3p" in setup.name:
                                     ratio["3"] = e.cachedEstimate( r_noM3, channel,   setup3 ).val / y_noM3 if y_noM3 else 1.
                                     ratio["3e"] = e.cachedEstimate( r_noM3, "e",   setup3 ).val / y_noM3 if channel == "all" and y_noM3 else ratio["3"]
@@ -917,6 +927,9 @@ def wrapper():
                                             locals()["misID_bin%i_unc"%i_pt] += y_scale * misIDFraction * default_misIDpT_unc
 
 #                                if not args.inclRegion and (e.name.count( "WG" ) or e.name.count( "ZG" )):
+
+
+
                                 if (e.name.count( "WG" ) or e.name.count( "ZG" )) and withSR and not "VGi3" in args.useRegions and not "misDYi3" in args.useRegions:
                                     if ("PhotonGood0_pt" in r.vals.keys() or "PhotonNoChgIsoNoSieie0_pt" in r.vals.keys()):
                                         low, high = r.vals["PhotonGood0_pt" if "PhotonGood0_pt" in r.vals.keys() else "PhotonNoChgIsoNoSieie0_pt"]
@@ -1166,8 +1179,8 @@ def wrapper():
                             addUnc( c, "ISR",          binname, pName, isr,    expected.val, signal )
                             addUnc( c, "FSR",          binname, pName, fsr,    expected.val, signal )
                         for j in jesTags:
-                            addUnc( c, "JEC_%s"%j,           binname, pName, locals()["jec_%s"%j],     expected.val, signal )
-                        addUnc( c, "JER_%i"%args.year,           binname, pName, jer,     expected.val, signal )
+                            addUnc( c, "JEC_%s"%(j),           binname, pName, locals()["jec_%s"%j],     expected.val, signal )
+                        addUnc( c, "JER_%i"%(args.year),           binname, pName, jer,     expected.val, signal )
                         addUnc( c, "EGammaScale",           binname, pName, ees,     expected.val, signal )
                         addUnc( c, "EGammaResolution",           binname, pName, eer,     expected.val, signal )
                         addUnc( c, "PU",            binname, pName, pu,      expected.val, signal )
@@ -1211,10 +1224,21 @@ def wrapper():
 #                            addUnc( c, "WGamma_normalization", binname, pName, wg, expected.val, signal )
 
                         addUnc( c, "DY_normalization", binname, pName, dyUnc, expected.val, signal )
-                        addUnc( c, "MisID_extrapolation_%i"%args.year, binname, pName, misExUnc if setup.signalregion or setup.name == "misTT2" else 0, expected.val, signal )
+
+                        if args.splitMisIDExt:
+                            if channel == "e":
+                                addUnc( c, "MisID%se_extrapolation_%i"%(setup.nJet,args.year), binname, pName, misExUnc if setup.signalregion or setup.name == "misTT2" else 0, expected.val, signal )
+                                addUnc( c, "MisID%smu_extrapolation_%i"%(setup.nJet,args.year), binname, pName, 0, expected.val, signal )
+                            if channel == "mu":
+                                addUnc( c, "MisID%se_extrapolation_%i"%(setup.nJet,args.year), binname, pName, 0, expected.val, signal )
+                                addUnc( c, "MisID%smu_extrapolation_%i"%(setup.nJet,args.year), binname, pName, misExUnc if setup.signalregion or setup.name == "misTT2" else 0, expected.val, signal )
+                        else:
+                            addUnc( c, "MisID_extrapolation_%i"%args.year, binname, pName, misExUnc if setup.signalregion or setup.name == "misTT2" else 0, expected.val, signal )
+
                         addUnc( c, "Other_normalization", binname, pName, otherUnc, expected.val, signal )
                         addUnc( c, "ZGamma_normalization%s"%vgCorr, binname, pName, zg, expected.val, signal )
                         addUnc( c, "MisID_nJet_dependence_%i"%args.year, binname, pName, misID4p, expected.val, signal )
+#                        addUnc( c, "DY_nJet_dependence", binname, pName, dy4p, expected.val, signal )
                         addUnc( c, "ZGamma_nJet_dependence%s"%vgCorr, binname, pName, zg4p, expected.val, signal )
                         addUnc( c, "WGamma_nJet_dependence%s"%vgCorr, binname, pName, wg4p, expected.val, signal )
                         addUnc( c, "Gluon_splitting", binname, pName, gluon, expected.val, signal )

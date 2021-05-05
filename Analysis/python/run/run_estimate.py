@@ -54,7 +54,7 @@ additionalRegions = [None]
 #if "Unfold" in args.controlRegion and not "Pt" in args.controlRegion and not "QCD" in args.selectEstimator and not "fakes" in args.selectEstimator:
 if not "Pt" in args.controlRegion and not "QCD" in args.selectEstimator and not "fakes" in args.selectEstimator:
     args.noInclusive = True
-    pTG_thresh = [ 20, 35, 50, 65, 80, 100, 120, 140, 160, 200, 280, -999 ]
+    pTG_thresh = [ 20, 35, 50, 65, 80, 100, 120, 140, 160, 200, 280, 320, -999 ]
 #    additionalRegions += getRegionsFromThresholds( "PhotonNoChgIsoNoSieie0_pt", pTG_thresh )
 
     misIDPT_thresholds = [ 20, 35, 50, 65, 80, 120, 160, -999 ]
@@ -73,7 +73,7 @@ if args.noInclusive:
     allPhotonRegions = allRegions[args.controlRegion]["regions"]
 else:
     allPhotonRegions = allRegions[args.controlRegion]["inclRegion"] + allRegions[args.controlRegion]["regions"] if photonSelection else allRegions[args.controlRegion]["regions"]
-#allPhotonRegions = allRegions[args.controlRegion]["inclRegion"]
+allPhotonRegions = allRegions[args.controlRegion]["inclRegion"]
 setup            = Setup( year=args.year, photonSelection=photonSelection and not "QCD" in args.selectEstimator, checkOnly=args.checkOnly, runOnLxPlus=args.runOnLxPlus ) #photonselection always false for qcd estimate
 
 # Select estimate
