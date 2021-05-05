@@ -14,7 +14,8 @@ from TTGammaEFT.Tools.user import gridpack_directory
 try:
     data_directory_ = sys.modules['__main__'].data_directory
 except:
-    from TTGammaEFT.Tools.user import dpm_directory as data_directory_
+#    from TTGammaEFT.Tools.user import dpm_directory as data_directory_
+    from TTGammaEFT.Tools.user import dpm_directoryEFT as data_directory_
     data_directory_ += "postprocessed/"
 
 try:

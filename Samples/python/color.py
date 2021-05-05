@@ -56,3 +56,7 @@ color.VG5            = ROOT.kBlack
 color.VG6            = ROOT.kCyan+1
 color.VG7            = ROOT.kViolet
 color.VG8            = ROOT.kYellow
+
+color.TTGP8            = ROOT.kOrange+1
+color.TTGH7            = ROOT.kRed+1
+color.TTGHpp           = ROOT.kAzure-3

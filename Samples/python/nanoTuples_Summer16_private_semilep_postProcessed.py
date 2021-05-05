@@ -182,7 +182,7 @@ DY_LO           = getMCSample(name="DY_LO",            redirector=redirector, co
 Top             = getMCSample(name="Top",              redirector=redirector, color=color.TT,              texName="t / t#bar{t}",        directory=directories["top"], noCheckProxy=True, fromDPM=fromDPM)
 TT_pow          = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_pow"], noCheckProxy=True, fromDPM=fromDPM)
 #TT_Lep          = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_Lep"], noCheckProxy=True, fromDPM=fromDPM)
-#TT_SemiLep      = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_SemiLep"], noCheckProxy=True, fromDPM=fromDPM)
+TT_SemiLep      = getMCSample(name="TT_pow",           redirector=redirector, color=color.TT,              texName="t#bar{t}",          directory=directories["TT_SemiLep"], noCheckProxy=True, fromDPM=fromDPM)
 singleTop       = getMCSample(name="singleTop",        redirector=redirector, color=color.T,               texName="single-t",          directory=directories["singleTop"], noCheckProxy=True, fromDPM=fromDPM)
 ST_tW            = getMCSample(name="ST_tW",            redirector=redirector, color=color.T,               texName="tW",                directory=directories["st_tW"], noCheckProxy=True, fromDPM=fromDPM)
 ST_tch           = getMCSample(name="ST_tch",           redirector=redirector, color=color.T,               texName="t (t-ch)",          directory=directories["st_tch"], noCheckProxy=True, fromDPM=fromDPM)
