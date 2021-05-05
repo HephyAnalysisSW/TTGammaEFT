@@ -31,7 +31,7 @@ processes = {
              "ZG":          { "process":ZG,          "color":color.ZGamma,       "texName":"Z#gamma"    },
              "other":       { "process":other,       "color":color.Other,        "texName":"Other"      },
              "QCD":         { "process":QCD,         "color":color.QCD,          "texName":"Multijet"             },
-             "fakes":       { "process":fakes,       "color":color.fakes,        "texName":"Hadronic #gamma/fake" },
+             "fakes":       { "process":fakes,       "color":color.fakes,        "texName":"Hadronic #gamma" },
 }
 
 processesSR = {
@@ -41,7 +41,7 @@ processesSR = {
                "ZG":          { "process":ZG,           "color":color.ZGamma,       "texName":"Z#gamma"    },
                "other":       { "process":other,        "color":color.Other,        "texName":"Other"      },
                "QCD":         { "process":QCD,          "color":color.QCD,          "texName":"Multijet"             },
-               "fakes":       { "process":["fakes-DD"], "color":color.fakes,        "texName":"Hadronic #gamma/fake" },
+               "fakes":       { "process":["fakes-DD"], "color":color.fakes,        "texName":"Hadronic #gamma" },
 }
 
 processesNoPhoton = {
@@ -65,7 +65,7 @@ default_processes = {
              "WJets":       { "process":["WJets"],       "color":color.WJets,        "texName":"W+jets"      },
              "other":       { "process":["other"]+other, "color":color.Other,        "texName":"Other"      },
              "QCD":         { "process":QCD,             "color":color.QCD,          "texName":"Multijet"             },
-             "fakes":       { "process":fakes,           "color":color.fakes,        "texName":"Hadronic #gamma/fake" },
+             "fakes":       { "process":fakes,           "color":color.fakes,        "texName":"Hadronic #gamma" },
 }
 
 processesWGPOI = {
@@ -75,7 +75,7 @@ processesWGPOI = {
              "ZG":          { "process":ZG,          "color":color.ZGamma,       "texName":"Z#gamma"    },
              "other":       { "process":other,       "color":color.Other,        "texName":"Other"      },
              "QCD":         { "process":QCD,         "color":color.QCD,          "texName":"Multijet"             },
-             "fakes":       { "process":[item for item in fakes if not "WG" in item],       "color":color.fakes,        "texName":"Hadronic #gamma/fake" },
+             "fakes":       { "process":[item for item in fakes if not "WG" in item],       "color":color.fakes,        "texName":"Hadronic #gamma" },
 }
 
 processesMisIDPOI = {
@@ -85,7 +85,7 @@ processesMisIDPOI = {
              "ZG":          { "process":ZG,                            "color":color.ZGamma,       "texName":"Z#gamma"    },
              "other":       { "process":other,                         "color":color.Other,        "texName":"Other"      },
              "QCD":         { "process":QCD,                           "color":color.QCD,          "texName":"Multijet"             },
-             "fakes":       { "process":fakes,                         "color":color.fakes,        "texName":"Hadronic #gamma/fake" },
+             "fakes":       { "process":fakes,                         "color":color.fakes,        "texName":"Hadronic #gamma" },
 }
 
 processesDYPOI = {
@@ -252,6 +252,15 @@ signalRegions["SR3pePtUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,-
 signalRegions["SR3pemuPtUnfold"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
                               "channels":   ["e","mu"],
                               "regions":    regionsTTGlooseUnfolding,
+                              "inclRegion": inclRegionsTTGloose,
+                              "noPhotonCR": False,
+                              "processes":  processesSR,
+                              "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
+                             }
+
+signalRegions["SR3pPtUnfoldEFT"]  = { "parameters": { "zWindow":"all", "nJet":(3,-1), "nBTag":(1,-1), "nPhoton":(1,1) },
+                              "channels":   ["all"],
+                              "regions":    regionsTTGlooseUnfoldingEFT,
                               "inclRegion": inclRegionsTTGloose,
                               "noPhotonCR": False,
                               "processes":  processesSR,
@@ -645,6 +654,11 @@ default_m3Window     = "all"
 default_photonIso    = None
 
 SSMSF_val = {}
+#SSMSF_val[2016]    = u_float( 0.96, 0.08 )
+#SSMSF_val[2017]    = u_float( 1.11, 0.09 )
+#SSMSF_val[2018]    = u_float( 1.12, 0.09 )
+#SSMSF_val["RunII"] = u_float( 1.04, 0.06 )
+
 SSMSF_val[2016]    = u_float( 1.02, 0.09 )
 SSMSF_val[2017]    = u_float( 1.22, 0.10 )
 SSMSF_val[2018]    = u_float( 1.13, 0.10 )
@@ -852,7 +866,8 @@ ZGSF_val = {}
 ZGSF_val[2016]    = u_float( 1.06, 0.21 )
 ZGSF_val[2017]    = u_float( 1.05, 0.23 )
 ZGSF_val[2018]    = u_float( 1.00, 0.20 )
-ZGSF_val["RunII"] = u_float( 0.99, 0.16 )
+#ZGSF_val["RunII"] = u_float( 0.99, 0.16 )
+ZGSF_val["RunII"] = u_float( 1.12, 0.16 )
 
 ZG2SF_val = {}
 ZG2SF_val[2016]    = u_float( 0.88, 0.10 )
@@ -888,7 +903,8 @@ ZG3pSF_val = {}
 ZG3pSF_val[2016]    = u_float( 1.06, 0.21 )
 ZG3pSF_val[2017]    = u_float( 1.05, 0.23 )
 ZG3pSF_val[2018]    = u_float( 1.00, 0.20 )
-ZG3pSF_val["RunII"] = u_float( 0.99, 0.16 )
+#ZG3pSF_val["RunII"] = u_float( 0.99, 0.16 )
+ZG3pSF_val["RunII"] = u_float( 1.12, 0.16 )
 
 ZG4pSF_val = {}
 ZG4pSF_val[2016]    = u_float( 1.19, 0.26 )
@@ -1256,6 +1272,7 @@ controlRegions["VG2"]  = { "parameters": { "zWindow":"offZeg", "nJet":(2,2), "nB
 controlRegions["VG3"]  = { "parameters": { "zWindow":"offZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1) },
                            "channels":   lepChannels,
                            "regions":    mLgPtRegions,
+#                           "inclRegion": mLgRegions, #bin inclusive fit in pt
                            "inclRegion": mLgPtRegions, #bin inclusive fit in pt
                            "noPhotonCR": False,
                            "processes":  processes,
@@ -1375,6 +1392,7 @@ controlRegions["VG5"]  = { "parameters": { "zWindow":"offZeg", "nJet":(5,5), "nB
 controlRegions["VG4p"] = { "parameters": { "zWindow":"offZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1)  },
                            "channels":   lepChannels,
                            "regions":    mLgPtRegions,
+#                           "inclRegion": mLgRegions, #bin inclusive fit in pt
                            "inclRegion": mLgPtRegions, #bin inclusive fit in pt
                            "noPhotonCR": False,
                            "processes":  processes,
@@ -1545,6 +1563,7 @@ controlRegions["misDY2p"]  = { "parameters": { "zWindow":"onZeg", "nJet":(2,-1),
 controlRegions["misDY3"]  = { "parameters": { "zWindow":"onZeg", "nJet":(3,3), "nBTag":(0,0), "nPhoton":(1,1) },
                               "channels":   ["e"],
                               "regions":    regionsTTG,
+#                              "inclRegion": inclRegionsTTG, #bin inclusive fit in pt
                               "inclRegion": regionsTTG, #bin inclusive fit in pt
                               "noPhotonCR": False,
                               "processes":  processes,
@@ -1601,6 +1620,7 @@ controlRegions["misDY5"]  = { "parameters": { "zWindow":"onZeg", "nJet":(5,5), "
 controlRegions["misDY4p"] = { "parameters": { "zWindow":"onZeg", "nJet":(4,-1), "nBTag":(0,0), "nPhoton":(1,1) },
                               "channels":   ["e"],
                               "regions":    regionsTTG,
+#                              "inclRegion": inclRegionsTTG, #bin inclusive fit in pt
                               "inclRegion": regionsTTG, #bin inclusive fit in pt
                               "noPhotonCR": False,
                               "processes":  processes,
@@ -1753,7 +1773,7 @@ halfstepsize = 0.5 * ( rng[1] - rng[0] )
 #xRange       = [ round(el + halfstepsize, 3) for el in xRange ] + [0, 0.55, 0.6, -0.55, -0.6]
 rng       = [ round(el + halfstepsize, 3) for el in rng ]
 xRange       = [r for r in rng if abs(r) > 0.6]
-#xRange = []
+xRange = []
 #xRange       = [ r for r in rng if abs(r) > 0.6 ]
 rng       = np.linspace( -0.5, 0.5, 30, endpoint=False)
 halfstepsize = 0.5 * ( rng[1] - rng[0] )
