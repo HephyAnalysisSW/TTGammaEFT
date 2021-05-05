@@ -15,6 +15,7 @@ for y in ["2016","2017","2018"]:
 systematic_pairs  = [ ('photonSFUp',  'photonSFDown'), ('photonElectronVetoSFUp',  'photonElectronVetoSFDown'), ('eResUp', 'eResDown'), ('eScaleUp', 'eScaleDown'), ("jerUp","jerDown") ]
 systematic_pairs += [ ("TuneUp","TuneDown") ]
 systematic_pairs += [ ("TriggerUp", "TriggerDown"), ("BTag_SF_b_Up","BTag_SF_b_Down"), ("LeptonTrackingTightSFUp","LeptonTrackingTightSFDown") ]
+#systematic_pairs += [ ("BTag_SF_l_Up","BTag_SF_l_Down") ]
 systematic_pairs += [ ("LeptonTightSFUp","LeptonTightSFDown"), ("L1PrefireUp","L1PrefireDown"), ("PUUp","PUDown") ]
 systematic_pairs += [ ("jes"+v+"Up","jes"+v+"Down") for v in jesSyst_all ]
 
@@ -23,6 +24,7 @@ all_systematics = ['nominal','reweightTopPt','erdOn','GluonMove','QCDbased','Sca
 
 additional_Matrix_uncertainties = [m for m in all_systematics if not "Down" in m and not m.startswith("Scale") ] # and not "201" in m]
 additional_MatrixScale_uncertainties = ['ScaleDownDown','ScaleDownNom','ScaleNomDown','ScaleNomUp','ScaleUpNom','ScaleUpUp']
+#additional_MatrixScale_uncertainties = ['ScaleUpNom','ScaleNomUp','ScaleUpUp']
 
 allUncertainties = [
     "DY_normalization", "EGammaResolution", "EGammaScale", "FSR", "GluonMove", "Gluon_splitting", "ISR", "Int_Luminosity_2016", "Int_Luminosity_2016_2017", "Int_Luminosity_2017",
@@ -97,7 +99,7 @@ def merge_x( histos, bin_threshold_years):
 default_cache_directory = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/"
 
 class observed_ptG_2016:
-#  if False:
+  if False:
     uncertainties = allUncertainties + signal_uncertainty_ptG
     expected        = False
     cache_directory = default_cache_directory 
@@ -149,13 +151,14 @@ class observed_ptG_2016:
 
     tex_reco = "p^{reco}_{T}(#gamma) [GeV]"
     tex_gen  = "p^{gen}_{T}(#gamma) [GeV]"
-    tex_unf  = "p^{fid.}_{T}(#gamma) [GeV]"
+    tex_unf  = "p_{T}(#gamma) [GeV]"
     tex_pur  = "p_{T}(#gamma) [GeV]"
-    texY     = 'Fiducial cross section [fb]'    
+    texY     = '#frac{d#sigma}{dp_{T}(#gamma)} [fb/GeV]'
+#    texY     = 'Fiducial cross section [fb]'
     y_range         = (.7, "auto") #(0.9, 9000)
     y_range_ratio   = (0.19,1.81)
     data_legendText = "Data (36/fb)"
-    signal_legendText = "Observation"
+    signal_legendText = "Observed"
 
     lumi_factor               = lumi_year[2016]/1000.
     unfolding_data_input      = replace_data_error( data )
@@ -164,55 +167,55 @@ class observed_ptG_2016:
     unfolding_signal_input        = replace_data_error( data )
     unfolding_signal_input_systematic_bands          = [
        {'name' : 'stat',
-        'label': "\pm 1\sigma (stat.)",
+        'label': "Stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue -10,
+        'color':ROOT.kGray,
         },
        {'name' : 'total',
-        'label': "\pm 1\sigma (tot.)",
+        'label': "Total",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(signal, +1, ref = data),
         'down':add_sigmas(signal, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         },
         ]
     unfolding_signal_input_systematics          = [
        {'name' : u,
-        'label': "\pm 1\sigma (%s)"%u,
+        'label': "\pm 1#sigma (%s)"%u,
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(h, +1, ref = data),
         'down':add_sigmas(h, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         } for u, h in uncertainties.iteritems()
         ]
     unfolding_signal_input_MCStat          = {
         'name' : "MCStat",
-        'label': "\pm 1\sigma (MC stat.)",
+        'label': "MC stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(mcStat, +1, ref = data),
         'down':add_sigmas(mcStat, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         }
     unfolding_data_input_systematic        = {
         'name' : "data",
-        'label': "\pm 1\sigma",
+        'label': "\pm 1#sigma",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue-10,
+        'color':ROOT.kGray,
         }
 
 
 
 class observed_ptG_2017:
-#  if False:
+  if False:
     uncertainties = allUncertainties + signal_uncertainty_ptG
     expected        = False
     cache_directory = default_cache_directory 
@@ -264,13 +267,13 @@ class observed_ptG_2017:
 
     tex_reco = "p^{reco}_{T}(#gamma) [GeV]"
     tex_gen  = "p^{gen}_{T}(#gamma) [GeV]"
-    tex_unf  = "p^{fid.}_{T}(#gamma) [GeV]"
+    tex_unf  = "p_{T}(#gamma) [GeV]"
     tex_pur  = "p_{T}(#gamma) [GeV]"
-    texY     = 'Fiducial cross section [fb]'    
+    texY     = '#frac{d#sigma}{dp_{T}(#gamma)} [fb/GeV]'    
     y_range         = (.7, "auto") #(0.9, 9000)
     y_range_ratio   = (0.19,1.81)
     data_legendText = "Data (36/fb)"
-    signal_legendText = "Observation"
+    signal_legendText = "Observed"
 
     lumi_factor               = lumi_year[2017]/1000.
     unfolding_data_input      = replace_data_error( data )
@@ -279,54 +282,54 @@ class observed_ptG_2017:
     unfolding_signal_input        = replace_data_error( data )
     unfolding_signal_input_systematic_bands          = [
        {'name' : 'stat',
-        'label': "\pm 1\sigma (stat.)",
+        'label': "Stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue -10,
+        'color':ROOT.kGray,
         },
        {'name' : 'total',
-        'label': "\pm 1\sigma (tot.)",
+        'label': "Total",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(signal, +1, ref = data),
         'down':add_sigmas(signal, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         },
         ]
     unfolding_signal_input_systematics          = [
        {'name' : u,
-        'label': "\pm 1\sigma (%s)"%u,
+        'label': "\pm 1#sigma (%s)"%u,
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(h, +1, ref = data),
         'down':add_sigmas(h, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         } for u, h in uncertainties.iteritems()
         ]
     unfolding_signal_input_MCStat          = {
         'name' : "MCStat",
-        'label': "\pm 1\sigma (MC stat.)",
+        'label': "MC stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(mcStat, +1, ref = data),
         'down':add_sigmas(mcStat, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         }
     unfolding_data_input_systematic        = {
         'name' : "data",
-        'label': "\pm 1\sigma",
+        'label': "\pm 1#sigma",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue-10,
+        'color':ROOT.kGray,
         }
 
 
 class observed_ptG_2018:
-#  if False:
+  if False:
     uncertainties = allUncertainties + signal_uncertainty_ptG
     expected        = False
     cache_directory = default_cache_directory 
@@ -378,13 +381,13 @@ class observed_ptG_2018:
 
     tex_reco = "p^{reco}_{T}(#gamma) [GeV]"
     tex_gen  = "p^{gen}_{T}(#gamma) [GeV]"
-    tex_unf  = "p^{fid.}_{T}(#gamma) [GeV]"
+    tex_unf  = "p_{T}(#gamma) [GeV]"
     tex_pur  = "p_{T}(#gamma) [GeV]"
-    texY     = 'Fiducial cross section [fb]'    
+    texY     = '#frac{d#sigma}{dp_{T}(#gamma)} [fb/GeV]'    
     y_range         = (.7, "auto") #(0.9, 9000)
     y_range_ratio   = (0.19,1.81)
     data_legendText = "Data (36/fb)"
-    signal_legendText = "Observation"
+    signal_legendText = "Observed"
 
     lumi_factor               = lumi_year[2018]/1000.
     unfolding_data_input      = replace_data_error( data )
@@ -393,49 +396,49 @@ class observed_ptG_2018:
     unfolding_signal_input        = replace_data_error( data )
     unfolding_signal_input_systematic_bands          = [
        {'name' : 'stat',
-        'label': "\pm 1\sigma (stat.)",
+        'label': "Stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue -10,
+        'color':ROOT.kGray,
         },
        {'name' : 'total',
-        'label': "\pm 1\sigma (tot.)",
+        'label': "Total",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(signal, +1, ref = data),
         'down':add_sigmas(signal, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         },
         ]
     unfolding_signal_input_systematics          = [
        {'name' : u,
-        'label': "\pm 1\sigma (%s)"%u,
+        'label': "\pm 1#sigma (%s)"%u,
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(h, +1, ref = data),
         'down':add_sigmas(h, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         } for u, h in uncertainties.iteritems()
         ]
     unfolding_signal_input_MCStat          = {
         'name' : "MCStat",
-        'label': "\pm 1\sigma (MC stat.)",
+        'label': "MC stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(mcStat, +1, ref = data),
         'down':add_sigmas(mcStat, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         }
     unfolding_data_input_systematic        = {
         'name' : "data",
-        'label': "\pm 1\sigma",
+        'label': "\pm 1#sigma",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue-10,
+        'color':ROOT.kGray,
         }
 
 
@@ -505,13 +508,13 @@ class expected_ptG_RunII:
 
     tex_reco = "p^{reco}_{T}(#gamma) [GeV]"
     tex_gen  = "p^{gen}_{T}(#gamma) [GeV]"
-    tex_unf  = "p^{fid.}_{T}(#gamma) [GeV]"
+    tex_unf  = "p_{T}(#gamma) [GeV]"
     tex_pur  = "p_{T}(#gamma) [GeV]"
-    texY     = 'Fiducial cross section [fb]'    
+    texY     = '#frac{d#sigma}{dp_{T}(#gamma)} [fb/GeV]'    
     y_range         = (9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.39,1.61)
     data_legendText = "Data (137/fb)"
-    signal_legendText = "Observation"
+    signal_legendText = "Observed"
 
     lumi_factor               = (lumi_year[2016]+lumi_year[2017]+lumi_year[2018])/1000.
     unfolding_data_input      = replace_data_error( data )
@@ -521,69 +524,73 @@ class expected_ptG_RunII:
     unfolding_signal_input        = replace_data_error( data )
     unfolding_signal_input_systematic_bands          = [
        {'name' : 'stat',
-        'label': "\pm 1\sigma (stat.)",
+        'label': "Stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue -10,
+        'color':ROOT.kGray,
         },
        {'name' : 'total',
-        'label': "\pm 1\sigma (tot.)",
+        'label': "Total",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(signal, +1, ref = data),
         'down':add_sigmas(signal, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         },
         ]
     unfolding_signal_input_systematics          = [
        {'name' : u,
-        'label': "\pm 1\sigma (%s)"%u,
+        'label': "\pm 1#sigma (%s)"%u,
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(h, +1, ref = data),
         'down':add_sigmas(h, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         } for u, h in uncertainties.iteritems()
         ]
     unfolding_signal_input_MCStat          = {
         'name' : "MCStat",
-        'label': "\pm 1\sigma (MC stat.)",
+        'label': "MC stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(mcStat, +1, ref = data),
         'down':add_sigmas(mcStat, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         }
     unfolding_data_input_systematic        = {
         'name' : "data",
-        'label': "\pm 1\sigma",
+        'label': "\pm 1#sigma",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue-10,
+        'color':ROOT.kGray,
         }
 
 
 
 class observed_ptG_RunII:
+    print "obs"
 #  if False:
-    uncertainties = allUncertainties + signal_uncertainty_ptG
+    uncertainties = allUncertainties + signal_uncertainty_ptG + ["Signal_mu_4p_Bin10_2016", "Signal_mu_4p_Bin10_2017", "Signal_mu_4p_Bin10_2018", "Signal_e_4p_Bin10_2016", "Signal_e_4p_Bin10_2017","Signal_e_4p_Bin10_2018",]
     cache_directory = default_cache_directory 
-    corr_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
-    data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data_%s"
-    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_total_%s"
-    uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in uncertainties}
-    mcStatUp_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up_%s"
+    corr_key        = "bkgSubtracted_SR3pPtUnfoldEFT_addDYSF_addPtBinnedUnc_SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
+    data_key        = "bkgSubtracted_SR3pPtUnfoldEFT_addDYSF_addPtBinnedUnc_SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data_%s"
+    signal_key      = "bkgSubtracted_SR3pPtUnfoldEFT_addDYSF_addPtBinnedUnc_SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_total_%s"
+    uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfoldEFT_addDYSF_addPtBinnedUnc_SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in uncertainties}
+    mcStatUp_key      = "bkgSubtracted_SR3pPtUnfoldEFT_addDYSF_addPtBinnedUnc_SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up_%s"
 
     years           = ["2016", "2017", "2018"]
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "observed", "postFit", "noFreeze")
+#    cache_dir       = os.path.join(cache_directory, "unfolding_safe", "combined", "bkgSubstracted", "observed", "postFit", "noFreeze")
     dirDB           = MergingDirDB(cache_dir)
+    print "cache"
     data_histos     =  [ dirDB.get( data_key%year ) for year in years ]
     signal_histos   =  [ dirDB.get( signal_key%year ) for year in years ]
+    print "data"
 
     dirDB           = MergingDirDB(cache_dir)
     corrFitObj      =  dirDB.get( corr_key )
@@ -593,16 +600,18 @@ class observed_ptG_RunII:
     for u, k in uncertaintyUp_key.iteritems():
         uncertainties_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signal_frozen_histos[i] ) for i,year in enumerate(years)]
     mcStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signal_frozen_histos[i] ) for i,year in enumerate(years) ]
+    print "unc"
 
-    uncertaintyStatUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in signal_uncertainty_ptG + ["r"]}
-    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "observed", "postFit", "freezeSyst")
-    dirDB           = MergingDirDB(cache_dir)
-    corrFitObjStat  =  dirDB.get( corr_key )
-    signalStat_frozen_histos  =  [ dirDB.get( signal_key%year ) for year in years ]
-    uncertaintiesStat_histos   = {}
-    for u, k in uncertaintyStatUp_key.iteritems():
-        uncertaintiesStat_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signalStat_frozen_histos[i] ) for i,year in enumerate(years)]
-    mcStatStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signalStat_frozen_histos[i] ) for i,year in enumerate(years) ]
+#    uncertaintyStatUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in signal_uncertainty_ptG + ["r"]}
+#    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "observed", "postFit", "freezeSyst")
+#    dirDB           = MergingDirDB(cache_dir)
+#    corrFitObjStat  =  dirDB.get( corr_key )
+#    signalStat_frozen_histos  =  [ dirDB.get( signal_key%year ) for year in years ]
+#    uncertaintiesStat_histos   = {}
+#    for u, k in uncertaintyStatUp_key.iteritems():
+#        uncertaintiesStat_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signalStat_frozen_histos[i] ) for i,year in enumerate(years)]
+#    mcStatStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signalStat_frozen_histos[i] ) for i,year in enumerate(years) ]
+#    print "syst"
 
 
     covZRange = (0.00099,750)
@@ -627,23 +636,27 @@ class observed_ptG_RunII:
     reco_thresholds_years = list(copy.deepcopy(reco_thresholds))
     for i_year in range(1, len(years)):
         reco_thresholds_years +=  [ x + (max_reco_val-min_reco_val)*i_year for x in reco_thresholds[1:] ]
+    print "comb"
+
+    theory_uncertainties = [0.14764904187063854, 0.15151932090144327, 0.1501498798254835, 0.1556428284028397, 0.15124123822912447, 0.1525243967641181, 0.14825891531994903, 0.1296442745416353, 0.13102916827549643]
 
     data        = merge_x( data_histos, reco_thresholds_years )
     signal      = merge_x( signal_histos, reco_thresholds_years )
     mcStat      = merge_x( mcStatUp_histos, reco_thresholds_years )
-    mcStatStat  = merge_x( mcStatStatUp_histos, reco_thresholds_years )
+#    mcStatStat  = merge_x( mcStatStatUp_histos, reco_thresholds_years )
 
     uncertainties   = {}
     for u, histlist in uncertainties_histos.iteritems():
         uncertainties[u] =  merge_x( histlist, reco_thresholds_years )
 
-    uncertaintiesStat   = {}
-    for u, histlist in uncertaintiesStat_histos.iteritems():
-        uncertaintiesStat[u] =  merge_x( histlist, reco_thresholds_years )
+#    uncertaintiesStat   = {}
+#    for u, histlist in uncertaintiesStat_histos.iteritems():
+#        uncertaintiesStat[u] =  merge_x( histlist, reco_thresholds_years )
+#    print "merge"
 
     fiducial_variable   = "GenPhotonCMSUnfold0_pt"
     fiducial_selection  = "nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1"
-    fiducial_thresholds     = [20, 35, 50, 80, 120, 160, 200, 280, 360]
+    fiducial_thresholds     = [20, 35, 50, 80, 120, 160, 200, 260, 320, 380]
 
     fiducial_overflow       = "upper"
     max_fiducial_val        = fiducial_thresholds[-1]
@@ -651,13 +664,14 @@ class observed_ptG_RunII:
 
     tex_reco = "p^{reco}_{T}(#gamma) [GeV]"
     tex_gen  = "p^{gen}_{T}(#gamma) [GeV]"
-    tex_unf  = "p^{fid.}_{T}(#gamma) [GeV]"
+    tex_unf  = "p_{T}(#gamma) [GeV]"
     tex_pur  = "p_{T}(#gamma) [GeV]"
-    texY     = 'Fiducial cross section [fb]'
-    y_range         = (.7, "auto") #(0.9, 9000)
-    y_range_ratio   = (0.69,1.31)
+    texY     = '#frac{d#sigma}{dp_{T}(#gamma)} [fb/GeV]'
+    y_range         = (3, 4000) #(0.9, 9000)
+#    y_range_ratio   = (0.69,1.31)
+    y_range_ratio   = (0.55,1.45)
     data_legendText = "Data (137/fb)"
-    signal_legendText = "Observation"
+    signal_legendText = "Observed"
 
     lumi_factor               = (lumi_year[2016]+lumi_year[2017]+lumi_year[2018])/1000.
     unfolding_data_input      = replace_data_error( data )
@@ -668,69 +682,69 @@ class observed_ptG_RunII:
 
     unfolding_signal_input_systematic_bands          = [
        {'name' : 'stat',
-        'label': "\pm 1\sigma (stat.)",
+        'label': "Stat.",
         'matrix': "nominal",
         'ref':  replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue -10,
+        'color':ROOT.kGray,
         },
        {'name' : 'total',
-        'label': "\pm 1\sigma (tot.)",
+        'label': "Total",
         'matrix': "nominal",
         'ref':  replace_data_error( data ),
         'up':  add_sigmas(signal, +1, ref = data),
         'down':add_sigmas(signal, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         },
         ]
     unfolding_signal_input_systematics          = [
        {'name' : u,
-        'label': "\pm 1\sigma (%s)"%u,
+        'label': "\pm 1#sigma (%s)"%u,
         'matrix': "nominal",
         'ref':  replace_data_error( data ),
         'up':  add_sigmas(h, +1, ref = data),
         'down':add_sigmas(h, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         } for u, h in uncertainties.iteritems()
         ]
     unfolding_signal_input_MCStat          = {
         'name' : "MCStat",
-        'label': "\pm 1\sigma (MC stat.)",
+        'label': "MC stat.",
         'matrix': "nominal",
         'ref':  replace_data_error( data ),
         'up':  add_sigmas(mcStat, +1, ref = data),
         'down':add_sigmas(mcStat, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         }
     unfolding_data_input_systematic        = {
         'name' : "data",
-        'label': "\pm 1\sigma",
+        'label': "\pm 1#sigma",
         'matrix': "nominal",
         'ref':  replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue-10,
+        'color':ROOT.kGray,
         }
-    unfolding_signalStat_input_systematics          = [
-       {'name' : u,
-        'label': "\pm 1\sigma (%s)"%u,
-        'matrix': "nominal",
-        'ref':  replace_data_error( data ),
-        'up':  add_sigmas(h, +1, ref = data),
-        'down':add_sigmas(h, -1, ref = data),
-        'color':ROOT.kOrange-9,
-        } for u, h in uncertaintiesStat.iteritems()
-        ]
-    unfolding_signalStat_input_MCStat          = {
-        'name' : "MCStat",
-        'label': "\pm 1\sigma (MC stat.)",
-        'matrix': "nominal",
-        'ref':  replace_data_error( data ),
-        'up':  add_sigmas(mcStatStat, +1, ref = data),
-        'down':add_sigmas(mcStatStat, -1, ref = data),
-        'color':ROOT.kOrange-9,
-        }
+#    unfolding_signalStat_input_systematics          = [
+#       {'name' : u,
+#        'label': "\pm 1#sigma (%s)"%u,
+#        'matrix': "nominal",
+#        'ref':  replace_data_error( data ),
+#        'up':  add_sigmas(h, +1, ref = data),
+#        'down':add_sigmas(h, -1, ref = data),
+#        'color':ROOT.kGray+1,
+#        } for u, h in uncertaintiesStat.iteritems()
+#        ]
+#    unfolding_signalStat_input_MCStat          = {
+#        'name' : "MCStat",
+#        'label': "MC stat.",
+#        'matrix': "nominal",
+#        'ref':  replace_data_error( data ),
+#        'up':  add_sigmas(mcStatStat, +1, ref = data),
+#        'down':add_sigmas(mcStatStat, -1, ref = data),
+#        'color':ROOT.kGray+1,
+#        }
 
 
 class expected_absEta_RunII:
@@ -798,13 +812,13 @@ class expected_absEta_RunII:
 
     tex_reco = "|#eta^{reco}(#gamma)|"
     tex_gen  = "|#eta^{gen}(#gamma)|"
-    tex_unf  = "|#eta^{fid.}(#gamma)|"
+    tex_unf  = "|#eta(#gamma)|"
     tex_pur  = "|#eta(#gamma)|"
-    texY     = 'Fiducial cross section [fb]'    
+    texY     = '#frac{d#sigma}{d|#eta(#gamma)|} [fb] '    
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.39,1.61)
     data_legendText = "Data (137/fb)"
-    signal_legendText = "Observation"
+    signal_legendText = "Observed"
 
     lumi_factor               = (lumi_year[2016]+lumi_year[2017]+lumi_year[2018])/1000.
     unfolding_data_input      = replace_data_error( data )
@@ -813,49 +827,49 @@ class expected_absEta_RunII:
     unfolding_signal_input        = replace_data_error( data )
     unfolding_signal_input_systematic_bands          = [
        {'name' : 'stat',
-        'label': "\pm 1\sigma (stat.)",
+        'label': "Stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue -10,
+        'color':ROOT.kGray,
         },
        {'name' : 'total',
-        'label': "\pm 1\sigma (tot.)",
+        'label': "Total",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(signal, +1, ref = data),
         'down':add_sigmas(signal, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         },
         ]
     unfolding_signal_input_systematics          = [
        {'name' : u,
-        'label': "\pm 1\sigma (%s)"%u,
+        'label': "\pm 1#sigma (%s)"%u,
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(h, +1, ref = data),
         'down':add_sigmas(h, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         } for u, h in uncertainties.iteritems()
         ]
     unfolding_signal_input_MCStat          = {
         'name' : "MCStat",
-        'label': "\pm 1\sigma (MC stat.)",
+        'label': "MC stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(mcStat, +1, ref = data),
         'down':add_sigmas(mcStat, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         }
     unfolding_data_input_systematic        = {
         'name' : "data",
-        'label': "\pm 1\sigma",
+        'label': "\pm 1#sigma",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue-10,
+        'color':ROOT.kGray,
         }
 
 
@@ -911,6 +925,8 @@ class observed_absEta_RunII:
     max_reco_bincenter   = 0.5*sum(reco_thresholds[-2:])
 
     # events not in the reco region are filled with this value
+    # 0.099,161
+#    covZRange = (0.099,161)
     covZRange = (0.099,161)
     reco_variable_underflow = reco_thresholds[0]-0.5
 
@@ -918,6 +934,8 @@ class observed_absEta_RunII:
     reco_thresholds_years = list(copy.deepcopy(reco_thresholds))
     for i_year in range(1, len(years)):
         reco_thresholds_years +=  [ x + (max_reco_val-min_reco_val)*i_year for x in reco_thresholds[1:] ]
+
+    theory_uncertainties = [0.14701620369575996, 0.15091373804496513, 0.1479397604661972, 0.15273768476492663, 0.15490608583577753]
 
     data        = merge_x( data_histos, reco_thresholds_years )
     signal      = merge_x( signal_histos, reco_thresholds_years )
@@ -942,13 +960,14 @@ class observed_absEta_RunII:
 
     tex_reco = "|#eta^{reco}(#gamma)|"
     tex_gen  = "|#eta^{gen}(#gamma)|"
-    tex_unf  = "|#eta^{fid.}(#gamma)|"
+    tex_unf  = "|#eta(#gamma)|"
     tex_pur  = "|#eta(#gamma)|"
-    texY     = 'Fiducial cross section [fb]'    
-    y_range         = (0.9, "auto") #(0.9, 9000)
-    y_range_ratio   = (0.84, 1.16)
+    texY     = '#frac{d#sigma}{d|#eta(#gamma)|} [fb] '    
+    y_range         = (40, 320) #(0.9, 9000)
+#    y_range_ratio   = (0.84, 1.16)
+    y_range_ratio   = (0.76, 1.24)
     data_legendText = "Data (137/fb)"
-    signal_legendText = "Observation"
+    signal_legendText = "Observed"
 
     lumi_factor               = (lumi_year[2016]+lumi_year[2017]+lumi_year[2018])/1000.
     unfolding_data_input      = replace_data_error( data )
@@ -958,73 +977,73 @@ class observed_absEta_RunII:
     unfolding_signal_input        = replace_data_error( data )
     unfolding_signal_input_systematic_bands          = [
        {'name' : 'stat',
-        'label': "\pm 1\sigma (stat.)",
+        'label': "Stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue -10,
+        'color':ROOT.kGray,
         },
        {'name' : 'total',
-        'label': "\pm 1\sigma (tot.)",
+        'label': "Total",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(signal, +1, ref = data),
         'down':add_sigmas(signal, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         },
         ]
     unfolding_signal_input_systematics          = [
        {'name' : u,
-        'label': "\pm 1\sigma (%s)"%u,
+        'label': "\pm 1#sigma (%s)"%u,
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(h, +1, ref = data),
         'down':add_sigmas(h, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         } for u, h in uncertainties.iteritems()
         ]
     unfolding_signal_input_MCStat          = {
         'name' : "MCStat",
-        'label': "\pm 1\sigma (MC stat.)",
+        'label': "MC stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(mcStat, +1, ref = data),
         'down':add_sigmas(mcStat, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         }
     unfolding_data_input_systematic        = {
         'name' : "data",
-        'label': "\pm 1\sigma",
+        'label': "\pm 1#sigma",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue-10,
+        'color':ROOT.kGray,
         }
     unfolding_signalStat_input_systematics          = [
        {'name' : u,
-        'label': "\pm 1\sigma (%s)"%u,
+        'label': "\pm 1#sigma (%s)"%u,
         'matrix': "nominal",
         'ref':  replace_data_error( data ),
         'up':  add_sigmas(h, +1, ref = data),
         'down':add_sigmas(h, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         } for u, h in uncertaintiesStat.iteritems()
         ]
     unfolding_signalStat_input_MCStat          = {
         'name' : "MCStat",
-        'label': "\pm 1\sigma (MC stat.)",
+        'label': "MC stat.",
         'matrix': "nominal",
         'ref':  replace_data_error( data ),
         'up':  add_sigmas(mcStatStat, +1, ref = data),
         'down':add_sigmas(mcStatStat, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         }
 
 
 class observed_absEta_2016:
-#  if False:
+  if False:
     uncertainties = allUncertainties + signal_uncertainty_absEta
     expected        = False
     cache_directory = default_cache_directory 
@@ -1076,13 +1095,13 @@ class observed_absEta_2016:
 
     tex_reco = "|#eta^{reco}(#gamma)|"
     tex_gen  = "|#eta^{gen}(#gamma)|"
-    tex_unf  = "|#eta^{fid.}(#gamma)|"
+    tex_unf  = "|#eta(#gamma)|"
     tex_pur  = "|#eta(#gamma)|"
-    texY     = 'Fiducial cross section [fb]'    
+    texY     = '#frac{d#sigma}{d|#eta(#gamma)|} [fb] '    
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.69,1.31)
     data_legendText = "Data (36/fb)"
-    signal_legendText = "Observation"
+    signal_legendText = "Observed"
 
     lumi_factor               = lumi_year[2016]/1000.
     unfolding_data_input      = replace_data_error( data )
@@ -1091,55 +1110,55 @@ class observed_absEta_2016:
     unfolding_signal_input        = replace_data_error( data )
     unfolding_signal_input_systematic_bands          = [
        {'name' : 'stat',
-        'label': "\pm 1\sigma (stat.)",
+        'label': "Stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue -10,
+        'color':ROOT.kGray,
         },
        {'name' : 'total',
-        'label': "\pm 1\sigma (tot.)",
+        'label': "Total",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(signal, +1, ref = data),
         'down':add_sigmas(signal, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         },
         ]
     unfolding_signal_input_systematics          = [
        {'name' : u,
-        'label': "\pm 1\sigma (%s)"%u,
+        'label': "\pm 1#sigma (%s)"%u,
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(h, +1, ref = data),
         'down':add_sigmas(h, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         } for u, h in uncertainties.iteritems()
         ]
     unfolding_signal_input_MCStat          = {
         'name' : "MCStat",
-        'label': "\pm 1\sigma (MC stat.)",
+        'label': "MC stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(mcStat, +1, ref = data),
         'down':add_sigmas(mcStat, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         }
     unfolding_data_input_systematic        = {
         'name' : "data",
-        'label': "\pm 1\sigma",
+        'label': "\pm 1#sigma",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue-10,
+        'color':ROOT.kGray,
         }
 
 
 
 class observed_absEta_2017:
-#  if False:
+  if False:
     uncertainties = allUncertainties + signal_uncertainty_absEta
     expected        = False
     cache_directory = default_cache_directory 
@@ -1191,13 +1210,13 @@ class observed_absEta_2017:
 
     tex_reco = "|#eta^{reco}(#gamma)|"
     tex_gen  = "|#eta^{gen}(#gamma)|"
-    tex_unf  = "|#eta^{fid.}(#gamma)|"
+    tex_unf  = "|#eta(#gamma)|"
     tex_pur  = "|#eta(#gamma)|"
-    texY     = 'Fiducial cross section [fb]'    
+    texY     = '#frac{d#sigma}{d|#eta(#gamma)|} [fb] '    
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.69,1.31)
     data_legendText = "Data (36/fb)"
-    signal_legendText = "Observation"
+    signal_legendText = "Observed"
 
     lumi_factor               = lumi_year[2017]/1000.
     unfolding_data_input      = replace_data_error( data )
@@ -1206,55 +1225,55 @@ class observed_absEta_2017:
     unfolding_signal_input        = replace_data_error( data )
     unfolding_signal_input_systematic_bands          = [
        {'name' : 'stat',
-        'label': "\pm 1\sigma (stat.)",
+        'label': "Stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue -10,
+        'color':ROOT.kGray,
         },
        {'name' : 'total',
-        'label': "\pm 1\sigma (tot.)",
+        'label': "Total",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(signal, +1, ref = data),
         'down':add_sigmas(signal, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         },
         ]
     unfolding_signal_input_systematics          = [
        {'name' : u,
-        'label': "\pm 1\sigma (%s)"%u,
+        'label': "\pm 1#sigma (%s)"%u,
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(h, +1, ref = data),
         'down':add_sigmas(h, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         } for u, h in uncertainties.iteritems()
         ]
     unfolding_signal_input_MCStat          = {
         'name' : "MCStat",
-        'label': "\pm 1\sigma (MC stat.)",
+        'label': "MC stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(mcStat, +1, ref = data),
         'down':add_sigmas(mcStat, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         }
     unfolding_data_input_systematic        = {
         'name' : "data",
-        'label': "\pm 1\sigma",
+        'label': "\pm 1#sigma",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue-10,
+        'color':ROOT.kGray,
         }
 
 
 
 class observed_absEta_2018:
-#  if False:
+  if False:
     uncertainties = allUncertainties + signal_uncertainty_absEta
     expected        = False
     cache_directory = default_cache_directory 
@@ -1306,13 +1325,13 @@ class observed_absEta_2018:
 
     tex_reco = "|#eta^{reco}(#gamma)|"
     tex_gen  = "|#eta^{gen}(#gamma)|"
-    tex_unf  = "|#eta^{fid.}(#gamma)|"
+    tex_unf  = "|#eta(#gamma)|"
     tex_pur  = "|#eta(#gamma)|"
-    texY     = 'Fiducial cross section [fb]'    
+    texY     = '#frac{d#sigma}{d|#eta(#gamma)|} [fb] '    
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.69,1.31)
     data_legendText = "Data (36/fb)"
-    signal_legendText = "Observation"
+    signal_legendText = "Observed"
 
     lumi_factor               = lumi_year[2018]/1000.
     unfolding_data_input      = replace_data_error( data )
@@ -1321,55 +1340,55 @@ class observed_absEta_2018:
     unfolding_signal_input        = replace_data_error( data )
     unfolding_signal_input_systematic_bands          = [
        {'name' : 'stat',
-        'label': "\pm 1\sigma (stat.)",
+        'label': "Stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue -10,
+        'color':ROOT.kGray,
         },
        {'name' : 'total',
-        'label': "\pm 1\sigma (tot.)",
+        'label': "Total",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(signal, +1, ref = data),
         'down':add_sigmas(signal, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         },
         ]
     unfolding_signal_input_systematics          = [
        {'name' : u,
-        'label': "\pm 1\sigma (%s)"%u,
+        'label': "\pm 1#sigma (%s)"%u,
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(h, +1, ref = data),
         'down':add_sigmas(h, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         } for u, h in uncertainties.iteritems()
         ]
     unfolding_signal_input_MCStat          = {
         'name' : "MCStat",
-        'label': "\pm 1\sigma (MC stat.)",
+        'label': "MC stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(mcStat, +1, ref = data),
         'down':add_sigmas(mcStat, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         }
     unfolding_data_input_systematic        = {
         'name' : "data",
-        'label': "\pm 1\sigma",
+        'label': "\pm 1#sigma",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue-10,
+        'color':ROOT.kGray,
         }
 
 
 
 class observed_dRlg_2016:
-#  if False:
+  if False:
     uncertainties = allUncertainties + signal_uncertainty_dRlg
     expected        = False
     cache_directory = default_cache_directory 
@@ -1419,15 +1438,15 @@ class observed_dRlg_2016:
 
     reco_thresholds_years = copy.deepcopy(reco_thresholds)
 
-    tex_reco = "#Delta R(#gamma, l)^{reco}"
-    tex_gen  = "#Delta R(#gamma, l)^{gen}"
-    tex_unf  = "#Delta R(#gamma, l)^{fid.}"
-    tex_pur  = "#Delta R(#gamma, l)"
-    texY     = 'Fiducial cross section [fb]'    
+    tex_reco = "#DeltaR(l, #gamma)^{reco}"
+    tex_gen  = "#DeltaR(l, #gamma)^{gen}"
+    tex_unf  = "#DeltaR(l, #gamma)"
+    tex_pur  = "#DeltaR(l, #gamma)"
+    texY     = '#frac{d#sigma}{d#DeltaR(l, #gamma)} [fb]'    
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.69,1.31)
     data_legendText = "Data (36/fb)"
-    signal_legendText =   "Observation"
+    signal_legendText =   "Observed"
 
     lumi_factor               = lumi_year[2016]/1000.
     unfolding_data_input      = replace_data_error( data )
@@ -1436,54 +1455,54 @@ class observed_dRlg_2016:
     unfolding_signal_input        = replace_data_error( data )
     unfolding_signal_input_systematic_bands          = [
        {'name' : 'stat',
-        'label': "\pm 1\sigma (stat.)",
+        'label': "Stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue -10,
+        'color':ROOT.kGray,
         },
        {'name' : 'total',
-        'label': "\pm 1\sigma (tot.)",
+        'label': "Total",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(signal, +1, ref = data),
         'down':add_sigmas(signal, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         },
         ]
     unfolding_signal_input_systematics          = [
        {'name' : u,
-        'label': "\pm 1\sigma (%s)"%u,
+        'label': "\pm 1#sigma (%s)"%u,
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(h, +1, ref = data),
         'down':add_sigmas(h, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         } for u, h in uncertainties.iteritems()
         ]
     unfolding_signal_input_MCStat          = {
         'name' : "MCStat",
-        'label': "\pm 1\sigma (MC stat.)",
+        'label': "MC stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(mcStat, +1, ref = data),
         'down':add_sigmas(mcStat, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         }
     unfolding_data_input_systematic        = {
         'name' : "data",
-        'label': "\pm 1\sigma",
+        'label': "\pm 1#sigma",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue-10,
+        'color':ROOT.kGray,
         }
 
 
 class observed_dRlg_2017:
-#  if False:
+  if False:
     uncertainties = allUncertainties + signal_uncertainty_dRlg
     expected        = False
     cache_directory = default_cache_directory 
@@ -1533,15 +1552,15 @@ class observed_dRlg_2017:
 
     reco_thresholds_years = copy.deepcopy(reco_thresholds)
 
-    tex_reco = "#Delta R(#gamma, l)^{reco}"
-    tex_gen  = "#Delta R(#gamma, l)^{gen}"
-    tex_unf  = "#Delta R(#gamma, l)^{fid.}"
-    tex_pur  = "#Delta R(#gamma, l)"
-    texY     = 'Fiducial cross section [fb]'    
+    tex_reco = "#DeltaR(l, #gamma)^{reco}"
+    tex_gen  = "#DeltaR(l, #gamma)^{gen}"
+    tex_unf  = "#DeltaR(l, #gamma)"
+    tex_pur  = "#DeltaR(l, #gamma)"
+    texY     = '#frac{d#sigma}{d#DeltaR(l, #gamma)} [fb]'    
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.69,1.31)
     data_legendText = "Data (36/fb)"
-    signal_legendText =   "Observation"
+    signal_legendText =   "Observed"
 
     lumi_factor               = lumi_year[2017]/1000.
     unfolding_data_input      = replace_data_error( data )
@@ -1550,56 +1569,56 @@ class observed_dRlg_2017:
     unfolding_signal_input        = replace_data_error( data )
     unfolding_signal_input_systematic_bands          = [
        {'name' : 'stat',
-        'label': "\pm 1\sigma (stat.)",
+        'label': "Stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue -10,
+        'color':ROOT.kGray,
         },
        {'name' : 'total',
-        'label': "\pm 1\sigma (tot.)",
+        'label': "Total",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(signal, +1, ref = data),
         'down':add_sigmas(signal, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         },
         ]
     unfolding_signal_input_systematics          = [
        {'name' : u,
-        'label': "\pm 1\sigma (%s)"%u,
+        'label': "\pm 1#sigma (%s)"%u,
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(h, +1, ref = data),
         'down':add_sigmas(h, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         } for u, h in uncertainties.iteritems()
         ]
 
     unfolding_signal_input_MCStat          = {
         'name' : "MCStat",
-        'label': "\pm 1\sigma (MC stat.)",
+        'label': "MC stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(mcStat, +1, ref = data),
         'down':add_sigmas(mcStat, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         }
     unfolding_data_input_systematic        = {
         'name' : "data",
-        'label': "\pm 1\sigma",
+        'label': "\pm 1#sigma",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue-10,
+        'color':ROOT.kGray,
         }
 
 
 
 class observed_dRlg_2018:
-#  if False:
+  if False:
     uncertainties = allUncertainties + signal_uncertainty_dRlg
     expected        = False
     cache_directory = default_cache_directory 
@@ -1649,15 +1668,15 @@ class observed_dRlg_2018:
 
     reco_thresholds_years = copy.deepcopy(reco_thresholds)
 
-    tex_reco = "#Delta R(#gamma, l)^{reco}"
-    tex_gen  = "#Delta R(#gamma, l)^{gen}"
-    tex_unf  = "#Delta R(#gamma, l)^{fid.}"
-    tex_pur  = "#Delta R(#gamma, l)"
-    texY     = 'Fiducial cross section [fb]'    
+    tex_reco = "#DeltaR(l, #gamma)^{reco}"
+    tex_gen  = "#DeltaR(l, #gamma)^{gen}"
+    tex_unf  = "#DeltaR(l, #gamma)"
+    tex_pur  = "#DeltaR(l, #gamma)"
+    texY     = '#frac{d#sigma}{d#DeltaR(l, #gamma)} [fb]'    
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.69,1.31)
     data_legendText = "Data (36/fb)"
-    signal_legendText =   "Observation"
+    signal_legendText =   "Observed"
 
     lumi_factor               = lumi_year[2018]/1000.
     unfolding_data_input      = replace_data_error( data )
@@ -1666,49 +1685,49 @@ class observed_dRlg_2018:
     unfolding_signal_input        = replace_data_error( data )
     unfolding_signal_input_systematic_bands          = [
        {'name' : 'stat',
-        'label': "\pm 1\sigma (stat.)",
+        'label': "Stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue -10,
+        'color':ROOT.kGray,
         },
        {'name' : 'total',
-        'label': "\pm 1\sigma (tot.)",
+        'label': "Total",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(signal, +1, ref = data),
         'down':add_sigmas(signal, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         },
         ]
     unfolding_signal_input_systematics          = [
        {'name' : u,
-        'label': "\pm 1\sigma (%s)"%u,
+        'label': "\pm 1#sigma (%s)"%u,
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(h, +1, ref = data),
         'down':add_sigmas(h, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         } for u, h in uncertainties.iteritems()
         ]
     unfolding_signal_input_MCStat          = {
         'name' : "MCStat",
-        'label': "\pm 1\sigma (MC stat.)",
+        'label': "MC stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(mcStat, +1, ref = data),
         'down':add_sigmas(mcStat, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         }
     unfolding_data_input_systematic        = {
         'name' : "data",
-        'label': "\pm 1\sigma",
+        'label': "\pm 1#sigma",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue-10,
+        'color':ROOT.kGray,
         }
 
 
@@ -1776,15 +1795,15 @@ class expected_dRlg_RunII:
     max_fiducial_val        = fiducial_thresholds[-1]
     max_fiducial_bincenter  = 0.5*sum(fiducial_thresholds[-2:])
 
-    tex_reco = "#Delta R(#gamma, l)^{reco}"
-    tex_gen  = "#Delta R(#gamma, l)^{gen}"
-    tex_unf  = "#Delta R(#gamma, l)^{fid.}"
-    tex_pur  = "#Delta R(#gamma, l)"
-    texY     = 'Fiducial cross section [fb]'    
+    tex_reco = "#DeltaR(l, #gamma)^{reco}"
+    tex_gen  = "#DeltaR(l, #gamma)^{gen}"
+    tex_unf  = "#DeltaR(l, #gamma)"
+    tex_pur  = "#DeltaR(l, #gamma)"
+    texY     = '#frac{d#sigma}{d#DeltaR(l, #gamma)} [fb]'    
     y_range         = (0.9, "auto") #(0.9, 9000)
     y_range_ratio   = (0.39,1.61)
     data_legendText = "Data (137/fb)"
-    signal_legendText =  "Observation"
+    signal_legendText =  "Observed"
 
     lumi_factor               = (lumi_year[2016]+lumi_year[2017]+lumi_year[2018])/1000.
     unfolding_data_input      = replace_data_error( data )
@@ -1793,49 +1812,49 @@ class expected_dRlg_RunII:
     unfolding_signal_input        = replace_data_error( data )
     unfolding_signal_input_systematic_bands          = [
        {'name' : 'stat',
-        'label': "\pm 1\sigma (stat.)",
+        'label': "Stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue -10,
+        'color':ROOT.kGray,
         },
        {'name' : 'total',
-        'label': "\pm 1\sigma (tot.)",
+        'label': "Total",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(signal, +1, ref = data),
         'down':add_sigmas(signal, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         },
         ]
     unfolding_signal_input_systematics          = [
        {'name' : u,
-        'label': "\pm 1\sigma (%s)"%u,
+        'label': "\pm 1#sigma (%s)"%u,
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(h, +1, ref = data),
         'down':add_sigmas(h, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         } for u, h in uncertainties.iteritems()
         ]
     unfolding_signal_input_MCStat          = {
         'name' : "MCStat",
-        'label': "\pm 1\sigma (MC stat.)",
+        'label': "MC stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(mcStat, +1, ref = data),
         'down':add_sigmas(mcStat, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         }
     unfolding_data_input_systematic        = {
         'name' : "data",
-        'label': "\pm 1\sigma",
+        'label': "\pm 1#sigma",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue-10,
+        'color':ROOT.kGray,
         }
 
 
@@ -1899,6 +1918,8 @@ class observed_dRlg_RunII:
     for i_year in range(1, len(years)):
         reco_thresholds_years +=  [ x + (max_reco_val-min_reco_val)*i_year for x in reco_thresholds[1:] ]
 
+    theory_uncertainties = [0.14490621872390938, 0.14342212470463356, 0.1443544588667189, 0.1455603440611934, 0.15076189908552035, 0.15534951443951042, 0.1570437136425912]
+
     data        = merge_x( data_histos, reco_thresholds_years )
     signal      = merge_x( signal_histos, reco_thresholds_years )
     mcStat      = merge_x( mcStatUp_histos, reco_thresholds_years )
@@ -1920,15 +1941,16 @@ class observed_dRlg_RunII:
     max_fiducial_val        = fiducial_thresholds[-1]
     max_fiducial_bincenter  = 0.5*sum(fiducial_thresholds[-2:])
 
-    tex_reco = "#Delta R(#gamma, l)^{reco}"
-    tex_gen  = "#Delta R(#gamma, l)^{gen}"
-    tex_unf  = "#Delta R(#gamma, l)^{fid.}"
-    tex_pur  = "#Delta R(#gamma, l)"
-    texY     = 'Fiducial cross section [fb]'    
-    y_range         = (0.9, "auto") #(0.9, 9000)
-    y_range_ratio   = (0.84, 1.16)
+    tex_reco = "#DeltaR(l, #gamma)^{reco}"
+    tex_gen  = "#DeltaR(l, #gamma)^{gen}"
+    tex_unf  = "#DeltaR(l, #gamma)"
+    tex_pur  = "#DeltaR(l, #gamma)"
+    texY     = '#frac{d#sigma}{d#DeltaR(l, #gamma)} [fb]'    
+    y_range         = (40, 280) #(0.9, 9000)
+    y_range_ratio   = (0.76, 1.24)
+#    y_range_ratio   = (0.84, 1.16)
     data_legendText = "Data (137/fb)"
-    signal_legendText =  "Observation"
+    signal_legendText =  "Observed"
 
     lumi_factor               = (lumi_year[2016]+lumi_year[2017]+lumi_year[2018])/1000.
     unfolding_data_input      = replace_data_error( data )
@@ -1938,69 +1960,69 @@ class observed_dRlg_RunII:
     unfolding_signal_input        = replace_data_error( data )
     unfolding_signal_input_systematic_bands          = [
        {'name' : 'stat',
-        'label': "\pm 1\sigma (stat.)",
+        'label': "Stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue -10,
+        'color':ROOT.kGray,
         },
        {'name' : 'total',
-        'label': "\pm 1\sigma (tot.)",
+        'label': "Total",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(signal, +1, ref = data),
         'down':add_sigmas(signal, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         },
         ]
     unfolding_signal_input_systematics          = [
        {'name' : u,
-        'label': "\pm 1\sigma (%s)"%u,
+        'label': "\pm 1#sigma (%s)"%u,
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(h, +1, ref = data),
         'down':add_sigmas(h, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         } for u, h in uncertainties.iteritems()
         ]
     unfolding_signal_input_MCStat          = {
         'name' : "MCStat",
-        'label': "\pm 1\sigma (MC stat.)",
+        'label': "MC stat.",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(mcStat, +1, ref = data),
         'down':add_sigmas(mcStat, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         }
     unfolding_data_input_systematic        = {
         'name' : "data",
-        'label': "\pm 1\sigma",
+        'label': "\pm 1#sigma",
         'matrix': "nominal",
         'ref': replace_data_error( data ),
         'up':  add_sigmas(data, +1),
         'down':add_sigmas(data, -1),
-        'color':ROOT.kBlue-10,
+        'color':ROOT.kGray,
         }
 
     unfolding_signalStat_input_systematics          = [
        {'name' : u,
-        'label': "\pm 1\sigma (%s)"%u,
+        'label': "\pm 1#sigma (%s)"%u,
         'matrix': "nominal",
         'ref':  replace_data_error( data ),
         'up':  add_sigmas(h, +1, ref = data),
         'down':add_sigmas(h, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         } for u, h in uncertaintiesStat.iteritems()
         ]
     unfolding_signalStat_input_MCStat          = {
         'name' : "MCStat",
-        'label': "\pm 1\sigma (MC stat.)",
+        'label': "MC stat.",
         'matrix': "nominal",
         'ref':  replace_data_error( data ),
         'up':  add_sigmas(mcStatStat, +1, ref = data),
         'down':add_sigmas(mcStatStat, -1, ref = data),
-        'color':ROOT.kOrange-9,
+        'color':ROOT.kGray+1,
         }
 
 

@@ -1,6 +1,8 @@
 # Standard imports
 import ROOT
 ROOT.gROOT.SetBatch(True)
+ROOT.gStyle.SetPaintTextFormat("3.1f")
+#ROOT.gStyle.SetPalette(52)
 import uuid
 import os, sys, copy, array
 from   math import log, sqrt
@@ -57,18 +59,31 @@ import RootTools.core.logger as logger_rt
 logger    = logger.get_logger(    args.logLevel, logFile=None )
 logger_rt = logger_rt.get_logger( args.logLevel, logFile=None )
 
-# Text on the plots
-def drawObjects( offset=0 ):
+def drawHeader():
     tex = ROOT.TLatex()
     tex.SetNDC()
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
-    line = (0.8-offset, 0.95, "(13 TeV)") 
-    lines = [
-      (0.15, 0.95, "CMS #bf{#it{Preliminary}}"), 
-      line
-    ]
-    return [tex.DrawLatex(*l) for l in lines]
+
+    line = (0.18, 0.85, "MG5_aMC") 
+    line2 = (0.5, 0.85, "Uncertainty")
+    return [tex.DrawLatex(*line), tex.DrawLatex(*line)]
+
+# Text on the plots
+def drawObjects( offset=0, cmsOffset=0 ):
+    tex = ROOT.TLatex()
+    tex.SetNDC()
+    tex.SetTextSize(0.04)
+    tex.SetTextAlign(11) # align right
+
+    tex2 = ROOT.TLatex()
+    tex2.SetNDC()
+    tex2.SetTextSize(0.055)
+    tex2.SetTextAlign(11) # align right
+
+    line = (0.68-offset, 0.95, "%i fb{}^{-1} (13 TeV)"%settings.lumi_factor) 
+    line2 = (0.15+cmsOffset, 0.95, "CMS")
+    return [tex2.DrawLatex(*line2), tex.DrawLatex(*line)]
 
 if args.small: args.plot_directory += "_small"
 
@@ -83,7 +98,7 @@ cache_dir = os.path.join(cache_directory, "unfolding", year_str, "matrix")
 dirDB     = MergingDirDB(cache_dir)
 
 # specifics from the arguments
-plot_directory_ = os.path.join( plot_directory, "unfolding", args.plot_directory+"_v3", args.settings + "_" + args.useMatrix if args.useMatrix else args.settings)
+plot_directory_ = os.path.join( plot_directory, "unfolding", args.plot_directory+"_Herwigv8", args.settings + "_" + args.useMatrix if args.useMatrix else args.settings)
 copyIndexPHP( plot_directory_ )
 copyIndexPHP( plot_directory_ + "/uncertainties/" )
 copyIndexPHP( plot_directory_ + "/uncertainties_unfolded/" )
@@ -118,6 +133,7 @@ def draw( plot, **kwargs):
         legend         = [ (0.20,0.75,0.9,0.91), 2 ],
         drawObjects    = drawObjects(),
         copyIndexPHP   = True, 
+        redrawHistos = True,
         **kwargs
       )
 def draw2D( plot, logZ, **kwargs):
@@ -125,7 +141,7 @@ def draw2D( plot, logZ, **kwargs):
                      plot_directory = plot_directory_,
                      logX = False, logY = False, logZ = logZ,
                      copyIndexPHP = True,  
-                     drawObjects    = drawObjects(offset=0.08),
+                     drawObjects    = drawObjects(offset=0.1),
                      **kwargs
                     )
 
@@ -166,7 +182,7 @@ if not args.systematic is None and dirDB.contains( loop_key ) and not args.overw
 elif not args.systematic is None:
     # spectrum in fiducial region 
     fiducial_spectrum = ROOT.TH1D("fiducial_spectrum", "fiducial_spectrum", len(settings.fiducial_thresholds)-1, array.array('d', settings.fiducial_thresholds) )
-    fiducial_spectrum.GetXaxis().SetTitle(settings.tex_gen)
+    fiducial_spectrum.GetXaxis().SetTitle(settings.tex_unf)
 
     # spectrum in reco region 
     reco_spectrum = ROOT.TH1D("reco_spectrum", "reco_spectrum", len(settings.reco_thresholds_years)-1, array.array('d', settings.reco_thresholds_years) )
@@ -371,7 +387,8 @@ elif not args.systematic is None:
 
         # Sample for this year (fix)
 
-        data_dir = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v49/inclusive".format(year=year)
+#        data_dir = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v49/inclusive".format(year=year)
+        data_dir = "/eos/vbc/user/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_{year}_TTG_private_v49/inclusive".format(year=year)
 
         if useSystematic == 'TuneUp':
             ttg1l = Sample.fromDirectory("ttg1l_%s"%year, directory = [os.path.join(data_dir, "TTGSingleLep_TuneUp_LO")])
@@ -564,32 +581,36 @@ if not args.systematic is None:
 
 if args.useMatrix:
     matrix = sys_matrix[args.useMatrix]
+#else:
+#    matrix = sys_matrix["nominal"]
 
+
+gen_sel = cutInterpreter.cutString(settings.fiducial_selection)
+data_dir = "/eos/vbc/user/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_2017_TTG_private_v49/inclusive"
+
+ttg1l_pyt = Sample.fromDirectory("ttg1l_pyt", directory = [os.path.join(data_dir, name) for name in ["TTGSingleLep_LO"]])
+ttg2l_pyt = Sample.fromDirectory("ttg2l_pyt", directory = [os.path.join(data_dir, name) for name in ["TTGLep_LO"]])
+sample_pyt = Sample.combine( "ttg_pyt", [ttg1l_pyt, ttg2l_pyt] )
+
+from TTGammaEFT.Samples.genTuples_TTGamma_Herwig_postProcessed  import *
+
+norm  = sample_pyt.getYieldFromDraw( selectionString=gen_sel, weightString="weight")["val"]
+norm /= TTG_P8.getYieldFromDraw( selectionString=gen_sel, weightString="weight")["val"]
+
+print "norm", norm
 
 genVar = settings.fiducial_variable[settings.fiducial_variable.keys()[0]] if type( settings.fiducial_variable ) == type({}) and len(settings.fiducial_variable)==1 else settings.fiducial_variable
-gen_weight = "weight*(35.92+41.53+59.74)"
-gen_sel = cutInterpreter.cutString(settings.fiducial_selection) +"&&overlapRemoval==1"
+# quickfix
+if "dRlg" in args.settings:
+    genVar = "sqrt((GenPhotonCMSUnfold0_eta-GenLeptonCMSUnfold0_eta)**2+acos(cos(GenPhotonCMSUnfold0_phi-GenLeptonCMSUnfold0_phi))**2)"
 
+gen_weight = "weight*(35.92+41.53+59.74)*%f"%norm
 
-#nGenLeptonCMSUnfold==1&&nGenJetsCMSUnfold>=3&&nGenBJetCMSUnfold>=1&&nGenPhotonCMSUnfold==1&&overlapRemoval==1
-#gen_sel = "nGenLeptonCMSUnfold==1&&nGenPhotonCMSUnfold==1&&overlapRemoval==1&&nGenJetsCMSUnfold>=3&&nGenBJetCMSUnfold>=1"
-#print gen_sel
+fiducial_spectrum_Hpp = TTG_Hpp.get1DHistoFromDraw( genVar, binning=array.array('d', settings.fiducial_thresholds), selectionString=gen_sel, weightString=gen_weight, addOverFlowBin="upper", binningIsExplicit=True )
+fiducial_spectrum_Hpp.GetXaxis().SetTitle(settings.tex_gen)
 
-data_dir = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_2016_TTG_private_v49/inclusive"
-ttg1l_hpp = Sample.fromDirectory("ttg1l_hpp", directory = [os.path.join(data_dir, "TTGSingleLep_LO_Herwig")])
-ttg2l_hpp = Sample.fromDirectory("ttg2l_hpp", directory = [os.path.join(data_dir, "TTGLep_LO_Herwig")])
-sample_hpp = Sample.combine( "ttg_hpp", [ttg1l_hpp, ttg2l_hpp] )
-
-#fiducial_spectrum_Hpp = sample_hpp.get1DHistoFromDraw( genVar, binning=array.array('d', settings.fiducial_thresholds), selectionString=gen_sel, weightString=gen_weight, addOverFlowBin="upper", binningIsExplicit=True )
-#fiducial_spectrum_Hpp.GetXaxis().SetTitle(settings.tex_gen)
-
-data_dir = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_2017_TTG_private_v50/inclusive"
-ttg1l_h7 = Sample.fromDirectory("ttg1l_h7", directory = [os.path.join(data_dir, "TTGSingleLep_LO_Herwig")])
-ttg2l_h7 = Sample.fromDirectory("ttg2l_h7", directory = [os.path.join(data_dir, "TTGLep_LO_Herwig")])
-sample_h7 = Sample.combine( "ttg_h7", [ttg1l_h7, ttg2l_h7] )
-
-#fiducial_spectrum_H7 = sample_h7.get1DHistoFromDraw( genVar, binning=array.array('d', settings.fiducial_thresholds), selectionString=gen_sel, weightString=gen_weight, addOverFlowBin="upper", binningIsExplicit=True )
-#fiducial_spectrum_H7.GetXaxis().SetTitle(settings.tex_gen)
+fiducial_spectrum_H7 = TTG_H7.get1DHistoFromDraw( genVar, binning=array.array('d', settings.fiducial_thresholds), selectionString=gen_sel, weightString=gen_weight, addOverFlowBin="upper", binningIsExplicit=True )
+fiducial_spectrum_H7.GetXaxis().SetTitle(settings.tex_gen)
 
 # Unfolding matrix
 delta = settings.max_reco_val-settings.min_reco_val
@@ -670,7 +691,7 @@ reco_spectrum_subtracted = fout_subtraction( reco_spectrum )
 reco_spectrum_subtracted.legendText = "reco (f_{out} subtracted)"
 reco_fout_spectrum.legendText = "reco f_{out}"
 reco_spectrum.legendText = "Reco before subtraction"
-reco_spectrum_subtracted.style = styles.lineStyle( ROOT.kRed, width=2) 
+reco_spectrum_subtracted.style = styles.lineStyle( ROOT.kRed+1, width=2) 
 reco_fout_spectrum.style       = styles.lineStyle( ROOT.kGreen+1, width=2)       
 reco_spectrum.style            = styles.lineStyle( ROOT.kBlue, width=2)      
 
@@ -685,7 +706,7 @@ for logY in [True, False]:
 
 for logY in [False]:
 
-    purity     . style =  styles.lineStyle( ROOT.kRed, width = 2, errors=False)
+    purity     . style =  styles.lineStyle( ROOT.kRed+1, width = 2, errors=False)
     efficiency . style =  styles.lineStyle( ROOT.kBlue, width = 2, errors=True)
     purity     . legendText = "purity" 
     efficiency . legendText = "efficiency" 
@@ -752,8 +773,8 @@ scan_tgraph.Draw()
 scan_tgraph.GetXaxis().SetTitle("log_{10}(#tau)")
 scan_tgraph.GetYaxis().SetTitle("Avg. correlation coefficient")
 
-scan_tgraph_best.SetLineColor(ROOT.kRed)
-scan_tgraph_best.SetMarkerColor(ROOT.kRed)
+scan_tgraph_best.SetLineColor(ROOT.kRed+1)
+scan_tgraph_best.SetMarkerColor(ROOT.kRed+1)
 scan_tgraph_best.Draw("* same")
 
 leg = ROOT.TLegend(0.2, 0.6, 0.7, 0.89)
@@ -769,7 +790,7 @@ for ext in ['pdf','png','root']:
     canv.Print(os.path.join(plot_directory_, 'scan_tau.'+ext))
 
 hs = []
-colors = [ROOT.kBlue, ROOT.kRed, ROOT.kGreen+1]
+colors = [ROOT.kBlue, ROOT.kRed+1, ROOT.kGreen+1]
 for i_tau, tau in enumerate( [  0, 10**best_logtau, 10**-1] ):
     h = getOutput(unfold_nom_sys, reco_spectrum_subtracted, tau=tau)
     h.legendText = ( "log(#tau) = %6.4f" % log(tau,10) if tau > 0 else  "log(#tau) = -#infty" )
@@ -790,7 +811,7 @@ for logY in [True, False]:
     fiducial_spectrum_    = fiducial_spectrum.Clone()
     fiducial_spectrum_    . Scale(1./settings.lumi_factor) 
 
-    unfolded_mc_spectrum_ . style =  styles.lineStyle( ROOT.kRed, width = 2, errors=True)
+    unfolded_mc_spectrum_ . style =  styles.lineStyle( ROOT.kRed+1, width = 2, errors=True)
     fiducial_spectrum_    . style =  styles.lineStyle( ROOT.kBlack, width = 2, errors=True)
     unfolded_mc_spectrum_ . legendText = "unfolded (%6.2f fb)" % (unfolded_mc_spectrum_.Integral())
     fiducial_spectrum_    . legendText = "fiducial (%6.2f fb)" % (fiducial_spectrum_.Integral())
@@ -803,20 +824,62 @@ if not hasattr(settings, "unfolding_data_input"):
     sys.exit(0)
 
 # input plot unsubtracted
-empty = settings.unfolding_signal_input.Clone()
+empty = settings.unfolding_signal_input.Clone("empt")
 for i in range(1, empty.GetNbinsX()+1):
     empty.SetBinContent( i, 0 )
     empty.SetBinError( i, 0 )
 
 empties = []
-for band in settings.unfolding_signal_input_systematic_bands:
-    empty_ = empty.Clone()
-    empty_.SetLineColor(band['color'])
-    empty_.SetLineWidth(0)
-    #empty_.SetFillStyle(3244)
-    empty_.SetFillColor(band['color'])
-    empties.append(empty_)
-    empty_.legendText = band["label"]
+statempty = empty.Clone()
+statempty.style = styles.fillStyle(ROOT.kGray, lineWidth=0)
+statempty.legendText = "Stat."
+statempty.legendOption = "f"
+empties.append(statempty)
+
+totempty = empty.Clone()
+totempty.style = styles.fillStyle(ROOT.kGray+1, lineWidth=0)
+totempty.legendText = "Total"
+totempty.legendOption = "f"
+empties.append(totempty)
+
+thempty = empty.Clone()
+thempty.style = styles.hashStyle(hashCode=3635, lineColor=ROOT.kRed+1, lineWidth=1, color=ROOT.kRed+1)
+thempty.legendText = "Theory"
+thempty.legendOption = "f"
+empties.append(thempty)
+
+headerMG = empty.Clone()
+headerMG.style = styles.lineStyle(color=ROOT.kWhite, width=0)
+headerMG.legendText = "MG5_aMC"
+empties.append(headerMG)
+
+headerUnc = empty.Clone()
+headerUnc.style = styles.lineStyle(color=ROOT.kWhite, width=0)
+headerUnc.legendText = "Uncertainty"
+empties.append(headerUnc)
+
+h7empty = empty.Clone()
+h7empty.style = styles.lineStyle( ROOT.kBlack, width = 3, dashed=True)
+h7empty.legendText = "Herwig7"
+empties.append(h7empty)
+
+hppempty = empty.Clone()
+hppempty.style = styles.lineStyle( ROOT.kGreen+2, width = 3, dashed=True)
+hppempty.legendText = "Herwig++"
+empties.append(hppempty)
+
+p8empty = empty.Clone()
+p8empty.style = styles.lineStyle( ROOT.kRed+1, width = 3)
+p8empty.legendText = "Pythia8"
+empties.append(p8empty)
+
+dataempty = empty.Clone()
+dataempty.style = styles.errorStyle(ROOT.kBlack)
+dataempty.legendText = "Observed"
+empties.append(dataempty)
+
+legEmpties = [headerMG, headerUnc, p8empty, statempty, h7empty, totempty, hppempty, thempty, dataempty]
+#legEmpties = [p8empty, statempty, h7empty, totempty, hppempty, thempty, dataempty]
 
 boxes = []
 ratio_boxes = []
@@ -828,7 +891,7 @@ for band in reversed(settings.unfolding_signal_input_systematic_bands):
                          band['up'].GetBinContent(i),
              )
         box.SetLineColor(band['color'])
-        #box.SetFillStyle(3244)
+        #box.SetFillStyle(3635)
         box.SetFillColor(band['color'])
         if hasattr( settings, "plot_range_x_fiducial") and band['ref'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
             pass
@@ -842,7 +905,7 @@ for band in reversed(settings.unfolding_signal_input_systematic_bands):
                              band['up'].GetBinContent(i)/band['ref'].GetBinContent(i),
                  )
             ratio_box.SetLineColor(band['color'])
-            #ratio_box.SetFillStyle(3244)
+            #ratio_box.SetFillStyle(3635)
             ratio_box.SetFillColor(band['color'])
             if hasattr( settings, "plot_range_x_fiducial") and band['ref'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
                 pass
@@ -856,6 +919,7 @@ reco_spectrum.style = styles.lineStyle( ROOT.kRed+1, width = 2)
 
 #settings.unfolding_data_input.legendText = settings.data_legendText 
 settings.unfolding_signal_input.legendText   = settings.signal_legendText
+settings.unfolding_signal_input.legendOption = "lpf"
 reco_spectrum.legendText = "Simulation"
 ratio_line = ROOT.TLine(reco_spectrum.GetXaxis().GetXmin(), 1, reco_spectrum.GetXaxis().GetXmax(),1)
 for logY in [True, False]:
@@ -863,9 +927,9 @@ for logY in [True, False]:
                     [
                         [reco_spectrum],
                         [settings.unfolding_signal_input],
-                    ] + [[e] for e in empties],
+                    ] + [[e] for e in legEmpties],
                     texX = settings.tex_reco,
-                    texY = "Number of events",
+                    texY = "Events",
                 )
     plotting.draw( plot, 
         plot_directory = plot_directory_,
@@ -873,7 +937,7 @@ for logY in [True, False]:
         #legend = None,
         legend         = [ (0.20,0.75,0.9,0.91), 2 ],
         yRange = settings.y_range,
-        ratio = {'yRange': settings.y_range_ratio, 'texY':'Sim. / Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes+[ratio_line]} ,
+        ratio = {'yRange': settings.y_range_ratio, 'texY':'Pred./Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes+[ratio_line]} ,
         drawObjects = drawObjects()+boxes,
         #drawObjects = boxes,
         redrawHistos = True,
@@ -895,7 +959,7 @@ for band in reversed(settings.unfolding_signal_input_systematic_bands):
                          band['up_subtracted'].GetBinContent(i),
              )
         box.SetLineColor(band['color'])
-        #box.SetFillStyle(3244)
+        #box.SetFillStyle(3635)
         box.SetFillColor(band['color'])
         if hasattr( settings, "plot_range_x_fiducial") and band['ref'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
             pass
@@ -909,7 +973,7 @@ for band in reversed(settings.unfolding_signal_input_systematic_bands):
                              band['up_subtracted'].GetBinContent(i)/band['ref_subtracted'].GetBinContent(i),
                  )
             ratio_box.SetLineColor(band['color'])
-            #ratio_box.SetFillStyle(3244)
+            #ratio_box.SetFillStyle(3635)
             ratio_box.SetFillColor(band['color'])
             if hasattr( settings, "plot_range_x_fiducial") and band['ref_subtracted'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
                 pass
@@ -920,6 +984,7 @@ for band in reversed(settings.unfolding_signal_input_systematic_bands):
 unfolding_signal_input_subtracted   = fout_subtraction( settings.unfolding_signal_input )
 unfolding_signal_input_subtracted.style   = styles.lineStyle( ROOT.kBlue, width = 2)
 unfolding_signal_input_subtracted.legendText   = settings.signal_legendText
+unfolding_signal_input_subtracted.legendOption = "lpf"
 reco_spectrum_subtracted.style = styles.lineStyle( ROOT.kRed+1, width = 2)
 reco_spectrum_subtracted.legendText = "Simulation"
 ratio_line = ROOT.TLine(reco_spectrum_subtracted.GetXaxis().GetXmin(), 1, reco_spectrum_subtracted.GetXaxis().GetXmax(),1)
@@ -931,16 +996,16 @@ for logY in [True, False]:
                     [
                         [reco_spectrum_subtracted],
                         [unfolding_signal_input_subtracted],
-                    ] + [[e] for e in empties],
+                    ] + [[e] for e in legEmpties],
                     texX = settings.tex_reco,
-                    texY = "Number of events",
+                    texY = "Events",
                 ),
         plot_directory = plot_directory_,
         logX = False, logY = logY, sorting = False,
         #legend = None,
         legend         = [ (0.20,0.75,0.9,0.91), 2 ],
         yRange = settings.y_range,
-        ratio = {'yRange': (0.3, 1.7), 'texY':'Sim. / Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes_sb+[ratio_line]},
+        ratio = {'yRange': (0.3, 1.7), 'texY':'Pred./Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes_sb+[ratio_line]},
         drawObjects = drawObjects()+boxes_sb,
         #drawObjects = boxes_sb,
         redrawHistos = True,
@@ -949,15 +1014,17 @@ for logY in [True, False]:
 #########
 
 # unfolding the data
-unfolding_signal_output = getOutput(unfold['nominal' if not args.useMatrix else args.useMatrix], unfolding_signal_input_subtracted, "unfolding_signal_input_subtracted_x")
+unfolding_signal_output = getOutput(unfold['nominal' if not args.useMatrix else args.useMatrix], unfolding_signal_input_subtracted, "unfolding_signal_input_subtracted_x").Clone()
 unfolding_signal_output.Scale(1./settings.lumi_factor)
-unfolding_signal_output.style = styles.lineStyle( ROOT.kBlue, width = 2)
-unfolding_signal_output.legendText = settings.signal_legendText 
+#unfolding_signal_output.style = styles.lineStyle( ROOT.kBlue, width = 2)
+unfolding_signal_output.style = styles.errorStyle( ROOT.kBlack, width = 0 )
+#unfolding_signal_output.legendText = settings.signal_legendText 
+unfolding_signal_output.legendOption = "lpf"
 
 fiducial_spectrum.Scale(1./settings.lumi_factor)
-fiducial_spectrum.style = styles.lineStyle( ROOT.kRed+1, width = 2)
-#fiducial_spectrum.legendText = "MG5_aMC + Pythia8"
-fiducial_spectrum.legendText = "Simulation"
+fiducial_spectrum.style = styles.lineStyle( ROOT.kRed+1, width = 3)
+#fiducial_spectrum.legendText = "Pythia8"
+#fiducial_spectrum.legendText = "Simulation"
 ratio_line = ROOT.TLine(fiducial_spectrum.GetXaxis().GetXmin(), 1, fiducial_spectrum.GetXaxis().GetXmax(),1)
 
 
@@ -993,13 +1060,14 @@ if not args.useMatrix:
     for i in range(1, total_Matrix_uncertainty.GetNbinsX()+1):
         total_Matrix_uncertainty.SetBinContent( i, sqrt( total_Matrix_uncertainty.GetBinContent(i) ) )
 
-#fiducial_spectrum_H7.Scale(1./settings.lumi_factor)
-#fiducial_spectrum_H7.style = styles.lineStyle( ROOT.kBlack, width = 2)
-#fiducial_spectrum_H7.legendText = "MG5_aMC + Herwig7"
+fiducial_spectrum_H7.Scale(1./settings.lumi_factor)
+fiducial_spectrum_H7.style = styles.lineStyle( ROOT.kBlack, width = 3, dashed=True)
+#fiducial_spectrum_H7.legendText = "Herwig7"
 
-#fiducial_spectrum_Hpp.Scale(1./settings.lumi_factor)
-#fiducial_spectrum_Hpp.style = styles.lineStyle( ROOT.kGreen+2, width = 2)
-#fiducial_spectrum_Hpp.legendText = "MG5_aMC + Herwig++"
+fiducial_spectrum_Hpp.Scale(1./settings.lumi_factor)
+fiducial_spectrum_Hpp.style = styles.lineStyle( ROOT.kGreen+2, width = 3, dashed=True)
+#fiducial_spectrum_Hpp.style = styles.lineStyle( ROOT.kAzure-3, width = 3, dashed=True)
+#fiducial_spectrum_Hpp.legendText = "Herwig++"
 
 def add_error_from_variation( h, ref ):
     if not h: return None
@@ -1021,6 +1089,7 @@ def add_sigmas( h, sigmas, ref = None):
     return res
 
 # subtraction of nominal f_out for all uncertainties
+#for band in [settings.unfolding_data_input_systematic]: #, settings.unfolding_signal_input_MCStat]:
 for band in [settings.unfolding_data_input_systematic, settings.unfolding_signal_input_MCStat]:
     band['ref_subtracted']  = fout_subtraction(band['ref'])
     band['down_subtracted'] = fout_subtraction(band['down'])
@@ -1034,6 +1103,7 @@ for band in [settings.unfolding_data_input_systematic, settings.unfolding_signal
     band['down_unfolded'].Scale(1./settings.lumi_factor)
     band['up_unfolded'].Scale(1./settings.lumi_factor)
 
+#for band in settings.unfolding_signal_input_systematics + settings.unfolding_signalStat_input_systematics + [settings.unfolding_signal_input_MCStat]:
 for band in settings.unfolding_signal_input_systematics + settings.unfolding_signalStat_input_systematics:
     band['ref_subtracted']  = fout_subtraction(band['ref'])
     band['down_subtracted'] = fout_subtraction(band['down'])
@@ -1059,7 +1129,7 @@ if args.extended and False:
                          band['up'].GetBinContent(i),
              )
         box.SetLineColor(band['color'])
-        #box.SetFillStyle(3244)
+        #box.SetFillStyle(3635)
         box.SetFillColor(band['color'])
         if hasattr( settings, "plot_range_x_fiducial") and band['ref'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
             pass
@@ -1073,7 +1143,7 @@ if args.extended and False:
                              band['up'].GetBinContent(i)/band['ref'].GetBinContent(i),
                  )
             ratio_box.SetLineColor(band['color'])
-            #ratio_box.SetFillStyle(3244)
+            #ratio_box.SetFillStyle(3635)
             ratio_box.SetFillColor(band['color'])
             if hasattr( settings, "plot_range_x_fiducial") and band['ref'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
                 pass
@@ -1087,6 +1157,7 @@ if args.extended and False:
 
     #settings.unfolding_data_input.legendText = settings.data_legendText 
     settings.unfolding_signal_input.legendText   = settings.signal_legendText
+    settings.unfolding_signal_input.legendOption   = "lpf"
     reco_spectrum.legendText = "Simulation"
     ratio_line = ROOT.TLine(reco_spectrum.GetXaxis().GetXmin(), 1, reco_spectrum.GetXaxis().GetXmax(),1)
     for logY in [True, False]:
@@ -1094,9 +1165,9 @@ if args.extended and False:
                         [
                             [reco_spectrum],
                             [settings.unfolding_signal_input],
-                        ] + [[e] for e in empties],
+                        ] + [[e] for e in legEmpties],
                         texX = settings.tex_reco,
-                        texY = "Number of events",
+                        texY = "Events",
                     )
         plotting.draw( plot, 
             plot_directory = plot_directory_ + "/uncertainties/",
@@ -1104,7 +1175,7 @@ if args.extended and False:
             #legend = None,
             legend         = [ (0.20,0.75,0.9,0.91), 2 ],
             yRange = settings.y_range,
-            ratio = {'yRange': (0.91, 1.09), 'texY':'Sim. / Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes_in+[ratio_line]} ,
+            ratio = {'yRange': (0.91, 1.09), 'texY':'Pred./Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes_in+[ratio_line]} ,
             drawObjects = drawObjects()+boxes_in,
             #drawObjects = boxes,
             redrawHistos = True,
@@ -1112,7 +1183,7 @@ if args.extended and False:
 copyIndexPHP( plot_directory_ + "/uncertainties/" )
 
 # input plot subtracted
-if args.extended and False:
+if args.extended:
   for band in settings.unfolding_signal_input_systematics + [settings.unfolding_signal_input_MCStat]:
     boxes_sub = []
     ratio_boxes_sub = []
@@ -1123,7 +1194,7 @@ if args.extended and False:
                          band['up_subtracted'].GetBinContent(i),
              )
         box.SetLineColor(band['color'])
-        #box.SetFillStyle(3244)
+        #box.SetFillStyle(3635)
         box.SetFillColor(band['color'])
         if hasattr( settings, "plot_range_x_fiducial") and band['ref'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
             pass
@@ -1137,7 +1208,7 @@ if args.extended and False:
                              band['up_subtracted'].GetBinContent(i)/band['ref_subtracted'].GetBinContent(i),
                  )
             ratio_box.SetLineColor(band['color'])
-            #ratio_box.SetFillStyle(3244)
+            #ratio_box.SetFillStyle(3635)
             ratio_box.SetFillColor(band['color'])
             if hasattr( settings, "plot_range_x_fiducial") and band['ref_subtracted'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
                 pass
@@ -1153,16 +1224,16 @@ if args.extended and False:
                         [
                             [reco_spectrum_subtracted],
                             [unfolding_signal_input_subtracted],
-                        ] + [[e] for e in empties],
+                        ] + [[e] for e in legEmpties],
                         texX = settings.tex_reco,
-                        texY = "Number of events",
+                        texY = "Events",
                     ),
             plot_directory = plot_directory_ + "/uncertainties/",
             logX = False, logY = logY, sorting = False,
             #legend = None,
             legend         = [ (0.20,0.75,0.9,0.91), 2 ],
             yRange = settings.y_range,
-            ratio = {'yRange': (0.91, 1.09), 'texY':'Sim. / Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes_sub+[ratio_line]},
+            ratio = {'yRange': (0.91, 1.09), 'texY':'Pred./Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes_sub+[ratio_line]},
             drawObjects = drawObjects()+boxes_sub,
             #drawObjects = boxes,
             redrawHistos = True,
@@ -1185,7 +1256,7 @@ if args.extended and False:
                          band['up_unfolded'].GetBinContent(i),
              )
         box.SetLineColor(band['color'])
-        #box.SetFillStyle(3244)
+        #box.SetFillStyle(3635)
         box.SetFillColor(band['color'])
         if hasattr( settings, "plot_range_x_fiducial") and unfolding_signal_output.GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
             pass
@@ -1199,7 +1270,7 @@ if args.extended and False:
                              band['up_unfolded'].GetBinContent(i)/unfolding_signal_output.GetBinContent(i),
                  )
             ratio_box.SetLineColor(band['color'])
-            #ratio_box.SetFillStyle(3244)
+            #ratio_box.SetFillStyle(3635)
             ratio_box.SetFillColor(band['color'])
             if hasattr( settings, "plot_range_x_fiducial") and unfolding_signal_output.GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
                 pass
@@ -1215,7 +1286,7 @@ if args.extended and False:
                         [
                             [fiducial_spectrum],
                             [unfolding_signal_output],
-                        ] + [[e] for e in empties],
+                        ] + [[e] for e in legEmpties],
                         texX = settings.tex_unf,
                         texY = settings.texY,
                     ),
@@ -1225,7 +1296,7 @@ if args.extended and False:
             legend         = [ (0.20,0.75,0.9,0.91), 2 ],
 #            legend         = (0.20,0.75,0.9,0.91),
             yRange = settings.y_range,
-#            ratio = {'yRange': (0.91, 1.09), 'texY':'Sim. / Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes_unf+[ratio_line]},
+#            ratio = {'yRange': (0.91, 1.09), 'texY':'Pred./Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes_unf+[ratio_line]},
             ratio = {'yRange': (0.91, 1.09), 'texY':'Uncertainty', 'histos':[(1,1)], 'drawObjects':ratio_boxes_unf+[ratio_line]},
             drawObjects = drawObjects()+boxes_unf,
             #drawObjects = boxes,
@@ -1234,11 +1305,12 @@ if args.extended and False:
 copyIndexPHP( plot_directory_ + "/uncertainties_unfolded/" )
 
 systHists = { h["name"]:{ "up":h["up_unfolded"], "down":h["down_unfolded"], "ref":unfolding_signal_output } for h in settings.unfolding_signal_input_systematics }
+#systHists = { h["name"]:{ "up":h["up_unfolded"], "down":h["down_unfolded"], "ref":h["ref_unfolded"] } for h in settings.unfolding_signal_input_systematics }
 totalUncertainty_unfolded = sumNuisanceHistos( systHists, settings.corrFitObj, refHist=unfolding_signal_output )
 mcStat_unfolded = {"up":settings.unfolding_signal_input_MCStat["up_unfolded"], "down":settings.unfolding_signal_input_MCStat["down_unfolded"], "ref":settings.unfolding_signal_input_MCStat["ref_unfolded"]}
 stat_unfolded = {"up":settings.unfolding_data_input_systematic["up_unfolded"], "down":settings.unfolding_data_input_systematic["down_unfolded"], "ref":settings.unfolding_data_input_systematic["ref_unfolded"]}
-totalUncertainty_unfolded_color = ROOT.kOrange-9
-unfolding_signal_output_color = ROOT.kBlue -10
+totalUncertainty_unfolded_color = ROOT.kGray+1 #Orange-9
+unfolding_signal_output_color = ROOT.kGray #Blue -10
 
 total_Matrix_uncertainty_up = total_Matrix_uncertainty.Clone("totalMatrix_up")
 total_Matrix_uncertainty_up.Add( unfolding_signal_output )
@@ -1248,15 +1320,24 @@ total_Matrix_uncertainty_down.Add( unfolding_signal_output )
 total_Matrix = {"up":total_Matrix_uncertainty_up, "down":total_Matrix_uncertainty_down, "ref":unfolding_signal_output}
 
 # covariance matrix
+#systHists = { h["name"]:{ "up":h["up_unfolded"], "down":h["down_unfolded"], "ref":unfolding_signal_output } for h in settings.unfolding_signal_input_systematics }
 diagHistos = [mcStat_unfolded, total_Matrix] #, stat_unfolded]
+#diagHistos = [mcStat_unfolded] #, stat_unfolded
 output_covMatrix = ROOT.TH2D( "output_covMatrix", "output_covMatrix", len(settings.fiducial_thresholds)-1, array.array('d', settings.fiducial_thresholds), len(settings.fiducial_thresholds)-1, array.array('d', settings.fiducial_thresholds) )
+output_covMatrix.Scale(0)
 output_covMatrix = fillCovarianceHisto( systHists, diagHistos, settings.corrFitObj, output_covMatrix )
-plot_covMatrix = Plot2D.fromHisto("covMatrix_lin", [[output_covMatrix]], texY = settings.tex_gen, texX = settings.tex_gen )
+output_covMatrix.GetZaxis().SetTitle("Covariance [fb]")
+plot_covMatrix = Plot2D.fromHisto("covMatrix_lin", [[output_covMatrix]], texY = settings.tex_unf, texX = settings.tex_unf )
 draw2D( plot_covMatrix, False )
 zlow, zhigh = settings.covZRange
 output_covMatrix.GetZaxis().SetRangeUser( zlow, zhigh )
-plot_covMatrix = Plot2D.fromHisto("covMatrix", [[output_covMatrix]], texY = settings.tex_gen, texX = settings.tex_gen )
+plot_covMatrix = Plot2D.fromHisto("covMatrix", [[output_covMatrix]], texY = settings.tex_unf, texX = settings.tex_unf )
 draw2D( plot_covMatrix, True )
+
+rootfile = ROOT.TFile( "covMatrix_%s.root"%args.settings, "RECREATE")
+output_covMatrix.Write()
+rootfile.Close()
+
 
 # output correlation matrix
 output_corr_matrix = output_covMatrix.Clone("output_corr_matrix")
@@ -1264,31 +1345,38 @@ for i in range( 1, output_corr_matrix.GetNbinsX()+1 ):
     print output_covMatrix.GetBinContent(i,i), sqrt(output_covMatrix.GetBinContent(i,i)), sqrt(output_covMatrix.GetBinContent(i,i))/unfolding_signal_output.GetBinContent(i)
     for j in range( 1, output_corr_matrix.GetNbinsY()+1 ): 
         if output_corr_matrix.GetBinContent(i,i)!=0 and output_corr_matrix.GetBinContent(j,j)!=0:
-            output_corr_matrix.SetBinContent(i, j, output_covMatrix.GetBinContent(i,j)/sqrt(output_covMatrix.GetBinContent(i,i)*output_covMatrix.GetBinContent(j,j)))
+            output_corr_matrix.SetBinContent(i, j, round(100*output_covMatrix.GetBinContent(i,j)/sqrt(output_covMatrix.GetBinContent(i,i)*output_covMatrix.GetBinContent(j,j)),1))
         else:
-            output_corr_matrix.SetBinContent(i, j, 0.)
+            output_corr_matrix.SetBinContent(i, j, 0)
 
-output_corr_matrix.GetZaxis().SetRangeUser( -1, 1 )
-plot_corr_matrix = Plot2D.fromHisto("corrMatrix", [[output_corr_matrix]], texY = settings.tex_gen, texX = settings.tex_gen )
+#output_corr_matrix.Scale(100)
+output_corr_matrix.SetMarkerSize(1.8)
+output_corr_matrix.GetZaxis().SetRangeUser( -20, 100 )
+output_corr_matrix.GetZaxis().SetTitleOffset( 0.9 )
+plot_corr_matrix = Plot2D.fromHisto("corrMatrix", [[output_corr_matrix]], texY = settings.tex_unf, texX = settings.tex_unf, texZ="Correlation [%s]  "%"%" )
+plot_corr_matrix.drawOption = "COLZTEXT"
 draw2D( plot_corr_matrix, False )
 
-
+rootfile = ROOT.TFile( "corrMatrix_%s.root"%args.settings, "RECREATE")
+output_corr_matrix.Write()
+rootfile.Close()
 
 
 if "RunII" in args.settings:
     ## frozen syst cov matrix (stat)
     systHistsStat = { h["name"]:{ "up":h["up_unfolded"], "down":h["down_unfolded"], "ref":unfolding_signal_output } for h in settings.unfolding_signalStat_input_systematics }
-    totalUncertainty_unfolded = sumNuisanceHistos( systHistsStat, settings.corrFitObj, refHist=unfolding_signal_output )
+    totalUncertainty_unfolded = sumNuisanceHistos( systHistsStat, settings.corrFitObjStat, refHist=unfolding_signal_output )
 
     ## covariance matrix stat
     diagHistos = [] #, stat_unfolded]
     output_covMatrixStat = ROOT.TH2D( "output_covMatrix_stat", "output_covMatrix_stat", len(settings.fiducial_thresholds)-1, array.array('d', settings.fiducial_thresholds), len(settings.fiducial_thresholds)-1, array.array('d', settings.fiducial_thresholds) )
     output_covMatrixStat = fillCovarianceHisto( systHistsStat, diagHistos, settings.corrFitObjStat, output_covMatrixStat )
-    plot_covMatrixStat = Plot2D.fromHisto("covMatrix_stat_lin", [[output_covMatrixStat]], texY = settings.tex_gen, texX = settings.tex_gen )
+    output_covMatrixStat.GetZaxis().SetTitle("Covariance [fb]")
+    plot_covMatrixStat = Plot2D.fromHisto("covMatrix_stat_lin", [[output_covMatrixStat]], texY = settings.tex_unf, texX = settings.tex_unf )
     draw2D( plot_covMatrixStat, False )
     zlow, zhigh = settings.covZRange
     output_covMatrixStat.GetZaxis().SetRangeUser( zlow, zhigh )
-    plot_covMatrixStat = Plot2D.fromHisto("covMatrix_stat", [[output_covMatrixStat]], texY = settings.tex_gen, texX = settings.tex_gen )
+    plot_covMatrixStat = Plot2D.fromHisto("covMatrix_stat", [[output_covMatrixStat]], texY = settings.tex_unf, texX = settings.tex_unf )
     draw2D( plot_covMatrixStat, True )
 
     # output correlation matrix stat
@@ -1300,8 +1388,11 @@ if "RunII" in args.settings:
             else:
                 output_corr_matrixStat.SetBinContent(i, j, 0.)
 
-    output_corr_matrixStat.GetZaxis().SetRangeUser( -1, 1 )
-    plot_corr_matrixStat = Plot2D.fromHisto("corrMatrix_stat", [[output_corr_matrixStat]], texY = settings.tex_gen, texX = settings.tex_gen )
+    output_corr_matrixStat.Scale(100)
+    output_corr_matrixStat.GetZaxis().SetRangeUser( -20, 100 )
+    output_corr_matrixStat.GetZaxis().SetTitle("Correlation [%s]  "%"%")
+    output_corr_matrixStat.drawOption = "COLZTEXT"
+    plot_corr_matrixStat = Plot2D.fromHisto("corrMatrix_stat", [[output_corr_matrixStat]], texY = settings.tex_unf, texX = settings.tex_unf )
     draw2D( plot_corr_matrixStat, False )
 
 
@@ -1309,11 +1400,12 @@ if "RunII" in args.settings:
     ## covariance matrix syst
     output_covMatrixSyst = output_covMatrix.Clone("covMatrix_syst")
     output_covMatrixSyst.Add(output_covMatrixStat, -1)
-    plot_covMatrixSyst = Plot2D.fromHisto("covMatrix_syst_lin", [[output_covMatrixSyst]], texY = settings.tex_gen, texX = settings.tex_gen )
+    output_covMatrixSyst.GetZaxis().SetTitle("Covariance [fb]")
+    plot_covMatrixSyst = Plot2D.fromHisto("covMatrix_syst_lin", [[output_covMatrixSyst]], texY = settings.tex_unf, texX = settings.tex_unf )
     draw2D( plot_covMatrixSyst, False )
     zlow, zhigh = settings.covZRange
     output_covMatrixSyst.GetZaxis().SetRangeUser( zlow, zhigh )
-    plot_covMatrixSyst = Plot2D.fromHisto("covMatrix_syst", [[output_covMatrixSyst]], texY = settings.tex_gen, texX = settings.tex_gen )
+    plot_covMatrixSyst = Plot2D.fromHisto("covMatrix_syst", [[output_covMatrixSyst]], texY = settings.tex_unf, texX = settings.tex_unf )
     draw2D( plot_covMatrixSyst, True )
 
 
@@ -1326,8 +1418,11 @@ if "RunII" in args.settings:
             else:
                 output_corr_matrixSyst.SetBinContent(i, j, 0.)
 
-    output_corr_matrixSyst.GetZaxis().SetRangeUser( -1, 1 )
-    plot_corr_matrixSyst = Plot2D.fromHisto("corrMatrix_syst", [[output_corr_matrixSyst]], texY = settings.tex_gen, texX = settings.tex_gen )
+    output_corr_matrixSyst.Scale(100)
+    output_corr_matrixSyst.GetZaxis().SetRangeUser( -20, 100 )
+    output_corr_matrixSyst.GetZaxis().SetTitle("Correlation [%s]"%"%")
+    output_corr_matrixSyst.drawOption = "COLZTEXT"
+    plot_corr_matrixSyst = Plot2D.fromHisto("corrMatrix_syst", [[output_corr_matrixSyst]], texY = settings.tex_unf, texX = settings.tex_unf )
     draw2D( plot_corr_matrixSyst, False )
 
 
@@ -1340,13 +1435,13 @@ if "RunII" in args.settings:
         covDiag = output_covMatrixTrueSyst.GetBinContent( i, i ) - diag
         output_covMatrixTrueSyst.SetBinContent( i, i, covDiag )
 
-    plot_covMatrixTrueSyst = Plot2D.fromHisto("covMatrix_truesyst_lin", [[output_covMatrixTrueSyst]], texY = settings.tex_gen, texX = settings.tex_gen )
+    output_covMatrixTrueSyst.GetZaxis().SetTitle("Covariance [fb]")
+    plot_covMatrixTrueSyst = Plot2D.fromHisto("covMatrix_truesyst_lin", [[output_covMatrixTrueSyst]], texY = settings.tex_unf, texX = settings.tex_unf )
     draw2D( plot_covMatrixTrueSyst, False )
     zlow, zhigh = settings.covZRange
     output_covMatrixTrueSyst.GetZaxis().SetRangeUser( zlow, zhigh )
-    plot_covMatrixTrueSyst = Plot2D.fromHisto("covMatrix_truesyst", [[output_covMatrixTrueSyst]], texY = settings.tex_gen, texX = settings.tex_gen )
+    plot_covMatrixTrueSyst = Plot2D.fromHisto("covMatrix_truesyst", [[output_covMatrixTrueSyst]], texY = settings.tex_unf, texX = settings.tex_unf )
     draw2D( plot_covMatrixTrueSyst, True )
-
 
 
     # output correlation matrix syst w removed diag entries
@@ -1358,26 +1453,37 @@ if "RunII" in args.settings:
             else:
                 output_corr_matrixTrueSyst.SetBinContent(i, j, 0.)
 
-    output_corr_matrixTrueSyst.GetZaxis().SetRangeUser( -1, 1 )
-    plot_corr_matrixTrueSyst = Plot2D.fromHisto("corrMatrix_truesyst", [[output_corr_matrixTrueSyst]], texY = settings.tex_gen, texX = settings.tex_gen )
+    output_corr_matrixTrueSyst.Scale(100)
+    output_corr_matrixTrueSyst.GetZaxis().SetRangeUser( -20, 100 )
+    output_corr_matrixTrueSyst.GetZaxis().SetTitle("Correlation [%s]"%"%")
+    output_corr_matrixTrueSyst.drawOption = "COLZTEXT"
+    plot_corr_matrixTrueSyst = Plot2D.fromHisto("corrMatrix_truesyst", [[output_corr_matrixTrueSyst]], texY = settings.tex_unf, texX = settings.tex_unf )
     draw2D( plot_corr_matrixTrueSyst, False )
+
+    rootfile = ROOT.TFile( "corrMatrix_truesyst_%s.root"%args.settings, "RECREATE")
+    output_corr_matrixTrueSyst.Write()
+    rootfile.Close()
+
 
 
     ## full theory cov matrix
     output_covMatrixTheory = output_covMatrix.Clone("covMatrix_theory")
+    output_covMatrixTheory.Scale(0)
     for i in range( 1, output_covMatrixTheory.GetNbinsX()+1 ): 
         for j in range( 1, output_covMatrixTheory.GetNbinsY()+1 ): 
-            th = fiducial_spectrum.GetBinContent(i)*fiducial_spectrum.GetBinContent(j)*(0.178**2)
+#            th = fiducial_spectrum.GetBinContent(i)*fiducial_spectrum.GetBinContent(j)*(0.175**2)
+            th = fiducial_spectrum.GetBinContent(i)*fiducial_spectrum.GetBinContent(j)*settings.theory_uncertainties[j-1]*settings.theory_uncertainties[i-1]
             output_covMatrixTheory.SetBinContent( i, j, th )
 
     for i in range( 1, output_covMatrixTheory.GetNbinsX()+1 ): 
         print output_covMatrixTheory.GetBinContent(i,i), sqrt(output_covMatrixTheory.GetBinContent(i,i)), sqrt(output_covMatrixTheory.GetBinContent(i,i))/fiducial_spectrum.GetBinContent(i)
 
-    plot_covMatrixTheory = Plot2D.fromHisto("covMatrix_theory_lin", [[output_covMatrixTheory]], texY = settings.tex_gen, texX = settings.tex_gen )
+    output_covMatrixTheory.GetZaxis().SetTitle("Covariance [fb]")
+    plot_covMatrixTheory = Plot2D.fromHisto("covMatrix_theory_lin", [[output_covMatrixTheory]], texY = settings.tex_unf, texX = settings.tex_unf )
     draw2D( plot_covMatrixTheory, False )
     zlow, zhigh = settings.covZRange
     output_covMatrixTheory.GetZaxis().SetRangeUser( zlow, zhigh )
-    plot_covMatrixTheory = Plot2D.fromHisto("covMatrix_theory", [[output_covMatrixTheory]], texY = settings.tex_gen, texX = settings.tex_gen )
+    plot_covMatrixTheory = Plot2D.fromHisto("covMatrix_theory", [[output_covMatrixTheory]], texY = settings.tex_unf, texX = settings.tex_unf )
     draw2D( plot_covMatrixTheory, True )
 
 
@@ -1393,11 +1499,11 @@ if "RunII" in args.settings:
         for j in range( 1, invfullTheoryCovMatrix.GetNbinsX()+1 ):
             print i,j,invfullTheoryCovMatrix.GetBinContent(i,j)
 
-    plot_covMatrixInvFull = Plot2D.fromHisto("covMatrix_inv_full_lin", [[invfullTheoryCovMatrix]], texY = settings.tex_gen, texX = settings.tex_gen )
+    plot_covMatrixInvFull = Plot2D.fromHisto("covMatrix_inv_full_lin", [[invfullTheoryCovMatrix]], texY = settings.tex_unf, texX = settings.tex_unf )
     draw2D( plot_covMatrixInvFull, False )
 #    zlow, zhigh = settings.covZRange
     invfullTheoryCovMatrix.GetZaxis().SetRangeUser( zlow, zhigh )
-    plot_covMatrixInvFull = Plot2D.fromHisto("covMatrix_inv_full", [[invfullTheoryCovMatrix]], texY = settings.tex_gen, texX = settings.tex_gen )
+    plot_covMatrixInvFull = Plot2D.fromHisto("covMatrix_inv_full", [[invfullTheoryCovMatrix]], texY = settings.tex_unf, texX = settings.tex_unf )
     draw2D( plot_covMatrixInvFull, True )
 
     chi2 = 0
@@ -1406,7 +1512,7 @@ if "RunII" in args.settings:
             yi = unfolding_signal_output.GetBinContent(i) - fiducial_spectrum.GetBinContent(i)
             yj = unfolding_signal_output.GetBinContent(j) - fiducial_spectrum.GetBinContent(j)
             invCov = invfullTheoryCovMatrix.GetBinContent(i, j)
-            print i,j,yi,yj,invCov
+            print i,j,yi,yj,invCov, yi * invCov * yj
             chi2 += yi * invCov * yj
 
     print
@@ -1431,8 +1537,9 @@ for i in range(1, totalUncertainty_unfolded['ref'].GetNbinsX()+1):
                  )
 
     box.SetLineColor(totalUncertainty_unfolded_color)
-    #box.SetFillStyle(3244)
+    #box.SetFillStyle(3635)
     box.SetFillColor(totalUncertainty_unfolded_color)
+    box.SetFillColorAlpha(totalUncertainty_unfolded_color, 0.85)
     boxes_syst.append(copy.deepcopy(box))
     stuff.append(copy.deepcopy(box))
 
@@ -1443,8 +1550,9 @@ for i in range(1, totalUncertainty_unfolded['ref'].GetNbinsX()+1):
                  )
 
     box.SetLineColor(unfolding_signal_output_color)
-    #box.SetFillStyle(3244)
+    #box.SetFillStyle(3635)
     box.SetFillColor(unfolding_signal_output_color)
+    box.SetFillColorAlpha(unfolding_signal_output_color, 0.85)
     boxes_syst.append(copy.deepcopy(box))
     stuff.append(copy.deepcopy(box))
 
@@ -1456,8 +1564,9 @@ for i in range(1, totalUncertainty_unfolded['ref'].GetNbinsX()+1):
                               (unfolding_signal_output.GetBinContent(i) + total_sys_uncertainty)/unfolding_signal_output.GetBinContent(i),
                    )
         ratio_box.SetLineColor(totalUncertainty_unfolded_color)
-        #ratio_box.SetFillStyle(3244)
+        #ratio_box.SetFillStyle(3635)
         ratio_box.SetFillColor(totalUncertainty_unfolded_color)
+        ratio_box.SetFillColorAlpha(totalUncertainty_unfolded_color, 0.85)
         ratio_boxes_syst.append(copy.deepcopy(ratio_box))
         stuff.append(copy.deepcopy(ratio_box))
 
@@ -1469,9 +1578,44 @@ for i in range(1, totalUncertainty_unfolded['ref'].GetNbinsX()+1):
                   )
 
         ratio_box.SetLineColor(unfolding_signal_output_color)
-        #ratio_box.SetFillStyle(3244)
+        #ratio_box.SetFillStyle(3635)
         ratio_box.SetFillColor(unfolding_signal_output_color)
+        ratio_box.SetFillColorAlpha(unfolding_signal_output_color, 0.85)
         ratio_boxes_syst.append(copy.deepcopy(ratio_box))
+        stuff.append(copy.deepcopy(ratio_box))
+
+#######
+
+# unfolding the error bands
+boxes_theo = []
+ratio_boxes_theo = []
+total_theo_uncertainty = 0.175
+for i in range(1, fiducial_spectrum.GetNbinsX()+1):
+
+    box = ROOT.TBox( fiducial_spectrum.GetXaxis().GetBinLowEdge(i),  
+                     max(0, fiducial_spectrum.GetBinContent(i)*(1+settings.theory_uncertainties[i-1])),
+                     fiducial_spectrum.GetXaxis().GetBinUpEdge(i),
+                     fiducial_spectrum.GetBinContent(i)*(1-settings.theory_uncertainties[i-1]),
+                 )
+
+    box.SetLineColor(ROOT.kRed+1)
+    box.SetLineWidth(1)
+    box.SetFillStyle(3635)
+    box.SetFillColor(ROOT.kRed+1)
+    boxes_theo.append(copy.deepcopy(box))
+    stuff.append(copy.deepcopy(box))
+
+    if fiducial_spectrum.GetBinContent(i)!=0: 
+        ratio_box = ROOT.TBox( 
+                              fiducial_spectrum.GetXaxis().GetBinLowEdge(i),  
+                              max(settings.y_range_ratio[0], (1-settings.theory_uncertainties[i-1])-(1-fiducial_spectrum.GetBinContent(i)/unfolding_signal_output.GetBinContent(i))),
+                              fiducial_spectrum.GetXaxis().GetBinUpEdge(i),
+                              min(settings.y_range_ratio[1], (1+settings.theory_uncertainties[i-1])-(1-fiducial_spectrum.GetBinContent(i)/unfolding_signal_output.GetBinContent(i))),
+                   )
+        ratio_box.SetLineColor(ROOT.kRed+1)
+        ratio_box.SetFillStyle(3635)
+        ratio_box.SetFillColor(ROOT.kRed+1)
+        ratio_boxes_theo.append(copy.deepcopy(ratio_box))
         stuff.append(copy.deepcopy(ratio_box))
 
 #######
@@ -1479,7 +1623,7 @@ for i in range(1, totalUncertainty_unfolded['ref'].GetNbinsX()+1):
 # systematics in unfolding -> compute the variances from the variied unfolding matrix
 ## make a copy of the mc output and remove the uncertainty
 unfolding_systematic = unfolding_signal_output.Clone()
-unfolding_systematic.style = styles.lineStyle(ROOT.kRed, errors=True) 
+unfolding_systematic.style = styles.lineStyle(ROOT.kRed+1, errors=True) 
 for i_bin in range(unfolding_systematic.GetNbinsX()+2):
     unfolding_systematic.SetBinError( i_bin, 0 )
 
@@ -1489,7 +1633,7 @@ for logY in [True, False]:
     Plot.fromHisto( "unfolding_systematic" + ('_log' if logY else ''),
                     [[unfolding_systematic]],
                     texX = settings.tex_reco,
-                    texY = "Number of events",
+                    texY = "Events",
                 ),
         plot_directory = plot_directory_,
         logX = False, logY = logY, sorting = False,
@@ -1504,6 +1648,10 @@ boxes_uf = []
 ratio_boxes_uf = []
 for band in reversed(settings.unfolding_signal_input_systematic_bands):
     band['ref_unfolded']  = getOutput(unfold['nominal' if not args.useMatrix else args.useMatrix], band['ref_subtracted'], "band_%s_ref_unfolded"%band['name'])
+#    if band['name'] == 'total':
+#        band['up_unfolded']   = getOutput(unfold['nominal' if not args.useMatrix else args.useMatrix], band['up_subtracted'],   "band_%s_up_unfolded"%band['name'])
+#        band['down_unfolded'] = getOutput(unfold['nominal' if not args.useMatrix else args.useMatrix], band['down_subtracted'], "band_%s_down_unfolded"%band['name'])
+#    else:
     band['up_unfolded']   = add_sigmas( getOutput(unfold['nominal' if not args.useMatrix else args.useMatrix], add_error_from_variation(band['up_subtracted'], band['ref_subtracted']),   "band_%s_up_unfolded"%band['name']), 1, band['ref_unfolded'] )
     band['down_unfolded'] = add_sigmas( getOutput(unfold['nominal' if not args.useMatrix else args.useMatrix], add_error_from_variation(band['down_subtracted'], band['ref_subtracted']), "band_%s_down_unfolded"%band['name']), -1, band['ref_unfolded'] )
 
@@ -1531,7 +1679,7 @@ for band in reversed(settings.unfolding_signal_input_systematic_bands):
                              band['up_unfolded'].GetBinContent(i),
                  )
         box.SetLineColor(band['color'])
-        #box.SetFillStyle(3244)
+        #box.SetFillStyle(3635)
         box.SetFillColor(band['color'])
         if hasattr( settings, "plot_range_x_fiducial") and band['ref_unfolded'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
             pass
@@ -1558,7 +1706,7 @@ for band in reversed(settings.unfolding_signal_input_systematic_bands):
                                  band['up_unfolded'].GetBinContent(i)/band['ref_unfolded'].GetBinContent(i),
                      )
             ratio_box.SetLineColor(band['color'])
-            #ratio_box.SetFillStyle(3244)
+            #ratio_box.SetFillStyle(3635)
             ratio_box.SetFillColor(band['color'])
             if hasattr( settings, "plot_range_x_fiducial") and band['ref_unfolded'].GetXaxis().GetBinUpEdge(i) > settings.plot_range_x_fiducial[1]:
                 pass
@@ -1571,16 +1719,6 @@ for i in range(1, empty.GetNbinsX()+1):
     empty.SetBinContent( i, 0 )
     empty.SetBinError( i, 0 )
 
-empties = []
-for band in settings.unfolding_signal_input_systematic_bands:
-    empty_ = empty.Clone()
-    empty_.SetLineColor(band['color'])
-    empty_.SetLineWidth(0)
-    #empty_.SetFillStyle(3244)
-    empty_.SetFillColor(band['color'])
-    empties.append(empty_)
-    empty_.legendText = band["label"]
-
 for logY in [True,False]:
     if hasattr( settings, "plot_range_x_fiducial"):
         hist_mod = [lambda h:h.GetXaxis().SetRangeUser(*settings.plot_range_x_fiducial)]
@@ -1590,10 +1728,10 @@ for logY in [True,False]:
     plot = Plot.fromHisto( "unfolded_spectrum"+ ('_log' if logY else ''),
                     [
                         [fiducial_spectrum],
-#                        [fiducial_spectrum_H7],
-#                        [fiducial_spectrum_Hpp],
+                        [fiducial_spectrum_H7],
+                        [fiducial_spectrum_Hpp],
                         [unfolding_signal_output],
-                    ] + [[e] for e in empties],
+                    ] + [[e] for e in legEmpties],
                     texX = settings.tex_unf,
                     texY = settings.texY,
                 )
@@ -1604,12 +1742,68 @@ for logY in [True,False]:
         histModifications = hist_mod,
         legend         = [ (0.20,0.75,0.9,0.91), 2 ],
         yRange = settings.y_range,
-#        ratio = {'yRange': settings.y_range_ratio, 'texY':'Sim. / Obs.', 'histos':[(0,3),(1,3),(2,3)], 'drawObjects':ratio_boxes_uf+[ratio_line]} ,
-        ratio = {'yRange': settings.y_range_ratio, 'texY':'Sim. / Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes_uf+[ratio_line]} ,
+        ratio = {'yRange': settings.y_range_ratio, 'texY':'Pred./Obs.', 'histos':[(0,3),(1,3),(2,3)], 'drawObjects':ratio_boxes_uf+[ratio_line]} ,
+#        ratio = {'yRange': settings.y_range_ratio, 'texY':'Pred./Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes_uf+[ratio_line]} ,
         drawObjects = drawObjects()+boxes_uf,
         #drawObjects = boxes_uf,
         redrawHistos = True,
     )
+
+
+rootfile = ROOT.TFile( "unfolded_%s.root"%args.settings, "RECREATE")
+fiducial_spectrum_H7.SetName("fiducial_spectrum_H7")
+fiducial_spectrum_H7.Write()
+fiducial_spectrum_Hpp.SetName("fiducial_spectrum_Hpp")
+fiducial_spectrum_Hpp.Write()
+fiducial_spectrum.SetName("fiducial_spectrum")
+fiducial_spectrum.Write()
+unfolding_signal_output.SetName("unfoled_spectrum")
+unfolding_signal_output.Write()
+totalUncertainty_unfolded['up'].SetName("totalUncertaintySource_up")
+totalUncertainty_unfolded['up'].Write()
+totalUncertainty_unfolded['down'].SetName("totalUncertaintySource_down")
+totalUncertainty_unfolded['down'].Write()
+mcStat_unfolded['up'].SetName("mcStat_up")
+mcStat_unfolded['up'].Write()
+mcStat_unfolded['down'].SetName("mcStat_down")
+mcStat_unfolded['down'].Write()
+total_Matrix_uncertainty.SetName("totalMatrixVariationUnc_up")
+total_Matrix_uncertainty.Write()
+stat_unfolded['up'].SetName("stat_up")
+stat_unfolded['up'].Write()
+stat_unfolded['down'].SetName("stat_down")
+stat_unfolded['down'].Write()
+
+for band in reversed(settings.unfolding_signal_input_systematic_bands):
+    if band['name'] == 'total':
+       band['up_unfolded'].SetName("totalUncertainty_up")
+       band['up_unfolded'].Write()
+       band['down_unfolded'].SetName("totalUncertainty_down")
+       band['down_unfolded'].Write()
+
+rootfile.Close()
+
+
+
+ratio_line = ROOT.TLine(fiducial_spectrum.GetXaxis().GetXmin(), 1, fiducial_spectrum.GetXaxis().GetXmax(),1)
+
+marker = unfolding_signal_output.Clone("mark")
+marker.style = styles.errorStyle(ROOT.kBlack)
+marker.notInLegend = True
+
+fiducial_spectrum.notInLegend = True
+fiducial_spectrum_H7.notInLegend = True
+fiducial_spectrum_Hpp.notInLegend = True
+unfolding_signal_output.notInLegend = True
+
+def setLeftMargin(canvas):
+    tPad = canvas.cd(1)
+    tPad.SetLeftMargin(0.18)
+    bPad = canvas.cd(2)
+    bPad.SetLeftMargin(0.18)
+
+for i in range( marker.GetNbinsX() ):
+    marker.SetBinError(i+1,0.001)
 
 for logY in [True,False]:
     if hasattr( settings, "plot_range_x_fiducial"):
@@ -1617,13 +1811,19 @@ for logY in [True,False]:
     else:
         hist_mod = []
 
+    hist_mod += [lambda h:h.GetYaxis().SetTitleOffset(2.2)]
+    canvasModifications  = []
+    canvasModifications += [lambda c:setLeftMargin(c)]
+#    canvasModifications += [lambda c:c.SetBottomMargin(0.25)]
+#    hist_mod += [lambda h: h.GetYaxis().SetTitleSize(0.025)]
+#    hist_mod += [lambda h: h.GetYaxis().SetLabelSize(0.025)]
     plot = Plot.fromHisto( "unfolded_spectrum_fromSyst"+ ('_log' if logY else ''),
                     [
                         [fiducial_spectrum],
-#                        [fiducial_spectrum_H7],
-#                        [fiducial_spectrum_Hpp],
+                        [fiducial_spectrum_H7],
+                        [fiducial_spectrum_Hpp],
                         [unfolding_signal_output],
-                    ] + [[e] for e in empties],
+                    ] + [[marker]] + [[e] for e in legEmpties],
                     texX = settings.tex_unf,
                     texY = settings.texY,
                 )
@@ -1632,12 +1832,13 @@ for logY in [True,False]:
         logX = False, logY = logY, sorting = False, 
         #legend = None,
         histModifications = hist_mod,
-        legend         = [ (0.20,0.75,0.9,0.91), 2 ],
+        legend         = [ (0.22,0.63,0.94,0.9), 2 ],
         yRange = settings.y_range,
-#        ratio = {'yRange': settings.y_range_ratio, 'texY':'Sim. / Obs.', 'histos':[(0,3),(1,3),(2,3)], 'drawObjects':ratio_boxes_syst+[ratio_line]} ,
-        ratio = {'yRange': settings.y_range_ratio, 'texY':'Sim. / Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes_syst+[ratio_line]} ,
-        drawObjects = drawObjects()+boxes_syst,
+        ratio = {'yRange': settings.y_range_ratio, 'texY':'Pred./Obs.', 'histos':[(0,3),(1,3),(2,3)], 'drawObjects':ratio_boxes_theo+ratio_boxes_syst+[ratio_line]} ,
+#        ratio = {'yRange': settings.y_range_ratio, 'texY':'Pred./Obs.', 'histos':[(0,1)], 'drawObjects':ratio_boxes_syst+[ratio_line]} ,
+        drawObjects = drawObjects(cmsOffset=0.03)+boxes_theo+boxes_syst,
         #drawObjects = boxes,
+        canvasModifications = canvasModifications,
         redrawHistos = True,
     )
 
@@ -1667,7 +1868,7 @@ output_covariance_matrix = ROOT.TH2D("output_covariance_matrix", "output_covaria
 unfold['nominal' if not args.useMatrix else args.useMatrix].GetEmatrix( output_covariance_matrix )
 output_covariance_TMatrix = get_TMatrixD( output_covariance_matrix )
 
-plot_output_covariance_matrix = Plot2D.fromHisto("output_covariance_matrix", [[output_covariance_matrix]], texY = settings.tex_gen, texX = settings.tex_gen )
+plot_output_covariance_matrix = Plot2D.fromHisto("output_covariance_matrix", [[output_covariance_matrix]], texY = settings.tex_unf, texX = settings.tex_unf )
 draw2D( plot_output_covariance_matrix, True )
 
 # output correlation matrix
@@ -1679,8 +1880,10 @@ for i in range( 1, output_correlation_matrix.GetNbinsX()+1 ):
         else:
             output_correlation_matrix.SetBinContent(i, j, 0.)
 
-output_correlation_matrix.GetZaxis().SetRangeUser( -1, 1 )
-plot_output_correlation_matrix = Plot2D.fromHisto("output_correlation_matrix", [[output_correlation_matrix]], texY = settings.tex_gen, texX = settings.tex_gen )
+output_correlation_matrix.GetZaxis().SetTitle("Correlation [%s]"%"%")
+output_correlation_matrix.Scale(100)
+output_correlation_matrix.GetZaxis().SetRangeUser( -20, 100 )
+plot_output_correlation_matrix = Plot2D.fromHisto("output_correlation_matrix", [[output_correlation_matrix]], texY = settings.tex_unf, texX = settings.tex_unf )
 draw2D( plot_output_correlation_matrix, False )
 
 # input inverse covariance matrix
@@ -1710,7 +1913,7 @@ for i in range( 1, input_correlation_matrix.GetNbinsX()+1 ):
         else:
             input_correlation_matrix.SetBinContent(i, j, 0.)
 
-input_correlation_matrix.GetZaxis().SetRangeUser( -1, 1 )
+input_correlation_matrix.GetZaxis().SetRangeUser( -0.2, 1 )
 plot_input_correlation_matrix = Plot2D.fromHisto("input_correlation_matrix", [[input_correlation_matrix]], texY = settings.tex_reco, texX = settings.tex_reco )
 draw2D( plot_input_correlation_matrix, False )
 
