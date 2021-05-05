@@ -5,6 +5,8 @@
 import os, copy, sys
 import ctypes
 import ROOT
+ROOT.gROOT.LoadMacro('$CMSSW_BASE/src/Analysis/Tools/scripts/tdrstyle.C')
+ROOT.setTDRStyle()
 from math                                import sqrt
 
 # TTGammaEFT
@@ -79,7 +81,7 @@ if args.withEFTUnc: baseDir = os.path.join( baseDir, "withEFTUnc" )
 cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
 
-directory = os.path.join( plot_directory, "nllPlotsApp", str(args.year), "_".join( regionNames ))
+directory = os.path.join( plot_directory, "nllPlotsPostCWR", str(args.year), "_".join( regionNames ))
 addon = "comb"
 if args.plotData: addon += "_check"
 plot_directory_ = os.path.join( directory, addon )
@@ -94,9 +96,7 @@ elif args.year == 2018: lumi_scale = 59.74
 elif args.year == "RunII": lumi_scale = int(35.92 + 41.53 + 59.74)
 
 #binning range
-xRange = eftParameterRange[args.variables] 
-
-
+xRange = eftParameterRange[args.variables]
 
 #xRange       = np.linspace( -1.0, 1.0, 30, endpoint=False)
 #halfstepsize = 0.5 * ( xRange[1] - xRange[0] )
@@ -104,7 +104,7 @@ xRange = eftParameterRange[args.variables]
 #xRange.sort()
 
 
-print xRange
+#print xRange
 def getNllData( var1):
     dict = {"ctZI":0, "ctZ":0}
     dict[args.variables] = var1
@@ -120,12 +120,13 @@ def getNllData( var1):
     configlistExp.append("expected")
     sConfigExp = "_".join(configlistExp)
 
-    print sConfigExp
-    print sConfig
+#    print sConfigExp
+#    print sConfig
     if not nllCache.contains(sConfig):
         nll = None
     else:
         nll = nllCache.get(sConfig)
+        print var1, nll["nll"], nll["nll0"]
         if nll["nll"] == 0: nll = None
         else: nll = nll["nll"] + nll["nll0"]
 
@@ -148,13 +149,26 @@ nllData  = [ x for x in nllData if x[1][0] and x[1][1] ]
 
 _, sm_nllExp   = getNllData(0)
 
-
 allResults = sorted([y for y in nllData], key=lambda x:x[1][0])
-for x in allResults: print x
+#for x in allResults: print x
 sm_nll   = allResults[0][1][0]
-print sm_nll, allResults[0]
+#print sm_nll, allResults[0]
 nllDataExp  = [ (x, 2*(nll[1] - sm_nllExp)) for x, nll in nllData if nll[1] ]
+############
 nllData  = [ (x, 2*(nll[0] - sm_nll)) for x, nll in nllData if nll[0] ]
+#for x in nllData: print x
+
+with open("%s_1D_obs.dat"%args.variables,"w") as f:
+    f.write("%s,-2DeltaNLL\n"%args.variables)
+    for x, nll in nllData:
+        f.write(str(x)+","+str(nll)+"\n")
+
+with open("%s_1D_exp.dat"%args.variables,"w") as f:
+    f.write("%s,-2DeltaNLL\n"%args.variables)
+    for x, nll in nllDataExp:
+        f.write(str(x)+","+str(nll)+"\n")
+
+
 
 print nllData
 xNLL     = [ (x, nll) for x, nll in nllData if nll >= 0 and nll < 6]
@@ -328,6 +342,11 @@ def plot1D( dat, datExp, var, xmin, xmax ):
     if (args.year == 2018 or (args.year == "RunII" and args.variables == "ctZ")) and not args.inclRegion and not args.withbkg:
         func95p.GetXaxis().SetRangeUser( xmin, xmax )
 
+    func.GetYaxis().SetRangeUser( 0, 5 )
+    func68.GetYaxis().SetRangeUser( 0, 5 )
+    func68p.GetYaxis().SetRangeUser( 0, 5 )
+    func95.GetYaxis().SetRangeUser( 0, 5 )
+
 
     func95Exp = ROOT.TF1("func95Exp",polStringExp, x95minExp,x95maxExp )
     xhistExp.Fit(func95Exp,"NO")
@@ -346,6 +365,10 @@ def plot1D( dat, datExp, var, xmin, xmax ):
     funcExp.GetXaxis().SetRangeUser( xmin, xmax )
     func68Exp.GetXaxis().SetRangeUser( xmin, xmax )
     func95Exp.GetXaxis().SetRangeUser( xmin, xmax )
+
+    funcExp.GetYaxis().SetRangeUser( 0, 5 )
+    func68Exp.GetYaxis().SetRangeUser( 0, 5 )
+    func95Exp.GetYaxis().SetRangeUser( 0, 5 )
 
     xhist.Draw("ALO")
 #    func95Exp.Draw("FOSAME")
@@ -387,37 +410,50 @@ def plot1D( dat, datExp, var, xmin, xmax ):
     print x95min, x95max
 
     if "%.2f"%x68pmax == "%.2f"%x68min: x68min = x68pmin
-    funcName = "log-likelihood ratio"
+#    funcName = "Log-likelihood ratio"
+    funcName = ""
     if args.variables == "ctZ" and args.year == 2016 and args.inclRegion and  x68pmin != x68min:
         leg = ROOT.TLegend(0.17,0.7,0.85,0.87)
     elif args.year == 2016 and args.inclRegion and (args.useChannels and args.useChannels[0]=="mu"):
         leg = ROOT.TLegend(0.17,0.7,0.85,0.87)
     elif (args.year == 2018 or args.year == "RunII") and not args.inclRegion:
-        leg = ROOT.TLegend(0.17,0.7,0.85,0.87)
+#        leg = ROOT.TLegend(0.17,0.7,0.85,0.87)
+#        if args.variables == "ctZ":
+#            leg = ROOT.TLegend(0.23,0.7,0.85,0.889)
+#        else:
+#            leg = ROOT.TLegend(0.16,0.7,0.85,0.889)
+        leg = ROOT.TLegend(0.4,0.67,0.68,0.85)
     else:
-        leg = ROOT.TLegend(0.22,0.7,0.8,0.87)
+        leg = ROOT.TLegend(0.32,0.7,0.8,0.87)
     leg.SetBorderSize(0)
-    leg.SetTextSize(0.03)
-    leg.AddEntry( func, funcName + " (observed)" ,"l")
-    leg.AddEntry( funcExp, funcName + " (expected)" ,"l")
+    leg.SetTextSize(0.037)
+    leg.AddEntry( func, "Observed" ,"l")
+    leg.AddEntry( funcExp, "Expected" ,"l")
 
-    if args.variables == "ctZ" and args.year == 2016 and args.inclRegion and  x68pmin != x68min:
-        leg.AddEntry( func68, "68%s CL (observed) [%.2f, %.2f], [%.2f, %.2f]"%("%",x68pmin, x68pmax, x68min, x68max), "f")
-    elif args.year == 2016 and args.inclRegion and (args.useChannels and args.useChannels[0]=="mu"):
-        leg.AddEntry( func68, "68%s CL (observed) [%.2f, %.2f], [%.2f, %.2f]"%("%",x68pmin, x68pmax, x68min, x68max), "f")
-    elif args.variables == "ctZI" and (args.year == 2018 or args.year == "RunII") and not args.inclRegion:
-        leg.AddEntry( func68, "68%s CL (observed) [%.2f, %.2f], [%.2f, %.2f]"%("%",x68min, x68max, x68pmin, x68pmax), "f")
-    else:
-        leg.AddEntry( func68, "68%s CL (observed) [%.2f, %.2f]"%("%",x68min, x68max), "f")
-    if (args.year == 2018 or (args.year == "RunII" and args.variables == "ctZ")) and not args.inclRegion and not args.withbkg:
-        leg.AddEntry( func95, "95%s CL (observed) [%.2f, %.2f], [%.2f, %.2f]"%("%",x95min, x95max,x95pmin,x95pmax), "f")
-    else:
-        leg.AddEntry( func95, "95%s CL (observed) [%.2f, %.2f]"%("%",x95min, x95max), "f")
+    leg.AddEntry( func68, "68%s CL"%("%") ,"f")
+    leg.AddEntry( func95, "95%s CL"%("%") ,"f")
+
+#    if args.variables == "ctZ" and args.year == 2016 and args.inclRegion and  x68pmin != x68min:
+#        leg.AddEntry( func68, "68%s CL (observed) [%.2f, %.2f], [%.2f, %.2f]"%("%",x68pmin, x68pmax, x68min, x68max), "f")
+#    elif args.year == 2016 and args.inclRegion and (args.useChannels and args.useChannels[0]=="mu"):
+#        leg.AddEntry( func68, "68%s CL (observed) [%.2f, %.2f], [%.2f, %.2f]"%("%",x68pmin, x68pmax, x68min, x68max), "f")
+#    elif args.variables == "ctZI" and (args.year == 2018 or args.year == "RunII") and not args.inclRegion:
+#        leg.AddEntry( func68, "68%s CL (observed) [%.2f, %.2f], [%.2f, %.2f]"%("%",x68min, x68max, x68pmin, x68pmax), "f")
+#    else:
+#        leg.AddEntry( func68, "68%s CL (observed) [%.2f, %.2f]"%("%",x68min, x68max), "f")
+#    if (args.year == 2018 or (args.year == "RunII" and args.variables == "ctZ")) and not args.inclRegion and not args.withbkg:
+#        leg.AddEntry( func95, "95%s CL (observed) [%.2f, %.2f], [%.2f, %.2f]"%("%",x95min, x95max,x95pmin,x95pmax), "f")
+#    else:
+#        leg.AddEntry( func95, "95%s CL (observed) [%.2f, %.2f]"%("%",x95min, x95max), "f")
 #    leg.AddEntry( func68Exp, "68%s CL (Exp) [%.2f, %.2f]"%("%",x68minExp, x68maxExp), "f")
 #    leg.AddEntry( func95Exp, "95%s CL (Exp) [%.2f, %.2f]"%("%",x95minExp, x95maxExp), "f")
-    leg.Draw()
+#    leg2 = ROOT.TLegend(0.17,0.7,0.85,0.889)
+#    leg2.SetBorderSize(0)
+#    leg2.Draw()
 
-    xTitle = var.replace("c", "C_{").replace("I", "}^{[Im]").replace('p','#phi') + '}'
+    leg.Draw()
+    
+    xTitle = var.replace("c", "c_{").replace("I", "}^{I").replace('p','#phi') + '}'
     xhist.GetXaxis().SetTitle( xTitle + ' [(#Lambda/TeV^{2})]' )
 
     xhist.GetXaxis().SetTitleFont(42)
@@ -425,8 +461,8 @@ def plot1D( dat, datExp, var, xmin, xmax ):
     xhist.GetXaxis().SetLabelFont(42)
     xhist.GetYaxis().SetLabelFont(42)
 
-#    xhist.GetXaxis().SetTitleOffset(1.3)
-#    xhist.GetYaxis().SetTitleOffset(1.3)
+    xhist.GetXaxis().SetTitleOffset(1.1)
+    xhist.GetYaxis().SetTitleOffset(0.85)
 
     xhist.GetXaxis().SetTitleSize(0.042)
     xhist.GetYaxis().SetTitleSize(0.042)
@@ -439,12 +475,19 @@ def plot1D( dat, datExp, var, xmin, xmax ):
     latex1.SetTextFont(42)
     latex1.SetTextAlign(11)
 
+    latex2 = ROOT.TLatex()
+    latex2.SetNDC()
+    latex2.SetTextSize(0.05)
+    latex2.SetTextFont(42)
+    latex2.SetTextAlign(11)
+
     addon = ""
-    latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Preliminary} ' + addon),
+#    latex2.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Preliminary} ' + addon),
+    latex2.DrawLatex(0.15, 0.91, '#bf{CMS} ' + addon),
     if isinstance(lumi_scale, int):
-        latex1.DrawLatex(0.66, 0.91, '#bf{%i fb{}^{-1} (13 TeV)}' % lumi_scale)
+        latex1.DrawLatex(0.67, 0.91, '#bf{%i fb^{-1} (13 TeV)}' % lumi_scale)
     else:
-        latex1.DrawLatex(0.64, 0.91, '#bf{%3.1f fb{}^{-1} (13 TeV)}' % lumi_scale)
+        latex1.DrawLatex(0.65, 0.91, '#bf{%3.1f fb^{-1} (13 TeV)}' % lumi_scale)
 
     # Redraw axis, otherwise the filled graphes overlay
     cans.RedrawAxis()

@@ -6,6 +6,8 @@
 # Standard imports 
 import sys, os, copy, ROOT
 import ctypes
+ROOT.gROOT.LoadMacro('$CMSSW_BASE/src/Analysis/Tools/scripts/tdrstyle.C')
+ROOT.setTDRStyle()
 
 # RootTools
 from RootTools.core.standard   import *
@@ -84,7 +86,7 @@ cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
 print cacheFileName
 
-directory = os.path.join( plot_directory, "nllPlotsApp", str(args.year), "_".join( regionNames ))
+directory = os.path.join( plot_directory, "nllPlotsPostCWR", str(args.year), "_".join( regionNames ))
 addon = "expected" if args.expected else "observed"
 plot_directory_ = os.path.join( directory, addon )
 
@@ -163,6 +165,12 @@ else:
 
 #nllData  = [ (x, y, -2*(nll - sm_nll) if -2*(nll - sm_nll) < 20 and -2*(nll - sm_nll) > 0 else 20) for x, y, nll in nllData ]
 nllData  = [ (x, y, 2*(nll - sm_nll) ) for x, y, nll in nllData ]
+with open("ctZ_ctZI_2D_obs.dat","w") as f:
+    f.write("ctZ,ctZI,-2DeltaNLL\n")
+    f.write("best fit: "+str(bfx)+","+str(bfy)+","+str(sm_nll)+"\n")
+    for x, y, nll in nllData:
+        f.write(str(x)+","+str(y)+","+str(nll)+"\n")
+
 nllData  += [ (x, -0.7, 40) for x in xRange ]
 nllData  += [ (x, 0.7, 40) for x in xRange ]
 nllData  += [ (-0.7, x, 40) for x in yRange ]
@@ -266,8 +274,8 @@ if not None in args.xyRange[2:]:
     hist.GetYaxis().SetRangeUser( args.xyRange[2], args.xyRange[3] )
 #    hist.GetYaxis().SetLimits( args.xyRange[2], args.xyRange[3] )
 
-xTitle = args.variables[0].replace("c", "C_{").replace("I", "}^{[Im]").replace('p','#phi') + '}'
-yTitle = args.variables[1].replace("c", "C_{").replace("I", "}^{[Im]").replace('p','#phi') + '}'
+xTitle = args.variables[0].replace("c", "c_{").replace("I", "}^{I").replace('p','#phi') + '}'
+yTitle = args.variables[1].replace("c", "c_{").replace("I", "}^{I").replace('p','#phi') + '}'
 hist.GetXaxis().SetTitle( xTitle + ' [(#Lambda/TeV)^{2}]' )
 hist.GetYaxis().SetTitle( yTitle + ' [(#Lambda/TeV)^{2}]' )
 
@@ -278,7 +286,8 @@ hist.GetXaxis().SetLabelFont(42)
 hist.GetYaxis().SetLabelFont(42)
 hist.GetZaxis().SetLabelFont(42)
 
-#hist.GetXaxis().SetTitleOffset(1.05)
+hist.GetXaxis().SetTitleOffset(1.1)
+hist.GetZaxis().SetTitleOffset(1.05)
 hist.GetYaxis().SetTitleOffset(1.45)
 
 hist.GetXaxis().SetTitleSize(0.042)
@@ -312,17 +321,17 @@ cont_p2.At(0).SetLineWidth(3)
 cont_p1.At(0).SetLineColor(ROOT.kSpring-1)
 cont_p1.At(0).SetLineWidth(3)
 
-leg = ROOT.TLegend(0.15,0.75,0.87,0.87)
+leg = ROOT.TLegend(0.15,0.72,0.81,0.87)
 if args.contours:
     leg.SetNColumns(2)
 leg.SetBorderSize(0)
-leg.SetTextSize(0.03)
+leg.SetTextSize(0.037)
 leg.SetFillStyle(0)
-leg.AddEntry( SMpoint, "Standard Model","p")
+leg.AddEntry( SMpoint, "Standard model","p")
 if args.contours:
 #    leg.AddEntry( ROOT.TObject(), " ","")
     leg.AddEntry( cont_p1.At(0), "68%s CL"%"%", "l")
-leg.AddEntry( BFpoint, "Best Fit","p")
+leg.AddEntry( BFpoint, "Best fit","p")
 if args.contours:
 #    leg.AddEntry( ROOT.TObject(), " ","")
     leg.AddEntry( cont_p2.At(0), "95%s CL"%"%", "l")
@@ -335,14 +344,22 @@ latex1.SetTextSize(0.035)
 latex1.SetTextFont(42)
 latex1.SetTextAlign(11)
 
+latex4 = ROOT.TLatex()
+latex4.SetNDC()
+latex4.SetTextSize(0.05)
+latex4.SetTextFont(42)
+latex4.SetTextAlign(11)
+
 if args.expected:
-    latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Simulation Preliminary}'),
+#    latex4.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Simulation Preliminary}'),
+    latex4.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Simulation}'),
 else:
-    latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Preliminary}'),
+#    latex4.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Preliminary}'),
+    latex4.DrawLatex(0.15, 0.91, '#bf{CMS}'),
 if isinstance(lumi_scale, int):
-    latex1.DrawLatex(0.62, 0.91, '#bf{%i fb{}^{-1} (13 TeV)}' % lumi_scale)
+    latex1.DrawLatex(0.57, 0.91, '#bf{%i fb^{-1} (13 TeV)}' % lumi_scale)
 else:
-    latex1.DrawLatex(0.60, 0.91, '#bf{%3.1f fb{}^{-1} (13 TeV)}' % lumi_scale)
+    latex1.DrawLatex(0.6, 0.91, '#bf{%3.1f fb^{-1} (13 TeV)}' % lumi_scale)
 
 latex2 = ROOT.TLatex()
 latex2.SetNDC()

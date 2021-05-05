@@ -30,10 +30,10 @@ from RootTools.core.helpers            import partition
 inclEstimate = "TTG_NLO"
 
 # setup and sample
-parameters       = allRegions["SR3p"]["parameters"]
-channels         = allRegions["SR3p"]["channels"]
-photonSelection  = not allRegions["SR3p"]["noPhotonCR"]
-allPhotonRegions = allRegions["SR3p"]["inclRegion"] + allRegions["SR3p"]["regions"] if photonSelection else allRegions["SR3p"]["regions"]
+parameters       = allRegions["SR3"]["parameters"]
+channels         = allRegions["SR3"]["channels"]
+photonSelection  = not allRegions["SR3"]["noPhotonCR"]
+allPhotonRegions = allRegions["SR3"]["inclRegion"] + allRegions["SR3"]["regions"] if photonSelection else allRegions["SR3"]["regions"]
 
 setup            = Setup( year="RunII", photonSelection=photonSelection, private=True ) #photonselection always false for qcd es$
 setup            = setup.sysClone( parameters=parameters )
@@ -93,7 +93,7 @@ delta_sigma_rel = math.sqrt( delta_sigma_rel**2 + delta_sigma_alphaS_rel**2 )
 print delta_sigma_rel
 
 
-print "SR3p", "TTG_NLO_gen", c, "PDF+alphaS", delta_sigma_rel
-print "SR3p", "TTG_NLO_gen", c, "Scale", scale_rel
-print "SR3p", "TTG_NLO_gen", c, "Total Theory", math.sqrt( scale_rel**2 + delta_sigma_rel**2 )
+print "SR3", "TTG_NLO_gen", c, "PDF+alphaS", delta_sigma_rel
+print "SR3", "TTG_NLO_gen", c, "Scale", scale_rel
+print "SR3", "TTG_NLO_gen", c, "Total Theory", math.sqrt( scale_rel**2 + delta_sigma_rel**2 )
 

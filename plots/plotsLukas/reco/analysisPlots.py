@@ -91,7 +91,7 @@ def drawObjects( plotData, dataMCScale, lumi_scale ):
     tex.SetTextAlign(11) # align right
     lines = [
       (0.15, 0.95, 'CMS #bf{#it{Preliminary}}' if plotData else 'CMS #bf{#it{Simulation Preliminary}}'), 
-      (0.45, 0.95, '%3.1f fb{}^{-1} (13 TeV) Scale %3.2f'% ( lumi_scale, dataMCScale ) ) if plotData else (0.65, 0.95, '%3.1f fb{}^{-1} (13 TeV)' % lumi_scale)
+      (0.48, 0.95, '%3.1f fb^{-1} (13 TeV) Scale %3.2f'% ( lumi_scale, dataMCScale ) ) if plotData else (0.68, 0.95, '%3.1f fb^{-1} (13 TeV)' % lumi_scale)
     ]
     return [tex.DrawLatex(*l) for l in lines] 
 

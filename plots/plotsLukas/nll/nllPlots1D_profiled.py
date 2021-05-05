@@ -5,6 +5,8 @@
 import os, copy, sys
 import ctypes
 import ROOT
+ROOT.gROOT.LoadMacro('$CMSSW_BASE/src/Analysis/Tools/scripts/tdrstyle.C')
+ROOT.setTDRStyle()
 from math                                import sqrt
 import operator
 from itertools import groupby 
@@ -86,7 +88,7 @@ nllCache      = MergingDirDB( cacheFileName )
 
 print cacheFileName
 
-directory = os.path.join( plot_directory, "nllPlotsApp", str(args.year), "_".join( regionNames ))
+directory = os.path.join( plot_directory, "nllPlotsPostCWR", str(args.year), "_".join( regionNames ))
 addon = "expected" if args.expected else "observed"
 if args.plotData: addon += "_check"
 plot_directory_ = os.path.join( directory, addon )
@@ -241,7 +243,7 @@ def plot1D( dat, var, xmin, xmax, lumi_scale ):
     print x68min, x68max
     print x95min, x95max
 
-    funcName = "profiled log-likelihood ratio"
+    funcName = "Profiled log-likelihood ratio"
     leg = ROOT.TLegend(0.3,0.7,0.7,0.87)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.035)
@@ -250,7 +252,7 @@ def plot1D( dat, var, xmin, xmax, lumi_scale ):
     leg.AddEntry( func95, "95%s CL [%.2f, %.2f]"%("%",x95min, x95max), "f")
     leg.Draw()
 
-    xTitle = var.replace("c", "C_{").replace("I", "}^{[Im]").replace('p','#phi') + '}'
+    xTitle = var.replace("c", "c_{").replace("I", "}^{I").replace('p','#phi') + '}'
     xhist.GetXaxis().SetTitle( xTitle + ' [(#Lambda/TeV)^{2}]' )
 
     xhist.GetXaxis().SetTitleFont(42)
@@ -273,11 +275,12 @@ def plot1D( dat, var, xmin, xmax, lumi_scale ):
     latex1.SetTextAlign(11)
 
     addon = ""
-    latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Simulation Preliminary} ' + addon),
+#    latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Simulation Preliminary} ' + addon),
+    latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Simulation} ' + addon),
     if isinstance(lumi_scale, int):
-        latex1.DrawLatex(0.66, 0.91, '#bf{%i fb{}^{-1} (13 TeV)}' % lumi_scale)
+        latex1.DrawLatex(0.70, 0.91, '#bf{%i fb^{-1} (13 TeV)}' % lumi_scale)
     else:
-        latex1.DrawLatex(0.64, 0.91, '#bf{%3.1f fb{}^{-1} (13 TeV)}' % lumi_scale)
+        latex1.DrawLatex(0.68, 0.91, '#bf{%3.1f fb^{-1} (13 TeV)}' % lumi_scale)
 
     # Redraw axis, otherwise the filled graphes overlay
     cans.RedrawAxis()

@@ -5,6 +5,8 @@
 import os, copy, sys
 import ctypes
 import ROOT
+ROOT.gROOT.LoadMacro('$CMSSW_BASE/src/Analysis/Tools/scripts/tdrstyle.C')
+ROOT.setTDRStyle()
 from math                                import sqrt
 import numpy as np
 # TTGammaEFT
@@ -79,7 +81,7 @@ cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
 print cacheFileName
 
-directory = os.path.join( plot_directory, "nllPlotsApp", str(args.year), "_".join( regionNames ))
+directory = os.path.join( plot_directory, "nllPlotsPostCWR", str(args.year), "_".join( regionNames ))
 addon = "expected" if args.expected else "observed"
 if args.plotData: addon += "_check"
 plot_directory_ = os.path.join( directory, addon )
@@ -380,7 +382,7 @@ def plot1D( dat, datIncl, var, xmin, xmax ):
     print x95min, x95max
 
     if "%.2f"%x68pmax == "%.2f"%x68min: x68min = x68pmin
-    funcName = "log-likelihood ratio"
+    funcName = "Log-likelihood ratio"
     if args.variables == "ctZ" and args.year == 2016 and  x68pmin != x68min and not args.expected:
         leg = ROOT.TLegend(0.17,0.7,0.85,0.87)
     elif (args.year == 2018 or args.year == "RunII") and not args.expected:
@@ -409,7 +411,7 @@ def plot1D( dat, datIncl, var, xmin, xmax ):
 #    leg.AddEntry( func95Incl, "95%s CL (incl) [%.2f, %.2f]"%("%",x95minIncl, x95maxIncl), "f")
     leg.Draw()
 
-    xTitle = var.replace("c", "C_{").replace("I", "}^{[Im]").replace('p','#phi') + '}'
+    xTitle = var.replace("c", "c_{").replace("I", "}^{I").replace('p','#phi') + '}'
     xhist.GetXaxis().SetTitle( xTitle + ' [(#Lambda/TeV^{2})]' )
 
     xhist.GetXaxis().SetTitleFont(42)
@@ -432,11 +434,12 @@ def plot1D( dat, datIncl, var, xmin, xmax ):
     latex1.SetTextAlign(11)
 
     addon = ""
-    latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Simulation Preliminary} ' + addon),
+#    latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Simulation Preliminary} ' + addon),
+    latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Simulation} ' + addon),
     if isinstance(lumi_scale, int):
-        latex1.DrawLatex(0.66, 0.91, '#bf{%i fb{}^{-1} (13 TeV)}' % lumi_scale)
+        latex1.DrawLatex(0.70, 0.91, '#bf{%i fb^{-1} (13 TeV)}' % lumi_scale)
     else:
-        latex1.DrawLatex(0.64, 0.91, '#bf{%3.1f fb{}^{-1} (13 TeV)}' % lumi_scale)
+        latex1.DrawLatex(0.68, 0.91, '#bf{%3.1f fb^{-1} (13 TeV)}' % lumi_scale)
 
     # Redraw axis, otherwise the filled graphes overlay
     cans.RedrawAxis()

@@ -63,7 +63,7 @@ def drawObjects( lumi_scale ):
     tex.SetNDC()
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
-    line = (0.65, 0.95, "%3.1f fb{}^{-1} (13 TeV)" % lumi_scale)
+    line = (0.68, 0.95, "%3.1f fb^{-1} (13 TeV)" % lumi_scale)
     lines = [
       (0.15, 0.95, "CMS #bf{#it{Preliminary}} (%s)"%replaceRegionNaming[args.selection]),
       line

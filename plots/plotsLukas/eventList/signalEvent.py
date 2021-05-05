@@ -18,9 +18,11 @@ os.environ["gammaSkim"]="True"
 from TTGammaEFT.Samples.nanoTuples_Run2018_14Dec2018_semilep_postProcessed import *
 sample = Run2018
 
-selectionString  = "ltight0GammadR>0.8&&photonJetdR>0.8&&LeptonTight0_pt>50&&PhotonGood0_pt>70&&JetGood0_pt>70&&JetGood1_pt>70&&nLeptonTight==1&&nMuonTight==1&&nLeptonVetoIsoCorr==1&&nJetGood>=4&&nBTagGood==2&&nPhotonGood==1&&nPhotonNoChgIsoNoSieie==1&&triggered==1"
+#selectionString  = "ltight0GammadR>0.8&&photonJetdR>0.8&&LeptonTight0_pt>50&&PhotonGood0_pt<70&&JetGood0_pt<70&&nLeptonTight==1&&nMuonTight==1&&nLeptonVetoIsoCorr==1&&nJetGood>=4&&nBTagGood==2&&nPhotonGood==1&&nPhotonNoChgIsoNoSieie==1&&triggered==1"
+#selectionString  = "ltight0GammadR>0.8&&photonJetdR>0.8&&LeptonTight0_pt>50&&PhotonGood0_pt>70&&JetGood0_pt>70&&JetGood1_pt>70&&nLeptonTight==1&&nMuonTight==1&&nLeptonVetoIsoCorr==1&&nJetGood>=4&&nBTagGood==2&&nPhotonGood==1&&nPhotonNoChgIsoNoSieie==1&&triggered==1"
+selectionString  = "ltight0GammadR>0.8&&photonJetdR>0.8&&LeptonTight0_pt>50&&PhotonGood0_pt<70&&JetGood0_pt>70&&JetGood1_pt>70&&nLeptonTight==1&&nMuonTight==1&&nLeptonVetoIsoCorr==1&&nJetGood>=4&&nBTagGood==2&&nPhotonGood==1&&nPhotonNoChgIsoNoSieie==1&&triggered==1"
 selectionString += "&&weight>0&&reweightHEM>0&&Flag_goodVertices&&Flag_globalSuperTightHalo2016Filter&&Flag_HBHENoiseFilter&&Flag_HBHENoiseIsoFilter&&Flag_EcalDeadCellTriggerPrimitiveFilter&&Flag_BadPFMuonFilter&&PV_ndof>4&&sqrt(PV_x*PV_x+PV_y*PV_y)<=2&&abs(PV_z)<=24"
-selName = "2018-Muon-nJet4p-nBTag2"
+selName = "2018-Muon-nJet4p-nBTag2-lowPt"
 # Define a reader
 r = sample.treeReader( \
     variables = [ TreeVariable.fromString("event/l"), TreeVariable.fromString('run/i'), TreeVariable.fromString("luminosityBlock/i") ],

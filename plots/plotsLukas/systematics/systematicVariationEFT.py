@@ -53,6 +53,9 @@ argParser.add_argument("--photonCat",          action="store_true",             
 argParser.add_argument("--inclQCDTF",          action="store_true",                                                                          help="run with incl QCD TF?")
 argParser.add_argument("--paperPlot",          action="store_true",                                                                          help="change labeling for paper")
 argParser.add_argument("--splitWG",          action="store_true",                                                                          help="change labeling for paper")
+argParser.add_argument('--sample',             action='store',      default=None,   type=str,                                               help="Which sample to plot")
+argParser.add_argument('--parameters',         action='store',      default=['ctZI', '1', 'ctZ', '1'], type=str, nargs='+', help = "argument parameters")
+argParser.add_argument("--genVariable",           action="store",      default="GenPhotonCMSUnfold0_pt", type=str,                                    help="gen variable to plot for eft")
 args = argParser.parse_args()
 
 addSF = args.postfit
@@ -129,10 +132,8 @@ def metSelectionModifier( sys, returntype = 'func'):
 
 # these are the nominal MC weights we always apply
 nominalMCWeights = ["weight", "reweightHEM","reweightTrigger", "reweightL1Prefire", "reweightPU", "reweightLeptonTightSF", "reweightLeptonTrackingTightSF", "reweightPhotonSF", "reweightPhotonElectronVetoSF", "reweightBTag_SF"]
-if args.selection.startswith("SR"):
-    genCat = ["noChgIsoNoSieiephotoncat0","noChgIsoNoSieiephotoncat134","noChgIsoNoSieiephotoncat2"] if args.photonCat else [None]
-else:
-    genCat = ["noChgIsoNoSieiephotoncat2","noChgIsoNoSieiephotoncat0","noChgIsoNoSieiephotoncat134"] if args.photonCat else [None]
+genCat = ["noChgIsoNoSieiephotoncat2","noChgIsoNoSieiephotoncat0","noChgIsoNoSieiephotoncat134"] if args.photonCat else [None]
+#genCat = ["noChgIsoNoSieiephotoncat0","noChgIsoNoSieiephotoncat134","noChgIsoNoSieiephotoncat2"] if args.photonCat else [None]
 
 if "2" in args.selection and not "2p" in args.selection:
     DYSF_val    = DY2SF_val
@@ -183,8 +184,10 @@ if args.selection.startswith("SR") and args.year == "RunII":
     misIDSF_val[2016] *= 0.95*0.90
     misIDSF_val[2017] *= 1.01*1.08
     misIDSF_val[2018] *= 1.05*1.06
-    # pulls from datadriven fake estimate
-    fakesSF = 1.15
+#    # pulls from datadriven fake estimate
+#    fakesSF = 1.15
+#    if args.sample:
+#        fakesSF *= 1.15
 
 #if args.selection.startswith("SR") and args.year == 2018:
 #    misIDSF_val[2018] *= 1.05*1.06
@@ -252,19 +255,17 @@ def drawObjects( lumi_scale, log=False ):
     tex.SetNDC()
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
-
-    tex2 = ROOT.TLatex()
-    tex2.SetNDC()
-    tex2.SetTextSize(0.058)
-    tex2.SetTextAlign(11) # align right
 #    line = (0.65, 0.95, "%3.1f fb^{-1} (13 TeV)" % lumi_scale)
     if isinstance( lumi_scale, int ):
-        line = (0.68, 0.95, "%i fb^{-1} (13 TeV)" % lumi_scale)
+        line = (0.70, 0.95, "%i fb^{-1} (13 TeV)" % lumi_scale)
     else:
         line = (0.68, 0.95, "%3.1f fb^{-1} (13 TeV)" % lumi_scale)
-#    lines2 = (0.235 if not log and (args.selection.startswith("WJets") or args.selection.startswith("TT")) else 0.15, 0.95, "CMS #bf{#it{Preliminary}}%s"%(" (%s)"%(replaceRegionNaming[args.selection.replace("fake","SR")] if args.selection.replace("fake","SR") in replaceRegionNaming.keys() else args.selection.replace("fake","SR")) if not args.paperPlot else "" )),
-    line2 = (0.235 if not log and (args.selection.startswith("WJets") or args.selection.startswith("TT")) else 0.15, 0.95, "CMS%s"%(" (%s)"%(replaceRegionNaming[args.selection.replace("fake","SR")] if args.selection.replace("fake","SR") in replaceRegionNaming.keys() else args.selection.replace("fake","SR")) if not args.paperPlot else "" ))
-    return [tex2.DrawLatex(*line2), tex.DrawLatex(*line)]
+    lines = [
+#      (0.235 if not log and (args.selection.startswith("WJets") or args.selection.startswith("TT")) else 0.15, 0.95, "CMS #bf{#it{Preliminary}}%s"%(" (%s)"%(replaceRegionNaming[args.selection.replace("fake","SR")] if args.selection.replace("fake","SR") in replaceRegionNaming.keys() else args.selection.replace("fake","SR")) if not args.paperPlot else "" )),
+      (0.235 if not log and (args.selection.startswith("WJets") or args.selection.startswith("TT")) else 0.15, 0.95, "CMS%s"%(" (%s)"%(replaceRegionNaming[args.selection.replace("fake","SR")] if args.selection.replace("fake","SR") in replaceRegionNaming.keys() else args.selection.replace("fake","SR")) if not args.paperPlot else "" )),
+      line
+    ]
+    return [tex.DrawLatex(*l) for l in lines]
 
 # Define all systematic variations
 variations = {
@@ -334,10 +335,7 @@ elif args.year == "RunII":
     import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
     from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
-if "WJets" in args.selection:
-    mc  = [mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.rest ]
-else:
-    mc  = [mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
+mc  = [mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
 qcd = mc_samples.QCD
 
 read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval/I",
@@ -421,6 +419,61 @@ if len(args.selection.split("-")) == 1 and args.selection in allRegions.keys():
 else:
     raise Exception("Region not implemented")
 
+params = []
+if args.sample:
+    # load and define the EFT sample
+    from TTGammaEFT.Samples.genTuples_TTGamma_EFT_postProcessed  import *
+    eftSample = eval(args.sample)
+
+    # settings for eft reweighting
+    w = WeightInfo( eftSample.reweight_pkl )
+    w.set_order( 2 )
+    variables = w.variables
+
+    #Histograms 
+    def get_weight_string( parameters ):
+        return w.get_weight_string( **parameters )
+
+    # define your plot selection via the python option --selection
+    eftsmweightString = "(%s)*ref_weight"%get_weight_string({})
+    Histo = eftSample.get1DHistoFromDraw( args.genVariable, binning=args.binning,selectionString=eftselection, weightString=eftsmweightString )
+
+    # define some colors
+    colors = [ ROOT.kRed+1, ROOT.kGreen-2, ROOT.kOrange+1, ROOT.kAzure+4 ]
+
+    if len(args.parameters) > 1:
+        # format the EFT parameter you want to plot
+        coeffs = args.parameters[::2]
+        str_vals = args.parameters[1::2]
+        vals = list( map( float, str_vals ) )
+        for i_param, (coeff, val, str_val) in enumerate(zip(coeffs, vals, str_vals)):
+            bsmweightString = "(%s)*ref_weight"%get_weight_string({coeff:val})
+            bsmHisto = eftSample.get1DHistoFromDraw( args.genVariable, binning=args.binning, selectionString=eftselection, weightString=bsmweightString )
+            copyHisto = bsmHisto.Clone(str(i_param))
+            copyHisto.Divide(Histo)
+
+            params.append( {
+                'legendText': ' = '.join([coeff,str_val]).replace("c", "c_{").replace(" =", "} =").replace("I", "}^{I"),
+                'WC' : { coeff:val },
+                'color' : colors[i_param],
+                'histo':  copy.deepcopy(copyHisto),
+                'name': coeff
+                })
+    elif len(args.parameters) == 1 and args.parameters[0] == "bestfit":
+        # format the EFT parameter you want to plot
+        bsmweightString = "(%s)*ref_weight"%get_weight_string({"ctZ":-0.25, "ctZI":-0.083})
+        bsmHisto = eftSample.get1DHistoFromDraw( args.genVariable, binning=args.binning, selectionString=eftselection, weightString=bsmweightString )
+        copyHisto = bsmHisto.Clone()
+        copyHisto.Divide(Histo)
+
+        params.append( {
+            'legendText': "EFT best fit",
+            'color' : colors[0],
+            'histo':  copy.deepcopy(copyHisto),
+            'name': "bestfit"
+            })
+
+
 lep = args.mode.replace("mu","#mu") if args.mode != "all" else "l"
 replaceLabel = {
     "nBTagGood": "N_{b-tag}",
@@ -497,7 +550,7 @@ if args.variation == "central":
     # histo data
     key = (data_sample.name, "AR", args.variable, "_".join(map(str,args.binning)), data_sample.weightString, data_sample.selectionString, selection)
     if not dirDB.contains(key) or args.overwrite:
-        dataHist = data_sample.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=selection, addOverFlowBin=None )
+        dataHist = data_sample.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=selection, addOverFlowBin=None ) #"upper" )
         dirDB.add(key, dataHist.Clone("dataAR"), overwrite=True)
     else:
         dataHist = dirDB.get(key).Clone("dataAR")
@@ -522,7 +575,7 @@ if args.variation == "central":
         key = (s.name, "AR", args.variable, "_".join(map(str,args.binning)), s.weightString, s.selectionString, normalization_selection_string, args.variation)
 #        print s.name, g, dirDB.contains(key)
         if not dirDB.contains(key) or args.overwrite:
-            mcHist = s.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=normalization_selection_string, addOverFlowBin=None )
+            mcHist = s.get1DHistoFromDraw( args.variable, binning=args.binning, selectionString=normalization_selection_string, addOverFlowBin=None ) #"upper" )
             dirDB.add(key, mcHist.Clone(s.name+"AR"+g if g else s.name+"AR"), overwrite=True)
 
 #    args.overwrite = False
@@ -568,7 +621,7 @@ if args.variation == "central":
                     if dirDB.contains(key) and not args.overwrite:
                         dataHist_SB_tmp = dirDB.get(key).Clone("dataSB"+mode)
                     else:
-                        dataHist_SB_tmp = data_sample.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=leptonPtEtaCut, addOverFlowBin=None )
+                        dataHist_SB_tmp = data_sample.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=leptonPtEtaCut, addOverFlowBin=None ) #"upper" )
                         dirDB.add(key, dataHist_SB_tmp.Clone("dataSB"+mode), overwrite=True)
 
                     qcdHist_tmp = dataHist_SB_tmp.Clone("qcdtmp_%i_%i"%(i_pt,i_eta))
@@ -582,7 +635,7 @@ if args.variation == "central":
                         if dirDB.contains(key) and not args.overwrite:
                             s.hist_SB_tmp = dirDB.get(key).Clone(s.name+"SB")
                         else:
-                            s.hist_SB_tmp = s.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=leptonPtEtaCut, addOverFlowBin=None )
+                            s.hist_SB_tmp = s.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=leptonPtEtaCut, addOverFlowBin=None ) #"upper" )
                             dirDB.add(key, s.hist_SB_tmp.Clone(s.name+"SB"), overwrite=True)
     
                         # apply SF after histo caching
@@ -595,7 +648,7 @@ if args.variation == "central":
                                     s.hist_SB_tmp.Scale(ZGSF_val[args.year].val)
                                 elif "WG" in s.name:
                                     s.hist_SB_tmp.Scale(WGSF_val[args.year].val)
-                                elif "TTG" in s.name and not args.selection.startswith("SR"):
+                                elif "TTG" in s.name and not args.sample:
                                     s.hist_SB_tmp.Scale(SSMSF_val[args.year].val)
                                 elif "Top" in s.name:
                                     s.hist_SB_tmp.Scale(fakesSF)
@@ -675,7 +728,7 @@ if args.variation:
         s.setWeightString( mc_normalization_weight_string )
         key = (s.name, "AR", var, "_".join(map(str,args.binning)), s.weightString, s.selectionString, normalization_selection_string, args.variation)
         if not dirDB.contains(key) or args.overwrite:
-            s.hist = s.get1DHistoFromDraw( var, binning=args.binning, selectionString=normalization_selection_string, addOverFlowBin=None )
+            s.hist = s.get1DHistoFromDraw( var, binning=args.binning, selectionString=normalization_selection_string, addOverFlowBin=None ) #"upper" )
             dirDB.add(key, s.hist.Clone(s.name+var), overwrite=True)
 
         print( "Done with %s in channel %s.", args.variation, args.mode)
@@ -744,7 +797,7 @@ for s in mc:
                             s.hist[variation][g].Scale(ZGSF_val[args.year].val)
                         elif "WG" in s.name:
                             s.hist[variation][g].Scale(WGSF_val[args.year].val)
-                        elif "TTG" in s.name and not args.selection.startswith("SR"):
+                        elif "TTG" in s.name and not args.sample:
                             s.hist[variation][g].Scale(SSMSF_val[args.year].val)
                         if "noChgIsoNoSieiephotoncat134" in g:
                             s.hist[variation][g].Scale(fakesSF)
@@ -841,14 +894,6 @@ empty2.style      = styles.lineStyle( ROOT.kWhite, width=0 )
 #for i in range(qcdHist.GetNbinsX()):
 #    qcdHist.SetBinError(i+1, qcdHist.GetBinContent(i+1)*0.5)
 
-##########################
-
-
-#qcdHist.SetBinContent(qcdHist.GetNbinsX(),qcdHist.GetBinContent(qcdHist.GetNbinsX()-1))
-
-
-###########################
-
 
 qcdHist.style          = styles.fillStyle( color.QCD )
 qcdHist.legendText     = "Multijet"
@@ -862,7 +907,7 @@ mc_histo_list   = {variation:[s.hist[variation]["all" if variation != "central" 
 # for central (=no variation), we store plot_data_1, plot_mc_1, plot_data_2, plot_mc_2, ...
 if args.photonCat:
     catHists = [mc[0].hist["central"][g] for g in genCat]
-    catSettings = { "noChgIsoNoSieiephotoncat0":{"texName":"Other gen. #gamma" if args.splitWG else "Genuine #gamma",  "color":color.gen  },
+    catSettings = { "noChgIsoNoSieiephotoncat0":{"texName":"Other" if args.splitWG else "Genuine #gamma",  "color":color.gen  },
                     "noChgIsoNoSieiephotoncat2":{"texName":"Misid. e",     "color":color.misID},
                     "noChgIsoNoSieiephotoncat134":{"texName":"Hadronic #gamma",  "color":color.fakes  }}
 #                    "noChgIsoNoSieiephotoncat1":{"texName":"had #gamma",  "color":color.had  },
@@ -886,6 +931,22 @@ if args.photonCat:
         mc_histo_list["central"] = catHists + [qcdHist]
 
 
+pHistos = []
+if args.sample:
+    totHist = qcdHist.Clone("total")
+    totHist.Scale(0)
+    for h in mc_histo_list["central"]:
+        totHist.Add(h)
+
+    for p in params:
+        p["histo"].Multiply(mc_samples.TTG.hist["central"]["noChgIsoNoSieiephotoncat0" if args.photonCat else "all"])
+        p["histo"].Add(mc_samples.TTG.hist["central"]["noChgIsoNoSieiephotoncat0" if args.photonCat else "all"], -1)
+        p["histo"].Add(totHist)
+        p["histo"].style = styles.lineStyle( p["color"], width=2 )
+        p["histo"].legendText = p["legendText"]
+
+    pHistos = [ [p["histo"]] for p in params ]
+
 # copy styles and tex
 data_histo_list[0].style = styles.errorStyle( ROOT.kBlack )
 #data_histo_list[0].legendText = "Observed (%s)"%args.mode.replace("mu","#mu").replace("all","e+#mu")
@@ -899,21 +960,23 @@ if args.variable == "nElectronTight":
         h.GetXaxis().SetBinLabel( 2, "e" )
 
 
-uncHist = qcdHist.Clone()
+uncHist = data_histo_list[0].Clone()
 uncHist.Scale(0)
-uncHist.style = styles.hashStyle(lineColor = ROOT.kBlack, lineWidth = 1)
+uncHist.style = styles.hashStyle()
 uncHist.legendText = "Uncertainty"
-uncHist.legendOption = "f"
 
 Plot.setDefaults()
 unitBinning = (float(args.binning[2]) - float(args.binning[1])) / float(args.binning[0])
-plot        = Plot.fromHisto( args.variable, [mc_histo_list["central"]] + [data_histo_list] + [[uncHist]], texX = replaceLabel[args.variable], texY = "Events / %s %s"%("%.1f"%unitBinning if unitBinning<1 else str(int(unitBinning)), "GeV" if "GeV" in replaceLabel[args.variable] else "units") )
+plot        = Plot.fromHisto( args.variable, [mc_histo_list["central"]] + [data_histo_list] + pHistos + [[uncHist]], texX = replaceLabel[args.variable], texY = "Events / %s %s"%("%.1f"%unitBinning if unitBinning<1 else str(int(unitBinning)), "GeV" if "GeV" in replaceLabel[args.variable] else "") )
 #plot        = Plot.fromHisto( args.variable, [mc_histo_list["central"]] + [data_histo_list] + pHistos + [[uncHist],[empty2],[empty]], texX = replaceLabel[args.variable], texY = "Events / %s %s"%("%.1f"%unitBinning if unitBinning<1 else str(int(unitBinning)), "GeV" if "GeV" in replaceLabel[args.variable] else "units") )
 #plot        = Plot.fromHisto( args.variable, [mc_histo_list["central"]] + [data_histo_list] + [[uncHist]], texX = replaceLabel[args.variable], texY = "Number of Events" )
 #stackList = [ mc + [qcd], [data_sample], [data_sample] ]
-#stackList = [ mc + [qcd], [data_sample], [data_sample], [data_sample] ]
-#plot.stack  = Stack( *stackList )
-plot.stack  = Stack( mc + [qcd], [data_sample], [data_sample] ) 
+stackList = [ mc + [qcd], [data_sample], [data_sample], [data_sample], [data_sample] ]
+if args.sample:
+    for p in params:
+        stackList.append([data_sample])
+plot.stack  = Stack( *stackList )
+#plot.stack  = Stack( mc + [qcd], [data_sample], [data_sample] ) 
 
 
 # Make boxes and ratio boxes
@@ -922,10 +985,10 @@ ratio_boxes     = []
 # Compute all variied MC sums
 total_mc_histo   = {variation:add_histos( mc_histo_list[variation]) for variation in variations.keys() }
 
-totalUncUp = qcdHist.Clone()
+totalUncUp = data_histo_list[0].Clone()
 totalUncUp.SetName("totalUncertainty_up")
 totalUncUp.Scale(0)
-totalUncDown = qcdHist.Clone()
+totalUncDown = data_histo_list[0].Clone()
 totalUncDown.SetName("totalUncertainty_down")
 totalUncDown.Scale(0)
 
@@ -962,13 +1025,12 @@ for i_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
                 variance += (0.08*mc_samples.DY_LO.hist["central"][g].GetBinContent(i_b))**2 # DY normalization
                 if args.selection.startswith("SR"):
                     variance += (0.08*mc_samples.DY_LO.hist["central"][g].GetBinContent(i_b))**2 # DY extrapolation
-            if not "WJets" in args.selection:
-                variance += (0.07*mc_samples.WG.hist["central"][g].GetBinContent(i_b))**2 # WG normalization
-                variance += (0.10*mc_samples.ZG.hist["central"][g].GetBinContent(i_b))**2 # ZG normalization
-                variance += (0.01*mc_samples.TTG.hist["central"][g].GetBinContent(i_b))**2 # mockup for PDF
-                variance += (0.005*mc_samples.TTG.hist["central"][g].GetBinContent(i_b))**2 # mockup for Scale
-                variance += (0.01*mc_samples.TTG.hist["central"][g].GetBinContent(i_b))**2 # mockup for color reconnection
+            variance += (0.07*mc_samples.WG.hist["central"][g].GetBinContent(i_b))**2 # WG normalization
+            variance += (0.10*mc_samples.ZG.hist["central"][g].GetBinContent(i_b))**2 # ZG normalization
             variance += (0.30*mc_samples.rest.hist["central"][g].GetBinContent(i_b))**2 # other normalization
+            variance += (0.01*mc_samples.TTG.hist["central"][g].GetBinContent(i_b))**2 # mockup for PDF
+            variance += (0.005*mc_samples.TTG.hist["central"][g].GetBinContent(i_b))**2 # mockup for Scale
+            variance += (0.01*mc_samples.TTG.hist["central"][g].GetBinContent(i_b))**2 # mockup for color reconnection
             variance += (muonExtrapolation*total_central_mc_yield)**2 # muon ID extrapolation unc
             variance += (lumiUnc[args.year]*total_central_mc_yield)**2 # lumi
         if args.photonCat:
@@ -1033,8 +1095,9 @@ for log in [True, False]:
 #            ratio = {'yRange':(0.81,1.19), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
         else:
             ratio = {'yRange':(0.76,1.24), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
-#        ratio = {'yRange':(0.76,1.24), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications, 'histos':[(1,0)]}
-        ratio = {'yRange':(0.76,1.24), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications, 'histos':[(1,0)]}
+        ratio = {'yRange':(0.76,1.24), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
+        if args.sample:
+            ratio["histos"] = [(1,0)] + [(2+i,0) for i in range(len(params))]
 
 #        ratio = {'yRange':(0.51,1.49), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
         print args.selection
@@ -1044,13 +1107,14 @@ for log in [True, False]:
         modeAddon = ""
         if args.photonCat: modeAddon += "_cat"
         if args.inclQCDTF: modeAddon += "_inclQCD"
+        if args.sample: modeAddon += "_eft"
         plot_directory_ = os.path.join( plot_directory, "systematics", str(args.year), args.plot_directory, selDir, "postfit" if args.postfit else "prefit", args.mode+modeAddon, "log" if log else "lin" )
         plotting.draw( plot,
                        plot_directory = plot_directory_,
                        logX = False, logY = log, sorting = not ((args.mode == "e" and plot.name == "mLtight0Gamma" and args.photonCat) or args.splitWG) ,
 #                       logX = False, logY = log, sorting = False ,
                        yRange = (7, 1e5) if plot.name == "PhotonGood0_pt" and args.mode =="all" and args.year == 2016 and log and args.selection == "SR3p" else (3,"auto"),
-                       ratio = ratio if not args.selection.startswith("SR") else None,
+                       ratio = ratio,
 #                       drawObjects = drawObjects( lumi_scale ),
                        drawObjects = drawObjects( lumi_scale, log=log ) + boxes,
                        legend = legend,

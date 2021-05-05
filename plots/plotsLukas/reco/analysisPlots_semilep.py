@@ -144,11 +144,11 @@ def drawObjects( plotData, dataMCScale, lumi_scale ):
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
     if plotData and args.invLeptonIso:
-        line = (0.42, 0.95, '%3.1f fb{}^{-1} (13 TeV) TF %3.3f #pm %3.3f'% ( lumi_scale, dataMCScale.val, dataMCScale.sigma ) )
+        line = (0.42, 0.95, '%3.1f fb^{-1} (13 TeV) TF %3.3f #pm %3.3f'% ( lumi_scale, dataMCScale.val, dataMCScale.sigma ) )
     elif plotData and not args.invLeptonIso:
-        line = (0.45, 0.95, '%3.1f fb{}^{-1} (13 TeV) Scale %3.2f'% ( lumi_scale, dataMCScale ) )
+        line = (0.45, 0.95, '%3.1f fb^{-1} (13 TeV) Scale %3.2f'% ( lumi_scale, dataMCScale ) )
     else:
-        line = (0.65, 0.95, '%3.1f fb{}^{-1} (13 TeV)' % lumi_scale)
+        line = (0.65, 0.95, '%3.1f fb^{-1} (13 TeV)' % lumi_scale)
     lines = [
       (0.15, 0.95, 'CMS #bf{#it{Preliminary}}' if plotData else 'CMS #bf{#it{Simulation Preliminary}}'), 
       line

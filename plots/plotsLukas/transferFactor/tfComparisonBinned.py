@@ -203,7 +203,7 @@ def drawObjects( lumi_scale, btags ):
     if btags == 1: sel = "TT2"
     lines = [
       (0.15, 0.95, 'CMS #bf{#it{Preliminary}} (%s)'%sel),
-      (0.65, 0.95, '%3.1f fb{}^{-1} (13 TeV)' % lumi_scale),
+      (0.68, 0.95, '%3.1f fb^{-1} (13 TeV)' % lumi_scale),
     ]
     return [tex.DrawLatex(*l) for l in lines]
 

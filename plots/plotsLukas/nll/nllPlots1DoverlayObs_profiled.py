@@ -5,6 +5,8 @@
 import os, copy, sys
 import ctypes
 import ROOT
+ROOT.gROOT.LoadMacro('$CMSSW_BASE/src/Analysis/Tools/scripts/tdrstyle.C')
+ROOT.setTDRStyle()
 from math                                import sqrt
 import operator
 from itertools import groupby 
@@ -88,7 +90,7 @@ nllCache      = MergingDirDB( cacheFileName )
 
 print cacheFileName
 
-directory = os.path.join( plot_directory, "nllPlotsApp", str(args.year), "_".join( regionNames ))
+directory = os.path.join( plot_directory, "nllPlotsPostCWR", str(args.year), "_".join( regionNames ))
 addon = "comb"
 if args.plotData: addon += "_check"
 plot_directory_ = os.path.join( directory, addon )
@@ -269,7 +271,7 @@ def plot1D( dat, datExp, var, xmin, xmax, lumi_scale ):
     #if not None in args.zRange:
     xhist.GetYaxis().SetRangeUser( -0.01, 5.5 )
     xhist.GetXaxis().SetRangeUser( xmin, xmax )
-    xhist.GetXaxis().SetLimits(xmin, xmax)
+#    xhist.GetXaxis().SetLimits(xmin, xmax)
 
 
     func95 = ROOT.TF1("func95",polString, x95min,x95max )
@@ -319,17 +321,18 @@ def plot1D( dat, datExp, var, xmin, xmax, lumi_scale ):
     print x68min, x68max
     print x95min, x95max
 
-    funcName = "profiled log-likelihood ratio"
-    leg = ROOT.TLegend(0.22,0.7,0.8,0.87)
+    funcName = ""
+    leg = ROOT.TLegend(0.4,0.67,0.68,0.85)
+#    leg = ROOT.TLegend(0.22,0.7,0.8,0.87)
     leg.SetBorderSize(0)
-    leg.SetTextSize(0.03)
-    leg.AddEntry( func, funcName + " (observed)","l")
-    leg.AddEntry( funcExp, funcName + " (expected)" ,"l")
-    leg.AddEntry( func68, "68%s CL [%.2f, %.2f]"%("%",x68min, x68max), "f")
-    leg.AddEntry( func95, "95%s CL [%.2f, %.2f]"%("%",x95min, x95max), "f")
+    leg.SetTextSize(0.037)
+    leg.AddEntry( func, "Observed","l")
+    leg.AddEntry( funcExp, "Expected" ,"l")
+    leg.AddEntry( func68, "68%s CL"%("%"), "f")
+    leg.AddEntry( func95, "95%s CL"%("%"), "f")
     leg.Draw()
 
-    xTitle = var.replace("c", "C_{").replace("I", "}^{[Im]").replace('p','#phi') + '}'
+    xTitle = var.replace("c", "c_{").replace("I", "}^{I").replace('p','#phi') + '}'
     xhist.GetXaxis().SetTitle( xTitle + ' [(#Lambda/TeV)^{2}]' )
 
     xhist.GetXaxis().SetTitleFont(42)
@@ -337,8 +340,8 @@ def plot1D( dat, datExp, var, xmin, xmax, lumi_scale ):
     xhist.GetXaxis().SetLabelFont(42)
     xhist.GetYaxis().SetLabelFont(42)
 
-#    xhist.GetXaxis().SetTitleOffset(1.3)
-#    xhist.GetYaxis().SetTitleOffset(1.3)
+    xhist.GetXaxis().SetTitleOffset(1.1)
+    xhist.GetYaxis().SetTitleOffset(0.85)
 
     xhist.GetXaxis().SetTitleSize(0.042)
     xhist.GetYaxis().SetTitleSize(0.042)
@@ -351,12 +354,19 @@ def plot1D( dat, datExp, var, xmin, xmax, lumi_scale ):
     latex1.SetTextFont(42)
     latex1.SetTextAlign(11)
 
+    latex2 = ROOT.TLatex()
+    latex2.SetNDC()
+    latex2.SetTextSize(0.05)
+    latex2.SetTextFont(42)
+    latex2.SetTextAlign(11)
+
     addon = ""
-    latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Preliminary} ' + addon),
+#    latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Preliminary} ' + addon),
+    latex2.DrawLatex(0.15, 0.91, '#bf{CMS} ' + addon),
     if isinstance(lumi_scale, int):
-        latex1.DrawLatex(0.66, 0.91, '#bf{%i fb{}^{-1} (13 TeV)}' % lumi_scale)
+        latex1.DrawLatex(0.67, 0.91, '#bf{%i fb^{-1} (13 TeV)}' % lumi_scale)
     else:
-        latex1.DrawLatex(0.64, 0.91, '#bf{%3.1f fb{}^{-1} (13 TeV)}' % lumi_scale)
+        latex1.DrawLatex(0.67, 0.91, '#bf{%3.1f fb^{-1} (13 TeV)}' % lumi_scale)
 
     # Redraw axis, otherwise the filled graphes overlay
     cans.RedrawAxis()

@@ -6,6 +6,8 @@
 # Standard imports 
 import sys, os, copy, ROOT
 import ctypes
+ROOT.gROOT.LoadMacro('$CMSSW_BASE/src/Analysis/Tools/scripts/tdrstyle.C')
+ROOT.setTDRStyle()
 
 # RootTools
 from RootTools.core.standard   import *
@@ -41,7 +43,7 @@ import RootTools.core.logger as logger_rt
 logger    = logger.get_logger(    args.logLevel, logFile = None)
 logger_rt = logger_rt.get_logger( args.logLevel, logFile = None)
 
-plot_directory_ = os.path.join( plot_directory, "nllPlotsApp" )
+plot_directory_ = os.path.join( plot_directory, "nllPlotsPostCWR" )
 
 if not os.path.isdir( plot_directory_ ):
     try: os.makedirs( plot_directory_ )
@@ -105,8 +107,8 @@ if not None in args.xyRange[:2]:
 if not None in args.xyRange[2:]:
     hist.GetYaxis().SetRangeUser( args.xyRange[2], args.xyRange[3] )
 
-xTitle = args.variables[0].replace("c", "C_{").replace("I", "}^{[Im]").replace('p','#phi') + '}'
-yTitle = args.variables[1].replace("c", "C_{").replace("I", "}^{[Im]").replace('p','#phi') + '}'
+xTitle = args.variables[0].replace("c", "c_{").replace("I", "}^{I").replace('p','#phi') + '}'
+yTitle = args.variables[1].replace("c", "c_{").replace("I", "}^{I").replace('p','#phi') + '}'
 hist.GetXaxis().SetTitle( xTitle + ' [(#Lambda/TeV)^{2}]' )
 hist.GetYaxis().SetTitle( yTitle + ' [(#Lambda/TeV)^{2}]' )
 
@@ -129,7 +131,8 @@ latex1.SetTextSize(0.035)
 latex1.SetTextFont(42)
 latex1.SetTextAlign(11)
 
-latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Preliminary}'),
+#latex1.DrawLatex(0.15, 0.91, '#bf{CMS} #it{Preliminary}'),
+latex1.DrawLatex(0.15, 0.91, '#bf{CMS}'),
 #latex1.DrawLatex(0.70, 0.91, '#bf{13 TeV}')
 
 latex2 = ROOT.TLatex()
