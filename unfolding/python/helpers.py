@@ -1,4 +1,4 @@
-import math
+import math, sys
 import copy
 
 def getCorrelationMatrixEntryByNuisances( correlationFitObject, n1, n2 ):
@@ -26,7 +26,7 @@ def sumNuisanceHistos( hists, corrObj, refHist ):
 
     for i_n, n in enumerate(allNuisances):
         hists[n]["up"].Add( hists[n]["ref"], -1 )
-        hists[n]["down"].Add( hists[n]["ref"], -1 )
+        hists[n]["down"].Add( refHist, -1 )
         hists[n]["down"].Scale(-1)
 
     for i_n, ni in enumerate(allNuisances):
@@ -70,7 +70,7 @@ def fillCovarianceHisto( hists, diagHistos, corrObj, covMatrix ):
 
     allNuisances = hists.keys()
 
-    hists = copy.deepcopy(hists)
+#    hists = copy.deepcopy(hists)
     diagHistos = copy.deepcopy(diagHistos)
 
     for i_n, n in enumerate(allNuisances):
@@ -83,6 +83,7 @@ def fillCovarianceHisto( hists, diagHistos, corrObj, covMatrix ):
 
             tmpHistUp_i = hists[ni]["up"].Clone()
             tmpHistUp_j = hists[nj]["up"].Clone()
+
 
             corr = getCorrelationMatrixEntryByNuisances( corrObj, ni, nj ) if i_n != j_n else 1
 
