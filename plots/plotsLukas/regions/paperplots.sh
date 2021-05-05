@@ -1,0 +1,2 @@
+python fitResults.py --carddir limits/cardFiles/defaultSetup/observed --cardfile SR3eM3_SR3muM3_SR4peM3_SR4pmuM3_VG3e_VG3mu_VG4pe_VG4pmu_misDY3_misDY4p_addDYSF_incl --year combined --plotRegions VG3e VG3mu VG4pe VG4pmu misDY3 misDY4p --postFit --plotRegionPlot
+python fitResults.py --carddir limits/cardFiles/defaultSetup/observed --cardfile SR3eM3_SR3muM3_SR4peM3_SR4pmuM3_VG3e_VG3mu_VG4pe_VG4pmu_misDY3_misDY4p_addDYSF_incl --year combined --plotRegions SR3eM3 SR3muM3 SR4peM3 SR4pmuM3 --postFit --plotRegionPlot
