@@ -237,7 +237,7 @@ def plotRegions( sorted=True ):
 
     bfEFTHist = histsbf["total"]
     bfEFTHist.style        = styles.lineStyle( ROOT.kRed, width=3 )
-    bfEFTHist.legendText   = "EFT best fit"
+    bfEFTHist.legendText   = "SM-EFT best fit"
 
     bfEFTHist_copy = copy.deepcopy(histsbf["total"])
     bfEFTHist_copy.style        = styles.lineStyle( ROOT.kRed, width=3 )
@@ -267,6 +267,11 @@ def plotRegions( sorted=True ):
     empty.Scale(0)
     empty.style        = styles.lineStyle( ROOT.kWhite, width=0 )
     empty.legendText = " "
+
+    header = copy.deepcopy(hists["data"].Clone())
+    header.Scale(0)
+    header.style        = styles.lineStyle( ROOT.kWhite, width=0 )
+    header.legendText = "e#mu channel, 3#geq4 jets"
 
     uncHist = hists["data"].Clone()
     uncHist.Scale(0)
@@ -323,6 +328,8 @@ def plotRegions( sorted=True ):
     plots.append([EFTHistI045])
     plots.append([empty])
     plots.append([EFTHistm045])
+    plots.append([empty])
+    plots.append([header])
     plots.append([bfEFTHist_copy])
     plots.append([data_copy])
 
@@ -339,7 +346,7 @@ def plotRegions( sorted=True ):
         ratioHistos.append((2, 0))
 
     if differential:
-        legend = [(0.23,0.52,0.9,0.9),2]
+        legend = [(0.23,0.48,0.9,0.9),2]
     else:
         legend = [ (0.17, formatSettings(nBins)["legylower"], 0.93, 0.9), formatSettings(nBins)["legcolumns"] ]
     plotting.draw(

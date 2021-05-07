@@ -422,16 +422,18 @@ def plot1D( dat, datExp, var, xmin, xmax ):
 #            leg = ROOT.TLegend(0.23,0.7,0.85,0.889)
 #        else:
 #            leg = ROOT.TLegend(0.16,0.7,0.85,0.889)
-        leg = ROOT.TLegend(0.4,0.67,0.68,0.85)
+        leg = ROOT.TLegend(0.35,0.67,0.73,0.85)
     else:
         leg = ROOT.TLegend(0.32,0.7,0.8,0.87)
+    empt = ROOT.TObject()
+    leg.SetNColumns(2)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.037)
     leg.AddEntry( func, "Observed" ,"l")
-    leg.AddEntry( funcExp, "Expected" ,"l")
-
     leg.AddEntry( func68, "68%s CL"%("%") ,"f")
+    leg.AddEntry( funcExp, "Expected" ,"l")
     leg.AddEntry( func95, "95%s CL"%("%") ,"f")
+    leg.AddEntry( empt, "individual" ,"")
 
 #    if args.variables == "ctZ" and args.year == 2016 and args.inclRegion and  x68pmin != x68min:
 #        leg.AddEntry( func68, "68%s CL (observed) [%.2f, %.2f], [%.2f, %.2f]"%("%",x68pmin, x68pmax, x68min, x68max), "f")

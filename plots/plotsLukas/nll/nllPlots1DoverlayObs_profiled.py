@@ -322,14 +322,17 @@ def plot1D( dat, datExp, var, xmin, xmax, lumi_scale ):
     print x95min, x95max
 
     funcName = ""
-    leg = ROOT.TLegend(0.4,0.67,0.68,0.85)
+    empt = ROOT.TObject()
+    leg = ROOT.TLegend(0.35,0.67,0.73,0.85)
 #    leg = ROOT.TLegend(0.22,0.7,0.8,0.87)
+    leg.SetNColumns(2)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.037)
     leg.AddEntry( func, "Observed","l")
-    leg.AddEntry( funcExp, "Expected" ,"l")
     leg.AddEntry( func68, "68%s CL"%("%"), "f")
+    leg.AddEntry( funcExp, "Expected" ,"l")
     leg.AddEntry( func95, "95%s CL"%("%"), "f")
+    leg.AddEntry( empt, "profiled","")
     leg.Draw()
 
     xTitle = var.replace("c", "c_{").replace("I", "}^{I").replace('p','#phi') + '}'

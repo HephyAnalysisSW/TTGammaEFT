@@ -12,10 +12,12 @@ jesSyst_all  = ['FlavorQCD', 'RelativeBal', 'HF', 'BBEC1', 'EC2', 'Absolute']
 for y in ["2016","2017","2018"]:
     jesSyst_all += ['Absolute_%s'%y, 'HF_%s'%y, 'EC2_%s'%y, 'RelativeSample_%s'%y, 'BBEC1_%s'%y]
 
-systematic_pairs  = [ ('photonSFUp',  'photonSFDown'), ('photonElectronVetoSFUp',  'photonElectronVetoSFDown'), ('eResUp', 'eResDown'), ('eScaleUp', 'eScaleDown'), ("jerUp","jerDown") ]
+systematic_pairs  = [ ('photonSFUp',  'photonSFDown'), ('photonElectronVetoSFUp',  'photonElectronVetoSFDown') ]
+systematic_pairs += [ ('eResUp', 'eResDown') ]
+systematic_pairs += [ ('eScaleUp', 'eScaleDown'), ("jerUp","jerDown") ]
 systematic_pairs += [ ("TuneUp","TuneDown") ]
 systematic_pairs += [ ("TriggerUp", "TriggerDown"), ("BTag_SF_b_Up","BTag_SF_b_Down"), ("LeptonTrackingTightSFUp","LeptonTrackingTightSFDown") ]
-#systematic_pairs += [ ("BTag_SF_l_Up","BTag_SF_l_Down") ]
+systematic_pairs += [ ("BTag_SF_l_Up","BTag_SF_l_Down") ]
 systematic_pairs += [ ("LeptonTightSFUp","LeptonTightSFDown"), ("L1PrefireUp","L1PrefireDown"), ("PUUp","PUDown") ]
 systematic_pairs += [ ("jes"+v+"Up","jes"+v+"Down") for v in jesSyst_all ]
 
@@ -24,7 +26,6 @@ all_systematics = ['nominal','reweightTopPt','erdOn','GluonMove','QCDbased','Sca
 
 additional_Matrix_uncertainties = [m for m in all_systematics if not "Down" in m and not m.startswith("Scale") ] # and not "201" in m]
 additional_MatrixScale_uncertainties = ['ScaleDownDown','ScaleDownNom','ScaleNomDown','ScaleNomUp','ScaleUpNom','ScaleUpUp']
-#additional_MatrixScale_uncertainties = ['ScaleUpNom','ScaleNomUp','ScaleUpUp']
 
 allUncertainties = [
     "DY_normalization", "EGammaResolution", "EGammaScale", "FSR", "GluonMove", "Gluon_splitting", "ISR", "Int_Luminosity_2016", "Int_Luminosity_2016_2017", "Int_Luminosity_2017",
@@ -574,7 +575,7 @@ class expected_ptG_RunII:
 class observed_ptG_RunII:
     print "obs"
 #  if False:
-    uncertainties = allUncertainties + signal_uncertainty_ptG + ["Signal_mu_4p_Bin10_2016", "Signal_mu_4p_Bin10_2017", "Signal_mu_4p_Bin10_2018", "Signal_e_4p_Bin10_2016", "Signal_e_4p_Bin10_2017","Signal_e_4p_Bin10_2018",]
+    uncertainties = allUncertainties + signal_uncertainty_ptG + ["Signal_mu_4p_Bin11_2016", "Signal_mu_4p_Bin11_2017", "Signal_mu_4p_Bin11_2018", "Signal_e_4p_Bin11_2016", "Signal_e_4p_Bin11_2017","Signal_e_4p_Bin11_2018", "Signal_mu_3_Bin11_2016", "Signal_mu_3_Bin11_2017", "Signal_mu_3_Bin11_2018", "Signal_e_3_Bin11_2016", "Signal_e_3_Bin11_2017","Signal_e_3_Bin11_2018"]
     cache_directory = default_cache_directory 
     corr_key        = "bkgSubtracted_SR3pPtUnfoldEFT_addDYSF_addPtBinnedUnc_SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pPtUnfoldEFT_addDYSF_addPtBinnedUnc_SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data_%s"
@@ -602,16 +603,16 @@ class observed_ptG_RunII:
     mcStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signal_frozen_histos[i] ) for i,year in enumerate(years) ]
     print "unc"
 
-#    uncertaintyStatUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in signal_uncertainty_ptG + ["r"]}
-#    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "observed", "postFit", "freezeSyst")
-#    dirDB           = MergingDirDB(cache_dir)
-#    corrFitObjStat  =  dirDB.get( corr_key )
-#    signalStat_frozen_histos  =  [ dirDB.get( signal_key%year ) for year in years ]
-#    uncertaintiesStat_histos   = {}
-#    for u, k in uncertaintyStatUp_key.iteritems():
-#        uncertaintiesStat_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signalStat_frozen_histos[i] ) for i,year in enumerate(years)]
-#    mcStatStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signalStat_frozen_histos[i] ) for i,year in enumerate(years) ]
-#    print "syst"
+    uncertaintyStatUp_key = {u:"bkgSubtracted_SR3pPtUnfoldEFT_addDYSF_addPtBinnedUnc_SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in signal_uncertainty_ptG + ["r"]}
+    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "observed", "postFit", "freezeSyst")
+    dirDB           = MergingDirDB(cache_dir)
+    corrFitObjStat  =  dirDB.get( corr_key )
+    signalStat_frozen_histos  =  [ dirDB.get( signal_key%year ) for year in years ]
+    uncertaintiesStat_histos   = {}
+    for u, k in uncertaintyStatUp_key.iteritems():
+        uncertaintiesStat_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signalStat_frozen_histos[i] ) for i,year in enumerate(years)]
+    mcStatStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signalStat_frozen_histos[i] ) for i,year in enumerate(years) ]
+    print "syst"
 
 
     covZRange = (0.00099,750)
@@ -638,21 +639,21 @@ class observed_ptG_RunII:
         reco_thresholds_years +=  [ x + (max_reco_val-min_reco_val)*i_year for x in reco_thresholds[1:] ]
     print "comb"
 
-    theory_uncertainties = [0.14764904187063854, 0.15151932090144327, 0.1501498798254835, 0.1556428284028397, 0.15124123822912447, 0.1525243967641181, 0.14825891531994903, 0.1296442745416353, 0.13102916827549643]
+    theory_uncertainties = [0.15154489952871678, 0.15534407184273558, 0.15424227171333768, 0.15944758792883645, 0.1560378352955856, 0.1584141212170165, 0.15559967754131868, 0.14514749175340735, 0.16019018504922566]
 
     data        = merge_x( data_histos, reco_thresholds_years )
     signal      = merge_x( signal_histos, reco_thresholds_years )
     mcStat      = merge_x( mcStatUp_histos, reco_thresholds_years )
-#    mcStatStat  = merge_x( mcStatStatUp_histos, reco_thresholds_years )
+    mcStatStat  = merge_x( mcStatStatUp_histos, reco_thresholds_years )
 
     uncertainties   = {}
     for u, histlist in uncertainties_histos.iteritems():
         uncertainties[u] =  merge_x( histlist, reco_thresholds_years )
 
-#    uncertaintiesStat   = {}
-#    for u, histlist in uncertaintiesStat_histos.iteritems():
-#        uncertaintiesStat[u] =  merge_x( histlist, reco_thresholds_years )
-#    print "merge"
+    uncertaintiesStat   = {}
+    for u, histlist in uncertaintiesStat_histos.iteritems():
+        uncertaintiesStat[u] =  merge_x( histlist, reco_thresholds_years )
+    print "merge"
 
     fiducial_variable   = "GenPhotonCMSUnfold0_pt"
     fiducial_selection  = "nGenLepCMS1-nGenJetCMS3p-nGenBTagCMS1p-nGenPhotonCMS1"
@@ -667,7 +668,7 @@ class observed_ptG_RunII:
     tex_unf  = "p_{T}(#gamma) [GeV]"
     tex_pur  = "p_{T}(#gamma) [GeV]"
     texY     = '#frac{d#sigma}{dp_{T}(#gamma)} [fb/GeV]'
-    y_range         = (3, 4000) #(0.9, 9000)
+    y_range         = (2, 4000) #(0.9, 9000)
 #    y_range_ratio   = (0.69,1.31)
     y_range_ratio   = (0.55,1.45)
     data_legendText = "Data (137/fb)"
@@ -726,25 +727,25 @@ class observed_ptG_RunII:
         'down':add_sigmas(data, -1),
         'color':ROOT.kGray,
         }
-#    unfolding_signalStat_input_systematics          = [
-#       {'name' : u,
-#        'label': "\pm 1#sigma (%s)"%u,
-#        'matrix': "nominal",
-#        'ref':  replace_data_error( data ),
-#        'up':  add_sigmas(h, +1, ref = data),
-#        'down':add_sigmas(h, -1, ref = data),
-#        'color':ROOT.kGray+1,
-#        } for u, h in uncertaintiesStat.iteritems()
-#        ]
-#    unfolding_signalStat_input_MCStat          = {
-#        'name' : "MCStat",
-#        'label': "MC stat.",
-#        'matrix': "nominal",
-#        'ref':  replace_data_error( data ),
-#        'up':  add_sigmas(mcStatStat, +1, ref = data),
-#        'down':add_sigmas(mcStatStat, -1, ref = data),
-#        'color':ROOT.kGray+1,
-#        }
+    unfolding_signalStat_input_systematics          = [
+       {'name' : u,
+        'label': "\pm 1#sigma (%s)"%u,
+        'matrix': "nominal",
+        'ref':  replace_data_error( data ),
+        'up':  add_sigmas(h, +1, ref = data),
+        'down':add_sigmas(h, -1, ref = data),
+        'color':ROOT.kGray+1,
+        } for u, h in uncertaintiesStat.iteritems()
+        ]
+    unfolding_signalStat_input_MCStat          = {
+        'name' : "MCStat",
+        'label': "MC stat.",
+        'matrix': "nominal",
+        'ref':  replace_data_error( data ),
+        'up':  add_sigmas(mcStatStat, +1, ref = data),
+        'down':add_sigmas(mcStatStat, -1, ref = data),
+        'color':ROOT.kGray+1,
+        }
 
 
 class expected_absEta_RunII:

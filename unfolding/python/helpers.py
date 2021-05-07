@@ -25,7 +25,7 @@ def sumNuisanceHistos( hists, corrObj, refHist ):
     refDown.Scale(0)
 
     for i_n, n in enumerate(allNuisances):
-        hists[n]["up"].Add( hists[n]["ref"], -1 )
+        hists[n]["up"].Add( refHist, -1 )
         hists[n]["down"].Add( refHist, -1 )
         hists[n]["down"].Scale(-1)
 
@@ -51,7 +51,7 @@ def sumNuisanceHistos( hists, corrObj, refHist ):
     for i in range( refUp.GetNbinsX() ):
         refUp.SetBinContent( i+1, math.sqrt( refUp.GetBinContent( i+1 ) ) )
         refUp.SetBinError( i+1, 0 )
-        refDown.SetBinContent( i+1, math.sqrt( refDown.GetBinContent( i+1 ) ) )
+        refDown.SetBinContent( i+1, math.sqrt( refUp.GetBinContent( i+1 ) ) )
         refDown.SetBinError( i+1, 0 )
         refHist.SetBinError( i+1, 0 )
 
@@ -70,7 +70,7 @@ def fillCovarianceHisto( hists, diagHistos, corrObj, covMatrix ):
 
     allNuisances = hists.keys()
 
-#    hists = copy.deepcopy(hists)
+    hists = copy.deepcopy(hists)
     diagHistos = copy.deepcopy(diagHistos)
 
     for i_n, n in enumerate(allNuisances):
