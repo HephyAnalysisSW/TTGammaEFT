@@ -96,12 +96,12 @@ def convertWJetsHistToYaml( rootfile, label, channel ):
     reader = RootFileReader(rootfile)
 
     data = reader.read_hist_1d("dataAR")
-    ttg = reader.read_hist_1d("TTG_centralall")
+#    ttg = reader.read_hist_1d("TTG_centralall")
     top = reader.read_hist_1d("Top_centralall")
     dy = reader.read_hist_1d("DY_LO_centralall")
     wjets = reader.read_hist_1d("WJets_centralall")
-    wg = reader.read_hist_1d("WG_centralall")
-    zg = reader.read_hist_1d("ZG_centralall")
+#    wg = reader.read_hist_1d("WG_centralall")
+#    zg = reader.read_hist_1d("ZG_centralall")
     other = reader.read_hist_1d("other_centralall")
     qcd = reader.read_hist_1d("QCD")
 
@@ -118,7 +118,8 @@ def convertWJetsHistToYaml( rootfile, label, channel ):
     for i, i_up in enumerate(uncUp["y"]):
         stat = statHist.GetBinError(i+1)
         u = abs(i_up-uncDown["y"][i])*0.5
-        all = [ ttg["y"][i], top["y"][i], dy["y"][i], wjets["y"][i], wg["y"][i], zg["y"][i], other["y"][i], qcd["y"][i] ]
+#        all = [ ttg["y"][i], top["y"][i], dy["y"][i], wjets["y"][i], wg["y"][i], zg["y"][i], other["y"][i], qcd["y"][i] ]
+        all = [ top["y"][i], dy["y"][i], wjets["y"][i], other["y"][i], qcd["y"][i] ]
         sim = sum(all)
         unc.append(u)
         statunc.append(stat)
@@ -137,11 +138,11 @@ def convertWJetsHistToYaml( rootfile, label, channel ):
     ytot.add_qualifier("CHANNEL",channel)
     ytot.add_qualifier("SQRT(S)","13","TeV")
     ytot.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
-    yttg = Variable( "tt$\gamma$", is_independent=False, is_binned=False)
-    yttg.values = ttg["y"]
-    yttg.add_qualifier("CHANNEL",channel)
-    yttg.add_qualifier("SQRT(S)","13","TeV")
-    yttg.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+#    yttg = Variable( "tt$\gamma$", is_independent=False, is_binned=False)
+#    yttg.values = ttg["y"]
+#    yttg.add_qualifier("CHANNEL",channel)
+#    yttg.add_qualifier("SQRT(S)","13","TeV")
+#    yttg.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
     ytop = Variable( "t/tt", is_independent=False, is_binned=False)
     ytop.values = top["y"]
     ytop.add_qualifier("CHANNEL",channel)
@@ -157,16 +158,16 @@ def convertWJetsHistToYaml( rootfile, label, channel ):
     ywjets.add_qualifier("CHANNEL",channel)
     ywjets.add_qualifier("SQRT(S)","13","TeV")
     ywjets.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
-    ywg = Variable( "W$\gamma$", is_independent=False, is_binned=False)
-    ywg.values = wg["y"]
-    ywg.add_qualifier("CHANNEL",channel)
-    ywg.add_qualifier("SQRT(S)","13","TeV")
-    ywg.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
-    yzg = Variable( "Z$\gamma$", is_independent=False, is_binned=False)
-    yzg.values = zg["y"]
-    yzg.add_qualifier("CHANNEL",channel)
-    yzg.add_qualifier("SQRT(S)","13","TeV")
-    yzg.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+#    ywg = Variable( "W$\gamma$", is_independent=False, is_binned=False)
+#    ywg.values = wg["y"]
+#    ywg.add_qualifier("CHANNEL",channel)
+#    ywg.add_qualifier("SQRT(S)","13","TeV")
+#    ywg.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+#    yzg = Variable( "Z$\gamma$", is_independent=False, is_binned=False)
+#    yzg.values = zg["y"]
+#    yzg.add_qualifier("CHANNEL",channel)
+#    yzg.add_qualifier("SQRT(S)","13","TeV")
+#    yzg.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
     yother = Variable( "Other", is_independent=False, is_binned=False)
     yother.values = other["y"]
     yother.add_qualifier("CHANNEL",channel)
@@ -203,9 +204,9 @@ def convertWJetsHistToYaml( rootfile, label, channel ):
     tab.add_variable(ydy)
     tab.add_variable(ytop)
     tab.add_variable(yother)
-    tab.add_variable(ywg)
-    tab.add_variable(yzg)
-    tab.add_variable(yttg)
+#    tab.add_variable(ywg)
+#    tab.add_variable(yzg)
+#    tab.add_variable(yttg)
 #    tab.add_variable(yunc)
 
     return tab
@@ -717,4 +718,149 @@ def convertUnfoldingHistToYaml( rootfile, label, variable, unit ):
     tab.add_variable(ysimHpp)
 
     return tab
+
+def convertEFTPtHistToYaml( rootfile, label, channel ):
+
+    tab = Table(label)
+
+    reader = RootFileReader(rootfile)
+
+    data = reader.read_hist_1d("data")
+    tot = reader.read_hist_1d("total")
+    totbkg = reader.read_hist_1d("total_background")
+    ttg = reader.read_hist_1d("signal")
+    misID = reader.read_hist_1d("misID")
+    had = reader.read_hist_1d("fakes")
+    other = reader.read_hist_1d("other")
+    wg = reader.read_hist_1d("WG")
+    qcd = reader.read_hist_1d("QCD")
+    zg = reader.read_hist_1d("ZG")
+
+    eftbf = reader.read_hist_1d("bestFit")
+    eftctZ045 = reader.read_hist_1d("ctZ0.45")
+    eftctZI045 = reader.read_hist_1d("ctZI0.45")
+    eftctZm045 = reader.read_hist_1d("ctZ-0.45")
+
+    rootfile = ROOT.TFile(rootfile,"READ")
+    totHist = rootfile.Get("total")
+    datHist = rootfile.Get("data")
+
+    unc = []
+    statunc = []
+    relunc = []
+    for i, i_tot in enumerate(tot["y"]):
+        u = totHist.GetBinError(i+1)
+        ustat = datHist.GetBinError(i+1)
+        unc.append(u)
+        statunc.append(ustat)
+        relunc.append(u*100./i_tot)
+
+
+    xbins = Variable( "$p_{T}(\gamma)$", is_independent=True, is_binned=True, units="GeV")
+    xbins.values = data["x_edges"]
+    ydata = Variable( "Observed", is_independent=False, is_binned=False)
+    ydata.values = data["y"]
+    ydata.add_qualifier("CHANNEL",channel)
+    ydata.add_qualifier("SQRT(S)","13","TeV")
+    ydata.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+    ytot = Variable( "Total simulation", is_independent=False, is_binned=False)
+    ytot.values = tot["y"]
+    ytot.add_qualifier("CHANNEL",channel)
+    ytot.add_qualifier("SQRT(S)","13","TeV")
+    ytot.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+    ytotbkg = Variable( "Total background", is_independent=False, is_binned=False)
+    ytotbkg.values = totbkg["y"]
+    ytotbkg.add_qualifier("CHANNEL",channel)
+    ytotbkg.add_qualifier("SQRT(S)","13","TeV")
+    ytotbkg.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+    ywg = Variable( "$W\gamma$", is_independent=False, is_binned=False)
+    ywg.values = wg["y"]
+    ywg.add_qualifier("CHANNEL",channel)
+    ywg.add_qualifier("SQRT(S)","13","TeV")
+    ywg.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+    yzg = Variable( "$Z\gamma$", is_independent=False, is_binned=False)
+    yzg.values = zg["y"]
+    yzg.add_qualifier("CHANNEL",channel)
+    yzg.add_qualifier("SQRT(S)","13","TeV")
+    yzg.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+    ymisID = Variable( "Misid. e", is_independent=False, is_binned=False)
+    ymisID.values = misID["y"]
+    ymisID.add_qualifier("CHANNEL",channel)
+    ymisID.add_qualifier("SQRT(S)","13","TeV")
+    ymisID.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+    yhad = Variable( "Hadronic $\gamma$", is_independent=False, is_binned=False)
+    yhad.values = had["y"]
+    yhad.add_qualifier("CHANNEL",channel)
+    yhad.add_qualifier("SQRT(S)","13","TeV")
+    yhad.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+    yqcd = Variable( "Multijet", is_independent=False, is_binned=False)
+    yqcd.values = qcd["y"]
+    yqcd.add_qualifier("CHANNEL",channel)
+    yqcd.add_qualifier("SQRT(S)","13","TeV")
+    yqcd.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+    yttg = Variable( "tt$\gamma$", is_independent=False, is_binned=False)
+    yttg.values = ttg["y"]
+    yttg.add_qualifier("CHANNEL",channel)
+    yttg.add_qualifier("SQRT(S)","13","TeV")
+    yttg.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+    yother = Variable( "Other", is_independent=False, is_binned=False)
+    yother.values = other["y"]
+    yother.add_qualifier("CHANNEL",channel)
+    yother.add_qualifier("SQRT(S)","13","TeV")
+    yother.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+
+    yeftbf = Variable( "SM-EFT best fit", is_independent=False, is_binned=False)
+    yeftbf.values = eftbf["y"]
+    yeftbf.add_qualifier("CHANNEL",channel)
+    yeftbf.add_qualifier("SQRT(S)","13","TeV")
+    yeftbf.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+
+    yeftctZ045 = Variable( "$c_{tZ} = 0.45$", is_independent=False, is_binned=False,  units="($\Lambda$/TeV)$^2$")
+    yeftctZ045.values = eftctZ045["y"]
+    yeftctZ045.add_qualifier("CHANNEL",channel)
+    yeftctZ045.add_qualifier("SQRT(S)","13","TeV")
+    yeftctZ045.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+
+    yeftctZI045 = Variable( "$c^I_{tZ} = 0.45$", is_independent=False, is_binned=False,  units="($\Lambda$/TeV)$^2$")
+    yeftctZI045.values = eftctZI045["y"]
+    yeftctZI045.add_qualifier("CHANNEL",channel)
+    yeftctZI045.add_qualifier("SQRT(S)","13","TeV")
+    yeftctZI045.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+
+    yeftctZm045 = Variable( "$c_{tZ} = -0.45$", is_independent=False, is_binned=False,  units="($\Lambda$/TeV)$^2$")
+    yeftctZm045.values = eftctZm045["y"]
+    yeftctZm045.add_qualifier("CHANNEL",channel)
+    yeftctZm045.add_qualifier("SQRT(S)","13","TeV")
+    yeftctZm045.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+
+    yunc = Uncertainty( "syst" )
+    yunc.is_symmetric = True
+    yunc.values = unc
+
+    ystatunc = Uncertainty( "stat" )
+    ystatunc.is_symmetric = True
+    ystatunc.values = statunc
+
+    ydata.uncertainties.append(ystatunc)
+    ytot.uncertainties.append(yunc)
+
+    tab.add_variable(xbins)
+    tab.add_variable(ydata)
+    tab.add_variable(ytot)
+    tab.add_variable(yeftbf)
+    tab.add_variable(yeftctZ045)
+    tab.add_variable(yeftctZI045)
+    tab.add_variable(yeftctZm045)
+    tab.add_variable(ytotbkg)
+    tab.add_variable(yttg)
+    tab.add_variable(yhad)
+    tab.add_variable(ymisID)
+    tab.add_variable(yother)
+    tab.add_variable(ywg)
+    tab.add_variable(yqcd)
+    tab.add_variable(yzg)
+
+    return tab
+
+
 

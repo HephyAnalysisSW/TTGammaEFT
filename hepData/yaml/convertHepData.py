@@ -106,7 +106,7 @@ submission.add_table(tableF2f)
 tableF3a = convertWJetsHistToYaml("../systPlots/WJets2_mT_e.root", "Figure 3a", "e+jets")
 tableF3a.description = "Fit result of the multijet template obtained with loosely isolated leptons and the electroweak background to the measured $m_{T}(W)$ distribution with isolated leptons in the $N_{jet}=2$, $N_{b jet}=0$ selection for electrons."
 tableF3a.location = "Data from Figure 3 (left)"
-tableF3a.add_image("../figures/mT_e.png")
+tableF3a.add_image("../figures/WJets_mT_e.png")
 tableF3a.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
 tableF3a.keywords["cmenergies"] = [13000.0]
 tableF3a.keywords["observables"] = ["N"]
@@ -122,7 +122,7 @@ submission.add_table(tableF3a)
 tableF3b = convertWJetsHistToYaml("../systPlots/WJets2_mT_mu.root", "Figure 3b", "$\mu$+jets")
 tableF3b.description = "Fit result of the multijet template obtained with loosely isolated leptons and the electroweak background to the measured $m_{T}(W)$ distribution with isolated leptons in the $N_{jet}=2$, $N_{b jet}=0$ selection for muons."
 tableF3b.location = "Data from Figure 3 (right)"
-tableF3b.add_image("../figures/mT_mu.png")
+tableF3b.add_image("../figures/WJets_mT_mu.png")
 tableF3b.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
 tableF3b.keywords["cmenergies"] = [13000.0]
 tableF3b.keywords["observables"] = ["N"]
@@ -280,21 +280,22 @@ tabssm.location = "Data from Figure 7"
 datassm = np.loadtxt("../xsec/ssm.txt", skiprows=1)
 
 ssmType = Variable( "Channel", is_independent=True, is_binned=False)
-ssmType.values = ["e+jets", "$\mu$+jets", "l+jets"]
+ssmType.values = ["3 jets, e+jets", "3 jets, $\mu$+jets", "3 jets, l+jets", "$\geq$4 jets, e+jets", "$\geq$4 jets, $\mu$+jets", "$\geq$4 jets, l+jets", "3 + $\geq$4 jets, e+jets", "3 + $\geq$4 jets, $\mu$+jets", "3 + $\geq$4 jets, l+jets"]
 ssm     = Variable( "$\sigma/\sigma_{NLO}$", is_independent=False, is_binned=False)
-ssm.values = ["%.3f"%datassm[0][0], "%.3f"%datassm[1][0], "%.3f"%datassm[2][0]]
+ssm.values = ["%.3f"%datassm[0][0], "%.3f"%datassm[1][0], "%.3f"%datassm[2][0], "%.3f"%datassm[3][0], "%.3f"%datassm[4][0], "%.3f"%datassm[5][0], "%.3f"%datassm[6][0], "%.3f"%datassm[7][0], "%.3f"%datassm[8][0]]
 ssm.add_qualifier("SQRT(S)","13","TeV")
 ssm.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 tot     = Variable( "Total uncertainty", is_independent=False, is_binned=False)
-tot.values = ["$^{+%.3f}_{%.3f}$"%(datassm[0][1],datassm[0][2]), "$^{+%.3f}_{%.3f}$"%(datassm[1][1],datassm[1][2]), "$^{+%.3f}_{%.3f}$"%(datassm[2][1],datassm[2][2])]
+tot.values = [
+"$^{+%.3f}_{%.3f}$"%(datassm[0][1],datassm[0][2]), "$^{+%.3f}_{%.3f}$"%(datassm[1][1],datassm[1][2]), "$^{+%.3f}_{%.3f}$"%(datassm[2][1],datassm[2][2]), "$^{+%.3f}_{%.3f}$"%(datassm[3][1],datassm[3][2]), "$^{+%.3f}_{%.3f}$"%(datassm[4][1],datassm[4][2]), "$^{+%.3f}_{%.3f}$"%(datassm[5][1],datassm[5][2]), "$^{+%.3f}_{%.3f}$"%(datassm[6][1],datassm[6][2]), "$^{+%.3f}_{%.3f}$"%(datassm[7][1],datassm[7][2]), "$^{+%.3f}_{%.3f}$"%(datassm[8][1],datassm[8][2])]
 tot.add_qualifier("SQRT(S)","13","TeV")
 tot.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 stat     = Variable( "Stat. uncertainty", is_independent=False, is_binned=False)
-stat.values = ["$\pm$%.3f"%datassm[0][3], "$\pm$%.3f"%datassm[1][3], "$\pm$%.3f"%datassm[2][3]]
+stat.values = ["$\pm$%.3f"%datassm[0][3], "$\pm$%.3f"%datassm[1][3], "$\pm$%.3f"%datassm[2][3], "$\pm$%.3f"%datassm[3][3], "$\pm$%.3f"%datassm[4][3], "$\pm$%.3f"%datassm[5][3], "$\pm$%.3f"%datassm[6][3], "$\pm$%.3f"%datassm[7][3], "$\pm$%.3f"%datassm[8][3]]
 stat.add_qualifier("SQRT(S)","13","TeV")
 stat.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 syst     = Variable( "Syst. uncertainty", is_independent=False, is_binned=False)
-syst.values = ["$^{+%.3f}_{%.3f}$"%(datassm[0][4],datassm[0][5]), "$^{+%.3f}_{%.3f}$"%(datassm[1][4],datassm[1][5]), "$^{+%.3f}_{%.3f}$"%(datassm[2][4],datassm[2][5])]
+syst.values = ["$^{+%.3f}_{%.3f}$"%(datassm[0][4],datassm[0][5]), "$^{+%.3f}_{%.3f}$"%(datassm[1][4],datassm[1][5]), "$^{+%.3f}_{%.3f}$"%(datassm[2][4],datassm[2][5]), "$^{+%.3f}_{%.3f}$"%(datassm[3][4],datassm[3][5]), "$^{+%.3f}_{%.3f}$"%(datassm[4][4],datassm[4][5]), "$^{+%.3f}_{%.3f}$"%(datassm[5][4],datassm[5][5]), "$^{+%.3f}_{%.3f}$"%(datassm[6][4],datassm[6][5]), "$^{+%.3f}_{%.3f}$"%(datassm[7][4],datassm[7][5]), "$^{+%.3f}_{%.3f}$"%(datassm[8][4],datassm[8][5])]
 syst.add_qualifier("SQRT(S)","13","TeV")
 syst.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 
@@ -321,7 +322,7 @@ submission.add_table(tabssm)
 tableUnfPt = convertUnfoldingHistToYaml( "../unfolding/unfolded_observed_ptG_RunII.root", "Figure 8a", "$p_{T}(\gamma)$", "GeV" )
 tableUnfPt.description = "The unfolded differential cross sections for $p_{T}(\gamma)$ and the comparison to simulations."
 tableUnfPt.location = "Data from Figure 8 (top left)"
-tableUnfPt.add_image("../figures/unfolded_spectrum_fromSyst_log_ptg.png")
+tableUnfPt.add_image("../figures/unfolded_spectrum_fromSyst_ptg_log.png")
 #tableUnfPt.keywords()
 tableUnfPt.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
 tableUnfPt.keywords["cmenergies"] = [13000.0]
@@ -337,7 +338,7 @@ submission.add_table(tableUnfPt)
 tableUnfEta = convertUnfoldingHistToYaml( "../unfolding/unfolded_observed_absEta_RunII.root", "Figure 8b", "$|\eta(\gamma)|$", "" )
 tableUnfEta.description = "The unfolded differential cross sections for $|\eta(\gamma)|$ and the comparison to simulations."
 tableUnfEta.location = "Data from Figure 8 (top right)"
-tableUnfEta.add_image("../figures/unfolded_spectrum_fromSyst_eta.png")
+tableUnfEta.add_image("../figures/unfolded_spectrum_fromSyst_absEta.png")
 #tableUnfEta.keywords()
 tableUnfEta.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
 tableUnfEta.keywords["cmenergies"] = [13000.0]
@@ -353,7 +354,7 @@ submission.add_table(tableUnfEta)
 tableUnfdR = convertUnfoldingHistToYaml( "../unfolding/unfolded_observed_dRlg_RunII.root", "Figure 8c", "$\Delta R(l,\gamma)$", "" )
 tableUnfdR.description = "The unfolded differential cross sections for $\Delta R(l,\gamma)$ and the comparison to simulations."
 tableUnfdR.location = "Data from Figure 8 (bottom)"
-tableUnfdR.add_image("../figures/unfolded_spectrum_fromSyst_dR.png")
+tableUnfdR.add_image("../figures/unfolded_spectrum_fromSyst_dRlg.png")
 #tableUnfdR.keywords()
 tableUnfdR.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
 tableUnfdR.keywords["cmenergies"] = [13000.0]
@@ -369,7 +370,7 @@ submission.add_table(tableUnfdR)
 tableCov = convertCovMatrixToYaml("../unfolding/covMatrix_observed_ptG_RunII.root", "Covariance matrix $p_{T}(\gamma)$", "$p_{T}(\gamma)$", "$p_{T}(\gamma)$ ", "GeV")
 tableCov.description = "The covariance matrix of the unfolded differential measurement for $p_{T}(\gamma)$."
 tableCov.location = "Additional material: Covariance matrix to Figure 9 (top left)"
-tableCov.add_image("../figures/covMatrix_ptg.png")
+#tableCov.add_image("../figures/covMatrix_ptg.png")
 #tableCov.keywords()
 tableCov.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
 tableCov.keywords["cmenergies"] = [13000.0]
@@ -384,7 +385,7 @@ submission.add_table(tableCov)
 tableCovEta = convertCovMatrixToYaml("../unfolding/covMatrix_observed_absEta_RunII.root", "Covariance matrix $|\eta(\gamma)|$", "$|\eta(\gamma)|$", "$|\eta(\gamma)|$ ", "")
 tableCovEta.description = "The covariance matrix of the unfolded differential measurement for $|\eta(\gamma)|$."
 tableCovEta.location = "Additional material: Covariance matrix to Figure 9 (top right)"
-tableCovEta.add_image("../figures/covMatrix_eta.png")
+#tableCovEta.add_image("../figures/covMatrix_eta.png")
 #tableCovEta.keywords()
 tableCovEta.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
 tableCovEta.keywords["cmenergies"] = [13000.0]
@@ -399,7 +400,7 @@ submission.add_table(tableCovEta)
 tableCovdR = convertCovMatrixToYaml("../unfolding/covMatrix_observed_dRlg_RunII.root", "Covariance matrix $\Delta R(l,\gamma)$", "$\Delta R(l,\gamma)$", "$\Delta R(l,\gamma)$ ", "")
 tableCovdR.description = "The covariance matrix of the unfolded differential measurement for $\Delta R(l,\gamma)$."
 tableCovdR.location = "Additional material: Covariance matrix to Figure 9 (bottom)"
-tableCovdR.add_image("../figures/covMatrix_dR.png")
+#tableCovdR.add_image("../figures/covMatrix_dR.png")
 #tableCovdR.keywords()
 tableCovdR.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
 tableCovdR.keywords["cmenergies"] = [13000.0]
@@ -461,13 +462,13 @@ tabcl.description = "Summary of the one-dimensional intervals at 68 and 95% CL."
 tabcl.location = "Table 7"
 
 clType = Variable( "Wilson coefficient", is_independent=True, is_binned=False)
-clType.values = ["$c_{tZ}$ (expected)", "$c^{I}_{tZ}$ (expected)", "$c_{tZ}$ (observed)", "$c^{I}_{tZ}$ (observed)"]
+clType.values = ["$c_{tZ}$ (expected)", "$c^{I}_{tZ}$ (expected)", "$c_{tZ}$ (observed)", "$c^{I}_{tZ}$ (observed)", "$c_{tZ}$ (profiled, expected)", "$c^{I}_{tZ}$ (profiled, expected)", "$c_{tZ}$ (profiled, observed)", "$c^{I}_{tZ}$ (profiled, observed)"]
 cl68     = Variable( "68% CL interval", is_independent=False, is_binned=False)
-cl68.values = ["[-0.19, 0.21]", "[-0.20, 0.20]", "[-0.35, -0.16]", "[-0.35, -0.16], [0.17, 0.35]"]
+cl68.values = ["[-0.19, 0.21]", "[-0.20, 0.20]", "[-0.35, -0.16]", "[-0.35, -0.16], [0.17, 0.35]", "[-0.19, 0.21]", "[-0.20, 0.20]", "[-0.35, 0.07]", "[-0.32, 0.31]"]
 cl68.add_qualifier("SQRT(S)","13","TeV")
 cl68.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 cl95     = Variable( "95% CL interval", is_independent=False, is_binned=False)
-cl95.values = ["[-0.29, 0.32]", "[-0.30, 0.31]", "[-0.42, 0.38]", "[-0.42, 0.42]"]
+cl95.values = ["[-0.29, 0.32]", "[-0.30, 0.31]", "[-0.42, 0.38]", "[-0.42, 0.42]", "[-0.29, 0.32]", "[-0.30, 0.31]", "[-0.42, 0.39]", "[-0.41, 0.41]"]
 cl95.add_qualifier("SQRT(S)","13","TeV")
 cl95.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
 
@@ -484,12 +485,142 @@ submission.add_table(tabcl)
 
 
 ###
+### Fig 10a
+###
+
+tableF10a = convertEFTPtHistToYaml("../eft/eft_pt_3e.root", "Figure 10a", "3 jets, e-channel")
+tableF10a.description = "The observed and predicted post-fit yields for the combined Run 2 data set in the SR3 signal region for the electron channel."
+tableF10a.location = "Data from Figure 10 (top left) "
+tableF10a.add_image("../figures/eft_ptg_3e.png")
+tableF10a.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
+tableF10a.keywords["cmenergies"] = [13000.0]
+tableF10a.keywords["observables"] = ["N"]
+tableF10a.keywords["phrases"] = ["Top", "Quark", "Photon", "lepton+jets", "semileptonic", "Cross Section", "Proton-Proton Scattering", "Inclusive", "Differential"]
+submission.add_table(tableF10a)
+
+
+###
+### Fig 10b
+###
+
+tableF10b = convertEFTPtHistToYaml("../eft/eft_pt_3mu.root", "Figure 10b", "3 jets, $\mu$-channel")
+tableF10b.description = "The observed and predicted post-fit yields for the combined Run 2 data set in the SR3 signal region for the muon channel."
+tableF10b.location = "Data from Figure 10 (top right) "
+tableF10b.add_image("../figures/eft_ptg_3mu.png")
+tableF10b.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
+tableF10b.keywords["cmenergies"] = [13000.0]
+tableF10b.keywords["observables"] = ["N"]
+tableF10b.keywords["phrases"] = ["Top", "Quark", "Photon", "lepton+jets", "semileptonic", "Cross Section", "Proton-Proton Scattering", "Inclusive", "Differential"]
+submission.add_table(tableF10b)
+
+
+###
+### Fig 10c
+###
+
+tableF10c = convertEFTPtHistToYaml("../eft/eft_pt_4pe.root", "Figure 10c", "$\geq$4 jets, e-channel")
+tableF10c.description = "The observed and predicted post-fit yields for the combined Run 2 data set in the SR4p signal region for the electron channel."
+tableF10c.location = "Data from Figure 10 (bottom left) "
+tableF10c.add_image("../figures/eft_ptg_4pe.png")
+tableF10c.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
+tableF10c.keywords["cmenergies"] = [13000.0]
+tableF10c.keywords["observables"] = ["N"]
+tableF10c.keywords["phrases"] = ["Top", "Quark", "Photon", "lepton+jets", "semileptonic", "Cross Section", "Proton-Proton Scattering", "Inclusive", "Differential"]
+submission.add_table(tableF10c)
+
+
+###
+### Fig 10d
+###
+
+tableF10d = convertEFTPtHistToYaml("../eft/eft_pt_4pmu.root", "Figure 10d", "$\geq$4 jets, $\mu$-channel")
+tableF10d.description = "The observed and predicted post-fit yields for the combined Run 2 data set in the SR4p signal region for the muon channel."
+tableF10d.location = "Data from Figure 10 (bottom right) "
+tableF10d.add_image("../figures/eft_ptg_4pmu.png")
+tableF10d.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
+tableF10d.keywords["cmenergies"] = [13000.0]
+tableF10d.keywords["observables"] = ["N"]
+tableF10d.keywords["phrases"] = ["Top", "Quark", "Photon", "lepton+jets", "semileptonic", "Cross Section", "Proton-Proton Scattering", "Inclusive", "Differential"]
+submission.add_table(tableF10d)
+
+
+###
 ### EFT 1D
 ###
-tabctZ = Table("Figure 10a")
+tabctZ = Table("Figure 11a")
+
+tabctZ.description = "Negative log-likelihood ratio values with respect to the best fit value of the one-dimensional profiled scan for the Wilson coefficient $c_{tZ}$."
+tabctZ.location = "Data from Figure 11 (top left)"
+
+datactZexp = np.loadtxt("../eft/ctZ_1D_exp_profiled.dat", skiprows=1)
+datactZobs = np.loadtxt("../eft/ctZ_1D_obs_profiled.dat", skiprows=1)
+
+wcctZ     = Variable( "$c_{tZ}$", is_independent=True, is_binned=False, units="$\Lambda$/TeV$^2$")
+wcctZ.values = datactZobs[:,0]
+nllctZexp     = Variable( "-2$\Delta$ L (expected)", is_independent=False, is_binned=False)
+nllctZexp.values = datactZexp[:,1]
+nllctZexp.add_qualifier("SQRT(S)","13","TeV")
+nllctZexp.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+nllctZobs     = Variable( "-2$\Delta$ L (observed)", is_independent=False, is_binned=False)
+nllctZobs.values = datactZobs[:,1]
+nllctZobs.add_qualifier("SQRT(S)","13","TeV")
+nllctZobs.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+
+tabctZ.add_variable(wcctZ)
+tabctZ.add_variable(nllctZexp)
+tabctZ.add_variable(nllctZobs)
+
+tabctZ.add_image("../figures/ctZ_wExp_wBkg_profiled.png")
+#tabctZ.keywords()
+tabctZ.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
+tabctZ.keywords["cmenergies"] = [13000.0]
+tabctZ.keywords["observables"] = ["CLS"]
+tabctZ.keywords["phrases"] = ["Top", "Quark", "Photon", "lepton+jets", "semileptonic", "Cross Section", "Proton-Proton Scattering", "Inclusive", "Differential"]
+submission.add_table(tabctZ)
+
+
+###
+### EFT 1D
+###
+tabctZI = Table("Figure 11b")
+
+tabctZI.description = "Negative log-likelihood ratio values with respect to the best fit value of the one-dimensional profiled scan for the Wilson coefficient $c^{I}_{tZ}$."
+tabctZI.location = "Data from Figure 11 (top right)"
+
+datactZIexp = np.loadtxt("../eft/ctZI_1D_exp_profiled.dat", skiprows=1)
+datactZIobs = np.loadtxt("../eft/ctZI_1D_obs_profiled.dat", skiprows=1)
+
+wcctZI     = Variable( "$c^{I}_{tZ}$", is_independent=True, is_binned=False, units="$\Lambda$/TeV$^2$")
+wcctZI.values = datactZIobs[:,0]
+nllctZIexp     = Variable( "-2$\Delta$ L (expected)", is_independent=False, is_binned=False)
+nllctZIexp.values = datactZIexp[:,1]
+nllctZIexp.add_qualifier("SQRT(S)","13","TeV")
+nllctZIexp.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+nllctZIobs     = Variable( "-2$\Delta$ L (observed)", is_independent=False, is_binned=False)
+nllctZIobs.values = datactZIobs[:,1]
+nllctZIobs.add_qualifier("SQRT(S)","13","TeV")
+nllctZIobs.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
+
+tabctZI.add_variable(wcctZI)
+tabctZI.add_variable(nllctZIexp)
+tabctZI.add_variable(nllctZIobs)
+
+tabctZI.add_image("../figures/ctZI_wExp_wBkg_profiled.png")
+#tabctZI.keywords()
+tabctZI.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
+tabctZI.keywords["cmenergies"] = [13000.0]
+tabXSec.keywords["observables"] = ["CLS"]
+tabXSec.keywords["phrases"] = ["Top", "Quark", "Photon", "lepton+jets", "semileptonic", "Cross Section", "Proton-Proton Scattering", "Inclusive", "Differential"]
+submission.add_table(tabctZI)
+
+
+###
+### EFT 1D
+###
+tabctZ = Table("Figure 11c")
 
 tabctZ.description = "Negative log-likelihood ratio values with respect to the best fit value of the one-dimensional scan for the Wilson coefficient $c_{tZ}$."
-tabctZ.location = "Data from Figure 10 (top left)"
+tabctZ.location = "Data from Figure 11 (bottom left)"
 
 datactZexp = np.loadtxt("../eft/ctZ_1D_exp.dat", skiprows=1)
 datactZobs = np.loadtxt("../eft/ctZ_1D_obs.dat", skiprows=1)
@@ -521,10 +652,10 @@ submission.add_table(tabctZ)
 ###
 ### EFT 1D
 ###
-tabctZI = Table("Figure 10b")
+tabctZI = Table("Figure 11d")
 
 tabctZI.description = "Negative log-likelihood ratio values with respect to the best fit value of the one-dimensional scan for the Wilson coefficient $c^{I}_{tZ}$."
-tabctZI.location = "Data from Figure 10 (top right)"
+tabctZI.location = "Data from Figure 11 (bottom right)"
 
 datactZIexp = np.loadtxt("../eft/ctZI_1D_exp.dat", skiprows=1)
 datactZIobs = np.loadtxt("../eft/ctZI_1D_obs.dat", skiprows=1)
@@ -556,10 +687,10 @@ submission.add_table(tabctZI)
 ###
 ### EFT 2D
 ###
-tabctZctZI = Table("Figure 10c")
+tabctZctZI = Table("Figure 12")
 
 tabctZctZI.description = "Negative log-likelihood ratio values with respect to the best fit value of the two-dimensional scan for the Wilson coefficients $c_{tZ}$ and $c^{I}_{tZ}$."
-tabctZctZI.location = "Data from Figure 10 (bottom)"
+tabctZctZI.location = "Data from Figure 12"
 
 datactZctZIobs = np.loadtxt("../eft/ctZ_ctZI_2D_obs.dat", skiprows=1)
 
