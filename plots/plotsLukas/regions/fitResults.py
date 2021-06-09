@@ -99,7 +99,7 @@ if args.expected: add += ["expected"]
 if args.linTest != 1: add += ["linTest"+str(args.linTest)]
 fit      = "_".join( ["postFit" if args.postFit else "preFit"] + add )
 
-plotDirectory = os.path.join(plot_directory, "fitpostCWR", str(args.year), fit, dirName)
+plotDirectory = os.path.join(plot_directory, "fitpostCWR_v2", str(args.year), fit, dirName)
 cardFile      = os.path.join( cache_directory, "analysis", str(args.year) if args.year != "combined" else "COMBINED", args.carddir, args.cardfile+".txt" )
 logger.info("Plotting from cardfile %s"%cardFile)
 
@@ -110,9 +110,8 @@ logger.info("Plotting from cardfile %s"%cardFile)
 # replace the combineResults object by the substituted card object
 Results = CombineResults( cardFile=cardFile, plotDirectory=plotDirectory, year=args.year, bkgOnly=args.bkgOnly, isSearch=False )
 
-if args.cacheHistogram:
-    fitObj = Results.getFitObject()
-
+#if args.cacheHistogram:
+#    fitObj = Results.getFitObject()
 # add all systematics histograms
 
 sigPOI = None
@@ -147,8 +146,8 @@ if args.substituteCard:
     del Results
     Results     = CombineResults( cardFile=subCardFile, plotDirectory=plotDirectory, year=args.year, bkgOnly=args.bkgOnly, isSearch=False, rebinnedCardFile=rebinnedCardFile )
 
-#    if args.cacheHistogram:
-#        fitObj = Results.getFitObject()
+    if args.cacheHistogram:
+        fitObj = Results.getFitObject()
 
 def formatLabel( label ):
     reg = label.split(" ")[3]
@@ -260,8 +259,8 @@ def replaceHistoBinning( hists ):
 
 # region plot, sorted/not sorted, w/ or w/o +-1sigma changes in one nuisance
 def plotRegions( sorted=True ):
-    if args.postFit and not args.substituteCard and not args.bkgSubstracted:
-        Results.plotPOIScan( rMin=0.5, rMax=1.5, points=200 )
+#    if args.postFit and not args.substituteCard and not args.bkgSubstracted:
+#        Results.plotPOIScan( rMin=0.5, rMax=1.5, points=200 )
 
     modelUnc = [
             "Tune",
@@ -551,11 +550,11 @@ def plotRegions( sorted=True ):
             mcstatUp.Scale(0)
             mcstatDown.Scale(0)
             for i in range(mcstatUp.GetNbinsX()):
-                err = hists["total"].GetBinError(i+1)**2 - ( hists["totalUnc"]["up"].GetBinContent(i+1)-hists["total"].GetBinContent(i+1) )**2
-                print i, err, "tot err", hists["total"].GetBinError(i+1), "sum err", hists["totalUnc"]["up"].GetBinContent(i+1)-hists["total"].GetBinContent(i+1), "sum", hists["totalUnc"]["up"].GetBinContent(i+1), "tot", hists["total"].GetBinContent(i+1)
+                err = hists["signal" if args.bkgSubstracted else "total"].GetBinError(i+1)**2 - ( hists["totalUnc"]["up"].GetBinContent(i+1)-hists["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1) )**2
+                print i, err, "tot err", hists["signal" if args.bkgSubstracted else "total"].GetBinError(i+1), "sum err", hists["totalUnc"]["up"].GetBinContent(i+1)-hists["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1), "sum", hists["totalUnc"]["up"].GetBinContent(i+1), "tot", hists["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1)
                 err = math.sqrt(err) if err>0 else 0
-                mcstatUp.SetBinContent( i+1, hists["total"].GetBinContent(i+1) + err )
-                mcstatDown.SetBinContent( i+1, hists["total"].GetBinContent(i+1) - err )
+                mcstatUp.SetBinContent( i+1, hists["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1) + err )
+                mcstatDown.SetBinContent( i+1, hists["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1) - err )
                 mcstatUp.SetBinError( i+1, 0 )
                 mcstatDown.SetBinError( i+1, 0 )
             hists["MCStatUnc"] = {"up":mcstatUp, "down":mcstatDown}
@@ -601,17 +600,17 @@ def plotRegions( sorted=True ):
         minMax = 0.09 if args.postFit else 0.29
     else:
         minMax = 0.19 if args.postFit else 0.29
-#    minMax = 0.06
+    minMax = 0.06
     if args.bkgSubstracted:
         if "PtUn" in args.cardfile:
             minMax = 0.24 #0.19 if args.postFit else 0.9
         else:
             minMax = 0.19 #0.19 if args.postFit else 0.9
         ratioCenter = None
-        boxes,     ratio_boxes     = getErrorBoxes(   copy.copy(hists["total"]), minMax, lineColor=ROOT.kOrange-9, fillColor=ROOT.kOrange-9, hashcode=1001, ratioCenter=ratioCenter )
-        boxes_stat, ratio_boxes_stat = getErrorBoxes( copy.copy(hists["data"]), minMax, lineColor=ROOT.kBlue-10, fillColor=ROOT.kBlue-10, hashcode=1001, ratioCenter=ratioCenter )
+        boxes,     ratio_boxes     = getErrorBoxes(   copy.copy(hists["signal" if args.bkgSubstracted else "total"]), minMax, lineColor=ROOT.kOrange-9, fillColor=ROOT.kOrange-9, hashcode=1001, ratioCenter=ratioCenter )
+        boxes_stat, ratio_boxes_stat = [],[] #getErrorBoxes( copy.copy(hists["data"]), minMax, lineColor=ROOT.kBlue-10, fillColor=ROOT.kBlue-10, hashcode=1001, ratioCenter=ratioCenter )
     else:
-        boxes,     ratio_boxes       = getUncertaintyBoxes( copy.copy(hists["total"]), minMax, lineColor=ROOT.kGray+3, fillColor=ROOT.kGray+3, hashcode=formatSettings(nBins)["hashcode"] )
+        boxes,     ratio_boxes       = getUncertaintyBoxes( copy.copy(hists["signal" if args.bkgSubstracted else "total"]), minMax, lineColor=ROOT.kGray+3, fillColor=ROOT.kGray+3, hashcode=formatSettings(nBins)["hashcode"] )
 
     hists["data"].style        = styles.errorStyle( ROOT.kBlack )
     hists["data"].legendText   = "Observed" if not args.bkgSubstracted else "bkg-sub. data (#color[61]{stat}, #color[92]{total} error, %s)"%(ch.replace("mu","#mu") if ch != "all" else "e+#mu")
@@ -785,8 +784,8 @@ def plotRegions( sorted=True ):
             plot_directory    = plotDirectory,
             legend            = [ (0.17, 0.84 if args.bkgSubstracted else formatSettings(nBins)["legylower"], 0.93, 0.9), formatSettings(nBins)["legcolumns"] ] if not differential else [(0.20,0.67,0.85,0.9),1] if args.plotNuisances else (0.20,0.75,0.85,0.9),
             widths            = { "x_width":formatSettings(nBins)["padwidth"], "y_width":formatSettings(nBins)["padheight"], "y_ratio_width":formatSettings(nBins)["padratio"] } if not differential else {},
-            yRange            = ( 7, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ) if not differential else (30,"auto") if args.bkgSubstracted else "auto",
-#            yRange            = ( 23, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ) if not differential else (30,"auto") if args.bkgSubstracted else "auto",
+#            yRange            = ( 7, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ) if not differential else (30,"auto") if args.bkgSubstracted else "auto",
+            yRange            = ( 23, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ) if not differential else (30,"auto") if args.bkgSubstracted else "auto",
             ratio             = { "yRange": (1-minMax, 1+minMax), "texY":"Uncertainty" if args.bkgSubstracted else "Obs./Pred.", "histos":ratioHistos, "drawObjects":ratio_boxes + ratio_boxes_stat if args.bkgSubstracted else ratio_boxes, "histModifications":ratioHistModifications },
 #            ratio             = { "yRange": (1-minMax, 1+minMax), "texY":"Obs./Pred.", "histos":ratioHistos, "drawObjects":ratio_boxes if args.bkgSubstracted else ratio_boxes, "histModifications":ratioHistModifications },
 #            drawObjects       = drawObjects_ if not differential else drawObjectsDiff(lumi_scale) + boxes + boxes_stat if args.bkgSubstracted else drawObjectsDiff(lumi_scale) + boxes,

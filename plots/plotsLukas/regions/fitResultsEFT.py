@@ -48,11 +48,12 @@ args.year = "combined"
 lumi_scale = int(35.92 + 41.53 + 59.74)
 
 #bf = "ctZ_-0.25_ctZI_-0.083"
-plotDirectory = "/mnt/hephy/cms/lukas.lechner/www/TTGammaEFT/fitEFT/combined/v4/%s/%s"%(args.bestfit, "postfit" if args.postFit else "prefit")
+plotDirectory = "/mnt/hephy/cms/lukas.lechner/www/TTGammaEFT/fitEFT/combined/v8/%s/%s"%(args.bestfit, "postfit" if args.postFit else "prefit")
 #options = "--rMin 0.99 --rMax 1.01 --cminDefaultMinimizerTolerance=0.1 --cminDefaultMinimizerStrategy=0 --freezeParameters r"
 
 # replace the combineResults object by the substituted card object
 cardFile      = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF/ctZ_0_ctZI_0.txt"
+#cardFile      = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF/ctZ_0_ctZI_0.txt"
 Results = CombineResults( cardFile=cardFile, plotDirectory=plotDirectory, year=args.year, bkgOnly=False, isSearch=False )
 
 #rebinCard = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldAll_SR4pPtUnfoldAll_addDYSF_addMisIDSF/ctZ_0_ctZI_0.txt"
@@ -79,8 +80,10 @@ Results045 = CombineResults( cardFile=cardFile045, plotDirectory=plotDirectory, 
 
 #postFit = Resultsbf.getPulls( postFit=True )
 #freezeParams = "EFT_nJet=%f,r=1"%postFit["EFT_nJet"].val
+#freezeParams = "r=1"
 #options = "--setParameters %s --freezeParameters r,EFT_nJet"%freezeParams
-#Resultsbf.getImpactPlot( expected=False, printPNG=False, cores=20, options=options, rMin=0.99, rMax=1.01 )
+#options = "--cminDefaultMinimizerStrategy=0 --cminDefaultMinimizerTolerance=0.001 --setParameters %s --freezeParameters r --exclude EFT_nJet"%freezeParams
+#Results.getImpactPlot( expected=False, printPNG=False, cores=20, options=options, rMin=0.999, rMax=1.001 )
 #sys.exit()
 
 
@@ -236,6 +239,7 @@ def plotRegions( sorted=True ):
     boxes,     ratio_boxes       = getUncertaintyBoxes( copy.copy(hists["total"]), minMax, lineColor=ROOT.kGray+3, fillColor=ROOT.kGray+3, hashcode=formatSettings(nBins)["hashcode"] if not differential else 3544 )
 
     bfEFTHist = histsbf["total"]
+    bfEFTHist.SetName("bestFit")
     bfEFTHist.style        = styles.lineStyle( ROOT.kRed, width=3 )
     bfEFTHist.legendText   = "SM-EFT best fit"
 
@@ -244,14 +248,17 @@ def plotRegions( sorted=True ):
     bfEFTHist_copy.notInLegend   = True
 
     EFTHistm045 = histsm045["total"]
+    EFTHistm045.SetName("ctZ-0.45")
     EFTHistm045.style        = styles.lineStyle( ROOT.kBlue, width=3, dashed=True )
     EFTHistm045.legendText   = "c_{tZ} = -0.45 (#Lambda/TeV)^{2}"
 
     EFTHistI045 = histsI045["total"]
+    EFTHistI045.SetName("ctZI0.45")
     EFTHistI045.style        = styles.lineStyle( ROOT.kGreen+3 , width=3, dashed=True )
     EFTHistI045.legendText   = "c^{I}_{tZ} = 0.45 (#Lambda/TeV)^{2}"
 
     EFTHist045 = hists045["total"]
+    EFTHist045.SetName("ctZ0.45")
     EFTHist045.style        = styles.lineStyle( ROOT.kCyan+1, width=3, dashed=True )
     EFTHist045.legendText   = "c_{tZ} = 0.45 (#Lambda/TeV)^{2}"
 
@@ -320,6 +327,14 @@ def plotRegions( sorted=True ):
         ratioHistos = [(1, 0)]
     else:
         plots, ratioHistos = Results.getRegionHistoList( hists, processes=processes, noData=False, sorted=not differential, unsortProcesses=True, bkgSubstracted=False, directory="dc_2016" )
+
+
+#    rootfile = ROOT.TFile( "eft_pt_3mu.root", "RECREATE")
+#    for h in hists.values() + [bfEFTHist,EFTHist045,EFTHistI045,EFTHistm045]:
+#       h.Write()
+#    rootfile.Close()
+#    sys.exit()
+
 
     plots.append([bfEFTHist])
     if differential: plots.append([hists["data"]])

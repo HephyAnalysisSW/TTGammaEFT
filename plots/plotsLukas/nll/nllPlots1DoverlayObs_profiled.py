@@ -188,6 +188,16 @@ for key, group in groupby( nllDataExp, operator.itemgetter(0 if args.variables==
 #    if res < 0: continue
     xNLLExp.append((x if args.variables=="ctZ" else y, res))
 
+with open("%s_1D_obs_profiled.dat"%args.variables,"w") as f:
+    f.write("%s,-2DeltaNLL\n"%args.variables)
+    for x, nll in xNLL:
+        f.write(str(x)+","+str(nll)+"\n")
+
+with open("%s_1D_exp_profiled.dat"%args.variables,"w") as f:
+    f.write("%s,-2DeltaNLL\n"%args.variables)
+    for x, nll in xNLLExp:
+        f.write(str(x)+","+str(nll)+"\n")
+
 def toGraph( name, title, data ):
     result  = ROOT.TGraph( len(data) )
     result.SetName( name )

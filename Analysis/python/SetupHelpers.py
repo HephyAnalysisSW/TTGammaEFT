@@ -31,7 +31,7 @@ processes = {
              "ZG":          { "process":ZG,          "color":color.ZGamma,       "texName":"Z#gamma"    },
              "other":       { "process":other,       "color":color.Other,        "texName":"Other"      },
              "QCD":         { "process":QCD,         "color":color.QCD,          "texName":"Multijet"             },
-             "fakes":       { "process":fakes,       "color":color.fakes,        "texName":"Hadronic #gamma" },
+             "fakes":       { "process":fakes,       "color":color.fakes,        "texName":"Nonprompt #gamma" },
 }
 
 processesSR = {
@@ -41,7 +41,7 @@ processesSR = {
                "ZG":          { "process":ZG,           "color":color.ZGamma,       "texName":"Z#gamma"    },
                "other":       { "process":other,        "color":color.Other,        "texName":"Other"      },
                "QCD":         { "process":QCD,          "color":color.QCD,          "texName":"Multijet"             },
-               "fakes":       { "process":["fakes-DD"], "color":color.fakes,        "texName":"Hadronic #gamma" },
+               "fakes":       { "process":["fakes-DD"], "color":color.fakes,        "texName":"Nonprompt #gamma" },
 }
 
 processesNoPhoton = {
@@ -65,7 +65,7 @@ default_processes = {
              "WJets":       { "process":["WJets"],       "color":color.WJets,        "texName":"W+jets"      },
              "other":       { "process":["other"]+other, "color":color.Other,        "texName":"Other"      },
              "QCD":         { "process":QCD,             "color":color.QCD,          "texName":"Multijet"             },
-             "fakes":       { "process":fakes,           "color":color.fakes,        "texName":"Hadronic #gamma" },
+             "fakes":       { "process":fakes,           "color":color.fakes,        "texName":"Nonprompt #gamma" },
 }
 
 processesWGPOI = {
@@ -75,7 +75,7 @@ processesWGPOI = {
              "ZG":          { "process":ZG,          "color":color.ZGamma,       "texName":"Z#gamma"    },
              "other":       { "process":other,       "color":color.Other,        "texName":"Other"      },
              "QCD":         { "process":QCD,         "color":color.QCD,          "texName":"Multijet"             },
-             "fakes":       { "process":[item for item in fakes if not "WG" in item],       "color":color.fakes,        "texName":"Hadronic #gamma" },
+             "fakes":       { "process":[item for item in fakes if not "WG" in item],       "color":color.fakes,        "texName":"Nonprompt #gamma" },
 }
 
 processesMisIDPOI = {
@@ -85,7 +85,7 @@ processesMisIDPOI = {
              "ZG":          { "process":ZG,                            "color":color.ZGamma,       "texName":"Z#gamma"    },
              "other":       { "process":other,                         "color":color.Other,        "texName":"Other"      },
              "QCD":         { "process":QCD,                           "color":color.QCD,          "texName":"Multijet"             },
-             "fakes":       { "process":fakes,                         "color":color.fakes,        "texName":"Hadronic #gamma" },
+             "fakes":       { "process":fakes,                         "color":color.fakes,        "texName":"Nonprompt #gamma" },
 }
 
 processesDYPOI = {

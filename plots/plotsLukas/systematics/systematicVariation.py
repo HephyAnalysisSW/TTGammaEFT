@@ -837,6 +837,15 @@ empty2 = qcdHist.Clone()
 empty2.Scale(0)
 empty2.legendText = " "
 empty2.style      = styles.lineStyle( ROOT.kWhite, width=0 )
+empty3 = qcdHist.Clone()
+empty3.Scale(0)
+empty3.legendText = "misDY3p"
+empty3.style      = styles.lineStyle( ROOT.kWhite, width=0 )
+empty4 = qcdHist.Clone()
+empty4.Scale(0)
+empty4.legendText = "LM3p HM3p"
+empty4.style      = styles.lineStyle( ROOT.kWhite, width=0 )
+# add QCD error
 # add QCD error
 #for i in range(qcdHist.GetNbinsX()):
 #    qcdHist.SetBinError(i+1, qcdHist.GetBinContent(i+1)*0.5)
@@ -864,7 +873,7 @@ if args.photonCat:
     catHists = [mc[0].hist["central"][g] for g in genCat]
     catSettings = { "noChgIsoNoSieiephotoncat0":{"texName":"Other gen. #gamma" if args.splitWG else "Genuine #gamma",  "color":color.gen  },
                     "noChgIsoNoSieiephotoncat2":{"texName":"Misid. e",     "color":color.misID},
-                    "noChgIsoNoSieiephotoncat134":{"texName":"Hadronic #gamma",  "color":color.fakes  }}
+                    "noChgIsoNoSieiephotoncat134":{"texName":"Nonprompt #gamma",  "color":color.fakes  }}
 #                    "noChgIsoNoSieiephotoncat1":{"texName":"had #gamma",  "color":color.had  },
 #                    "noChgIsoNoSieiephotoncat3":{"texName":"fake #gamma", "color":color.fakes},
 #                    "noChgIsoNoSieiephotoncat4":{"texName":"PU #gamma",   "color":color.PU}  }
@@ -884,6 +893,15 @@ if args.photonCat:
         mc_histo_list["central"] = catHists[:1] + catHists[3:] + catHists[1:3] + [qcdHist]
     else:
         mc_histo_list["central"] = catHists + [qcdHist]
+
+
+
+#for i in catHists:
+#    print i, i.Integral()
+
+print "qcd", qcdHist.Integral()
+print "qcd", qcdHist.Integral()
+print "total", totalYield
 
 
 # copy styles and tex
@@ -1009,9 +1027,8 @@ for h in mc_histo_list["central"]+data_histo_list+[totalUncUp, totalUncDown]:
     h.Write()
 rootfile.Close()
 
-
-
 legend = [ (0.2,0.9-0.03*sum(map(len, plot.histos)),0.9,0.9), 2 if args.photonCat else 3 ]
+#legend = [ (0.2,0.9-0.035*sum(map(len, plot.histos)),0.9,0.9), 2 if args.photonCat else 3 ]
 #legend = [ (0.2,0.9-0.03*(sum(map(len, plot.histos))-2),0.9,0.9), 2 if args.photonCat else 3 ]
 #ratio = {'yRange':(0.1,1.9), "drawObjects":ratio_boxes}
 #ratio = {'yRange':(0.51,1.49), "drawObjects":ratio_boxes}
