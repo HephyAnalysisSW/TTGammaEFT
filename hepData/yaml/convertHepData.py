@@ -367,8 +367,8 @@ submission.add_table(tableUnfdR)
 ### Covmatrix pt
 ###
 
-tableCov = convertCovMatrixToYaml("../unfolding/covMatrix_observed_ptG_RunII.root", "Covariance matrix $p_{T}(\gamma)$", "$p_{T}(\gamma)$", "$p_{T}(\gamma)$ ", "GeV")
-tableCov.description = "The covariance matrix of the unfolded differential measurement for $p_{T}(\gamma)$."
+tableCov = convertCovMatrixToYaml("../unfolding/covMatrix_syst_observed_ptG_RunII.root", "Covariance matrix $p_{T}(\gamma)$", "$p_{T}(\gamma)$", "$p_{T}(\gamma)$ ", "GeV")
+tableCov.description = "The covariance matrix of systematic uncertainties for the unfolded differential measurement for $p_{T}(\gamma)$."
 tableCov.location = "Additional material: Covariance matrix to Figure 9 (top left)"
 #tableCov.add_image("../figures/covMatrix_ptg.png")
 #tableCov.keywords()
@@ -382,8 +382,8 @@ submission.add_table(tableCov)
 ### Covmatrix eta
 ###
 
-tableCovEta = convertCovMatrixToYaml("../unfolding/covMatrix_observed_absEta_RunII.root", "Covariance matrix $|\eta(\gamma)|$", "$|\eta(\gamma)|$", "$|\eta(\gamma)|$ ", "")
-tableCovEta.description = "The covariance matrix of the unfolded differential measurement for $|\eta(\gamma)|$."
+tableCovEta = convertCovMatrixToYaml("../unfolding/covMatrix_syst_observed_absEta_RunII.root", "Covariance matrix $|\eta(\gamma)|$", "$|\eta(\gamma)|$", "$|\eta(\gamma)|$ ", "")
+tableCovEta.description = "The covariance matrix of systematic uncertainties for the unfolded differential measurement for $|\eta(\gamma)|$."
 tableCovEta.location = "Additional material: Covariance matrix to Figure 9 (top right)"
 #tableCovEta.add_image("../figures/covMatrix_eta.png")
 #tableCovEta.keywords()
@@ -397,8 +397,8 @@ submission.add_table(tableCovEta)
 ### Covmatrix dR
 ###
 
-tableCovdR = convertCovMatrixToYaml("../unfolding/covMatrix_observed_dRlg_RunII.root", "Covariance matrix $\Delta R(l,\gamma)$", "$\Delta R(l,\gamma)$", "$\Delta R(l,\gamma)$ ", "")
-tableCovdR.description = "The covariance matrix of the unfolded differential measurement for $\Delta R(l,\gamma)$."
+tableCovdR = convertCovMatrixToYaml("../unfolding/covMatrix_syst_observed_dRlg_RunII.root", "Covariance matrix $\Delta R(l,\gamma)$", "$\Delta R(l,\gamma)$", "$\Delta R(l,\gamma)$ ", "")
+tableCovdR.description = "The covariance matrix of systematic uncertainties for the unfolded differential measurement for $\Delta R(l,\gamma)$."
 tableCovdR.location = "Additional material: Covariance matrix to Figure 9 (bottom)"
 #tableCovdR.add_image("../figures/covMatrix_dR.png")
 #tableCovdR.keywords()
@@ -412,8 +412,8 @@ submission.add_table(tableCovdR)
 ### Fig 9a
 ###
 
-tableCorr = convertCorrMatrixToYaml("../unfolding/corrMatrix_observed_ptG_RunII.root", "Figure 9a", "$p_{T}(\gamma)$", "$p_{T}(\gamma)$ ", "GeV")
-tableCorr.description = "The correlation matrix of the unfolded differential measurement for $p_{T}(\gamma)$."
+tableCorr = convertCorrMatrixToYaml("../unfolding/corrMatrix_syst_observed_ptG_RunII.root", "Figure 9a", "$p_{T}(\gamma)$", "$p_{T}(\gamma)$ ", "GeV")
+tableCorr.description = "The correlation matrix of systematic uncertainties for the unfolded differential measurement for $p_{T}(\gamma)$."
 tableCorr.location = "Data from Figure 9 (top left)"
 tableCorr.add_image("../figures/corrMatrix_ptg.png")
 #tableCorr.keywords()
@@ -427,8 +427,8 @@ submission.add_table(tableCorr)
 ### Fig 9b
 ###
 
-tableCorrEta = convertCorrMatrixToYaml("../unfolding/corrMatrix_observed_absEta_RunII.root", "Figure 9b", "$|\eta(\gamma)|$", "$|\eta(\gamma)|$ ", "")
-tableCorrEta.description = "The correlation matrix of the unfolded differential measurement for $|\eta(\gamma)|$."
+tableCorrEta = convertCorrMatrixToYaml("../unfolding/corrMatrix_syst_observed_absEta_RunII.root", "Figure 9b", "$|\eta(\gamma)|$", "$|\eta(\gamma)|$ ", "")
+tableCorrEta.description = "The correlation matrix of systematic uncertainties for the unfolded differential measurement for $|\eta(\gamma)|$."
 tableCorrEta.location = "Data from Figure 9 (top right)"
 tableCorrEta.add_image("../figures/corrMatrix_eta.png")
 #tableCorrEta.keywords()
@@ -442,8 +442,8 @@ submission.add_table(tableCorrEta)
 ### Fig 9c
 ###
 
-tableCorrdR = convertCorrMatrixToYaml("../unfolding/corrMatrix_observed_dRlg_RunII.root", "Figure 9c", "$\Delta R(l,\gamma)$", "$\Delta R(l,\gamma)$ ", "")
-tableCorrdR.description = "The correlation matrix of the unfolded differential measurement for $\Delta R(l,\gamma)$."
+tableCorrdR = convertCorrMatrixToYaml("../unfolding/corrMatrix_syst_observed_dRlg_RunII.root", "Figure 9c", "$\Delta R(l,\gamma)$", "$\Delta R(l,\gamma)$ ", "")
+tableCorrdR.description = "The correlation matrix of systematic uncertainties for the unfolded differential measurement for $\Delta R(l,\gamma)$."
 tableCorrdR.location = "Data from Figure 9 (bottom)"
 tableCorrdR.add_image("../figures/corrMatrix_dR.png")
 #tableCorrdR.keywords()
@@ -555,7 +555,7 @@ tabctZ.location = "Data from Figure 11 (top left)"
 datactZexp = np.loadtxt("../eft/ctZ_1D_exp_profiled.dat", skiprows=1)
 datactZobs = np.loadtxt("../eft/ctZ_1D_obs_profiled.dat", skiprows=1)
 
-wcctZ     = Variable( "$c_{tZ}$", is_independent=True, is_binned=False, units="$\Lambda$/TeV$^2$")
+wcctZ     = Variable( "$c_{tZ}$", is_independent=True, is_binned=False, units="($\Lambda$/TeV)$^2$")
 wcctZ.values = datactZobs[:,0]
 nllctZexp     = Variable( "-2$\Delta$ L (expected)", is_independent=False, is_binned=False)
 nllctZexp.values = datactZexp[:,1]
@@ -590,7 +590,7 @@ tabctZI.location = "Data from Figure 11 (top right)"
 datactZIexp = np.loadtxt("../eft/ctZI_1D_exp_profiled.dat", skiprows=1)
 datactZIobs = np.loadtxt("../eft/ctZI_1D_obs_profiled.dat", skiprows=1)
 
-wcctZI     = Variable( "$c^{I}_{tZ}$", is_independent=True, is_binned=False, units="$\Lambda$/TeV$^2$")
+wcctZI     = Variable( "$c^{I}_{tZ}$", is_independent=True, is_binned=False, units="($\Lambda$/TeV)$^2$")
 wcctZI.values = datactZIobs[:,0]
 nllctZIexp     = Variable( "-2$\Delta$ L (expected)", is_independent=False, is_binned=False)
 nllctZIexp.values = datactZIexp[:,1]
@@ -625,7 +625,7 @@ tabctZ.location = "Data from Figure 11 (bottom left)"
 datactZexp = np.loadtxt("../eft/ctZ_1D_exp.dat", skiprows=1)
 datactZobs = np.loadtxt("../eft/ctZ_1D_obs.dat", skiprows=1)
 
-wcctZ     = Variable( "$c_{tZ}$", is_independent=True, is_binned=False, units="$\Lambda$/TeV$^2$")
+wcctZ     = Variable( "$c_{tZ}$", is_independent=True, is_binned=False, units="($\Lambda$/TeV)$^2$")
 wcctZ.values = datactZobs[:,0]
 nllctZexp     = Variable( "-2$\Delta$ L (expected)", is_independent=False, is_binned=False)
 nllctZexp.values = datactZexp[:,1]
@@ -660,7 +660,7 @@ tabctZI.location = "Data from Figure 11 (bottom right)"
 datactZIexp = np.loadtxt("../eft/ctZI_1D_exp.dat", skiprows=1)
 datactZIobs = np.loadtxt("../eft/ctZI_1D_obs.dat", skiprows=1)
 
-wcctZI     = Variable( "$c^{I}_{tZ}$", is_independent=True, is_binned=False, units="$\Lambda$/TeV$^2$")
+wcctZI     = Variable( "$c^{I}_{tZ}$", is_independent=True, is_binned=False, units="($\Lambda$/TeV)$^2$")
 wcctZI.values = datactZIobs[:,0]
 nllctZIexp     = Variable( "-2$\Delta$ L (expected)", is_independent=False, is_binned=False)
 nllctZIexp.values = datactZIexp[:,1]
@@ -694,9 +694,9 @@ tabctZctZI.location = "Data from Figure 12"
 
 datactZctZIobs = np.loadtxt("../eft/ctZ_ctZI_2D_obs.dat", skiprows=1)
 
-wcctZ     = Variable( "$c_{tZ}$", is_independent=True, is_binned=False, units="$\Lambda$/TeV$^2$")
+wcctZ     = Variable( "$c_{tZ}$", is_independent=True, is_binned=False, units="($\Lambda$/TeV)$^2$")
 wcctZ.values = datactZctZIobs[:,0]
-wcctZI     = Variable( "$c^{I}_{tZ}$", is_independent=True, is_binned=False, units="$\Lambda$/TeV$^2$")
+wcctZI     = Variable( "$c^{I}_{tZ}$", is_independent=True, is_binned=False, units="($\Lambda$/TeV)$^2$")
 wcctZI.values = datactZctZIobs[:,1]
 nllctZctZIobs     = Variable( "-2$\Delta$ L (observed)", is_independent=False, is_binned=False)
 nllctZctZIobs.values = datactZctZIobs[:,2]

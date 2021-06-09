@@ -600,7 +600,7 @@ def convertCovMatrixToYaml( rootfile, label, variablex, variabley, unit ):
 
     reader = RootFileReader(rootfile)
 
-    cov = reader.read_hist_2d("output_covMatrix")
+    cov = reader.read_hist_2d("output_covMatrix_syst")
 
     xbins = Variable( variablex, is_independent=True, is_binned=True, units=unit)
     xbins.values = cov["x_edges"]
@@ -626,7 +626,7 @@ def convertCorrMatrixToYaml( rootfile, label, variablex, variabley, unit ):
 
     reader = RootFileReader(rootfile)
 
-    cov = reader.read_hist_2d("output_corr_matrix")
+    cov = reader.read_hist_2d("output_corr_matrix_syst")
 
     xbins = Variable( variablex, is_independent=True, is_binned=True, units=unit)
     xbins.values = cov["x_edges"]
