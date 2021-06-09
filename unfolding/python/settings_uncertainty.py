@@ -17,7 +17,6 @@ systematic_pairs += [ ('eResUp', 'eResDown') ]
 systematic_pairs += [ ('eScaleUp', 'eScaleDown'), ("jerUp","jerDown") ]
 systematic_pairs += [ ("TuneUp","TuneDown") ]
 systematic_pairs += [ ("TriggerUp", "TriggerDown"), ("BTag_SF_b_Up","BTag_SF_b_Down"), ("LeptonTrackingTightSFUp","LeptonTrackingTightSFDown") ]
-systematic_pairs += [ ("BTag_SF_l_Up","BTag_SF_l_Down") ]
 systematic_pairs += [ ("LeptonTightSFUp","LeptonTightSFDown"), ("L1PrefireUp","L1PrefireDown"), ("PUUp","PUDown") ]
 systematic_pairs += [ ("jes"+v+"Up","jes"+v+"Down") for v in jesSyst_all ]
 
@@ -28,25 +27,38 @@ additional_Matrix_uncertainties = [m for m in all_systematics if not "Down" in m
 additional_MatrixScale_uncertainties = ['ScaleDownDown','ScaleDownNom','ScaleNomDown','ScaleNomUp','ScaleUpNom','ScaleUpUp']
 
 allUncertainties = [
-    "DY_normalization", "EGammaResolution", "EGammaScale", "FSR", "GluonMove", "Gluon_splitting", "ISR", "Int_Luminosity_2016", "Int_Luminosity_2016_2017", "Int_Luminosity_2017",
+    "DY_normalization",
+    "EGammaResolution", "EGammaScale", "FSR", "GluonMove", "Gluon_splitting", "ISR", "Int_Luminosity_2016", "Int_Luminosity_2016_2017", "Int_Luminosity_2017",
     "Int_Luminosity_2017_2018", "Int_Luminosity_2018", "Int_Luminosity_corr", "JEC_Absolute", "JEC_Absolute_2016", "JEC_Absolute_2017", "JEC_Absolute_2018", "JEC_BBEC1", "JEC_BBEC1_2016",
     "JEC_BBEC1_2017", "JEC_BBEC1_2018", "JEC_EC2", "JEC_EC2_2016", "JEC_EC2_2017", "JEC_EC2_2018", "JEC_FlavorQCD", "JEC_HF", "JEC_HF_2016", "JEC_HF_2017", "JEC_HF_2018", "JEC_RelativeBal",
     "JEC_RelativeSample_2016", "JEC_RelativeSample_2017", "JEC_RelativeSample_2018",
     "JER_2016",
-    "JER_2017", "JER_2018", "L1_Prefiring", "MisID_extrapolation_2016", "MisID_extrapolation_2017",
-    "MisID_extrapolation_2018", "MisID_nJet_dependence_2016", "MisID_nJet_dependence_2017", "MisID_nJet_dependence_2018", "MisID_normalization_2016", "MisID_normalization_2017",
-    "MisID_normalization_2018", "Other_normalization", "PDF", "PU", "QCD_0b_nJet_dependence", "QCD_0b_normalization", "QCD_1b_nJet_dependence", "QCD_1b_normalization", "QCD_normalization",
-    "QCDbased", "Scale", "TT_normalization", "Trigger_electrons_2016", "Trigger_electrons_2017", "Trigger_electrons_2018", "Trigger_muons_2016", "Trigger_muons_2017", "Trigger_muons_2018",
-    "Tune", "WGamma_nJet_dependence", "WGamma_normalization", "WGamma_pT_Bin1", "WGamma_pT_Bin2", "ZGamma_nJet_dependence", "ZGamma_normalization", "ZGamma_pT_Bin1", "ZGamma_pT_Bin2",
-    "electron_ID", "electron_reco", "erdOn", "fake_photon_DD_normalization", "fake_photon_MC_normalization", "fake_photon_model_2017", "heavy_flavor_2016", "heavy_flavor_2017_2018",
-    "light_flavor_2016", "light_flavor_2017_2018", "misID_pT_Bin1_2016", "misID_pT_Bin1_2017", "misID_pT_Bin1_2018", "misID_pT_Bin2_2016", "misID_pT_Bin2_2017", "misID_pT_Bin2_2018",
+    "JER_2017", "JER_2018", "L1_Prefiring",
+    "MisID_extrapolation_2016", "MisID_extrapolation_2017",
+    "MisID_extrapolation_2018", "MisID_nJet_dependence_2016", "MisID_nJet_dependence_2017", "MisID_nJet_dependence_2018",
+    "MisID_normalization_2018", "MisID_normalization_2016", "MisID_normalization_2017",
+    "Other_normalization",
+    "PDF", "PU",
+    "QCD_0b_nJet_dependence", "QCD_0b_normalization", "QCD_1b_nJet_dependence", "QCD_1b_normalization", "QCD_normalization",
+    "QCDbased", "Scale",
+    "TT_normalization",
+    "Trigger_electrons_2016", "Trigger_electrons_2017", "Trigger_electrons_2018", "Trigger_muons_2016", "Trigger_muons_2017", "Trigger_muons_2018",
+    "Tune", 
+    "WGamma_nJet_dependence", "WGamma_normalization", "WGamma_pT_Bin1", "WGamma_pT_Bin2", "ZGamma_nJet_dependence", "ZGamma_normalization", "ZGamma_pT_Bin1", "ZGamma_pT_Bin2",
+    "electron_ID", "electron_reco", "erdOn",
+    "fake_photon_DD_normalization", "fake_photon_MC_normalization", "fake_photon_model_2017",
+    "heavy_flavor_2016", "heavy_flavor_2017_2018",
+    "light_flavor_2016", "light_flavor_2017_2018",
+    "misID_pT_Bin1_2016", "misID_pT_Bin1_2017", "misID_pT_Bin1_2018", "misID_pT_Bin2_2016", "misID_pT_Bin2_2017", "misID_pT_Bin2_2018",
     "misID_pT_Bin3_2016", "misID_pT_Bin3_2017", "misID_pT_Bin3_2018", "misID_pT_Bin4_2016", "misID_pT_Bin4_2017", "misID_pT_Bin4_2018", "misID_pT_Bin5_2016", "misID_pT_Bin5_2017",
-    "misID_pT_Bin5_2018", "misID_pT_Bin6_2016", "misID_pT_Bin6_2017", "misID_pT_Bin6_2018", "muon_ID_extrapolation", "muon_ID_sta_2016", "muon_ID_sta_2017", "muon_ID_sta_2018", "muon_ID_syst",
+    "misID_pT_Bin5_2018", "misID_pT_Bin6_2016", "misID_pT_Bin6_2017", "misID_pT_Bin6_2018",
+    "muon_ID_extrapolation", "muon_ID_sta_2016", "muon_ID_sta_2017", "muon_ID_sta_2018", "muon_ID_syst",
     "photon_ID", "pixelSeed_veto_2016", "pixelSeed_veto_2017", "pixelSeed_veto_2018", "top_pt_reweighting",
-    "r",
     ]
 
-signal_uncertainty_ptG = ['Signal_mu_3_Bin6_2016', 'Signal_mu_3_Bin6_2017', 'Signal_mu_3_Bin6_2018', 'Signal_e_3_Bin9_2018', 'Signal_e_3_Bin6_2018', 'Signal_e_3_Bin0_2016', 'Signal_e_3_Bin0_2017', 'Signal_e_3_Bin0_2018', 'Signal_mu_4p_Bin5_2017', 'Signal_mu_4p_Bin5_2016', 'Signal_mu_3_Bin1_2018', 'Signal_mu_3_Bin1_2017', 'Signal_mu_3_Bin1_2016', 'Signal_mu_4p_Bin6_2016', 'Signal_mu_4p_Bin6_2017', 'Signal_mu_4p_Bin6_2018', 'Signal_mu_4p_Bin8_2018', 'Signal_mu_4p_Bin8_2016', 'Signal_mu_4p_Bin8_2017', 'Signal_mu_3_Bin9_2017', 'Signal_mu_3_Bin9_2016', 'Signal_mu_3_Bin9_2018', 'Signal_mu_4p_Bin3_2018', 'Signal_mu_4p_Bin3_2017', 'Signal_mu_4p_Bin3_2016', 'Signal_e_3_Bin10_2016', 'Signal_e_3_Bin10_2017', 'Signal_mu_3_Bin7_2018', 'Signal_mu_3_Bin7_2017', 'Signal_mu_3_Bin7_2016', 'Signal_e_3_Bin10_2018', 'Signal_mu_3_Bin0_2018', 'Signal_mu_3_Bin0_2016', 'Signal_mu_3_Bin0_2017', 'Signal_e_3_Bin6_2016', 'Signal_e_4p_Bin3_2018', 'Signal_e_4p_Bin3_2016', 'Signal_e_3_Bin1_2017', 'Signal_e_3_Bin1_2016', 'Signal_e_3_Bin1_2018', 'Signal_e_4p_Bin5_2018', 'Signal_e_4p_Bin5_2017', 'Signal_e_4p_Bin5_2016', 'Signal_mu_3_Bin4_2018', 'Signal_e_4p_Bin7_2018', 'Signal_e_4p_Bin1_2018', 'Signal_e_4p_Bin1_2017', 'Signal_e_4p_Bin1_2016', 'Signal_e_4p_Bin7_2017', 'Signal_e_4p_Bin7_2016', 'Signal_mu_3_Bin4_2016', 'Signal_mu_3_Bin4_2017', 'Signal_e_4p_Bin4_2018', 'Signal_e_4p_Bin4_2016', 'Signal_e_4p_Bin4_2017', 'Signal_mu_4p_Bin10_2018', 'Signal_e_3_Bin2_2016', 'Signal_e_3_Bin2_2017', 'Signal_e_3_Bin2_2018', 'Signal_mu_4p_Bin4_2016', 'Signal_mu_4p_Bin4_2017', 'Signal_mu_4p_Bin4_2018', 'Signal_mu_3_Bin8_2016', 'Signal_mu_3_Bin8_2017', 'Signal_e_4p_Bin2_2016', 'Signal_mu_3_Bin8_2018', 'Signal_e_4p_Bin6_2016', 'Signal_e_4p_Bin6_2017', 'Signal_e_3_Bin4_2016', 'Signal_e_3_Bin4_2017', 'Signal_e_3_Bin4_2018', 'Signal_e_4p_Bin6_2018', 'Signal_mu_3_Bin2_2016', 'Signal_mu_3_Bin2_2017', 'Signal_mu_4p_Bin2_2016', 'Signal_mu_4p_Bin2_2017', 'Signal_mu_4p_Bin2_2018', 'Signal_mu_3_Bin10_2018', 'Signal_mu_3_Bin10_2016', 'Signal_mu_3_Bin10_2017', 'Signal_mu_4p_Bin5_2018', 'Signal_mu_4p_Bin7_2017', 'Signal_mu_4p_Bin7_2016', 'Signal_mu_4p_Bin7_2018', 'Signal_mu_4p_Bin10_2016', 'Signal_e_3_Bin7_2017', 'Signal_e_3_Bin7_2016', 'Signal_mu_4p_Bin10_2017', 'Signal_e_3_Bin7_2018', 'Signal_mu_3_Bin3_2018', 'Signal_mu_3_Bin3_2017', 'Signal_mu_3_Bin3_2016', 'Signal_e_4p_Bin9_2017', 'Signal_e_4p_Bin9_2016', 'Signal_e_4p_Bin9_2018', 'Signal_e_3_Bin3_2017', 'Signal_e_3_Bin3_2016', 'Signal_e_4p_Bin10_2018', 'Signal_e_4p_Bin10_2016', 'Signal_e_4p_Bin10_2017', 'Signal_e_3_Bin3_2018', 'Signal_e_4p_Bin2_2017', 'Signal_e_3_Bin9_2016', 'Signal_mu_3_Bin5_2018', 'Signal_e_3_Bin8_2018', 'Signal_mu_3_Bin5_2017', 'Signal_mu_3_Bin5_2016', 'Signal_e_3_Bin9_2017', 'Signal_e_3_Bin8_2017', 'Signal_e_3_Bin6_2017', 'Signal_e_4p_Bin3_2017', 'Signal_e_3_Bin5_2018', 'Signal_e_3_Bin5_2017', 'Signal_e_3_Bin5_2016', 'Signal_e_4p_Bin8_2016', 'Signal_e_4p_Bin8_2017', 'Signal_mu_4p_Bin0_2016', 'Signal_mu_4p_Bin0_2017', 'Signal_mu_4p_Bin0_2018', 'Signal_e_4p_Bin8_2018', 'Signal_e_4p_Bin2_2018', 'Signal_mu_4p_Bin9_2018', 'Signal_mu_3_Bin2_2018', 'Signal_mu_4p_Bin9_2017', 'Signal_mu_4p_Bin9_2016', 'Signal_e_3_Bin8_2016', 'Signal_mu_4p_Bin1_2017', 'Signal_mu_4p_Bin1_2016', 'Signal_mu_4p_Bin1_2018']
+
+#signal_uncertainty_ptG = ['Signal_mu_3_Bin6_2016', 'Signal_mu_3_Bin6_2017', 'Signal_mu_3_Bin6_2018', 'Signal_e_3_Bin9_2018', 'Signal_e_3_Bin6_2018', 'Signal_e_3_Bin0_2016', 'Signal_e_3_Bin0_2017', 'Signal_e_3_Bin0_2018', 'Signal_mu_4p_Bin5_2017', 'Signal_mu_4p_Bin5_2016', 'Signal_mu_3_Bin1_2018', 'Signal_mu_3_Bin1_2017', 'Signal_mu_3_Bin1_2016', 'Signal_mu_4p_Bin6_2016', 'Signal_mu_4p_Bin6_2017', 'Signal_mu_4p_Bin6_2018', 'Signal_mu_4p_Bin8_2018', 'Signal_mu_4p_Bin8_2016', 'Signal_mu_4p_Bin8_2017', 'Signal_mu_3_Bin9_2017', 'Signal_mu_3_Bin9_2016', 'Signal_mu_3_Bin9_2018', 'Signal_mu_4p_Bin3_2018', 'Signal_mu_4p_Bin3_2017', 'Signal_mu_4p_Bin3_2016', 'Signal_e_3_Bin10_2016', 'Signal_e_3_Bin10_2017', 'Signal_mu_3_Bin7_2018', 'Signal_mu_3_Bin7_2017', 'Signal_mu_3_Bin7_2016', 'Signal_e_3_Bin10_2018', 'Signal_mu_3_Bin0_2018', 'Signal_mu_3_Bin0_2016', 'Signal_mu_3_Bin0_2017', 'Signal_e_3_Bin6_2016', 'Signal_e_4p_Bin3_2018', 'Signal_e_4p_Bin3_2016', 'Signal_e_3_Bin1_2017', 'Signal_e_3_Bin1_2016', 'Signal_e_3_Bin1_2018', 'Signal_e_4p_Bin5_2018', 'Signal_e_4p_Bin5_2017', 'Signal_e_4p_Bin5_2016', 'Signal_mu_3_Bin4_2018', 'Signal_e_4p_Bin7_2018', 'Signal_e_4p_Bin1_2018', 'Signal_e_4p_Bin1_2017', 'Signal_e_4p_Bin1_2016', 'Signal_e_4p_Bin7_2017', 'Signal_e_4p_Bin7_2016', 'Signal_mu_3_Bin4_2016', 'Signal_mu_3_Bin4_2017', 'Signal_e_4p_Bin4_2018', 'Signal_e_4p_Bin4_2016', 'Signal_e_4p_Bin4_2017', 'Signal_mu_4p_Bin10_2018', 'Signal_e_3_Bin2_2016', 'Signal_e_3_Bin2_2017', 'Signal_e_3_Bin2_2018', 'Signal_mu_4p_Bin4_2016', 'Signal_mu_4p_Bin4_2017', 'Signal_mu_4p_Bin4_2018', 'Signal_mu_3_Bin8_2016', 'Signal_mu_3_Bin8_2017', 'Signal_e_4p_Bin2_2016', 'Signal_mu_3_Bin8_2018', 'Signal_e_4p_Bin6_2016', 'Signal_e_4p_Bin6_2017', 'Signal_e_3_Bin4_2016', 'Signal_e_3_Bin4_2017', 'Signal_e_3_Bin4_2018', 'Signal_e_4p_Bin6_2018', 'Signal_mu_3_Bin2_2016', 'Signal_mu_3_Bin2_2017', 'Signal_mu_4p_Bin2_2016', 'Signal_mu_4p_Bin2_2017', 'Signal_mu_4p_Bin2_2018', 'Signal_mu_3_Bin10_2018', 'Signal_mu_3_Bin10_2016', 'Signal_mu_3_Bin10_2017', 'Signal_mu_4p_Bin5_2018', 'Signal_mu_4p_Bin7_2017', 'Signal_mu_4p_Bin7_2016', 'Signal_mu_4p_Bin7_2018', 'Signal_mu_4p_Bin10_2016', 'Signal_e_3_Bin7_2017', 'Signal_e_3_Bin7_2016', 'Signal_mu_4p_Bin10_2017', 'Signal_e_3_Bin7_2018', 'Signal_mu_3_Bin3_2018', 'Signal_mu_3_Bin3_2017', 'Signal_mu_3_Bin3_2016', 'Signal_e_4p_Bin9_2017', 'Signal_e_4p_Bin9_2016', 'Signal_e_4p_Bin9_2018', 'Signal_e_3_Bin3_2017', 'Signal_e_3_Bin3_2016', 'Signal_e_4p_Bin10_2018', 'Signal_e_4p_Bin10_2016', 'Signal_e_4p_Bin10_2017', 'Signal_e_3_Bin3_2018', 'Signal_e_4p_Bin2_2017', 'Signal_e_3_Bin9_2016', 'Signal_mu_3_Bin5_2018', 'Signal_e_3_Bin8_2018', 'Signal_mu_3_Bin5_2017', 'Signal_mu_3_Bin5_2016', 'Signal_e_3_Bin9_2017', 'Signal_e_3_Bin8_2017', 'Signal_e_3_Bin6_2017', 'Signal_e_4p_Bin3_2017', 'Signal_e_3_Bin5_2018', 'Signal_e_3_Bin5_2017', 'Signal_e_3_Bin5_2016', 'Signal_e_4p_Bin8_2016', 'Signal_e_4p_Bin8_2017', 'Signal_mu_4p_Bin0_2016', 'Signal_mu_4p_Bin0_2017', 'Signal_e_4p_Bin0_2016', 'Signal_e_4p_Bin0_2017', 'Signal_e_4p_Bin0_2018', 'Signal_e_4p_Bin8_2018', 'Signal_e_4p_Bin2_2018', 'Signal_mu_4p_Bin9_2018', 'Signal_mu_3_Bin2_2018', 'Signal_mu_4p_Bin9_2017', 'Signal_mu_4p_Bin9_2016', 'Signal_e_3_Bin8_2016', 'Signal_mu_4p_Bin1_2017', 'Signal_mu_4p_Bin1_2016', 'Signal_mu_4p_Bin1_2018', "Signal_mu_4p_Bin11_2016", "Signal_mu_4p_Bin11_2017", "Signal_mu_4p_Bin11_2018", "Signal_e_4p_Bin11_2016", "Signal_e_4p_Bin11_2017","Signal_e_4p_Bin11_2018", "Signal_mu_3_Bin11_2016", "Signal_mu_3_Bin11_2017", "Signal_mu_3_Bin11_2018", "Signal_e_3_Bin11_2016", "Signal_e_3_Bin11_2017","Signal_e_3_Bin11_2018", 'Signal_mu_4p_Bin0_2018']
+signal_uncertainty_ptG = ['Signal_mu_3_Bin6_2016', 'Signal_mu_3_Bin6_2017', 'Signal_mu_3_Bin6_2018', 'Signal_e_3_Bin9_2018', 'Signal_e_3_Bin6_2018', 'Signal_e_3_Bin0_2016', 'Signal_e_3_Bin0_2017', 'Signal_e_3_Bin0_2018', 'Signal_mu_4p_Bin5_2017', 'Signal_mu_4p_Bin5_2016', 'Signal_mu_3_Bin1_2018', 'Signal_mu_3_Bin1_2017', 'Signal_mu_3_Bin1_2016', 'Signal_mu_4p_Bin6_2016', 'Signal_mu_4p_Bin6_2017', 'Signal_mu_4p_Bin6_2018', 'Signal_mu_4p_Bin8_2018', 'Signal_mu_4p_Bin8_2016', 'Signal_mu_4p_Bin8_2017', 'Signal_mu_3_Bin9_2017', 'Signal_mu_3_Bin9_2016', 'Signal_mu_3_Bin9_2018', 'Signal_mu_4p_Bin3_2018', 'Signal_mu_4p_Bin3_2017', 'Signal_mu_4p_Bin3_2016', 'Signal_e_3_Bin10_2016', 'Signal_e_3_Bin10_2017', 'Signal_mu_3_Bin7_2018', 'Signal_mu_3_Bin7_2017', 'Signal_mu_3_Bin7_2016', 'Signal_e_3_Bin10_2018', 'Signal_mu_3_Bin0_2018', 'Signal_mu_3_Bin0_2016', 'Signal_mu_3_Bin0_2017', 'Signal_e_3_Bin6_2016', 'Signal_e_4p_Bin3_2018', 'Signal_e_4p_Bin3_2016', 'Signal_e_3_Bin1_2017', 'Signal_e_3_Bin1_2016', 'Signal_e_3_Bin1_2018', 'Signal_e_4p_Bin5_2018', 'Signal_e_4p_Bin5_2017', 'Signal_e_4p_Bin5_2016', 'Signal_mu_3_Bin4_2018', 'Signal_e_4p_Bin7_2018', 'Signal_e_4p_Bin1_2018', 'Signal_e_4p_Bin1_2017', 'Signal_e_4p_Bin1_2016', 'Signal_e_4p_Bin7_2017', 'Signal_e_4p_Bin7_2016', 'Signal_mu_3_Bin4_2016', 'Signal_mu_3_Bin4_2017', 'Signal_e_4p_Bin4_2018', 'Signal_e_4p_Bin4_2016', 'Signal_e_4p_Bin4_2017', 'Signal_mu_4p_Bin10_2018', 'Signal_e_3_Bin2_2016', 'Signal_e_3_Bin2_2017', 'Signal_e_3_Bin2_2018', 'Signal_mu_4p_Bin4_2016', 'Signal_mu_4p_Bin4_2017', 'Signal_mu_4p_Bin4_2018', 'Signal_mu_3_Bin8_2016', 'Signal_mu_3_Bin8_2017', 'Signal_e_4p_Bin2_2016', 'Signal_mu_3_Bin8_2018', 'Signal_e_4p_Bin6_2016', 'Signal_e_4p_Bin6_2017', 'Signal_e_3_Bin4_2016', 'Signal_e_3_Bin4_2017', 'Signal_e_3_Bin4_2018', 'Signal_e_4p_Bin6_2018', 'Signal_mu_3_Bin2_2016', 'Signal_mu_3_Bin2_2017', 'Signal_mu_4p_Bin2_2016', 'Signal_mu_4p_Bin2_2017', 'Signal_mu_4p_Bin2_2018', 'Signal_mu_3_Bin10_2018', 'Signal_mu_3_Bin10_2016', 'Signal_mu_3_Bin10_2017', 'Signal_mu_4p_Bin5_2018', 'Signal_mu_4p_Bin7_2017', 'Signal_mu_4p_Bin7_2016', 'Signal_mu_4p_Bin7_2018', 'Signal_mu_4p_Bin10_2016', 'Signal_e_3_Bin7_2017', 'Signal_e_3_Bin7_2016', 'Signal_mu_4p_Bin10_2017', 'Signal_e_3_Bin7_2018', 'Signal_mu_3_Bin3_2018', 'Signal_mu_3_Bin3_2017', 'Signal_mu_3_Bin3_2016', 'Signal_e_4p_Bin9_2017', 'Signal_e_4p_Bin9_2016', 'Signal_e_4p_Bin9_2018', 'Signal_e_3_Bin3_2017', 'Signal_e_3_Bin3_2016', 'Signal_e_4p_Bin10_2018', 'Signal_e_4p_Bin10_2016', 'Signal_e_4p_Bin10_2017', 'Signal_e_3_Bin3_2018', 'Signal_e_4p_Bin2_2017', 'Signal_e_3_Bin9_2016', 'Signal_mu_3_Bin5_2018', 'Signal_e_3_Bin8_2018', 'Signal_mu_3_Bin5_2017', 'Signal_mu_3_Bin5_2016', 'Signal_e_3_Bin9_2017', 'Signal_e_3_Bin8_2017', 'Signal_e_3_Bin6_2017', 'Signal_e_4p_Bin3_2017', 'Signal_e_3_Bin5_2018', 'Signal_e_3_Bin5_2017', 'Signal_e_3_Bin5_2016', 'Signal_e_4p_Bin8_2016', 'Signal_e_4p_Bin8_2017', 'Signal_mu_4p_Bin0_2016', 'Signal_mu_4p_Bin0_2017', 'Signal_mu_4p_Bin0_2018', 'Signal_e_4p_Bin2_2018', 'Signal_mu_4p_Bin9_2018', 'Signal_mu_3_Bin2_2018', 'Signal_mu_4p_Bin9_2017', 'Signal_mu_4p_Bin9_2016', 'Signal_e_3_Bin8_2016', 'Signal_mu_4p_Bin1_2017', 'Signal_mu_4p_Bin1_2016', 'Signal_mu_4p_Bin1_2018', "Signal_mu_4p_Bin11_2016", "Signal_mu_4p_Bin11_2017", "Signal_mu_4p_Bin11_2018", "Signal_e_4p_Bin11_2016", "Signal_e_4p_Bin11_2017","Signal_e_4p_Bin11_2018", "Signal_mu_3_Bin11_2016", "Signal_mu_3_Bin11_2017", "Signal_mu_3_Bin11_2018", "Signal_e_3_Bin11_2016", "Signal_e_3_Bin11_2017","Signal_e_3_Bin11_2018", 'Signal_mu_4p_Bin0_2018']
 signal_uncertainty_absEta = ['Signal_mu_3_Bin6_2016', 'Signal_mu_3_Bin6_2017', 'Signal_mu_3_Bin6_2018', 'Signal_e_3_Bin9_2018', 'Signal_e_3_Bin6_2018', 'Signal_e_3_Bin0_2016', 'Signal_e_3_Bin0_2017', 'Signal_e_3_Bin0_2018', 'Signal_mu_4p_Bin5_2018', 'Signal_mu_3_Bin1_2018', 'Signal_mu_3_Bin1_2016', 'Signal_mu_4p_Bin6_2016', 'Signal_mu_4p_Bin6_2017', 'Signal_mu_4p_Bin6_2018', 'Signal_mu_4p_Bin8_2018', 'Signal_mu_4p_Bin8_2016', 'Signal_mu_4p_Bin8_2017', 'Signal_mu_3_Bin9_2017', 'Signal_mu_3_Bin9_2016', 'Signal_mu_3_Bin9_2018', 'Signal_mu_4p_Bin3_2018', 'Signal_mu_4p_Bin3_2017', 'Signal_mu_4p_Bin3_2016', 'Signal_mu_3_Bin7_2018', 'Signal_mu_3_Bin7_2017', 'Signal_mu_3_Bin7_2016', 'Signal_mu_3_Bin0_2018', 'Signal_mu_3_Bin0_2016', 'Signal_mu_3_Bin0_2017', 'Signal_e_3_Bin6_2016', 'Signal_e_4p_Bin3_2018', 'Signal_e_4p_Bin3_2016', 'Signal_e_3_Bin1_2017', 'Signal_e_3_Bin1_2016', 'Signal_e_3_Bin1_2018', 'Signal_e_4p_Bin5_2018', 'Signal_e_4p_Bin5_2017', 'Signal_e_4p_Bin5_2016', 'Signal_mu_3_Bin4_2018', 'Signal_e_4p_Bin7_2018', 'Signal_e_4p_Bin1_2018', 'Signal_e_4p_Bin1_2017', 'Signal_e_4p_Bin1_2016', 'Signal_e_4p_Bin7_2017', 'Signal_e_4p_Bin7_2016', 'Signal_mu_3_Bin4_2016', 'Signal_mu_3_Bin4_2017', 'Signal_e_4p_Bin4_2018', 'Signal_e_4p_Bin4_2016', 'Signal_e_4p_Bin4_2017', 'Signal_e_3_Bin2_2016', 'Signal_e_3_Bin2_2017', 'Signal_e_3_Bin2_2018', 'Signal_mu_4p_Bin4_2016', 'Signal_mu_4p_Bin4_2017', 'Signal_mu_4p_Bin4_2018', 'Signal_mu_3_Bin8_2016', 'Signal_mu_3_Bin8_2017', 'Signal_e_4p_Bin2_2016', 'Signal_mu_3_Bin8_2018', 'Signal_e_4p_Bin6_2016', 'Signal_e_4p_Bin6_2017', 'Signal_e_3_Bin4_2016', 'Signal_e_3_Bin4_2017', 'Signal_e_3_Bin4_2018', 'Signal_e_4p_Bin6_2018', 'Signal_mu_3_Bin2_2016', 'Signal_mu_3_Bin2_2017', 'Signal_mu_4p_Bin5_2017', 'Signal_mu_4p_Bin5_2016', 'Signal_mu_4p_Bin2_2016', 'Signal_mu_4p_Bin2_2017', 'Signal_mu_4p_Bin2_2018', 'Signal_mu_4p_Bin7_2017', 'Signal_mu_4p_Bin7_2016', 'Signal_mu_4p_Bin7_2018', 'Signal_e_3_Bin7_2017', 'Signal_e_3_Bin7_2016', 'Signal_e_3_Bin7_2018', 'Signal_mu_3_Bin1_2017', 'Signal_mu_3_Bin3_2018', 'Signal_mu_3_Bin3_2017', 'Signal_mu_3_Bin3_2016', 'Signal_e_4p_Bin9_2017', 'Signal_e_4p_Bin9_2016', 'Signal_e_4p_Bin9_2018', 'Signal_e_3_Bin3_2017', 'Signal_e_3_Bin3_2016', 'Signal_e_3_Bin3_2018', 'Signal_mu_4p_Bin9_2017', 'Signal_e_4p_Bin2_2017', 'Signal_e_3_Bin9_2017', 'Signal_e_3_Bin9_2016', 'Signal_mu_3_Bin5_2018', 'Signal_e_3_Bin8_2018', 'Signal_mu_3_Bin5_2017', 'Signal_mu_3_Bin5_2016', 'Signal_e_3_Bin8_2017', 'Signal_e_3_Bin6_2017', 'Signal_e_4p_Bin3_2017', 'Signal_e_3_Bin5_2018', 'Signal_e_3_Bin5_2017', 'Signal_e_3_Bin5_2016', 'Signal_e_4p_Bin8_2016', 'Signal_e_4p_Bin8_2017', 'Signal_mu_4p_Bin0_2016', 'Signal_mu_4p_Bin0_2017', 'Signal_mu_4p_Bin0_2018', 'Signal_mu_4p_Bin1_2016', 'Signal_e_4p_Bin8_2018', 'Signal_e_4p_Bin2_2018', 'Signal_mu_4p_Bin9_2018', 'Signal_mu_3_Bin2_2018', 'Signal_mu_4p_Bin9_2016', 'Signal_e_3_Bin8_2016', 'Signal_mu_4p_Bin1_2017', 'Signal_mu_4p_Bin1_2018']
 signal_uncertainty_dRlg = ['Signal_mu_3_Bin6_2016', 'Signal_mu_3_Bin6_2017', 'Signal_e_3_Bin6_2017', 'Signal_mu_4p_Bin11_2018', 'Signal_mu_3_Bin6_2018', 'Signal_e_3_Bin9_2018', 'Signal_e_3_Bin6_2018', 'Signal_e_3_Bin0_2016', 'Signal_e_3_Bin0_2017', 'Signal_mu_3_Bin5_2018', 'Signal_e_3_Bin0_2018', 'Signal_mu_4p_Bin5_2017', 'Signal_mu_4p_Bin5_2016', 'Signal_mu_4p_Bin5_2018', 'Signal_mu_3_Bin1_2018', 'Signal_mu_3_Bin1_2017', 'Signal_mu_3_Bin1_2016', 'Signal_mu_4p_Bin6_2016', 'Signal_mu_4p_Bin6_2017', 'Signal_mu_4p_Bin6_2018', 'Signal_e_3_Bin13_2017', 'Signal_e_3_Bin13_2016', 'Signal_e_3_Bin13_2018', 'Signal_mu_4p_Bin8_2018', 'Signal_mu_4p_Bin8_2016', 'Signal_mu_4p_Bin8_2017', 'Signal_e_4p_Bin12_2018', 'Signal_e_4p_Bin12_2016', 'Signal_e_4p_Bin12_2017', 'Signal_e_4p_Bin13_2017', 'Signal_e_4p_Bin13_2016', 'Signal_mu_3_Bin9_2017', 'Signal_mu_3_Bin9_2016', 'Signal_mu_3_Bin13_2016', 'Signal_mu_3_Bin9_2018', 'Signal_e_4p_Bin13_2018', 'Signal_mu_4p_Bin3_2018', 'Signal_mu_4p_Bin3_2017', 'Signal_mu_4p_Bin3_2016', 'Signal_e_3_Bin10_2016', 'Signal_e_3_Bin10_2017', 'Signal_mu_3_Bin7_2018', 'Signal_mu_3_Bin7_2017', 'Signal_mu_3_Bin7_2016', 'Signal_e_3_Bin10_2018', 'Signal_mu_3_Bin0_2018', 'Signal_mu_3_Bin0_2016', 'Signal_mu_3_Bin0_2017', 'Signal_mu_3_Bin2_2018', 'Signal_e_3_Bin6_2016', 'Signal_e_4p_Bin3_2016', 'Signal_e_3_Bin1_2017', 'Signal_e_3_Bin1_2016', 'Signal_e_3_Bin1_2018', 'Signal_e_4p_Bin5_2018', 'Signal_e_4p_Bin5_2017', 'Signal_e_4p_Bin5_2016', 'Signal_mu_3_Bin4_2018', 'Signal_e_4p_Bin7_2018', 'Signal_e_4p_Bin1_2018', 'Signal_e_4p_Bin1_2017', 'Signal_e_4p_Bin1_2016', 'Signal_e_4p_Bin7_2017', 'Signal_mu_3_Bin4_2017', 'Signal_mu_3_Bin4_2016', 'Signal_e_4p_Bin7_2016', 'Signal_e_4p_Bin4_2018', 'Signal_e_4p_Bin4_2016', 'Signal_e_4p_Bin4_2017', 'Signal_mu_4p_Bin10_2018', 'Signal_e_3_Bin2_2016', 'Signal_e_3_Bin2_2017', 'Signal_e_3_Bin2_2018', 'Signal_e_3_Bin12_2016', 'Signal_e_3_Bin12_2018', 'Signal_mu_4p_Bin4_2016', 'Signal_mu_4p_Bin4_2017', 'Signal_mu_4p_Bin4_2018', 'Signal_mu_3_Bin8_2016', 'Signal_mu_3_Bin8_2017', 'Signal_e_4p_Bin2_2016', 'Signal_mu_3_Bin8_2018', 'Signal_e_4p_Bin6_2016', 'Signal_e_4p_Bin6_2017', 'Signal_e_3_Bin4_2016', 'Signal_e_3_Bin4_2017', 'Signal_e_3_Bin4_2018', 'Signal_e_4p_Bin6_2018', 'Signal_mu_3_Bin2_2016', 'Signal_mu_3_Bin2_2017', 'Signal_e_4p_Bin11_2018', 'Signal_e_4p_Bin11_2017', 'Signal_e_4p_Bin11_2016', 'Signal_mu_4p_Bin2_2016', 'Signal_mu_4p_Bin2_2017', 'Signal_mu_4p_Bin2_2018', 'Signal_mu_3_Bin10_2018', 'Signal_mu_3_Bin10_2016', 'Signal_mu_3_Bin10_2017', 'Signal_mu_3_Bin12_2018', 'Signal_mu_4p_Bin7_2017', 'Signal_mu_4p_Bin7_2016', 'Signal_mu_4p_Bin7_2018', 'Signal_mu_3_Bin12_2016', 'Signal_mu_3_Bin12_2017', 'Signal_mu_3_Bin11_2018', 'Signal_e_3_Bin7_2017', 'Signal_e_3_Bin7_2016', 'Signal_mu_4p_Bin10_2017', 'Signal_e_3_Bin7_2018', 'Signal_mu_3_Bin11_2017', 'Signal_mu_3_Bin11_2016', 'Signal_mu_4p_Bin12_2016', 'Signal_mu_4p_Bin12_2017', 'Signal_mu_4p_Bin12_2018', 'Signal_e_3_Bin11_2017', 'Signal_e_3_Bin11_2016', 'Signal_mu_3_Bin3_2018', 'Signal_mu_3_Bin3_2017', 'Signal_mu_3_Bin3_2016', 'Signal_e_3_Bin11_2018', 'Signal_e_4p_Bin9_2017', 'Signal_e_4p_Bin9_2016', 'Signal_e_4p_Bin9_2018', 'Signal_e_3_Bin3_2017', 'Signal_e_3_Bin3_2016', 'Signal_e_4p_Bin10_2018', 'Signal_mu_4p_Bin13_2017', 'Signal_mu_4p_Bin13_2016', 'Signal_mu_4p_Bin13_2018', 'Signal_e_4p_Bin10_2016', 'Signal_e_4p_Bin10_2017', 'Signal_e_3_Bin3_2018', 'Signal_mu_3_Bin13_2017', 'Signal_e_4p_Bin2_2017', 'Signal_e_3_Bin9_2016', 'Signal_mu_4p_Bin11_2017', 'Signal_mu_4p_Bin11_2016', 'Signal_e_3_Bin12_2017', 'Signal_mu_3_Bin5_2017', 'Signal_mu_3_Bin5_2016', 'Signal_e_3_Bin9_2017', 'Signal_e_3_Bin8_2017', 'Signal_mu_3_Bin13_2018', 'Signal_e_4p_Bin3_2018', 'Signal_e_4p_Bin3_2017', 'Signal_e_3_Bin5_2018', 'Signal_e_3_Bin5_2017', 'Signal_e_3_Bin5_2016', 'Signal_e_4p_Bin8_2016', 'Signal_e_4p_Bin8_2017', 'Signal_mu_4p_Bin0_2016', 'Signal_mu_4p_Bin0_2017', 'Signal_mu_4p_Bin0_2018', 'Signal_e_4p_Bin8_2018', 'Signal_e_4p_Bin2_2018', 'Signal_mu_4p_Bin9_2018', 'Signal_mu_4p_Bin9_2017', 'Signal_mu_4p_Bin9_2016', 'Signal_mu_4p_Bin10_2016', 'Signal_e_3_Bin8_2018', 'Signal_e_3_Bin8_2016', 'Signal_mu_4p_Bin1_2017', 'Signal_mu_4p_Bin1_2016', 'Signal_mu_4p_Bin1_2018']
 
@@ -106,7 +118,7 @@ class observed_ptG_2016:
     cache_directory = default_cache_directory 
     corr_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
-    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_total"
+    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in uncertainties if "2016" in u or ( not "2017" in u and not "2018" in u )}
     mcStatUp_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
 
@@ -222,7 +234,7 @@ class observed_ptG_2017:
     cache_directory = default_cache_directory 
     corr_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
-    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_total"
+    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in uncertainties if "2017" in u or ( not "2016" in u and not "2018" in u )}
     mcStatUp_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
 
@@ -336,7 +348,7 @@ class observed_ptG_2018:
     cache_directory = default_cache_directory 
     corr_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
-    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_total"
+    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in uncertainties if not "L1_Prefiring" in u and ("2018" in u or ( not "2017" in u and not "2016" in u ))}
     mcStatUp_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
 
@@ -446,11 +458,11 @@ class observed_ptG_2018:
 
 class expected_ptG_RunII:
   if False:
-    uncertainties = allUncertainties + signal_uncertainty_ptG
+    uncertainties = allUncertainties# + signal_uncertainty_ptG
     cache_directory = default_cache_directory 
     corr_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_data_%s"
-    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_total_%s"
+    signal_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_signal_%s"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_%s_Up"%u for u in uncertainties}
     mcStatUp_key      = "bkgSubtracted_SR3pPtUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3PtUnfold_SR4pPtUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_MCStat_Up_%s"
 
@@ -575,18 +587,20 @@ class expected_ptG_RunII:
 class observed_ptG_RunII:
     print "obs"
 #  if False:
-    uncertainties = allUncertainties + signal_uncertainty_ptG + ["Signal_mu_4p_Bin11_2016", "Signal_mu_4p_Bin11_2017", "Signal_mu_4p_Bin11_2018", "Signal_e_4p_Bin11_2016", "Signal_e_4p_Bin11_2017","Signal_e_4p_Bin11_2018", "Signal_mu_3_Bin11_2016", "Signal_mu_3_Bin11_2017", "Signal_mu_3_Bin11_2018", "Signal_e_3_Bin11_2016", "Signal_e_3_Bin11_2017","Signal_e_3_Bin11_2018"]
+    uncertainties = allUncertainties + signal_uncertainty_ptG + ["r"]
+#    uncertainties = allUncertainties
+#    uncertainties = signal_uncertainty_ptG
     cache_directory = default_cache_directory 
     corr_key        = "bkgSubtracted_SR3pPtUnfoldEFT_addDYSF_addPtBinnedUnc_SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pPtUnfoldEFT_addDYSF_addPtBinnedUnc_SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data_%s"
-    signal_key      = "bkgSubtracted_SR3pPtUnfoldEFT_addDYSF_addPtBinnedUnc_SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_total_%s"
+    signal_key      = "bkgSubtracted_SR3pPtUnfoldEFT_addDYSF_addPtBinnedUnc_SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal_%s"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pPtUnfoldEFT_addDYSF_addPtBinnedUnc_SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in uncertainties}
     mcStatUp_key      = "bkgSubtracted_SR3pPtUnfoldEFT_addDYSF_addPtBinnedUnc_SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up_%s"
 
     years           = ["2016", "2017", "2018"]
 
     cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "observed", "postFit", "noFreeze")
-#    cache_dir       = os.path.join(cache_directory, "unfolding_safe", "combined", "bkgSubstracted", "observed", "postFit", "noFreeze")
+#    cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "observed", "postFit", "freeze")
     dirDB           = MergingDirDB(cache_dir)
     print "cache"
     data_histos     =  [ dirDB.get( data_key%year ) for year in years ]
@@ -603,15 +617,17 @@ class observed_ptG_RunII:
     mcStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signal_frozen_histos[i] ) for i,year in enumerate(years) ]
     print "unc"
 
-    uncertaintyStatUp_key = {u:"bkgSubtracted_SR3pPtUnfoldEFT_addDYSF_addPtBinnedUnc_SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in signal_uncertainty_ptG + ["r"]}
+    corrStat_key        = "bkgSubtracted_SR3pPtUnfoldEFT_addDYSF_addPtBinnedUnc_SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
+    signalStat_key      = "bkgSubtracted_SR3pPtUnfoldEFT_addDYSF_addPtBinnedUnc_SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal_%s"
+    uncertaintyStatUp_key = {u:"bkgSubtracted_SR3pPtUnfoldEFT_addDYSF_addPtBinnedUnc_SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in signal_uncertainty_ptG + ["r"] }
     cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "observed", "postFit", "freezeSyst")
     dirDB           = MergingDirDB(cache_dir)
-    corrFitObjStat  =  dirDB.get( corr_key )
-    signalStat_frozen_histos  =  [ dirDB.get( signal_key%year ) for year in years ]
+    corrFitObjStat  =  dirDB.get( corrStat_key )
+    signalStat_frozen_histos  =  [ dirDB.get( signalStat_key%year ) for year in years ]
     uncertaintiesStat_histos   = {}
     for u, k in uncertaintyStatUp_key.iteritems():
         uncertaintiesStat_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signalStat_frozen_histos[i] ) for i,year in enumerate(years)]
-    mcStatStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signalStat_frozen_histos[i] ) for i,year in enumerate(years) ]
+    mcStatStatUp_histos   =  [] # add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signalStat_frozen_histos[i] ) for i,year in enumerate(years) ]
     print "syst"
 
 
@@ -644,7 +660,7 @@ class observed_ptG_RunII:
     data        = merge_x( data_histos, reco_thresholds_years )
     signal      = merge_x( signal_histos, reco_thresholds_years )
     mcStat      = merge_x( mcStatUp_histos, reco_thresholds_years )
-    mcStatStat  = merge_x( mcStatStatUp_histos, reco_thresholds_years )
+#    mcStatStat  = merge_x( mcStatStatUp_histos, reco_thresholds_years )
 
     uncertainties   = {}
     for u, histlist in uncertainties_histos.iteritems():
@@ -738,13 +754,13 @@ class observed_ptG_RunII:
         } for u, h in uncertaintiesStat.iteritems()
         ]
     unfolding_signalStat_input_MCStat          = {
-        'name' : "MCStat",
-        'label': "MC stat.",
-        'matrix': "nominal",
-        'ref':  replace_data_error( data ),
-        'up':  add_sigmas(mcStatStat, +1, ref = data),
-        'down':add_sigmas(mcStatStat, -1, ref = data),
-        'color':ROOT.kGray+1,
+#        'name' : "MCStat",
+#        'label': "MC stat.",
+#        'matrix': "nominal",
+#        'ref':  replace_data_error( data ),
+#        'up':  add_sigmas(mcStatStat, +1, ref = data),
+#        'down':add_sigmas(mcStatStat, -1, ref = data),
+#        'color':ROOT.kGray+1,
         }
 
 
@@ -755,7 +771,7 @@ class expected_absEta_RunII:
     cache_directory = default_cache_directory 
     corr_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_data_%s"
-    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_total_%s"
+    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_signal_%s"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_%s_Up"%u for u in uncertainties}
     mcStatUp_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_MCStat_Up_%s"
 
@@ -877,12 +893,12 @@ class expected_absEta_RunII:
 
 class observed_absEta_RunII:
 #  if False:
-    uncertainties = allUncertainties + signal_uncertainty_absEta
+    uncertainties = allUncertainties + signal_uncertainty_absEta + ["r"]
     expected        = False
     cache_directory = default_cache_directory 
     corr_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data_%s"
-    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_total_%s"
+    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal_%s"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in uncertainties}
     mcStatUp_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up_%s"
 
@@ -901,15 +917,19 @@ class observed_absEta_RunII:
         uncertainties_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signal_frozen_histos[i] ) for i,year in enumerate(years)]
     mcStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signal_frozen_histos[i] ) for i,year in enumerate(years) ] 
 
+#    signal_uncertainty_absEta = ['Signal_mu_3_Bin6_2016', 'Signal_mu_3_Bin6_2017', 'Signal_mu_3_Bin6_2018', 'Signal_e_3_Bin9_2018', 'Signal_e_3_Bin6_2018', 'Signal_e_3_Bin0_2016', 'Signal_e_3_Bin0_2017', 'Signal_e_3_Bin0_2018', 'Signal_mu_4p_Bin5_2018', 'Signal_mu_3_Bin1_2018', 'Signal_mu_3_Bin1_2016', 'Signal_mu_4p_Bin6_2016', 'Signal_mu_4p_Bin6_2017', 'Signal_mu_4p_Bin6_2018', 'Signal_mu_4p_Bin8_2018', 'Signal_mu_4p_Bin8_2016', 'Signal_mu_4p_Bin8_2017', 'Signal_mu_3_Bin9_2017', 'Signal_mu_3_Bin9_2016', 'Signal_mu_3_Bin9_2018', 'Signal_mu_4p_Bin3_2018', 'Signal_mu_4p_Bin3_2017', 'Signal_mu_4p_Bin3_2016', 'Signal_mu_3_Bin7_2018', 'Signal_mu_3_Bin7_2017', 'Signal_mu_3_Bin7_2016', 'Signal_mu_3_Bin0_2018', 'Signal_mu_3_Bin0_2016', 'Signal_mu_3_Bin0_2017', 'Signal_e_3_Bin6_2016', 'Signal_e_4p_Bin3_2018', 'Signal_e_4p_Bin3_2016', 'Signal_e_3_Bin1_2017', 'Signal_e_3_Bin1_2016', 'Signal_e_3_Bin1_2018', 'Signal_e_4p_Bin5_2018', 'Signal_e_4p_Bin5_2017', 'Signal_e_4p_Bin5_2016', 'Signal_mu_3_Bin4_2018', 'Signal_e_4p_Bin7_2018', 'Signal_e_4p_Bin1_2018', 'Signal_e_4p_Bin1_2017', 'Signal_e_4p_Bin1_2016', 'Signal_e_4p_Bin7_2017', 'Signal_e_4p_Bin7_2016', 'Signal_mu_3_Bin4_2016', 'Signal_mu_3_Bin4_2017', 'Signal_e_4p_Bin4_2018', 'Signal_e_4p_Bin4_2016', 'Signal_e_4p_Bin4_2017', 'Signal_e_3_Bin2_2016', 'Signal_e_3_Bin2_2017', 'Signal_e_3_Bin2_2018', 'Signal_mu_4p_Bin4_2016', 'Signal_mu_4p_Bin4_2017', 'Signal_mu_4p_Bin4_2018', 'Signal_mu_3_Bin8_2016', 'Signal_mu_3_Bin8_2017', 'Signal_e_4p_Bin2_2016', 'Signal_mu_3_Bin8_2018', 'Signal_e_4p_Bin6_2016', 'Signal_e_4p_Bin6_2017', 'Signal_e_3_Bin4_2016', 'Signal_e_3_Bin4_2017', 'Signal_e_3_Bin4_2018', 'Signal_e_4p_Bin6_2018', 'Signal_mu_3_Bin2_2016', 'Signal_mu_3_Bin2_2017', 'Signal_mu_4p_Bin5_2017', 'Signal_mu_4p_Bin5_2016', 'Signal_mu_4p_Bin2_2016', 'Signal_mu_4p_Bin2_2017', 'Signal_mu_4p_Bin2_2018', 'Signal_mu_4p_Bin7_2017', 'Signal_mu_4p_Bin7_2016', 'Signal_mu_4p_Bin7_2018', 'Signal_e_3_Bin7_2017', 'Signal_e_3_Bin7_2016', 'Signal_e_3_Bin7_2018', 'Signal_mu_3_Bin1_2017', 'Signal_mu_3_Bin3_2018', 'Signal_mu_3_Bin3_2017', 'Signal_mu_3_Bin3_2016', 'Signal_e_4p_Bin9_2017', 'Signal_e_4p_Bin9_2016', 'Signal_e_4p_Bin9_2018', 'Signal_e_3_Bin3_2017', 'Signal_e_3_Bin3_2016', 'Signal_e_3_Bin3_2018', 'Signal_mu_4p_Bin9_2017', 'Signal_e_4p_Bin2_2017', 'Signal_e_3_Bin9_2017', 'Signal_e_3_Bin9_2016', 'Signal_mu_3_Bin5_2018', 'Signal_e_3_Bin8_2018', 'Signal_mu_3_Bin5_2017', 'Signal_mu_3_Bin5_2016', 'Signal_e_3_Bin8_2017', 'Signal_e_3_Bin6_2017', 'Signal_e_4p_Bin3_2017', 'Signal_e_3_Bin5_2018', 'Signal_e_3_Bin5_2017', 'Signal_e_3_Bin5_2016', 'Signal_e_4p_Bin8_2016', 'Signal_e_4p_Bin8_2017', 'Signal_mu_4p_Bin0_2016', 'Signal_mu_4p_Bin0_2017', 'Signal_mu_4p_Bin0_2018', 'Signal_e_4p_Bin0_2016', 'Signal_e_4p_Bin0_2017', 'Signal_e_4p_Bin0_2018', 'Signal_mu_4p_Bin1_2016', 'Signal_e_4p_Bin8_2018', 'Signal_e_4p_Bin2_2018', 'Signal_mu_4p_Bin9_2018', 'Signal_mu_3_Bin2_2018', 'Signal_mu_4p_Bin9_2016', 'Signal_e_3_Bin8_2016', 'Signal_mu_4p_Bin1_2017', 'Signal_mu_4p_Bin1_2018']
+
+    corrStat_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
+    signalStat_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal_%s"
     uncertaintyStatUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in signal_uncertainty_absEta + ["r"]}
     cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "observed", "postFit", "freezeSyst")
     dirDB           = MergingDirDB(cache_dir)
-    corrFitObjStat  =  dirDB.get( corr_key )
-    signalStat_frozen_histos  =  [ dirDB.get( signal_key%year ) for year in years ]
+    corrFitObjStat  =  dirDB.get( corrStat_key )
+    signalStat_frozen_histos  =  [ dirDB.get( signalStat_key%year ) for year in years ]
     uncertaintiesStat_histos   = {}
     for u, k in uncertaintyStatUp_key.iteritems():
         uncertaintiesStat_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signalStat_frozen_histos[i] ) for i,year in enumerate(years)]
-    mcStatStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signalStat_frozen_histos[i] ) for i,year in enumerate(years) ]
+#    mcStatStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signalStat_frozen_histos[i] ) for i,year in enumerate(years) ]
 
 
     reco_variable   = { "absEta_reco":"abs(PhotonGood0_eta)"}
@@ -948,7 +968,7 @@ class observed_absEta_RunII:
     uncertaintiesStat   = {}
     for u, histlist in uncertaintiesStat_histos.iteritems():
         uncertaintiesStat[u] =  merge_x( histlist, reco_thresholds_years )
-    mcStatStat      = merge_x( mcStatStatUp_histos, reco_thresholds_years )
+#    mcStatStat      = merge_x( mcStatStatUp_histos, reco_thresholds_years )
 
 
     fiducial_variable   = {"absEta_fid":"abs(GenPhotonCMSUnfold0_eta)"}
@@ -966,7 +986,7 @@ class observed_absEta_RunII:
     texY     = '#frac{d#sigma}{d|#eta(#gamma)|} [fb] '    
     y_range         = (40, 320) #(0.9, 9000)
 #    y_range_ratio   = (0.84, 1.16)
-    y_range_ratio   = (0.76, 1.24)
+    y_range_ratio   = (0.71, 1.29)
     data_legendText = "Data (137/fb)"
     signal_legendText = "Observed"
 
@@ -1033,13 +1053,13 @@ class observed_absEta_RunII:
         } for u, h in uncertaintiesStat.iteritems()
         ]
     unfolding_signalStat_input_MCStat          = {
-        'name' : "MCStat",
-        'label': "MC stat.",
-        'matrix': "nominal",
-        'ref':  replace_data_error( data ),
-        'up':  add_sigmas(mcStatStat, +1, ref = data),
-        'down':add_sigmas(mcStatStat, -1, ref = data),
-        'color':ROOT.kGray+1,
+#        'name' : "MCStat",
+#        'label': "MC stat.",
+#        'matrix': "nominal",
+#        'ref':  replace_data_error( data ),
+#        'up':  add_sigmas(mcStatStat, +1, ref = data),
+#        'down':add_sigmas(mcStatStat, -1, ref = data),
+#        'color':ROOT.kGray+1,
         }
 
 
@@ -1050,7 +1070,7 @@ class observed_absEta_2016:
     cache_directory = default_cache_directory 
     corr_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
-    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_total"
+    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in uncertainties if "2016" in u or ( not "2017" in u and not "2018" in u )}
     mcStatUp_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
 
@@ -1165,7 +1185,7 @@ class observed_absEta_2017:
     cache_directory = default_cache_directory 
     corr_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
-    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_total"
+    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in uncertainties if "2017" in u or ( not "2016" in u and not "2018" in u )}
     mcStatUp_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
 
@@ -1280,7 +1300,7 @@ class observed_absEta_2018:
     cache_directory = default_cache_directory 
     corr_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
-    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_total"
+    signal_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in uncertainties if not "L1_Prefiring" in u and ("2018" in u or ( not "2017" in u and not "2016" in u ))}
     mcStatUp_key      = "bkgSubtracted_SR3pAbsEtaUnfold_addDYSF_addPtBinnedUnc_SR3AbsEtaUnfold_SR4pAbsEtaUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
 
@@ -1395,7 +1415,7 @@ class observed_dRlg_2016:
     cache_directory = default_cache_directory 
     corr_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
-    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_total"
+    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in uncertainties if "2016" in u or ( not "2017" in u and not "2018" in u )}
     mcStatUp_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
 
@@ -1509,7 +1529,7 @@ class observed_dRlg_2017:
     cache_directory = default_cache_directory 
     corr_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
-    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_total"
+    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in uncertainties if "2017" in u or ( not "2016" in u and not "2018" in u )}
     mcStatUp_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
 
@@ -1625,7 +1645,7 @@ class observed_dRlg_2018:
     cache_directory = default_cache_directory 
     corr_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data"
-    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_total"
+    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in uncertainties if not "L1_Prefiring" in u and ("2018" in u or ( not "2017" in u and not "2016" in u ))}
     mcStatUp_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up"
 
@@ -1740,7 +1760,7 @@ class expected_dRlg_RunII:
     cache_directory = default_cache_directory 
     corr_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_data_%s"
-    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_total_%s"
+    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_signal_%s"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_%s_Up"%u for u in uncertainties}
     mcStatUp_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addMisIDSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF_addPtBinnedUnc_MCStat_Up_%s"
 
@@ -1862,12 +1882,12 @@ class expected_dRlg_RunII:
 
 class observed_dRlg_RunII:
 #  if False:
-    uncertainties = allUncertainties + signal_uncertainty_dRlg
+    uncertainties = allUncertainties + signal_uncertainty_dRlg + ["r"]
     expected        = False
     cache_directory = default_cache_directory 
     corr_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
     data_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_data_%s"
-    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_total_%s"
+    signal_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal_%s"
     uncertaintyUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in uncertainties}
     mcStatUp_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_MCStat_Up_%s"
 
@@ -1886,15 +1906,21 @@ class observed_dRlg_RunII:
         uncertainties_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signal_frozen_histos[i] ) for i,year in enumerate(years)]
     mcStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signal_frozen_histos[i] ) for i,year in enumerate(years) ] 
 
+#    signal_uncertainty_dRlg = ['Signal_mu_3_Bin6_2016', 'Signal_mu_3_Bin6_2017', 'Signal_e_3_Bin6_2017', 'Signal_mu_4p_Bin11_2018', 'Signal_mu_3_Bin6_2018', 'Signal_e_3_Bin9_2018', 'Signal_e_3_Bin6_2018', 'Signal_e_3_Bin0_2016', 'Signal_e_3_Bin0_2017', 'Signal_mu_3_Bin5_2018', 'Signal_e_3_Bin0_2018', 'Signal_mu_4p_Bin5_2017', 'Signal_mu_4p_Bin5_2016', 'Signal_mu_4p_Bin5_2018', 'Signal_mu_3_Bin1_2018', 'Signal_mu_3_Bin1_2017', 'Signal_mu_3_Bin1_2016', 'Signal_mu_4p_Bin6_2016', 'Signal_mu_4p_Bin6_2017', 'Signal_mu_4p_Bin6_2018', 'Signal_e_3_Bin13_2017', 'Signal_e_3_Bin13_2016', 'Signal_e_3_Bin13_2018', 'Signal_mu_4p_Bin8_2018', 'Signal_mu_4p_Bin8_2016', 'Signal_mu_4p_Bin8_2017', 'Signal_e_4p_Bin12_2018', 'Signal_e_4p_Bin12_2016', 'Signal_e_4p_Bin12_2017', 'Signal_e_4p_Bin13_2017', 'Signal_e_4p_Bin13_2016', 'Signal_mu_3_Bin9_2017', 'Signal_mu_3_Bin9_2016', 'Signal_mu_3_Bin13_2016', 'Signal_mu_3_Bin9_2018', 'Signal_e_4p_Bin13_2018', 'Signal_mu_4p_Bin3_2018', 'Signal_mu_4p_Bin3_2017', 'Signal_mu_4p_Bin3_2016', 'Signal_e_3_Bin10_2016', 'Signal_e_3_Bin10_2017', 'Signal_mu_3_Bin7_2018', 'Signal_mu_3_Bin7_2017', 'Signal_mu_3_Bin7_2016', 'Signal_e_3_Bin10_2018', 'Signal_mu_3_Bin0_2018', 'Signal_mu_3_Bin0_2016', 'Signal_mu_3_Bin0_2017', 'Signal_mu_3_Bin2_2018', 'Signal_e_3_Bin6_2016', 'Signal_e_4p_Bin3_2016', 'Signal_e_3_Bin1_2017', 'Signal_e_3_Bin1_2016', 'Signal_e_3_Bin1_2018', 'Signal_e_4p_Bin5_2018', 'Signal_e_4p_Bin5_2017', 'Signal_e_4p_Bin5_2016', 'Signal_mu_3_Bin4_2018', 'Signal_e_4p_Bin7_2018', 'Signal_e_4p_Bin1_2018', 'Signal_e_4p_Bin1_2017', 'Signal_e_4p_Bin1_2016', 'Signal_e_4p_Bin7_2017', 'Signal_mu_3_Bin4_2017', 'Signal_mu_3_Bin4_2016', 'Signal_e_4p_Bin7_2016', 'Signal_e_4p_Bin4_2018', 'Signal_e_4p_Bin4_2016', 'Signal_e_4p_Bin4_2017', 'Signal_mu_4p_Bin10_2018', 'Signal_e_3_Bin2_2016', 'Signal_e_3_Bin2_2017', 'Signal_e_3_Bin2_2018', 'Signal_e_3_Bin12_2016', 'Signal_e_3_Bin12_2018', 'Signal_mu_4p_Bin4_2016', 'Signal_mu_4p_Bin4_2017', 'Signal_mu_4p_Bin4_2018', 'Signal_mu_3_Bin8_2016', 'Signal_mu_3_Bin8_2017', 'Signal_e_4p_Bin2_2016', 'Signal_mu_3_Bin8_2018', 'Signal_e_4p_Bin6_2016', 'Signal_e_4p_Bin6_2017', 'Signal_e_3_Bin4_2016', 'Signal_e_3_Bin4_2017', 'Signal_e_3_Bin4_2018', 'Signal_e_4p_Bin6_2018', 'Signal_mu_3_Bin2_2016', 'Signal_mu_3_Bin2_2017', 'Signal_e_4p_Bin11_2018', 'Signal_e_4p_Bin11_2017', 'Signal_e_4p_Bin11_2016', 'Signal_mu_4p_Bin2_2016', 'Signal_mu_4p_Bin2_2017', 'Signal_mu_4p_Bin2_2018', 'Signal_mu_3_Bin10_2018', 'Signal_mu_3_Bin10_2016', 'Signal_mu_3_Bin10_2017', 'Signal_mu_3_Bin12_2018', 'Signal_mu_4p_Bin7_2017', 'Signal_mu_4p_Bin7_2016', 'Signal_mu_4p_Bin7_2018', 'Signal_mu_3_Bin12_2016', 'Signal_mu_3_Bin12_2017', 'Signal_mu_3_Bin11_2018', 'Signal_e_3_Bin7_2017', 'Signal_e_3_Bin7_2016', 'Signal_mu_4p_Bin10_2017', 'Signal_e_3_Bin7_2018', 'Signal_mu_3_Bin11_2017', 'Signal_mu_3_Bin11_2016', 'Signal_mu_4p_Bin12_2016', 'Signal_mu_4p_Bin12_2017', 'Signal_mu_4p_Bin12_2018', 'Signal_e_3_Bin11_2017', 'Signal_e_3_Bin11_2016', 'Signal_mu_3_Bin3_2018', 'Signal_mu_3_Bin3_2017', 'Signal_mu_3_Bin3_2016', 'Signal_e_3_Bin11_2018', 'Signal_e_4p_Bin9_2017', 'Signal_e_4p_Bin9_2016', 'Signal_e_4p_Bin9_2018', 'Signal_e_3_Bin3_2017', 'Signal_e_3_Bin3_2016', 'Signal_e_4p_Bin10_2018', 'Signal_mu_4p_Bin13_2017', 'Signal_mu_4p_Bin13_2016', 'Signal_mu_4p_Bin13_2018', 'Signal_e_4p_Bin10_2016', 'Signal_e_4p_Bin10_2017', 'Signal_e_3_Bin3_2018', 'Signal_mu_3_Bin13_2017', 'Signal_e_4p_Bin2_2017', 'Signal_e_3_Bin9_2016', 'Signal_mu_4p_Bin11_2017', 'Signal_mu_4p_Bin11_2016', 'Signal_e_3_Bin12_2017', 'Signal_mu_3_Bin5_2017', 'Signal_mu_3_Bin5_2016', 'Signal_e_3_Bin9_2017', 'Signal_e_3_Bin8_2017', 'Signal_mu_3_Bin13_2018', 'Signal_e_4p_Bin3_2018', 'Signal_e_4p_Bin3_2017', 'Signal_e_3_Bin5_2018', 'Signal_e_3_Bin5_2017', 'Signal_e_3_Bin5_2016', 'Signal_e_4p_Bin8_2016', 'Signal_e_4p_Bin8_2017', 'Signal_mu_4p_Bin0_2016', 'Signal_mu_4p_Bin0_2017', 'Signal_mu_4p_Bin0_2018', 'Signal_e_4p_Bin0_2016', 'Signal_e_4p_Bin0_2017', 'Signal_e_4p_Bin0_2018', 'Signal_e_4p_Bin8_2018', 'Signal_e_4p_Bin2_2018', 'Signal_mu_4p_Bin9_2018', 'Signal_mu_4p_Bin9_2017', 'Signal_mu_4p_Bin9_2016', 'Signal_mu_4p_Bin10_2016', 'Signal_e_3_Bin8_2018', 'Signal_e_3_Bin8_2016', 'Signal_mu_4p_Bin1_2017', 'Signal_mu_4p_Bin1_2016', 'Signal_mu_4p_Bin1_2018']
+#    signal_uncertainty_dRlg = ['Signal_mu_3_Bin6_2016', 'Signal_mu_3_Bin6_2017', 'Signal_e_3_Bin6_2017', 'Signal_mu_4p_Bin11_2018', 'Signal_mu_3_Bin6_2018', 'Signal_e_3_Bin9_2018', 'Signal_e_3_Bin6_2018', 'Signal_e_3_Bin0_2016', 'Signal_e_3_Bin0_2017', 'Signal_mu_3_Bin5_2018', 'Signal_e_3_Bin0_2018', 'Signal_mu_4p_Bin5_2017', 'Signal_mu_4p_Bin5_2016', 'Signal_mu_4p_Bin5_2018', 'Signal_mu_3_Bin1_2018', 'Signal_mu_3_Bin1_2017', 'Signal_mu_3_Bin1_2016', 'Signal_mu_4p_Bin6_2016', 'Signal_mu_4p_Bin6_2017', 'Signal_mu_4p_Bin6_2018', 'Signal_e_3_Bin13_2017', 'Signal_e_3_Bin13_2016', 'Signal_e_3_Bin13_2018', 'Signal_mu_4p_Bin8_2018', 'Signal_mu_4p_Bin8_2016', 'Signal_mu_4p_Bin8_2017', 'Signal_e_4p_Bin12_2018', 'Signal_e_4p_Bin12_2016', 'Signal_e_4p_Bin12_2017', 'Signal_e_4p_Bin13_2017', 'Signal_e_4p_Bin13_2016', 'Signal_mu_3_Bin9_2017', 'Signal_mu_3_Bin9_2016', 'Signal_mu_3_Bin13_2016', 'Signal_mu_3_Bin9_2018', 'Signal_e_4p_Bin13_2018', 'Signal_mu_4p_Bin3_2018', 'Signal_mu_4p_Bin3_2017', 'Signal_mu_4p_Bin3_2016', 'Signal_e_3_Bin10_2016', 'Signal_e_3_Bin10_2017', 'Signal_mu_3_Bin7_2018', 'Signal_mu_3_Bin7_2017', 'Signal_mu_3_Bin7_2016', 'Signal_e_3_Bin10_2018', 'Signal_mu_3_Bin0_2018', 'Signal_mu_3_Bin0_2016', 'Signal_mu_3_Bin0_2017', 'Signal_mu_3_Bin2_2018', 'Signal_e_3_Bin6_2016', 'Signal_e_4p_Bin3_2016', 'Signal_e_3_Bin1_2017', 'Signal_e_3_Bin1_2016', 'Signal_e_3_Bin1_2018', 'Signal_e_4p_Bin5_2018', 'Signal_e_4p_Bin5_2017', 'Signal_e_4p_Bin5_2016', 'Signal_mu_3_Bin4_2018', 'Signal_e_4p_Bin7_2018', 'Signal_e_4p_Bin1_2018', 'Signal_e_4p_Bin1_2017', 'Signal_e_4p_Bin1_2016', 'Signal_e_4p_Bin7_2017', 'Signal_mu_3_Bin4_2017', 'Signal_mu_3_Bin4_2016', 'Signal_e_4p_Bin7_2016', 'Signal_e_4p_Bin4_2018', 'Signal_e_4p_Bin4_2016', 'Signal_e_4p_Bin4_2017', 'Signal_mu_4p_Bin10_2018', 'Signal_e_3_Bin2_2016', 'Signal_e_3_Bin2_2017', 'Signal_e_3_Bin2_2018', 'Signal_e_3_Bin12_2016', 'Signal_e_3_Bin12_2018', 'Signal_mu_4p_Bin4_2016', 'Signal_mu_4p_Bin4_2017', 'Signal_mu_4p_Bin4_2018', 'Signal_mu_3_Bin8_2016', 'Signal_mu_3_Bin8_2017', 'Signal_e_4p_Bin2_2016', 'Signal_mu_3_Bin8_2018', 'Signal_e_4p_Bin6_2016', 'Signal_e_4p_Bin6_2017', 'Signal_e_3_Bin4_2016', 'Signal_e_3_Bin4_2017', 'Signal_e_3_Bin4_2018', 'Signal_e_4p_Bin6_2018', 'Signal_mu_3_Bin2_2016', 'Signal_mu_3_Bin2_2017', 'Signal_e_4p_Bin11_2018', 'Signal_e_4p_Bin11_2017', 'Signal_e_4p_Bin11_2016', 'Signal_mu_4p_Bin2_2016', 'Signal_mu_4p_Bin2_2017', 'Signal_mu_4p_Bin2_2018', 'Signal_mu_3_Bin10_2018', 'Signal_mu_3_Bin10_2016', 'Signal_mu_3_Bin10_2017', 'Signal_mu_3_Bin12_2018', 'Signal_mu_4p_Bin7_2017', 'Signal_mu_4p_Bin7_2016', 'Signal_mu_4p_Bin7_2018', 'Signal_mu_3_Bin12_2016', 'Signal_mu_3_Bin12_2017', 'Signal_mu_3_Bin11_2018', 'Signal_e_3_Bin7_2017', 'Signal_e_3_Bin7_2016', 'Signal_mu_4p_Bin10_2017', 'Signal_e_3_Bin7_2018', 'Signal_mu_3_Bin11_2017', 'Signal_mu_3_Bin11_2016', 'Signal_mu_4p_Bin12_2016', 'Signal_mu_4p_Bin12_2017', 'Signal_mu_4p_Bin12_2018', 'Signal_e_3_Bin11_2017', 'Signal_e_3_Bin11_2016', 'Signal_mu_3_Bin3_2018', 'Signal_mu_3_Bin3_2017', 'Signal_mu_3_Bin3_2016', 'Signal_e_3_Bin11_2018', 'Signal_e_4p_Bin9_2017', 'Signal_e_4p_Bin9_2016', 'Signal_e_4p_Bin9_2018', 'Signal_e_3_Bin3_2017', 'Signal_e_3_Bin3_2016', 'Signal_e_4p_Bin10_2018', 'Signal_mu_4p_Bin13_2017', 'Signal_mu_4p_Bin13_2016', 'Signal_mu_4p_Bin13_2018', 'Signal_e_4p_Bin10_2016', 'Signal_e_4p_Bin10_2017', 'Signal_e_3_Bin3_2018', 'Signal_mu_3_Bin13_2017', 'Signal_e_4p_Bin2_2017', 'Signal_e_3_Bin9_2016', 'Signal_mu_4p_Bin11_2017', 'Signal_mu_4p_Bin11_2016', 'Signal_e_3_Bin12_2017', 'Signal_mu_3_Bin5_2017', 'Signal_mu_3_Bin5_2016', 'Signal_e_3_Bin9_2017', 'Signal_e_3_Bin8_2017', 'Signal_mu_3_Bin13_2018', 'Signal_e_4p_Bin3_2018', 'Signal_e_4p_Bin3_2017', 'Signal_e_3_Bin5_2018', 'Signal_e_3_Bin5_2017', 'Signal_e_3_Bin5_2016', 'Signal_e_4p_Bin8_2016', 'Signal_e_4p_Bin8_2017', 'Signal_mu_4p_Bin0_2016', 'Signal_mu_4p_Bin0_2017', 'Signal_mu_4p_Bin0_2018', 'Signal_e_4p_Bin8_2018', 'Signal_e_4p_Bin2_2018', 'Signal_mu_4p_Bin9_2018', 'Signal_mu_4p_Bin9_2017', 'Signal_mu_4p_Bin9_2016', 'Signal_mu_4p_Bin10_2016', 'Signal_e_3_Bin8_2018', 'Signal_e_3_Bin8_2016', 'Signal_mu_4p_Bin1_2017', 'Signal_mu_4p_Bin1_2016', 'Signal_mu_4p_Bin1_2018']
+#    signal_uncertainty_dRlg += ['r']
+
+    corrStat_key        = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_correlationFitObject"
+    signalStat_key      = "bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_signal_%s"
     uncertaintyStatUp_key = {u:"bkgSubtracted_SR3pdRUnfold_addDYSF_addPtBinnedUnc_SR3dRUnfold_SR4pdRUnfold_VG3_VG4p_misDY3_misDY4p_addDYSF_addPtBinnedUnc_%s_Up"%u for u in signal_uncertainty_dRlg + ["r"]}
     cache_dir       = os.path.join(cache_directory, "unfolding", "combined", "bkgSubstracted", "observed", "postFit", "freezeSyst")
     dirDB           = MergingDirDB(cache_dir)
-    corrFitObjStat  =  dirDB.get( corr_key )
-    signalStat_frozen_histos  =  [ dirDB.get( signal_key%year ) for year in years ]
+    corrFitObjStat  =  dirDB.get( corrStat_key )
+    signalStat_frozen_histos  =  [ dirDB.get( signalStat_key%year ) for year in years ]
     uncertaintiesStat_histos   = {}
     for u, k in uncertaintyStatUp_key.iteritems():
         uncertaintiesStat_histos[u] = [add_error_from_Upvariation( dirDB.get( k+"_"+year ), signalStat_frozen_histos[i] ) for i,year in enumerate(years)]
-    mcStatStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signalStat_frozen_histos[i] ) for i,year in enumerate(years) ]
+#    mcStatStatUp_histos   =  [ add_error_from_Upvariation( dirDB.get( mcStatUp_key%year ), signalStat_frozen_histos[i] ) for i,year in enumerate(years) ]
 
 
     reco_variable   = { "dRlg_reco":"sqrt((PhotonGood0_eta-LeptonTight0_eta)**2+acos(cos(PhotonGood0_phi-LeptonTight0_phi))**2)"}
@@ -1924,13 +1950,14 @@ class observed_dRlg_RunII:
     data        = merge_x( data_histos, reco_thresholds_years )
     signal      = merge_x( signal_histos, reco_thresholds_years )
     mcStat      = merge_x( mcStatUp_histos, reco_thresholds_years )
-    mcStatStat  = merge_x( mcStatStatUp_histos, reco_thresholds_years )
+#    mcStatStat  = merge_x( mcStatStatUp_histos, reco_thresholds_years )
     uncertainties   = {}
     for u, histlist in uncertainties_histos.iteritems():
         uncertainties[u] = merge_x( histlist, reco_thresholds_years )
 
     uncertaintiesStat   = {}
     for u, histlist in uncertaintiesStat_histos.iteritems():
+        print u, histlist
         uncertaintiesStat[u] = merge_x( histlist, reco_thresholds_years )
 
 
@@ -1948,7 +1975,7 @@ class observed_dRlg_RunII:
     tex_pur  = "#DeltaR(l, #gamma)"
     texY     = '#frac{d#sigma}{d#DeltaR(l, #gamma)} [fb]'    
     y_range         = (40, 280) #(0.9, 9000)
-    y_range_ratio   = (0.76, 1.24)
+    y_range_ratio   = (0.71, 1.29)
 #    y_range_ratio   = (0.84, 1.16)
     data_legendText = "Data (137/fb)"
     signal_legendText =  "Observed"
@@ -2017,13 +2044,13 @@ class observed_dRlg_RunII:
         } for u, h in uncertaintiesStat.iteritems()
         ]
     unfolding_signalStat_input_MCStat          = {
-        'name' : "MCStat",
-        'label': "MC stat.",
-        'matrix': "nominal",
-        'ref':  replace_data_error( data ),
-        'up':  add_sigmas(mcStatStat, +1, ref = data),
-        'down':add_sigmas(mcStatStat, -1, ref = data),
-        'color':ROOT.kGray+1,
+#        'name' : "MCStat",
+#        'label': "MC stat.",
+#        'matrix': "nominal",
+#        'ref':  replace_data_error( data ),
+#        'up':  add_sigmas(mcStatStat, +1, ref = data),
+#        'down':add_sigmas(mcStatStat, -1, ref = data),
+#        'color':ROOT.kGray+1,
         }
 
 
