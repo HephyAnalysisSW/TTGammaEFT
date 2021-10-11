@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, copy, time, sys
+import os, copy, time, sys, array
 import ROOT
 from shutil                              import copyfile
 from math                                import sqrt
@@ -71,11 +71,17 @@ argParser.add_argument('--notNormalized',             action='store_true',      
 argParser.add_argument('--splitScale',             action='store_true',                                                        help="split scale uncertainties in sources")
 argParser.add_argument('--uncorrVG',              action='store_true',                                                        help="uncorrelate VGamma unc?")
 argParser.add_argument('--splitMisIDExt',              action='store_true',                                                        help="uncorrelate VGamma unc?")
+argParser.add_argument( "--rSR",               action="store",      default="None",   type=str, choices=["3e","4e","3mu","4mu","4","3","e","mu"],                            help="which poi to measure?" )
+argParser.add_argument('--stressTest',               action='store',      default=None, type=float,                                   help='scale each bin by factor')
 args=argParser.parse_args()
 
 if args.year != "RunII": args.year = int(args.year)
 # linearity test with expected observation
 if args.linTest != 1: args.expected = True
+if args.rSR == "None": args.rSR = None
+if args.stressTest: args.expected = True
+
+print args.stressTest
 
 #if args.addPtBinnedUnc:
 #    args.freezeR = True
@@ -119,24 +125,100 @@ if not args.checkOnly:
     default_photon_setup.addon      = ""
     default_photon_setup.regions    = inclRegionsTTG if args.inclRegion else regionsTTG
 
+####
+# twg shape uncertainty quick fix
+if not args.inclRegion:
+    if "SR3PtUnfoldEFT" in args.useRegions or "SR4pPtUnfoldEFT" in args.useRegions or "SR3pPtUnfoldEFT" in args.useRegions:
+        tWGShapeUnc_3  = [0.439581733456, 0.354617671855, 0.257078591153, 0.268122213987, 0.190350851776, 0.205638535901, 0.192334553681, 0.184320952984, 0.0400545918613, 0.0, 0.14685224931, 0.0210921987464]
+        tWGShapeUnc_4p = [0.24669670248, 0.301800190001, 0.303118689155, 0.279609556677, 0.161340017909, 0.152815495999, 0.0547463201424, 0.202569944251, 0.0199127520708, 0.0346975809519, 0.0, 0.0610083960315]
+
+    elif "SR3AbsEtaUnfold" in args.useRegions or "SR4pAbsEtaUnfold" in args.useRegions or "SR3pAbsEtaUnfold" in args.useRegions:
+        tWGShapeUnc_3  = [0.0714365293745, 0.0, 0.0823530268196, 0.0352681772741, 0.027657624468, 0.0798066666639, 0.207121416149, 0.110815668338, 0.226117004449, 0.344239174721]
+        tWGShapeUnc_4p = [0.0479064769385, 0.0, 0.0111336695199, 0.0273613489743, 0.0437886646722, 0.131445814225, 0.115118280069, 0.155406341515, 0.188862129038, 0.268537121774]
+
+    elif "SR3dRUnfold" in args.useRegions or "SR4pdRUnfold" in args.useRegions or "SR3pdRUnfold" in args.useRegions:
+        tWGShapeUnc_3  = [0.190921704729, 0.0853991345588, 0.0767079151007, 0.162841553502, 0.111212500572, 0.0458884718907, 0.0, 0.129195228072, 0.0270541104113, 0.165363611221, 0.112319171042, 0.0909687152373, 0.119925448992, 0.185800244205]
+        tWGShapeUnc_4p = [0.0872871490046, 0.130970842541, 0.0893645054324, 0.163245516094, 0.173624230396, 0.136877154367, 0.121703395791, 0.0298506251429, 0.110092518595, 0.0822793133138, 0.0350850793694, 0.0917164317827, 0.0, 0.207767987549]
+
+#    from  TTGammaEFT.Samples.nanoTuples_tWG_RunII_postProcessed import ST_tW
+#    from  TTGammaEFT.Samples.genTuples_TTGamma_tWG_EFT_postProcessed  import tWG_2WC_ref
+#    from Analysis.Tools.WeightInfo          import WeightInfo
+
+#    w = WeightInfo( tWG_2WC_ref.reweight_pkl )
+#    w.set_order( 2 )
+#    variables = w.variables
+#    eftweightString = "(%s)*ref_weight"%(w.get_weight_string())
+#    tWG_2WC_ref.weight = "%s*(137.2)"%(eftweightString)
+#    ST_tW.weight = "weight*(35.92*(year==2016)+41.53*(year==2017)+59.74*(year==2018))"
+
+#    if "SR3PtUnfoldEFT" in args.useRegions or "SR4pPtUnfoldEFT" in args.useRegions:
+#        genVar = "GenPhotonCMSUnfold0_pt"
+#        fiducial_thresholds = [20, 35, 50, 65, 80, 100, 120, 140, 160, 200, 260, 320, 500]
+#    elif "SR3AbsEtaUnfold" in args.useRegions or "SR4pAbsEtaUnfold" in args.useRegions:
+#        genVar = "abs(GenPhotonCMSUnfold0_eta)"
+#        fiducial_thresholds = [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1.05, 1.2, 1.35, 1.45]
+#    elif "SR3dRUnfold" in args.useRegions or "SR4pdRUnfold" in args.useRegions:
+#        genVar = "sqrt((GenPhotonCMSUnfold0_eta-GenLeptonCMSUnfold0_eta)**2+acos(cos(GenPhotonCMSUnfold0_phi-GenLeptonCMSUnfold0_phi))**2)"
+#        fiducial_thresholds = [0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 4 ]
+#    sel = "nGenLepCMS1-nGenJetCMS3-nGenBTagCMS1p-nGenPhotonCMS1"
+#    gen_sel = cutInterpreter.cutString(sel)
+#    tWG_2WC_ref.selection = gen_sel
+#    ST_tW.selection = gen_sel +"&&(isTWG>0)"
+
+#    tWG_2WC_ref.hist3 = tWG_2WC_ref.get1DHistoFromDraw( genVar, binning=array.array('d', fiducial_thresholds), selectionString=tWG_2WC_ref.selection, weightString=tWG_2WC_ref.weight, binningIsExplicit=True)
+#    ST_tW.hist3 = ST_tW.get1DHistoFromDraw( genVar, binning=array.array('d', fiducial_thresholds), selectionString=ST_tW.selection, weightString=ST_tW.weight, binningIsExplicit=True)
+#    tWGShapeUnc_3 = ST_tW.hist3.Clone()
+#    tWGShapeUnc_3.Scale(0)
+
+#    tWG_2WC_ref.hist3.Scale(1./tWG_2WC_ref.hist3.Integral())
+#    ST_tW.hist3.Scale(1./ST_tW.hist3.Integral())
+#    ST_tW.hist3.Divide(tWG_2WC_ref.hist3)
+
+#    for i in range(1, ST_tW.hist3.GetNbinsX()+1):
+#        tWGShapeUnc_3.SetBinContent( i, ST_tW.hist3.GetBinContent(i) - ST_tW.hist3.GetMinimum() )
+#        print tWGShapeUnc_3.GetBinContent(i)
+
+#    sel = "nGenLepCMS1-nGenJetCMS4p-nGenBTagCMS1p-nGenPhotonCMS1"
+#    gen_sel = cutInterpreter.cutString(sel)
+#    tWG_2WC_ref.selection = gen_sel
+#    ST_tW.selection = gen_sel +"&&(isTWG>0)"
+
+#    tWG_2WC_ref.hist4p = tWG_2WC_ref.get1DHistoFromDraw( genVar, binning=array.array('d', fiducial_thresholds), selectionString=tWG_2WC_ref.selection, weightString=tWG_2WC_ref.weight, binningIsExplicit=True)
+#    ST_tW.hist4p = ST_tW.get1DHistoFromDraw( genVar, binning=array.array('d', fiducial_thresholds), selectionString=ST_tW.selection, weightString=ST_tW.weight, binningIsExplicit=True)
+#    tWGShapeUnc_4p = ST_tW.hist3.Clone()
+#    tWGShapeUnc_4p.Scale(0)
+
+#    tWG_2WC_ref.hist4p.Scale(1./tWG_2WC_ref.hist4p.Integral())
+#    ST_tW.hist4p.Scale(1./ST_tW.hist4p.Integral())
+#    ST_tW.hist4p.Divide(tWG_2WC_ref.hist4p)
+
+#    for i in range(1, ST_tW.hist4p.GetNbinsX()+1):
+#        tWGShapeUnc_4p.SetBinContent(i, ST_tW.hist4p.GetBinContent(i) - ST_tW.hist4p.GetMinimum() )
+#        print tWGShapeUnc_4p.GetBinContent(i)
+
+#sys.exit()
+####
+
+
+
 # Define SR, CR, channels and regions
 with0pCR = False
 with1pCR = False
 withSR = any( [x.startswith("SR") for x in args.useRegions] )
 setups = []
 
-if args.parameters and args.withbkg:
-    splitProcessDict = {}
-    splitProcessDict["ST_tch_gen"]    = { "process":["ST_tch_gen"] }
+#if args.parameters and args.withbkg:
+splitProcessDict = {}
+splitProcessDict["ST_tch_gen"]    = { "process":["ST_tch_gen"] }
 #    splitProcessDict["ST_tch_had"]    = { "process":["ST_tch_had"] }
 #    splitProcessDict["ST_tch_misID"]  = { "process":["ST_tch_misID"] }
-    splitProcessDict["ST_sch_gen"]    = { "process":["ST_sch_gen"] }
+splitProcessDict["ST_sch_gen"]    = { "process":["ST_sch_gen"] }
 #    splitProcessDict["ST_sch_had"]    = { "process":["ST_sch_had"] }
 #    splitProcessDict["ST_sch_misID"]  = { "process":["ST_sch_misID"] }
-    splitProcessDict["ST_tW_gen"]     = { "process":["ST_tW_gen"] }
+splitProcessDict["ST_tW_gen"]     = { "process":["ST_tW_gen"] }
 #    splitProcessDict["ST_tW_had"]     = { "process":["ST_tW_had"] }
 #    splitProcessDict["ST_tW_misID"]   = { "process":["ST_tW_misID"] }
-    splitProcessDict["TT_pow_gen"]    = { "process":["TT_pow_gen"] }
+splitProcessDict["TT_pow_gen"]    = { "process":["TT_pow_gen"] }
 #    splitProcessDict["TT_pow_had"]    = { "process":["TT_pow_had"] }
 #    splitProcessDict["TT_pow_misID"]  = { "process":["TT_pow_misID"] }
 
@@ -171,7 +253,8 @@ for key, val in allRegions.items():
     locals()["setup"+key].processes    = estimators.constructProcessDict( processDict=val["processes"] ) if "processes" in val else default_setup.processes if val["noPhotonCR"] else default_photon_setup.processes
     locals()["setup"+key].processes["Data"] = locals()["setup"+key].data
     locals()["setup"+key].addon      = key
-    if args.parameters and args.withbkg: locals()["setup"+key].split_processes = estimators.constructProcessDict( splitProcessDict )  
+#    if args.parameters and args.withbkg: 
+    locals()["setup"+key].split_processes = estimators.constructProcessDict( splitProcessDict )  
 
 # sort regions accoring to ordering
 for reg in limitOrdering:
@@ -205,6 +288,8 @@ if args.notNormalized:   regionNames.append("notNormalized")
 if args.uncorrVG:   regionNames.append("uncorrVG")
 if args.splitScale:   regionNames.append("splitScale")
 if args.splitMisIDExt:   regionNames.append("splitMisIDExt")
+if args.rSR:   regionNames.append("rSR"+args.rSR)
+if args.stressTest:   regionNames.append("ST"+str(args.stressTest).replace(".",""))
 
 vgCorr = ""
 if args.uncorrVG:
@@ -366,8 +451,8 @@ def wrapper():
         shapeString     = "lnN" if args.useTxt else "shape"
 
 
-        if args.parameters:
-            c.addUncertainty( "EFT_nJet", shapeString)
+#        if args.parameters:
+#            c.addUncertainty( "EFT_nJet", shapeString)
 
         # experimental
         c.addUncertainty( "PU",            shapeString) #correlated
@@ -394,9 +479,10 @@ def wrapper():
 #            # theory (PDF, scale, ISR)
 
             c.addUncertainty( "Tune",          shapeString)
-            c.addUncertainty( "erdOn",         shapeString)
-            c.addUncertainty( "GluonMove",    shapeString)
-            c.addUncertainty( "QCDbased",     shapeString)
+#            c.addUncertainty( "erdOn",         shapeString)
+#            c.addUncertainty( "GluonMove",    shapeString)
+#            c.addUncertainty( "QCDbased",     shapeString)
+            c.addUncertainty( "Color",     shapeString)
             if args.splitScale:
                 for s in scaleSources:
                     c.addUncertainty( "Scale_"+s,         shapeString)
@@ -407,6 +493,15 @@ def wrapper():
             c.addUncertainty( "ISR",            shapeString)
             c.addUncertainty( "FSR",            shapeString)
 
+        if args.rSR:
+            c.addUncertainty( "SignalPOI_e",  shapeString)
+            c.addUncertainty( "SignalPOI_mu",  shapeString)
+            c.addUncertainty( "SignalPOI_3",  shapeString)
+            c.addUncertainty( "SignalPOI_4",  shapeString)
+            c.addUncertainty( "SignalPOI_3e",  shapeString)
+            c.addUncertainty( "SignalPOI_4e",  shapeString)
+            c.addUncertainty( "SignalPOI_3mu",  shapeString)
+            c.addUncertainty( "SignalPOI_4mu",  shapeString)
 ##        if args.year == 2016:
 ##            c.addUncertainty( "photon_ID_AltSig_2016",      shapeString)
 
@@ -506,6 +601,11 @@ def wrapper():
         default_Other_unc    = 0.30
         c.addUncertainty( "Other_normalization",      shapeString )
 
+        default_twg_unc    = 0.40
+        c.addUncertainty( "tWgamma_normalization",      shapeString )
+        if not args.inclRegion:
+            c.addUncertainty( "tWgamma_shape",      shapeString )
+
         default_misIDext_unc    = 0.1
         if not args.splitMisIDExt:
             c.addUncertainty( "MisID_extrapolation_%i"%args.year,      shapeString )
@@ -559,20 +659,21 @@ def wrapper():
                 if pName == "Data": continue
                 for e in pList:
                     e.initCache( setup.defaultCacheDir() )
-                    if args.parameters and args.withbkg:
-                        setup.split_processes['ST_tch_gen'][0].initCache( setup.defaultCacheDir() )
+#                    if args.parameters and args.withbkg:
+                    setup.split_processes['ST_tch_gen'][0].initCache( setup.defaultCacheDir() )
 #                        setup.split_processes['ST_tch_had'][0].initCache( setup.defaultCacheDir() )
 #                        setup.split_processes['ST_tch_misID'][0].initCache( setup.defaultCacheDir() )
-                        setup.split_processes['ST_sch_gen'][0].initCache( setup.defaultCacheDir() )
+                    setup.split_processes['ST_sch_gen'][0].initCache( setup.defaultCacheDir() )
 #                        setup.split_processes['ST_sch_had'][0].initCache( setup.defaultCacheDir() )
 #                        setup.split_processes['ST_sch_misID'][0].initCache( setup.defaultCacheDir() )
-                        setup.split_processes['ST_tW_gen'][0].initCache( setup.defaultCacheDir() )
+                    setup.split_processes['ST_tW_gen'][0].initCache( setup.defaultCacheDir() )
 #                        setup.split_processes['ST_tW_had'][0].initCache( setup.defaultCacheDir() )
 #                        setup.split_processes['ST_tW_misID'][0].initCache( setup.defaultCacheDir() )
-                        setup.split_processes['TT_pow_gen'][0].initCache( setup.defaultCacheDir() )
+                    setup.split_processes['TT_pow_gen'][0].initCache( setup.defaultCacheDir() )
 #                        setup.split_processes['TT_pow_had'][0].initCache( setup.defaultCacheDir() )
 #                        setup.split_processes['TT_pow_misID'][0].initCache( setup.defaultCacheDir() )
-            for r in setup.regions:
+            for i_r, r in enumerate(setup.regions):
+                if setup.signalregion and i_r > 0: continue
                 for i_ch, channel in enumerate(setup.channels):
                     if (args.useChannels and channel not in args.useChannels and setup.signalregion): continue
                     if args.parameters:
@@ -668,7 +769,12 @@ def wrapper():
                         expected = u_float(0.,0.)
 
                         for e in pList:
-                            exp_yield = e.cachedEstimate( r, channel, setup )
+                            if setup.signalregion:
+                                exp_yield = e.cachedEstimate( r, channel, setup )
+                                for i_r2, r2 in enumerate(setup.regions[1:]):
+                                    exp_yield += e.cachedEstimate( r2, channel, setup )
+                            else:
+                                exp_yield = e.cachedEstimate( r, channel, setup )
 
                             # no MC stat uncertainty for data-driven methods
                             if e.name.count( "QCD" ):
@@ -687,6 +793,7 @@ def wrapper():
                                 exp_yield *= WJetsSF_val[args.year].val
                                 logger.info( "Scaling WJets background %s by %f"%(e.name,WJetsSF_val[args.year].val) )
                             if e.name.count( "DY" ) and args.addDYSF:
+#                                exp_yield *= DYSF_val["RunII"].val
 #                                exp_yield *= DYSF_val[args.year].val
 #                                logger.info( "Scaling DY background %s by %f"%(e.name,DYSF_val[args.year].val) )
 
@@ -733,11 +840,13 @@ def wrapper():
                             
                             total_exp_bkg += exp_yield.val
 
+                            if args.stressTest and signal and setup.signalregion:
+                                # scale the expected observation with some additional signal
+                                pt, _ = r.vals["PhotonGood0_pt" if "PhotonGood0_pt" in r.vals.keys() else sigVar]
+                                print "pppppppppppppppppppppppppppppt", i_r
+                                print pt
+                                total_exp_bkg += exp_yield.val*args.stressTest*(pt-20)
 
-
-
-
-                            
                             if args.parameters:
                                 # reweight the signal(TTGamma) with the calculated ratio
                                 if e.name== 'TTG_gen': exp_yield *= ratio_TTG
@@ -770,10 +879,11 @@ def wrapper():
                         for j in jesTags:
                             locals()["jec_%s"%j] = 0
 
-                        fakestat, topPt, tune, erdOn, gluonMove, qcdBased, pu, mer, eer, ees, jer, sfb, sfl, trigger_e, trigger_mu, lepSF_e, lepSF_muExt, lepSF_muStat, lepSF_muSyst, lepTrSF, phFakeSF, phMisSF, phSF, phSFAltSig, eVetoSF, pfSF = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                        fakestat, topPt, tune, color, erdOn, gluonMove, qcdBased, pu, mer, eer, ees, jer, sfb, sfl, trigger_e, trigger_mu, lepSF_e, lepSF_muExt, lepSF_muStat, lepSF_muSyst, lepTrSF, phFakeSF, phMisSF, phSF, phSFAltSig, eVetoSF, pfSF = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                         isr, fsr, ps, scale, pdf, isr = 0, 0, 0, 0, 0, 0
+                        sr3, sr4, sre, srmu, sr3e, sr3mu, sr4e, sr4mu = 0, 0, 0, 0, 0, 0, 0, 0
                         wjets4p, wg4p, qcd0b4p, qcd1b4p= 0, 0, 0, 0
-                        dyGenUnc, ttGenUnc, vgGenUnc, wjetsGenUnc, otherGenUnc, lowSieieUnc, highSieieUnc, misIDPtUnc = 0, 0, 0, 0, 0, 0, 0, 0
+                        dyGenUnc, ttGenUnc, vgGenUnc, wjetsGenUnc, otherGenUnc, lowSieieUnc, highSieieUnc, misIDPtUnc, twgUnc, twgShape = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                         gluon, hadFakes17Unc, hadFakesUnc, wg, zg, misID4p, dy4p, zg4p, misIDUnc, qcdUnc, qcd0bUnc, qcd1bUnc, vgUnc, wgUnc, zgUnc, dyUnc, misExUnc, ttUnc, wjetsUnc, other0pUnc, otherUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
                         scaleSourceUnc = {}
@@ -928,7 +1038,26 @@ def wrapper():
 
 #                                if not args.inclRegion and (e.name.count( "WG" ) or e.name.count( "ZG" )):
 
-
+                                if args.rSR and args.inclRegion and signal and setup.signalregion:
+                                    if args.rSR in ["3e", "3mu", "4e", "4mu"]:
+                                        if "SR3" in setup.name and channel == "e" and args.rSR != "3e":
+                                            sr3e += y_scale * 1
+                                        if "SR3" in setup.name and channel == "mu" and args.rSR != "3mu":
+                                            sr3mu += y_scale * 1
+                                        if "SR4p" in setup.name and channel == "e" and args.rSR != "4e":
+                                            sr4e += y_scale * 1
+                                        if "SR4p" in setup.name and channel == "mu" and args.rSR != "4mu":
+                                            sr4mu += y_scale * 1
+                                    if args.rSR in ["e", "mu"]:
+                                        if channel == "e" and args.rSR != "e":
+                                            sre += y_scale * 1
+                                        if channel == "mu" and args.rSR != "mu":
+                                            srmu += y_scale * 1
+                                    if args.rSR in ["3", "4"]:
+                                        if "SR3" in setup.name and args.rSR != "3":
+                                            sr3 += y_scale * 1
+                                        if "SR4" in setup.name and args.rSR != "4":
+                                            sr4 += y_scale * 1
 
                                 if (e.name.count( "WG" ) or e.name.count( "ZG" )) and withSR and not "VGi3" in args.useRegions and not "misDYi3" in args.useRegions:
                                     if ("PhotonGood0_pt" in r.vals.keys() or "PhotonNoChgIsoNoSieie0_pt" in r.vals.keys()):
@@ -1036,6 +1165,19 @@ def wrapper():
                                 if e.name.count( "other" ):
                                     otherUnc += y_scale * default_Other_unc
 
+                                if e.name.count( "Top_gen" ) and setup.signalregion and e.expYield.val:
+                                    # fraction of tW in tt/t (gen)
+                                    tW_gen  = setup.split_processes['ST_tW_gen'][0].cachedEstimate(r,channel,setup).val
+                                    tW_ratio = tW_gen / e.expYield.val
+                                    twgUnc += y_scale * default_twg_unc * tW_ratio
+                                    if not args.inclRegion:
+                                        if "4p" in setup.name:
+                                            twgShape += y_scale * tW_ratio * tWGShapeUnc_4p[i_r]
+                                        elif "3p" in setup.name:
+                                            twgShape += y_scale * tW_ratio * tWGShapeUnc_3[i_r]  * ratio["3"]
+                                            twgShape += y_scale * tW_ratio * tWGShapeUnc_4p[i_r] * ratio["4p"]
+                                        elif "3" in setup.name:
+                                            twgShape += y_scale * tW_ratio * tWGShapeUnc_3[i_r]
 
                                 if e.name.count( "WG" ):
                                     wg += y_scale * default_WG_unc
@@ -1069,6 +1211,7 @@ def wrapper():
                                   for setupKey, stp in allSetups.iteritems():
                                     if signal and not "had" in e.name and not newPOI_input and not args.skipTuneUnc and setup.signalregion:
                                         tune      += y_scale * e.TuneSystematic(    r_noM3, ch, stp ).val * ratio[setupKey+ch]
+                                        color     += y_scale * max([e.ErdOnSystematic(   r_noM3, ch, stp ).val,e.QCDbasedSystematic(   r_noM3, ch, stp ).val,e.GluonMoveSystematic(   r_noM3, ch, stp ).val]) * ratio[setupKey+ch]
                                         erdOn     += y_scale * e.ErdOnSystematic(   r_noM3, ch, stp ).val * ratio[setupKey+ch]
                                         qcdBased  += y_scale * e.QCDbasedSystematic(   r_noM3, ch, stp ).val * ratio[setupKey+ch]
                                         gluonMove += y_scale * e.GluonMoveSystematic(   r_noM3, ch, stp ).val * ratio[setupKey+ch]
@@ -1098,6 +1241,7 @@ def wrapper():
                                         pdf     += y_scale * getPDFUnc(   uncName, r_noM3, ch, stp ) * ratio[setupKey+ch]
 #                                        ps      += y_scale * getPSUnc(    uncName, r_noM3, ch, stp ) * ratio[setupKey+ch]
 
+                                    print e.name, str(r_noM3), ch, stp.name, e.topPtSystematic( r_noM3, ch, stp ).val
                                     topPt  += y_scale * e.topPtSystematic( r_noM3, ch, stp ).val * ratio[setupKey+ch]
 
                                 if channel == "e":
@@ -1147,9 +1291,9 @@ def wrapper():
                                 if unc > 0:
                                     c.specifyUncertainty( name, binname, pName, 1 + unc )
 
-                        if args.parameters and signal and "4p" in setup.name:
+#                        if args.parameters and signal and "4p" in setup.name:
                             # 10% uncertainty on signal in 4p for LO/NLO nJet dependence
-                            addUnc( c, "EFT_nJet", binname, pName, 0.10, expected.val, signal )
+#                            addUnc( c, "EFT_nJet", binname, pName, 0.10, expected.val, signal )
 
                         addUnc( c, "QCD_normalization", binname, pName, qcdUnc, expected.val, signal )
 
@@ -1171,9 +1315,10 @@ def wrapper():
                             else:
                                 addUnc( c, "Scale",         binname, pName, scale,   expected.val, signal )
                             addUnc( c, "PDF",           binname, pName, pdf,     expected.val, signal )
-                            addUnc( c, "erdOn",         binname, pName, erdOn,   expected.val, signal )
-                            addUnc( c, "QCDbased",         binname, pName, qcdBased,   expected.val, signal )
-                            addUnc( c, "GluonMove",         binname, pName, gluonMove,   expected.val, signal )
+#                            addUnc( c, "erdOn",         binname, pName, erdOn,   expected.val, signal )
+#                            addUnc( c, "QCDbased",         binname, pName, qcdBased,   expected.val, signal )
+#                            addUnc( c, "GluonMove",         binname, pName, gluonMove,   expected.val, signal )
+                            addUnc( c, "Color",         binname, pName, color,   expected.val, signal )
                             addUnc( c, "Tune",          binname, pName, tune,    expected.val, signal )
 #                            addUnc( c, "Parton_Showering",          binname, pName, ps,    expected.val, signal )
                             addUnc( c, "ISR",          binname, pName, isr,    expected.val, signal )
@@ -1235,6 +1380,19 @@ def wrapper():
                         else:
                             addUnc( c, "MisID_extrapolation_%i"%args.year, binname, pName, misExUnc if setup.signalregion or setup.name == "misTT2" else 0, expected.val, signal )
 
+                        if args.rSR:
+                            addUnc( c, "SignalPOI_3e", binname, pName, sr3e, expected.val, signal )
+                            addUnc( c, "SignalPOI_4e", binname, pName, sr4e, expected.val, signal )
+                            addUnc( c, "SignalPOI_3mu", binname, pName, sr3mu, expected.val, signal )
+                            addUnc( c, "SignalPOI_4mu", binname, pName, sr4mu, expected.val, signal )
+                            addUnc( c, "SignalPOI_3", binname, pName, sr3, expected.val, signal )
+                            addUnc( c, "SignalPOI_4", binname, pName, sr4, expected.val, signal )
+                            addUnc( c, "SignalPOI_e", binname, pName, sre, expected.val, signal )
+                            addUnc( c, "SignalPOI_mu", binname, pName, srmu, expected.val, signal )
+
+                        addUnc( c, "tWgamma_normalization", binname, pName, twgUnc, expected.val, signal )
+                        if not args.inclRegion:
+                            addUnc( c, "tWgamma_shape", binname, pName, twgShape, expected.val, signal )
                         addUnc( c, "Other_normalization", binname, pName, otherUnc, expected.val, signal )
                         addUnc( c, "ZGamma_normalization%s"%vgCorr, binname, pName, zg, expected.val, signal )
                         addUnc( c, "MisID_nJet_dependence_%i"%args.year, binname, pName, misID4p, expected.val, signal )
@@ -1283,7 +1441,13 @@ def wrapper():
                             c.specifyObservation( binname, int( round( total_exp_bkg, 0 ) ) )
                             logger.info( "Expected observation: %s", int( round( total_exp_bkg, 0 ) ) )
                     else:
-                        c.specifyObservation( binname,  int( observation.cachedObservation(r, channel, setup).val )  if not "null" in setup.name.lower() else 0 )
+                        if setup.signalregion:
+                            o = observation.cachedObservation(r, channel, setup).val
+                            for i_r2, r2 in enumerate(setup.regions[1:]):
+                                o += observation.cachedObservation(r2, channel, setup).val
+                            c.specifyObservation( binname,  int(o) )
+                        else:
+                            c.specifyObservation( binname,  int( observation.cachedObservation(r, channel, setup).val )  if not "null" in setup.name.lower() else 0 )
                         logger.info( "Observation: %s", int( observation.cachedObservation(r, channel, setup).val )  if not "null" in setup.name.lower() else 0 )
 
                     #if mute and total_exp_bkg <= 0.01:

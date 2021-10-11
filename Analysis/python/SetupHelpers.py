@@ -137,7 +137,7 @@ signalRegions["SR3"]  = { "parameters": { "zWindow":"all", "nJet":(3,3), "nBTag"
                           "regions":    regionsTTGloose,
                           "inclRegion": inclRegionsTTGloose,
                           "noPhotonCR": False,
-                          "processes":  processes,
+                          "processes":  processesSR,
                           "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood == 3 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                          }
 
@@ -173,7 +173,7 @@ signalRegions["SR4p"] = { "parameters": { "zWindow":"all", "nJet":(4,-1), "nBTag
                           "regions":    regionsTTGloose,
                           "inclRegion": inclRegionsTTGloose,
                           "noPhotonCR": False,
-                          "processes":  processes,
+                          "processes":  processesSR,
                           "lambda":     lambda event, sample: event.nPhotonGood == 1 and event.nJetGood >= 4 and event.nBTagGood >= 1 and event.nLeptonTight == 1 and event.nLeptonVetoIsoCorr == 1,
                          }
 
@@ -854,7 +854,7 @@ WG3pSF_val = {}
 WG3pSF_val[2016]    = u_float( 1.04, 0.15 )
 WG3pSF_val[2017]    = u_float( 1.34, 0.19 )
 WG3pSF_val[2018]    = u_float( 1.06, 0.18 )
-WG3pSF_val["RunII"] = u_float( 1.10, 0.12 )
+WG3pSF_val["RunII"] = u_float( 1.20, 0.12 )
 
 WG4pSF_val = {}
 WG4pSF_val[2016]    = u_float( 1.26, 0.18 )
@@ -903,8 +903,7 @@ ZG3pSF_val = {}
 ZG3pSF_val[2016]    = u_float( 1.06, 0.21 )
 ZG3pSF_val[2017]    = u_float( 1.05, 0.23 )
 ZG3pSF_val[2018]    = u_float( 1.00, 0.20 )
-ZG3pSF_val["RunII"] = u_float( 0.99, 0.16 )
-#ZG3pSF_val["RunII"] = u_float( 1.12, 0.16 )
+ZG3pSF_val["RunII"] = u_float( 1.07, 0.16 )
 
 ZG4pSF_val = {}
 ZG4pSF_val[2016]    = u_float( 1.19, 0.26 )

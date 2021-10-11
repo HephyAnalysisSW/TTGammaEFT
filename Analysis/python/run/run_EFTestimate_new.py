@@ -78,22 +78,38 @@ def wrapper(arg):
     EFTparams = [  "ctZ", str(ctZ), "ctZI", str(ctZI) ] #, "ctW", str(ctW), "ctWI", str(ctWI) ]
     params    = { "ctZ":ctZ, "ctZI":ctZI } #,  "ctW":ctW, "ctWI":ctWI }
     key = (args.controlRegion, str(r),channel, "_".join(EFTparams))
+    keymu = (args.controlRegion.replace("All",""), str(r),"e", "_".join(EFTparams))
+    keye = (args.controlRegion.replace("All",""), str(r),"mu", "_".join(EFTparams))
     print key
+    print keymu
+    print keye
+    print cache.contains( key ), cache.contains( keymu ), cache.contains( keye )
     if cache.contains( key ) and not args.overwrite:
         res = cache.get( key )
     elif not cache.contains( key ) and args.checkOnly:
         res = {"val":-1, "sigma":0}
     else:
-        selection = setup.genSelection( "MC", channel=channel, **setup.defaultParameters())["cut"]
-        selection = "&&".join( [ selection, r.cutString() ] )
-        weightString = "ref_weight*(" + get_weight_string(params) + ")"
-        print selection
-        print weightString
-        res = eftSample.getYieldFromDraw( selectionString=selection, weightString=weightString )
-#        print key, res
+        if channel == "all" and cache.contains( keye ) and cache.contains( keymu ) and not args.overwrite:
+            res = u_float(cache.get( keye ))
+            print "e", res
+            resmu = u_float(cache.get( keymu ))
+            print "mu", resmu
+            res += u_float(cache.get( keymu ))
+        else:
+            selection = setup.genSelection( "MC", channel=channel, **setup.defaultParameters())["cut"]
+            selection = "&&".join( [ selection, r.cutString() ] )
+            weightString = "ref_weight*(" + get_weight_string(params) + ")"
+            print selection
+            print weightString
+            res = eftSample.getYieldFromDraw( selectionString=selection, weightString=weightString )
+        print key, res
         cache.add( key, res, overwrite=True )
 #    print "done", res
     return ( key, res )
+
+
+#eftParameterRange["ctZ"] = [0, -0.25, -0.083]
+#eftParameterRange["ctZI"] = [0, -0.25, -0.083]
 
 jobs=[]
 for channel in channels:
@@ -101,6 +117,7 @@ for channel in channels:
 #        ctZI = 0
         for ctZ in eftParameterRange["ctZ"]:
             for ctZI in eftParameterRange["ctZI"]:
+#                print ctZ, ctZI
                 jobs.append((r, channel, setup, (ctZ, ctZI, 0, 0)))
 #        ctZ = 0
 #                jobs.append((r, channel, setup, (ctZ, ctZI, 0, 0)))

@@ -68,9 +68,11 @@ argParser.add_argument('--splitScale',             action='store_true',         
 argParser.add_argument('--uncorrVG',              action='store_true',                                                        help="uncorrelate VGamma unc?")
 argParser.add_argument('--noSystematics',              action='store_true',                                                        help="run fit without systematics?")
 argParser.add_argument('--splitMisIDExt',              action='store_true',                                                        help="run fit without systematics?")
+argParser.add_argument( "--rSR",               action="store",      default="None",   type=str, choices=["3e","4e","3mu","4mu","3","4","e","mu"],                            help="which poi to measure?" )
 args=argParser.parse_args()
 
 if args.linTest != 1: args.expected = True
+if args.rSR == "None": args.rSR = None
 #if args.addPtBinnedUnc: args.freezeR = True
 
 # Logging
@@ -177,6 +179,7 @@ if args.uncorrVG:   regionNames.append("uncorrVG")
 if args.splitScale:   regionNames.append("splitScale")
 if args.noSystematics:   regionNames.append("noSyst")
 if args.splitMisIDExt:   regionNames.append("splitMisIDExt")
+if args.rSR:   regionNames.append("rSR"+args.rSR)
 
 if args.parameters:
     # load and define the EFT sample
@@ -260,14 +263,14 @@ def wrapper():
         print nll
         print sEFTConfig
         res = c.calcLimit( cardFileName, options=options+"  --freezeParameters r" )
-        Results = CombineResults( cardFile=cardFileNameTxt, plotDirectory="./", year="combined", bkgOnly=args.bkgOnly, isSearch=False )
-        postFit = Results.getPulls( postFit=True )
-        if "EFT_nJet" in postFit.keys():
-            freezeParams = "EFT_nJet=%f,r=1"%postFit["EFT_nJet"].val
-            print freezeParams
-            c.calcNuisances( cardFileName, bonly=False, options="--expectSignal=1 --freezeParameters EFT_nJet,r --setParameters %s --rMin 0.999 --rMax 1.001 --cminDefaultMinimizerTolerance=0.001"%freezeParams )
-        else:
-            c.calcNuisances( cardFileName, bonly=False, options="--expectSignal=1 --freezeParameters r --setParameters r=1 --rMin 0.999 --rMax 1.001 --cminDefaultMinimizerTolerance=0.001" )
+#        Results = CombineResults( cardFile=cardFileNameTxt, plotDirectory="./", year="combined", bkgOnly=args.bkgOnly, isSearch=False )
+#        postFit = Results.getPulls( postFit=True )
+#        if "EFT_nJet" in postFit.keys():
+#            freezeParams = "EFT_nJet=%f,r=1"%postFit["EFT_nJet"].val
+#            print freezeParams
+#            c.calcNuisances( cardFileName, bonly=False, options="--expectSignal=1 --freezeParameters EFT_nJet,r --setParameters %s --rMin 0.999 --rMax 1.001 --cminDefaultMinimizerTolerance=0.001"%freezeParams )
+#        else:
+        c.calcNuisances( cardFileName, bonly=False, options="--expectSignal=1 --freezeParameters r --setParameters r=1 --rMin 0.99 --rMax 1.01 --cminDefaultMinimizerTolerance=0.01" )
     else:
         options = ""
         if args.freezeR:
@@ -280,7 +283,8 @@ def wrapper():
 #            options += " --setParameters r=1.14 --freezeParameters r --cminDefaultMinimizerTolerance=0.1"
 #            options += " --rMin 1.13 --rMax 1.15 --cminDefaultMinimizerTolerance=0.1"
 #            options += " --rMin 0.99 --rMax 1.01"
-            options += " --redefineSignalPOI Signal_mu_4p_Bin0_2018 --freezeParameters r --setParameters r=1" # --rMin 1.11 --rMax 1.13"
+#            options += " --redefineSignalPOI Signal_mu_4p_Bin0_2018 --freezeParameters r --setParameters r=1" # --rMin 1.11 --rMax 1.13"
+            options += " --rMin 0.99 --rMax 1.01 --freezeParameters r --setParameters r=1" # --rMin 1.11 --rMax 1.13"
         else:
             options += " --rMin 0.5 --rMax 1.5 --cminDefaultMinimizerTolerance=0.1"
         c.calcNuisances( cardFileName, bonly=args.bkgOnly, options=options )
