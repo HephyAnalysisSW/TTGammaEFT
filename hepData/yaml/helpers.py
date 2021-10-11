@@ -325,7 +325,7 @@ def convertMlgHistToYaml( rootfile, label, variable, channel ):
 
 def convertCRPlotToYaml():
 
-    tab = Table("Figure 5")
+    tab = Table("Figure 6")
 
     reader = RootFileReader("../regionPlots/CR_incl.root")
 
@@ -355,26 +355,26 @@ def convertCRPlotToYaml():
         relunc.append(u*100./i_tot)
 
     crBinLabel = [
-            "ZG3, e, 20 $\leq$ $p_{T}(\gamma)$ $<$ 65 GeV",
-            "WG3, e, 20 $\leq$ $p_{T}(\gamma)$ $<$ 65 GeV",
-            "ZG3, e, 65 $\leq$ $p_{T}(\gamma)$ $<$ 160 GeV",
-            "WG3, e, 65 $\leq$ $p_{T}(\gamma)$ $<$ 160 GeV",
-            "ZG+WG3, e, $p_{T}(\gamma)$ $\geq$ 160 GeV",
-            "ZG3, $\mu$, 20 $\leq$ $p_{T}(\gamma)$ $<$ 65 GeV",
-            "WG3, $\mu$, 20 $\leq$ $p_{T}(\gamma)$ $<$ 65 GeV",
-            "ZG3, $\mu$, 65 $\leq$ $p_{T}(\gamma)$ $<$ 160 GeV",
-            "WG3, $\mu$, 65 $\leq$ $p_{T}(\gamma)$ $<$ 160 GeV",
-            "ZG+WG3, $\mu$, $p_{T}(\gamma)$ $\geq$ 160 GeV",
-            "ZG4p, e, 20 $\leq$ $p_{T}(\gamma)$ $<$ 65 GeV",
-            "WG4p, e, 20 $\leq$ $p_{T}(\gamma)$ $<$ 65 GeV",
-            "ZG4p, e, 65 $\leq$ $p_{T}(\gamma)$ $<$ 160 GeV",
-            "WG4p, e, 65 $\leq$ $p_{T}(\gamma)$ $<$ 160 GeV",
-            "ZG+WG4p, e, $p_{T}(\gamma)$ $\geq$ 160 GeV",
-            "ZG4p, $\mu$, 20 $\leq$ $p_{T}(\gamma)$ $<$ 65 GeV",
-            "WG4p, $\mu$, 20 $\leq$ $p_{T}(\gamma)$ $<$ 65 GeV",
-            "ZG4p, $\mu$, 65 $\leq$ $p_{T}(\gamma)$ $<$ 160 GeV",
-            "WG4p, $\mu$, 65 $\leq$ $p_{T}(\gamma)$ $<$ 160 GeV",
-            "ZG+WG4p, $\mu$, $p_{T}(\gamma)$ $\geq$ 160 GeV",
+            "LM3, e, 20 $\leq$ $p_{T}(\gamma)$ $<$ 65 GeV",
+            "HM3, e, 20 $\leq$ $p_{T}(\gamma)$ $<$ 65 GeV",
+            "LM3, e, 65 $\leq$ $p_{T}(\gamma)$ $<$ 160 GeV",
+            "HM3, e, 65 $\leq$ $p_{T}(\gamma)$ $<$ 160 GeV",
+            "LM+HM3, e, $p_{T}(\gamma)$ $\geq$ 160 GeV",
+            "LM3, $\mu$, 20 $\leq$ $p_{T}(\gamma)$ $<$ 65 GeV",
+            "HM3, $\mu$, 20 $\leq$ $p_{T}(\gamma)$ $<$ 65 GeV",
+            "LM3, $\mu$, 65 $\leq$ $p_{T}(\gamma)$ $<$ 160 GeV",
+            "HM3, $\mu$, 65 $\leq$ $p_{T}(\gamma)$ $<$ 160 GeV",
+            "LM+HM3, $\mu$, $p_{T}(\gamma)$ $\geq$ 160 GeV",
+            "LM4p, e, 20 $\leq$ $p_{T}(\gamma)$ $<$ 65 GeV",
+            "HM4p, e, 20 $\leq$ $p_{T}(\gamma)$ $<$ 65 GeV",
+            "LM4p, e, 65 $\leq$ $p_{T}(\gamma)$ $<$ 160 GeV",
+            "HM4p, e, 65 $\leq$ $p_{T}(\gamma)$ $<$ 160 GeV",
+            "LM+HM4p, e, $p_{T}(\gamma)$ $\geq$ 160 GeV",
+            "LM4p, $\mu$, 20 $\leq$ $p_{T}(\gamma)$ $<$ 65 GeV",
+            "HM4p, $\mu$, 20 $\leq$ $p_{T}(\gamma)$ $<$ 65 GeV",
+            "LM4p, $\mu$, 65 $\leq$ $p_{T}(\gamma)$ $<$ 160 GeV",
+            "HM4p, $\mu$, 65 $\leq$ $p_{T}(\gamma)$ $<$ 160 GeV",
+            "LM+HM4p, $\mu$, $p_{T}(\gamma)$ $\geq$ 160 GeV",
             "misDY3, e, 20 $\leq$ $p_{T}(\gamma)$ $<$ 35 GeV",
             "misDY3, e, 35 $\leq$ $p_{T}(\gamma)$ $<$ 50 GeV",
             "misDY3, e, 50 $\leq$ $p_{T}(\gamma)$ $<$ 65 GeV",
@@ -473,7 +473,7 @@ def convertCRPlotToYaml():
 
 def convertSRPlotToYaml():
 
-    tab = Table("Figure 6")
+    tab = Table("Figure 7")
 
     reader = RootFileReader("../regionPlots/SR_incl.root")
 
@@ -594,20 +594,20 @@ def convertSRPlotToYaml():
 
 
 
-def convertCovMatrixToYaml( rootfile, label, variablex, variabley, unit ):
+def convertCovMatrixToYaml( rootfile, label, variablex, variabley, unit, object="covMatrix_syst", var="Syst. covariance" ):
 
     tab = Table(label)
 
     reader = RootFileReader(rootfile)
 
-    cov = reader.read_hist_2d("output_covMatrix_syst")
+    cov = reader.read_hist_2d(object)
 
     xbins = Variable( variablex, is_independent=True, is_binned=True, units=unit)
     xbins.values = cov["x_edges"]
     ybins = Variable( variabley, is_independent=True, is_binned=True, units=unit)
     ybins.values = cov["y_edges"]
 
-    data = Variable( "Total covariance", is_independent=False, is_binned=False, units="fb$^2$")
+    data = Variable( var, is_independent=False, is_binned=False, units="fb$^2$")
     data.values = cov["z"]
     data.add_qualifier("SQRT(S)","13","TeV")
     data.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
@@ -620,20 +620,20 @@ def convertCovMatrixToYaml( rootfile, label, variablex, variabley, unit ):
 
 
 
-def convertCorrMatrixToYaml( rootfile, label, variablex, variabley, unit ):
+def convertCorrMatrixToYaml( rootfile, label, variablex, variabley, unit, object="output_corr_matrix_syst", var="Syst. correlation" ):
 
     tab = Table(label)
 
     reader = RootFileReader(rootfile)
 
-    cov = reader.read_hist_2d("output_corr_matrix_syst")
+    cov = reader.read_hist_2d(object)
 
     xbins = Variable( variablex, is_independent=True, is_binned=True, units=unit)
     xbins.values = cov["x_edges"]
     ybins = Variable( variabley, is_independent=True, is_binned=True, units=unit)
     ybins.values = cov["y_edges"]
 
-    data = Variable( "Total correlation", is_independent=False, is_binned=False)
+    data = Variable( var, is_independent=False, is_binned=False, units="%")
     data.values = cov["z"]
     data.add_qualifier("SQRT(S)","13","TeV")
     data.add_qualifier("LUMINOSITY","137","fb$^{-1}$")
@@ -694,8 +694,8 @@ def convertUnfoldingHistToYaml( rootfile, label, variable, unit ):
     ystatunc.is_symmetric = True
     ystatunc.values = statunc
 
-    ydata.uncertainties.append(ystatunc)
-    ydata.uncertainties.append(yunc)
+#    ydata.uncertainties.append(ystatunc)
+#    ydata.uncertainties.append(yunc)
 
 
     ysimP8 = Variable( "Simulation MG5_aMC + Pythia8", is_independent=False, is_binned=False)
