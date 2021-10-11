@@ -73,8 +73,8 @@ if options.small:
     options.nJobs = 200
 
 # Load all samples to be post processed
-#from TTGammaEFT.Samples.genTuples_TTGamma_EFT import *
-from TTGammaEFT.Samples.genTuples_TTGamma_Herwig import *
+from TTGammaEFT.Samples.genTuples_TTGamma_EFT import *
+#from TTGammaEFT.Samples.genTuples_TTGamma_Herwig import *
 samples = map( eval, options.samples ) 
     
 if len(samples)==0:

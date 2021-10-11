@@ -147,7 +147,7 @@ else:
 maxNFiles = None
 if options.small:
     maxNFiles = 1
-    maxNEvents = 10000
+    maxNEvents = 100
     options.job = 0
     options.nJobs = 1 # set high to just run over 1 input file
 
@@ -479,38 +479,38 @@ NanoVars = NanoVariables( options.year )
 readGenVarString      = NanoVars.getVariableString(   "Gen",      postprocessed=False, data=sample.isData )
 readGenJetVarString   = NanoVars.getVariableString(   "GenJet",   postprocessed=False, data=sample.isData )
 readJetVarString      = NanoVars.getVariableString(   "Jet",      postprocessed=False, data=sample.isData, skipSyst=options.skipNanoTools )
-readElectronVarString = NanoVars.getVariableString(   "Electron", postprocessed=False, data=sample.isData )
-readMuonVarString     = NanoVars.getVariableString(   "Muon",     postprocessed=False, data=sample.isData )
-readPhotonVarString   = NanoVars.getVariableString(   "Photon",   postprocessed=False, data=sample.isData )
+readElectronVarString = NanoVars.getVariableString(   "Electron", postprocessed=False, data=sample.isData, skipSyst=options.skipSystematicVariations )
+readMuonVarString     = NanoVars.getVariableString(   "Muon",     postprocessed=False, data=sample.isData, skipSyst=options.skipSystematicVariations )
+readPhotonVarString   = NanoVars.getVariableString(   "Photon",   postprocessed=False, data=sample.isData, skipSyst=options.skipSystematicVariations )
 
 readGenVarList        = NanoVars.getVariableNameList( "Gen",      postprocessed=False, data=sample.isData )
 readGenJetVarList     = NanoVars.getVariableNameList( "GenJet",   postprocessed=False, data=sample.isData )
 readJetVarList        = NanoVars.getVariableNameList( "Jet",      postprocessed=False, data=sample.isData, skipSyst=options.skipNanoTools  )
-readElectronVarList   = NanoVars.getVariableNameList( "Electron", postprocessed=False, data=sample.isData )
-readMuonVarList       = NanoVars.getVariableNameList( "Muon",     postprocessed=False, data=sample.isData )
-readPhotonVarList     = NanoVars.getVariableNameList( "Photon",   postprocessed=False, data=sample.isData )
+readElectronVarList   = NanoVars.getVariableNameList( "Electron", postprocessed=False, data=sample.isData, skipSyst=options.skipSystematicVariations )
+readMuonVarList       = NanoVars.getVariableNameList( "Muon",     postprocessed=False, data=sample.isData, skipSyst=options.skipSystematicVariations )
+readPhotonVarList     = NanoVars.getVariableNameList( "Photon",   postprocessed=False, data=sample.isData, skipSyst=options.skipSystematicVariations )
 
-readLeptonVariables   = NanoVars.getVariables(        "Lepton",   postprocessed=False, data=sample.isData )
+readLeptonVariables   = NanoVars.getVariables(        "Lepton",   postprocessed=False, data=sample.isData, skipSyst=options.skipSystematicVariations )
 
 writeGenVarString     = NanoVars.getVariableString(   "Gen",      postprocessed=True,  data=sample.isData )
 writeGenJetVarString  = NanoVars.getVariableString(   "GenJet",   postprocessed=True,  data=sample.isData )
-writeJetVarString     = NanoVars.getVariableString(   "Jet",      postprocessed=True,  data=sample.isData, skipSyst=options.skipNanoTools  )
-writeLeptonVarString  = NanoVars.getVariableString(   "Lepton",   postprocessed=True,  data=sample.isData )
-writePhotonVarString  = NanoVars.getVariableString(   "Photon",   postprocessed=True,  data=sample.isData )
+writeJetVarString     = NanoVars.getVariableString(   "Jet",      postprocessed=True,  data=sample.isData, skipSyst=options.skipNanoTools )
+writeLeptonVarString  = NanoVars.getVariableString(   "Lepton",   postprocessed=True,  data=sample.isData, skipSyst=options.skipSystematicVariations )
+writePhotonVarString  = NanoVars.getVariableString(   "Photon",   postprocessed=True,  data=sample.isData, skipSyst=options.skipSystematicVariations )
 
-writeJetVarList       = NanoVars.getVariableNameList( "Jet",      postprocessed=True,  data=sample.isData, skipSyst=options.skipNanoTools  )
-writeBJetVarList      = NanoVars.getVariableNameList( "BJet",     postprocessed=True,  data=sample.isData )
+writeJetVarList       = NanoVars.getVariableNameList( "Jet",      postprocessed=True,  data=sample.isData, skipSyst=options.skipNanoTools )
+writeBJetVarList      = NanoVars.getVariableNameList( "BJet",     postprocessed=True,  data=sample.isData, skipSyst=options.skipNanoTools )
 writeGenVarList       = NanoVars.getVariableNameList( "Gen",      postprocessed=True,  data=sample.isData )
 writeGenJetVarList    = NanoVars.getVariableNameList( "GenJet",   postprocessed=True,  data=sample.isData )
-writeLeptonVarList    = NanoVars.getVariableNameList( "Lepton",   postprocessed=True,  data=sample.isData )
-writePhotonVarList    = NanoVars.getVariableNameList( "Photon",   postprocessed=True,  data=sample.isData )
+writeLeptonVarList    = NanoVars.getVariableNameList( "Lepton",   postprocessed=True,  data=sample.isData, skipSyst=options.skipSystematicVariations )
+writePhotonVarList    = NanoVars.getVariableNameList( "Photon",   postprocessed=True,  data=sample.isData, skipSyst=options.skipSystematicVariations )
 
 writeGenVariables     = NanoVars.getVariables( "Gen",      postprocessed=True,  data=sample.isData )
 writeGenJetVariables  = NanoVars.getVariables( "GenJet",   postprocessed=True,  data=sample.isData )
-writeJetVariables     = NanoVars.getVariables( "Jet",      postprocessed=True,  data=sample.isData, skipSyst=options.skipNanoTools  )
-writeBJetVariables    = NanoVars.getVariables( "BJet",     postprocessed=True,  data=sample.isData )
-writeLeptonVariables  = NanoVars.getVariables( "Lepton",   postprocessed=True,  data=sample.isData )
-writePhotonVariables  = NanoVars.getVariables( "Photon",   postprocessed=True,  data=sample.isData )
+writeJetVariables     = NanoVars.getVariables( "Jet",      postprocessed=True,  data=sample.isData, skipSyst=options.skipNanoTools )
+writeBJetVariables    = NanoVars.getVariables( "BJet",     postprocessed=True,  data=sample.isData, skipSyst=options.skipNanoTools )
+writeLeptonVariables  = NanoVars.getVariables( "Lepton",   postprocessed=True,  data=sample.isData, skipSyst=options.skipSystematicVariations )
+writePhotonVariables  = NanoVars.getVariables( "Photon",   postprocessed=True,  data=sample.isData, skipSyst=options.skipSystematicVariations )
 
 # JEC Tags, (standard is "Total")
 jesTags = ['FlavorQCD', 'RelativeBal', 'HF', 'BBEC1', 'EC2', 'Absolute', 'Absolute_%i'%options.year, 'HF_%i'%options.year, 'EC2_%i'%options.year, 'RelativeSample_%i'%options.year, 'BBEC1_%i'%options.year, 'Total']
@@ -602,6 +602,8 @@ new_variables += [ 'nLepton/I' ]
 new_variables += [ 'nLeptonVeto/I']
 new_variables += [ 'nLeptonVetoNoSieie/I']
 new_variables += [ 'nLeptonVetoIsoCorr/I']
+new_variables += [ 'nLeptonMVA2l/I']
+new_variables += [ 'nLeptonMVA2llead/I']
 new_variables += [ 'nLeptonTight/I']
 new_variables += [ 'nLeptonTightNoSieie/I']
 new_variables += [ 'nLeptonTightNoIso/I']
@@ -611,6 +613,8 @@ new_variables += [ 'nLeptonTightNoSieieInvIso/I']
 new_variables += [ 'nElectron/I',            'nMuon/I']
 new_variables += [ 'nElectronVeto/I',        'nMuonVeto/I']
 new_variables += [ 'nElectronVetoIsoCorr/I']
+new_variables += [ 'nElectronMVA2l/I',       'nMuonMVA2l/I']
+new_variables += [ 'nElectronMVA2llead/I',       'nMuonMVA2llead/I']
 new_variables += [ 'nElectronTight/I',       'nMuonTight/I']
 new_variables += [ 'nElectronTightNoIso/I',  'nMuonTightNoIso/I']
 new_variables += [ 'nElectronTightInvIso/I', 'nMuonTightInvIso/I']
@@ -739,9 +743,10 @@ if isMC:
     new_variables += [ 'nGenElectronATLASUnfold/I', 'nGenMuonATLASUnfold/I', 'nGenLeptonATLASUnfold/I', 'nGenPhotonATLASUnfold/I', 'nGenBJetATLASUnfold/I', 'nGenJetsATLASUnfold/I' ]
     new_variables += [ 'genLATLAStight0GammadPhi/F', 'genLATLAStight0GammadR/F' ]
 
+    new_variables += [ 'GenPhotonCMSUnfoldNoIso0_' + var for var in writeGenVariables ]
     new_variables += [ 'GenPhotonCMSUnfold0_' + var for var in writeGenVariables ]
     new_variables += [ 'GenLeptonCMSUnfold0_' + var for var in writeGenVariables ]
-    new_variables += [ 'nGenElectronCMSUnfold/I', 'nGenMuonCMSUnfold/I', 'nGenLeptonCMSUnfold/I', 'nGenPhotonCMSUnfold/I', 'nGenBJetCMSUnfold/I', 'nGenJetsCMSUnfold/I' ]
+    new_variables += [ 'nGenElectronCMSUnfold/I', 'nGenMuonCMSUnfold/I', 'nGenLeptonCMSUnfold/I', 'nGenPhotonCMSUnfoldNoIso/I', 'nGenPhotonCMSUnfold/I', 'nGenBJetCMSUnfold/I', 'nGenJetsCMSUnfold/I' ]
     new_variables += [ 'genLCMStight0GammadPhi/F', 'genLCMStight0GammadR/F' ]
     new_variables += [ 'genJetCMSGammadR/F' ]
 
@@ -751,7 +756,7 @@ if isMC:
     new_variables += [ 'GenJets[%s]'      %writeGenJetVarString ]
     new_variables += [ 'GenBJet[%s]'     %writeGenJetVarString ]
     new_variables += [ 'GenTop[%s]'      %writeGenVarString ]
-    new_variables += [ 'isTTGamma/I', 'isZWGamma/I', 'isTGamma/I', 'isGJets/I', 'overlapRemoval/I', 'pTStitching/I', "stitchedPt/F" ]
+    new_variables += [ 'isTWG/I', 'isTTGamma/I', 'isZWGamma/I', 'isTGamma/I', 'isGJets/I', 'overlapRemoval/I', 'pTStitching/I', "stitchedPt/F" ]
 
     new_variables += [ 'nGenZ/I', 'nGenW/I', 'nGenWFromTop/I', 'nGenWJets/I', 'nGenWElectron/I', 'nGenWMuon/I','nGenWTau/I', 'nGenWTauJets/I', 'nGenWTauElectron/I', 'nGenWTauMuon/I' ]
     new_variables += [ 'GenW0_' + var for var in writeGenVariables ]
@@ -815,10 +820,12 @@ genJetSel_CMSUnfold    = genJetSelector(    "CMSUnfolding" )
 recoElectronSel_veto    = eleSelector( "veto" )
 #recoElectronSel_medium  = eleSelector( "medium" )
 recoElectronSel_tight   = eleSelector( "tight" )
+recoElectronSel_mva2l   = eleSelector( "MVA2l" )
 # Muon Selection
 recoMuonSel_veto        = muonSelector( "veto" )
 #recoMuonSel_medium      = muonSelector( "medium" )
 recoMuonSel_tight       = muonSelector( "tight" )
+recoMuonSel_mva2l       = muonSelector( "MVA2l" )
 # Photon Selection
 recoPhotonSel_medium    = photonSelector( 'medium', year=options.year )
 # Jet Selection
@@ -999,6 +1006,7 @@ def filler( event ):
         event.isTGamma  = len( filter( lambda g: genPhotonSel_T_OR(g),   GenIsoPhotonNoMesonTG      ) ) > 0 
         event.isGJets   = len( filter( lambda g: genPhotonSel_GJ_OR(g),  GenIsoPhotonNoMesonGJets   ) ) > 0 
 
+
         # new OR flag: Apply overlap removal directly in pp to better handle the plots
         if options.flagTTGamma:
             event.overlapRemoval = event.isTTGamma     #good TTgamma event
@@ -1097,6 +1105,9 @@ def filler( event ):
 
         GenLeptonCMSUnfold = filter( lambda l: genLeptonSel_CMSUnfold(l), GenLeptonCMSUnfold )
 
+        GenPhotonCMSUnfoldNoIso = filter( lambda g: not hasMesonMother( getParentIds( g, gPart ) ), copy.deepcopy(GenPhotonCMSUnfold) )
+        GenPhotonCMSUnfoldNoIso = filter( lambda g: genPhotonSel_CMSUnfold(g), GenPhotonCMSUnfoldNoIso )
+
         # Isolated in CMS
         GenPhotonCMSUnfold = filter( lambda g: isIsolatedPhoton( g, gPart, coneSize=0.1,  ptCut=5, excludedPdgIds=[12,-12,14,-14,16,-16] ), GenPhoton )
         GenPhotonCMSUnfold = filter( lambda g: not hasMesonMother( getParentIds( g, gPart ) ), GenPhotonCMSUnfold )
@@ -1112,9 +1123,20 @@ def filler( event ):
         GenJetCMSUnfold    = deltaRCleaning( GenJetCMSUnfold,    GenPhotonCMSUnfold, dRCut=0.1 )
         GenBJetCMSUnfold   = deltaRCleaning( GenBJetCMSUnfold,   GenPhotonCMSUnfold, dRCut=0.1 )
 
+        GenPhotonCMSUnfoldNoIso.sort( key = lambda p: -p['pt'] )
+        genP0 = ( GenPhotonCMSUnfoldNoIso[:1] + [None] )[0]
+        fill_vector( event, "GenPhotonCMSUnfoldNoIso0",  writeGenVarList, genP0 )
+
         GenPhotonCMSUnfold.sort( key = lambda p: -p['pt'] )
         genP0 = ( GenPhotonCMSUnfold[:1] + [None] )[0]
         fill_vector( event, "GenPhotonCMSUnfold0",  writeGenVarList, genP0 )
+
+        if genP0:
+            event.isTWG  = photonFromTWG( getParentIds( genP0, gPart ) )
+            print event.isTWG, getParentIds( genP0, gPart )
+        else:
+            event.isTWG  = False
+
         GenLeptonCMSUnfold.sort( key = lambda p: -p['pt'] )
         genL0 = ( GenLeptonCMSUnfold[:1] + [None] )[0]
         fill_vector( event, "GenLeptonCMSUnfold0",  writeGenVarList, genL0 )
@@ -1128,6 +1150,7 @@ def filler( event ):
         event.nGenElectronCMSUnfold = len( filter( lambda l: abs( l["pdgId"] ) == 11, GenLeptonCMSUnfold ) )
         event.nGenMuonCMSUnfold     = len( filter( lambda l: abs( l["pdgId"] ) == 13, GenLeptonCMSUnfold ) )
         event.nGenLeptonCMSUnfold   = len(GenLeptonCMSUnfold)
+        event.nGenPhotonCMSUnfoldNoIso   = len(GenPhotonCMSUnfoldNoIso)
         event.nGenPhotonCMSUnfold   = len(GenPhotonCMSUnfold)
         event.nGenBJetCMSUnfold     = len(GenBJetCMSUnfold)
         event.nGenJetsCMSUnfold     = len(GenJetCMSUnfold)
@@ -1201,6 +1224,10 @@ def filler( event ):
     allElectrons = getParticles( r, readElectronVarList, coll="Electron" )
     allMuons     = getParticles( r, readMuonVarList,     coll="Muon" )
 
+    if not options.private:
+        for p in allElectrons + allMuons:
+            p["mvaTOP"] = -1
+
     if not options.skipSystematicVariations:
         for p in allMuons:
             p["pt_muTotalUp"]   = p["pt"] + p["ptErr"]
@@ -1248,10 +1275,11 @@ def filler( event ):
     nHEMPhotons   = len( filter( lambda j:j['pt']>15 and j['eta']>-3.0 and j['eta']<-1.4 and j['phi']>-1.57 and j['phi']<-0.87, allPhotons ))
 
     vetoMuons      = list( filter( lambda l: recoMuonSel_veto(l),                       allMuons ) )
-    vetoMuons_up   = list( filter( lambda l: recoMuonSel_veto(l, ptVar="pt_muTotalUp"),   copy.deepcopy(allMuons) ) )
-    for p in vetoMuons_up: p["pt"] = p["pt_muTotalUp"]
-    vetoMuons_down = list( filter( lambda l: recoMuonSel_veto(l, ptVar="pt_muTotalDown"), copy.deepcopy(allMuons) ) )
-    for p in vetoMuons_down: p["pt"] = p["pt_muTotalDown"]
+    if not options.skipSystematicVariations:
+        vetoMuons_up   = list( filter( lambda l: recoMuonSel_veto(l, ptVar="pt_muTotalUp"),   copy.deepcopy(allMuons) ) )
+        for p in vetoMuons_up: p["pt"] = p["pt_muTotalUp"]
+        vetoMuons_down = list( filter( lambda l: recoMuonSel_veto(l, ptVar="pt_muTotalDown"), copy.deepcopy(allMuons) ) )
+        for p in vetoMuons_down: p["pt"] = p["pt_muTotalDown"]
 
     # similar to Ghent, remove electrons in dR<0.02 to muons
     # remove that in syncing with Danny
@@ -1263,29 +1291,31 @@ def filler( event ):
     # Veto electrons with corrected relIso
     vetoCorrIsoElectrons      = filter( lambda l: recoElectronSel_veto(l, removedCuts=["pfRelIso03_all"]), allElectrons )
     vetoCorrIsoElectrons      = filter( lambda l: l["pfRelIso03_all_corr"] <= getElectronIsoCutV2( l["pt"], l["eta"]+l["deltaEtaSC"], id="veto" ), vetoCorrIsoElectrons )
-    vetoCorrIsoElectrons_ScaleUp   = filter( lambda l: recoElectronSel_veto(l, removedCuts=["pfRelIso03_all"], ptVar="pt_eScaleUp"), copy.deepcopy(allElectrons) )
-    vetoCorrIsoElectrons_ScaleUp   = filter( lambda l: l["pfRelIso03_all_corr"] <= getElectronIsoCutV2( l["pt_eScaleUp"], l["eta"]+l["deltaEtaSC"], id="veto" ), vetoCorrIsoElectrons_ScaleUp )
-    for p in vetoCorrIsoElectrons_ScaleUp: p["pt"] = p["pt_eScaleUp"]
-    vetoCorrIsoElectrons_ResUp   = filter( lambda l: recoElectronSel_veto(l, removedCuts=["pfRelIso03_all"], ptVar="pt_eResUp"), copy.deepcopy(allElectrons) )
-    vetoCorrIsoElectrons_ResUp   = filter( lambda l: l["pfRelIso03_all_corr"] <= getElectronIsoCutV2( l["pt_eResUp"], l["eta"]+l["deltaEtaSC"], id="veto" ), vetoCorrIsoElectrons_ResUp )
-    for p in vetoCorrIsoElectrons_ResUp: p["pt"] = p["pt_eResUp"]
-    vetoCorrIsoElectrons_ScaleDown = filter( lambda l: recoElectronSel_veto(l, removedCuts=["pfRelIso03_all"], ptVar="pt_eScaleDown"), copy.deepcopy(allElectrons) )
-    vetoCorrIsoElectrons_ScaleDown = filter( lambda l: l["pfRelIso03_all_corr"] <= getElectronIsoCutV2( l["pt_eScaleDown"], l["eta"]+l["deltaEtaSC"], id="veto" ), vetoCorrIsoElectrons_ScaleDown )
-    for p in vetoCorrIsoElectrons_ScaleDown: p["pt"] = p["pt_eScaleDown"]
-    vetoCorrIsoElectrons_ResDown = filter( lambda l: recoElectronSel_veto(l, removedCuts=["pfRelIso03_all"], ptVar="pt_eResDown"), copy.deepcopy(allElectrons) )
-    vetoCorrIsoElectrons_ResDown = filter( lambda l: l["pfRelIso03_all_corr"] <= getElectronIsoCutV2( l["pt_eResDown"], l["eta"]+l["deltaEtaSC"], id="veto" ), vetoCorrIsoElectrons_ResDown )
-    for p in vetoCorrIsoElectrons_ResDown: p["pt"] = p["pt_eResDown"]
+    if not options.skipSystematicVariations:
+        vetoCorrIsoElectrons_ScaleUp   = filter( lambda l: recoElectronSel_veto(l, removedCuts=["pfRelIso03_all"], ptVar="pt_eScaleUp"), copy.deepcopy(allElectrons) )
+        vetoCorrIsoElectrons_ScaleUp   = filter( lambda l: l["pfRelIso03_all_corr"] <= getElectronIsoCutV2( l["pt_eScaleUp"], l["eta"]+l["deltaEtaSC"], id="veto" ), vetoCorrIsoElectrons_ScaleUp )
+        for p in vetoCorrIsoElectrons_ScaleUp: p["pt"] = p["pt_eScaleUp"]
+        vetoCorrIsoElectrons_ResUp   = filter( lambda l: recoElectronSel_veto(l, removedCuts=["pfRelIso03_all"], ptVar="pt_eResUp"), copy.deepcopy(allElectrons) )
+        vetoCorrIsoElectrons_ResUp   = filter( lambda l: l["pfRelIso03_all_corr"] <= getElectronIsoCutV2( l["pt_eResUp"], l["eta"]+l["deltaEtaSC"], id="veto" ), vetoCorrIsoElectrons_ResUp )
+        for p in vetoCorrIsoElectrons_ResUp: p["pt"] = p["pt_eResUp"]
+        vetoCorrIsoElectrons_ScaleDown = filter( lambda l: recoElectronSel_veto(l, removedCuts=["pfRelIso03_all"], ptVar="pt_eScaleDown"), copy.deepcopy(allElectrons) )
+        vetoCorrIsoElectrons_ScaleDown = filter( lambda l: l["pfRelIso03_all_corr"] <= getElectronIsoCutV2( l["pt_eScaleDown"], l["eta"]+l["deltaEtaSC"], id="veto" ), vetoCorrIsoElectrons_ScaleDown )
+        for p in vetoCorrIsoElectrons_ScaleDown: p["pt"] = p["pt_eScaleDown"]
+        vetoCorrIsoElectrons_ResDown = filter( lambda l: recoElectronSel_veto(l, removedCuts=["pfRelIso03_all"], ptVar="pt_eResDown"), copy.deepcopy(allElectrons) )
+        vetoCorrIsoElectrons_ResDown = filter( lambda l: l["pfRelIso03_all_corr"] <= getElectronIsoCutV2( l["pt_eResDown"], l["eta"]+l["deltaEtaSC"], id="veto" ), vetoCorrIsoElectrons_ResDown )
+        for p in vetoCorrIsoElectrons_ResDown: p["pt"] = p["pt_eResDown"]
 
     # Filter leptons
     vetoElectrons           = list( filter( lambda l: recoElectronSel_veto(l),                       allElectrons ) )
-    vetoElectrons_ScaleUp   = list( filter( lambda l: recoElectronSel_veto(l, ptVar="pt_eScaleUp"),   copy.deepcopy(allElectrons) ) )
-    for p in vetoElectrons_ScaleUp: p["pt"] = p["pt_eScaleUp"]
-    vetoElectrons_ScaleDown = list( filter( lambda l: recoElectronSel_veto(l, ptVar="pt_eScaleDown"), copy.deepcopy(allElectrons) ) )
-    for p in vetoElectrons_ScaleDown: p["pt"] = p["pt_eScaleDown"]
-    vetoElectrons_ResUp   = list( filter( lambda l: recoElectronSel_veto(l, ptVar="pt_eResUp"),   copy.deepcopy(allElectrons) ) )
-    for p in vetoElectrons_ResUp: p["pt"] = p["pt_eResUp"]
-    vetoElectrons_ResDown = list( filter( lambda l: recoElectronSel_veto(l, ptVar="pt_eResDown"), copy.deepcopy(allElectrons) ) )
-    for p in vetoElectrons_ResDown: p["pt"] = p["pt_eResDown"]
+    if not options.skipSystematicVariations:
+        vetoElectrons_ScaleUp   = list( filter( lambda l: recoElectronSel_veto(l, ptVar="pt_eScaleUp"),   copy.deepcopy(allElectrons) ) )
+        for p in vetoElectrons_ScaleUp: p["pt"] = p["pt_eScaleUp"]
+        vetoElectrons_ScaleDown = list( filter( lambda l: recoElectronSel_veto(l, ptVar="pt_eScaleDown"), copy.deepcopy(allElectrons) ) )
+        for p in vetoElectrons_ScaleDown: p["pt"] = p["pt_eScaleDown"]
+        vetoElectrons_ResUp   = list( filter( lambda l: recoElectronSel_veto(l, ptVar="pt_eResUp"),   copy.deepcopy(allElectrons) ) )
+        for p in vetoElectrons_ResUp: p["pt"] = p["pt_eResUp"]
+        vetoElectrons_ResDown = list( filter( lambda l: recoElectronSel_veto(l, ptVar="pt_eResDown"), copy.deepcopy(allElectrons) ) )
+        for p in vetoElectrons_ResDown: p["pt"] = p["pt_eResDown"]
 
     vetoLeptons   = vetoElectrons + vetoMuons
     vetoLeptons.sort( key = lambda l: -l['pt'] )
@@ -1299,32 +1329,43 @@ def filler( event ):
     tightLeptons   = tightElectrons + tightMuons
     tightLeptons.sort( key = lambda l: -l['pt'] )
 
-    tightElectrons_ScaleUp = list( filter( lambda l: recoElectronSel_tight(l, ptVar="pt_eScaleUp"), copy.deepcopy(allElectrons) ) )
-    for p in tightElectrons_ScaleUp: p["pt"] = p["pt_eScaleUp"]
-    tightElectrons_ResUp = list( filter( lambda l: recoElectronSel_tight(l, ptVar="pt_eResUp"), copy.deepcopy(allElectrons) ) )
-    for p in tightElectrons_ResUp: p["pt"] = p["pt_eResUp"]
-    tightMuons_up     = list( filter( lambda l: recoMuonSel_tight(l, ptVar="pt_muTotalUp"),     copy.deepcopy(allMuons) ) )
-    for p in tightMuons_up: p["pt"] = p["pt_muTotalUp"]
+    mva2lElectrons = list( filter( lambda l: recoElectronSel_mva2l(l), allElectrons ) )
+    mva2lMuons     = list( filter( lambda l: recoMuonSel_mva2l(l),     allMuons ) )
+    mva2lLeptons   = mva2lElectrons + mva2lMuons
+    mva2lLeptons.sort( key = lambda l: -l['pt'] )
 
-    tightElectrons_ScaleDown = list( filter( lambda l: recoElectronSel_tight(l, ptVar="pt_eScaleDown"), copy.deepcopy(allElectrons) ) )
-    for p in tightElectrons_ScaleDown: p["pt"] = p["pt_eScaleDown"]
-    tightElectrons_ResDown = list( filter( lambda l: recoElectronSel_tight(l, ptVar="pt_eResDown"), copy.deepcopy(allElectrons) ) )
-    for p in tightElectrons_ResDown: p["pt"] = p["pt_eResDown"]
-    tightMuons_down     = list( filter( lambda l: recoMuonSel_tight(l, ptVar="pt_muTotalDown"),     copy.deepcopy(allMuons) ) )
-    for p in tightMuons_down: p["pt"] = p["pt_muTotalDown"]
+    mva2lleadElectrons = list( filter( lambda l: recoElectronSel_mva2l(l, leading=True), allElectrons ) )
+    mva2lleadMuons     = list( filter( lambda l: recoMuonSel_mva2l(l, leading=True),     allMuons ) )
+    mva2lleadLeptons   = mva2lleadElectrons + mva2lleadMuons
+    mva2lleadLeptons.sort( key = lambda l: -l['pt'] )
 
-    tightLeptons_eScaleUp    = tightElectrons_ScaleUp   + tightMuons
-    tightLeptons_eScaleDown  = tightElectrons_ScaleDown + tightMuons
-    tightLeptons_eResUp      = tightElectrons_ResUp   + tightMuons
-    tightLeptons_eResDown    = tightElectrons_ResDown + tightMuons
-    tightLeptons_muup   = tightElectrons + tightMuons_up
-    tightLeptons_mudown = tightElectrons + tightMuons_down
-    tightLeptons_eScaleUp.sort( key = lambda l: -l['pt'] )
-    tightLeptons_eScaleDown.sort( key = lambda l: -l['pt'] )
-    tightLeptons_eResUp.sort( key = lambda l: -l['pt'] )
-    tightLeptons_eResDown.sort( key = lambda l: -l['pt'] )
-    tightLeptons_muup.sort( key = lambda l: -l['pt'] )
-    tightLeptons_mudown.sort( key = lambda l: -l['pt'] )
+    if not options.skipSystematicVariations:
+        tightElectrons_ScaleUp = list( filter( lambda l: recoElectronSel_tight(l, ptVar="pt_eScaleUp"), copy.deepcopy(allElectrons) ) )
+        for p in tightElectrons_ScaleUp: p["pt"] = p["pt_eScaleUp"]
+        tightElectrons_ResUp = list( filter( lambda l: recoElectronSel_tight(l, ptVar="pt_eResUp"), copy.deepcopy(allElectrons) ) )
+        for p in tightElectrons_ResUp: p["pt"] = p["pt_eResUp"]
+        tightMuons_up     = list( filter( lambda l: recoMuonSel_tight(l, ptVar="pt_muTotalUp"),     copy.deepcopy(allMuons) ) )
+        for p in tightMuons_up: p["pt"] = p["pt_muTotalUp"]
+
+        tightElectrons_ScaleDown = list( filter( lambda l: recoElectronSel_tight(l, ptVar="pt_eScaleDown"), copy.deepcopy(allElectrons) ) )
+        for p in tightElectrons_ScaleDown: p["pt"] = p["pt_eScaleDown"]
+        tightElectrons_ResDown = list( filter( lambda l: recoElectronSel_tight(l, ptVar="pt_eResDown"), copy.deepcopy(allElectrons) ) )
+        for p in tightElectrons_ResDown: p["pt"] = p["pt_eResDown"]
+        tightMuons_down     = list( filter( lambda l: recoMuonSel_tight(l, ptVar="pt_muTotalDown"),     copy.deepcopy(allMuons) ) )
+        for p in tightMuons_down: p["pt"] = p["pt_muTotalDown"]
+
+        tightLeptons_eScaleUp    = tightElectrons_ScaleUp   + tightMuons
+        tightLeptons_eScaleDown  = tightElectrons_ScaleDown + tightMuons
+        tightLeptons_eResUp      = tightElectrons_ResUp   + tightMuons
+        tightLeptons_eResDown    = tightElectrons_ResDown + tightMuons
+        tightLeptons_muup   = tightElectrons + tightMuons_up
+        tightLeptons_mudown = tightElectrons + tightMuons_down
+        tightLeptons_eScaleUp.sort( key = lambda l: -l['pt'] )
+        tightLeptons_eScaleDown.sort( key = lambda l: -l['pt'] )
+        tightLeptons_eResUp.sort( key = lambda l: -l['pt'] )
+        tightLeptons_eResDown.sort( key = lambda l: -l['pt'] )
+        tightLeptons_muup.sort( key = lambda l: -l['pt'] )
+        tightLeptons_mudown.sort( key = lambda l: -l['pt'] )
 
     tightElectronsNoSieie = list( filter( lambda l: recoElectronSel_tight(l, removedCuts=["sieie"]), allElectrons ) )
     tightLeptonsNoSieie   = tightElectronsNoSieie + tightMuons
@@ -1336,13 +1377,14 @@ def filler( event ):
     tightNoIsoLeptons   = tightNoIsoElectrons + tightNoIsoMuons
     tightNoIsoLeptons.sort( key = lambda l: -l['pt'] )
 
-    tightNoIsoElectrons_ScaleUp = list( filter( lambda l: recoElectronSel_tight(l, removedCuts=["pfRelIso03_all"], ptVar="pt_eScaleUp"), vetoElectrons_ScaleUp ) )
-    tightNoIsoElectrons_ResUp = list( filter( lambda l: recoElectronSel_tight(l, removedCuts=["pfRelIso03_all"], ptVar="pt_eResUp"), vetoElectrons_ResUp ) )
-    tightNoIsoMuons_up     = list( filter( lambda l: recoMuonSel_tight(l,     removedCuts=["pfRelIso04_all"], ptVar="pt_muTotalUp"), vetoMuons_up ) )
+    if not options.skipSystematicVariations:
+        tightNoIsoElectrons_ScaleUp = list( filter( lambda l: recoElectronSel_tight(l, removedCuts=["pfRelIso03_all"], ptVar="pt_eScaleUp"), vetoElectrons_ScaleUp ) )
+        tightNoIsoElectrons_ResUp = list( filter( lambda l: recoElectronSel_tight(l, removedCuts=["pfRelIso03_all"], ptVar="pt_eResUp"), vetoElectrons_ResUp ) )
+        tightNoIsoMuons_up     = list( filter( lambda l: recoMuonSel_tight(l,     removedCuts=["pfRelIso04_all"], ptVar="pt_muTotalUp"), vetoMuons_up ) )
 
-    tightNoIsoElectrons_ScaleDown = list( filter( lambda l: recoElectronSel_tight(l, removedCuts=["pfRelIso03_all"], ptVar="pt_eScaleDown"), vetoElectrons_ScaleDown ) )
-    tightNoIsoElectrons_ResDown = list( filter( lambda l: recoElectronSel_tight(l, removedCuts=["pfRelIso03_all"], ptVar="pt_eResDown"), vetoElectrons_ResDown ) )
-    tightNoIsoMuons_down     = list( filter( lambda l: recoMuonSel_tight(l,     removedCuts=["pfRelIso04_all"], ptVar="pt_muTotalDown"), vetoMuons_down ) )
+        tightNoIsoElectrons_ScaleDown = list( filter( lambda l: recoElectronSel_tight(l, removedCuts=["pfRelIso03_all"], ptVar="pt_eScaleDown"), vetoElectrons_ScaleDown ) )
+        tightNoIsoElectrons_ResDown = list( filter( lambda l: recoElectronSel_tight(l, removedCuts=["pfRelIso03_all"], ptVar="pt_eResDown"), vetoElectrons_ResDown ) )
+        tightNoIsoMuons_down     = list( filter( lambda l: recoMuonSel_tight(l,     removedCuts=["pfRelIso04_all"], ptVar="pt_muTotalDown"), vetoMuons_down ) )
 
     # tight electrons with >= veto isolation criteria
     tightNoIsoNoSieieElectrons = list( filter( lambda l: recoElectronSel_tight(l, removedCuts=["pfRelIso03_all", "sieie"]), vetoNoSieieElectrons ) )
@@ -1355,30 +1397,31 @@ def filler( event ):
     tightInvIsoLeptons   = tightInvIsoElectrons + tightInvIsoMuons
     tightInvIsoLeptons.sort( key = lambda l: -l['pt'] )
 
-    tightInvIsoElectrons_ScaleUp = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt_eScaleUp"], l["eta"]+l["deltaEtaSC"], id="tight" ), tightNoIsoElectrons_ScaleUp) )
-    tightInvIsoElectrons_ResUp = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt_eResUp"], l["eta"]+l["deltaEtaSC"], id="tight" ), tightNoIsoElectrons_ResUp) )
-    tightInvIsoMuons_up     = list( filter( lambda l: l["pfRelIso04_all"]>muonRelIsoCut and l["pfRelIso04_all"]<muonRelIsoCutVeto, tightNoIsoMuons_up ) )
-
-    tightInvIsoElectrons_ScaleDown = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt_eScaleDown"], l["eta"]+l["deltaEtaSC"], id="tight" ), tightNoIsoElectrons_ScaleDown) )
-    tightInvIsoElectrons_ResDown = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt_eResDown"], l["eta"]+l["deltaEtaSC"], id="tight" ), tightNoIsoElectrons_ResDown) )
-    tightInvIsoMuons_down     = list( filter( lambda l: l["pfRelIso04_all"]>muonRelIsoCut and l["pfRelIso04_all"]<muonRelIsoCutVeto, tightNoIsoMuons_down ) )
-
     tightInvIsoNoSieieElectrons = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt"], l["eta"]+l["deltaEtaSC"], id="tight" ), tightNoIsoNoSieieElectrons) )
     tightInvIsoNoSieieLeptons   = tightInvIsoNoSieieElectrons + tightInvIsoMuons
     tightInvIsoNoSieieLeptons.sort( key = lambda l: -l['pt'] )
 
-    tightInvIsoLeptons_eScaleUp    = tightInvIsoElectrons_ScaleUp   + tightInvIsoMuons
-    tightInvIsoLeptons_eScaleDown  = tightInvIsoElectrons_ScaleDown + tightInvIsoMuons
-    tightInvIsoLeptons_eResUp    = tightInvIsoElectrons_ResUp   + tightInvIsoMuons
-    tightInvIsoLeptons_eResDown  = tightInvIsoElectrons_ResDown + tightInvIsoMuons
-    tightInvIsoLeptons_muup   = tightInvIsoElectrons + tightInvIsoMuons_up
-    tightInvIsoLeptons_mudown = tightInvIsoElectrons + tightInvIsoMuons_down
-    tightInvIsoLeptons_eScaleUp.sort( key = lambda l: -l['pt'] )
-    tightInvIsoLeptons_eScaleDown.sort( key = lambda l: -l['pt'] )
-    tightInvIsoLeptons_eResUp.sort( key = lambda l: -l['pt'] )
-    tightInvIsoLeptons_eResDown.sort( key = lambda l: -l['pt'] )
-    tightInvIsoLeptons_muup.sort( key = lambda l: -l['pt'] )
-    tightInvIsoLeptons_mudown.sort( key = lambda l: -l['pt'] )
+    if not options.skipSystematicVariations:
+        tightInvIsoElectrons_ScaleUp = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt_eScaleUp"], l["eta"]+l["deltaEtaSC"], id="tight" ), tightNoIsoElectrons_ScaleUp) )
+        tightInvIsoElectrons_ResUp = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt_eResUp"], l["eta"]+l["deltaEtaSC"], id="tight" ), tightNoIsoElectrons_ResUp) )
+        tightInvIsoMuons_up     = list( filter( lambda l: l["pfRelIso04_all"]>muonRelIsoCut and l["pfRelIso04_all"]<muonRelIsoCutVeto, tightNoIsoMuons_up ) )
+
+        tightInvIsoElectrons_ScaleDown = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt_eScaleDown"], l["eta"]+l["deltaEtaSC"], id="tight" ), tightNoIsoElectrons_ScaleDown) )
+        tightInvIsoElectrons_ResDown = list( filter( lambda l: l["pfRelIso03_all"]>getElectronIsoCutV2( l["pt_eResDown"], l["eta"]+l["deltaEtaSC"], id="tight" ), tightNoIsoElectrons_ResDown) )
+        tightInvIsoMuons_down     = list( filter( lambda l: l["pfRelIso04_all"]>muonRelIsoCut and l["pfRelIso04_all"]<muonRelIsoCutVeto, tightNoIsoMuons_down ) )
+
+        tightInvIsoLeptons_eScaleUp    = tightInvIsoElectrons_ScaleUp   + tightInvIsoMuons
+        tightInvIsoLeptons_eScaleDown  = tightInvIsoElectrons_ScaleDown + tightInvIsoMuons
+        tightInvIsoLeptons_eResUp    = tightInvIsoElectrons_ResUp   + tightInvIsoMuons
+        tightInvIsoLeptons_eResDown  = tightInvIsoElectrons_ResDown + tightInvIsoMuons
+        tightInvIsoLeptons_muup   = tightInvIsoElectrons + tightInvIsoMuons_up
+        tightInvIsoLeptons_mudown = tightInvIsoElectrons + tightInvIsoMuons_down
+        tightInvIsoLeptons_eScaleUp.sort( key = lambda l: -l['pt'] )
+        tightInvIsoLeptons_eScaleDown.sort( key = lambda l: -l['pt'] )
+        tightInvIsoLeptons_eResUp.sort( key = lambda l: -l['pt'] )
+        tightInvIsoLeptons_eResDown.sort( key = lambda l: -l['pt'] )
+        tightInvIsoLeptons_muup.sort( key = lambda l: -l['pt'] )
+        tightInvIsoLeptons_mudown.sort( key = lambda l: -l['pt'] )
 
     # Store lepton number
     event.nLepton           = len(allLeptons)
@@ -1393,77 +1436,87 @@ def filler( event ):
     event.nLeptonVetoIsoCorr   = len(vetoCorrIsoElectrons) + len(vetoMuons)
     event.nElectronVetoIsoCorr = len(vetoCorrIsoElectrons)
 
-    event.nLeptonVeto_eScaleUp            = len(vetoElectrons_ScaleUp) + len(vetoMuons)
-    event.nLeptonVeto_eResUp              = len(vetoElectrons_ResUp) + len(vetoMuons)
-    event.nLeptonVeto_muTotalUp           = len(vetoElectrons)    + len(vetoMuons_up)
-    event.nLeptonVeto_eScaleDown          = len(vetoElectrons_ScaleDown) + len(vetoMuons)
-    event.nLeptonVeto_eResDown            = len(vetoElectrons_ResDown) + len(vetoMuons)
-    event.nLeptonVeto_muTotalDown         = len(vetoElectrons)    + len(vetoMuons_down)
-    event.nLeptonVetoIsoCorr_eScaleUp     = len(vetoCorrIsoElectrons_ScaleUp) + len(vetoMuons)
-    event.nLeptonVetoIsoCorr_eResUp       = len(vetoCorrIsoElectrons_ResUp) + len(vetoMuons)
-    event.nLeptonVetoIsoCorr_muTotalUp    = len(vetoCorrIsoElectrons) + len(vetoMuons_up)
-    event.nLeptonVetoIsoCorr_eScaleDown   = len(vetoCorrIsoElectrons_ScaleDown) + len(vetoMuons)
-    event.nLeptonVetoIsoCorr_eResDown     = len(vetoCorrIsoElectrons_ResDown) + len(vetoMuons)
-    event.nLeptonVetoIsoCorr_muTotalDown  = len(vetoCorrIsoElectrons) + len(vetoMuons_down)
+    if not options.skipSystematicVariations:
+        event.nLeptonVeto_eScaleUp            = len(vetoElectrons_ScaleUp) + len(vetoMuons)
+        event.nLeptonVeto_eResUp              = len(vetoElectrons_ResUp) + len(vetoMuons)
+        event.nLeptonVeto_muTotalUp           = len(vetoElectrons)    + len(vetoMuons_up)
+        event.nLeptonVeto_eScaleDown          = len(vetoElectrons_ScaleDown) + len(vetoMuons)
+        event.nLeptonVeto_eResDown            = len(vetoElectrons_ResDown) + len(vetoMuons)
+        event.nLeptonVeto_muTotalDown         = len(vetoElectrons)    + len(vetoMuons_down)
+        event.nLeptonVetoIsoCorr_eScaleUp     = len(vetoCorrIsoElectrons_ScaleUp) + len(vetoMuons)
+        event.nLeptonVetoIsoCorr_eResUp       = len(vetoCorrIsoElectrons_ResUp) + len(vetoMuons)
+        event.nLeptonVetoIsoCorr_muTotalUp    = len(vetoCorrIsoElectrons) + len(vetoMuons_up)
+        event.nLeptonVetoIsoCorr_eScaleDown   = len(vetoCorrIsoElectrons_ScaleDown) + len(vetoMuons)
+        event.nLeptonVetoIsoCorr_eResDown     = len(vetoCorrIsoElectrons_ResDown) + len(vetoMuons)
+        event.nLeptonVetoIsoCorr_muTotalDown  = len(vetoCorrIsoElectrons) + len(vetoMuons_down)
 
-    event.nElectronVeto_eScaleUp        = len(vetoElectrons_ScaleUp)
-    event.nElectronVeto_eScaleDown      = len(vetoElectrons_ScaleDown)
-    event.nElectronVeto_eResUp          = len(vetoElectrons_ResUp)
-    event.nElectronVeto_eResDown        = len(vetoElectrons_ResDown)
-    event.nMuonVeto_muTotalUp           = len(vetoMuons_up)
-    event.nMuonVeto_muTotalDown         = len(vetoMuons_down)
-    event.nElectronVetoIsoCorr_eScaleUp   = len(vetoCorrIsoElectrons_ScaleUp)
-    event.nElectronVetoIsoCorr_eScaleDown = len(vetoCorrIsoElectrons_ScaleDown)
-    event.nElectronVetoIsoCorr_eResUp     = len(vetoCorrIsoElectrons_ResUp)
-    event.nElectronVetoIsoCorr_eResDown   = len(vetoCorrIsoElectrons_ResDown)
+        event.nElectronVeto_eScaleUp        = len(vetoElectrons_ScaleUp)
+        event.nElectronVeto_eScaleDown      = len(vetoElectrons_ScaleDown)
+        event.nElectronVeto_eResUp          = len(vetoElectrons_ResUp)
+        event.nElectronVeto_eResDown        = len(vetoElectrons_ResDown)
+        event.nMuonVeto_muTotalUp           = len(vetoMuons_up)
+        event.nMuonVeto_muTotalDown         = len(vetoMuons_down)
+        event.nElectronVetoIsoCorr_eScaleUp   = len(vetoCorrIsoElectrons_ScaleUp)
+        event.nElectronVetoIsoCorr_eScaleDown = len(vetoCorrIsoElectrons_ScaleDown)
+        event.nElectronVetoIsoCorr_eResUp     = len(vetoCorrIsoElectrons_ResUp)
+        event.nElectronVetoIsoCorr_eResDown   = len(vetoCorrIsoElectrons_ResDown)
 
     event.nLeptonTight      = len(tightLeptons)
     event.nElectronTight    = len(tightElectrons)
     event.nMuonTight        = len(tightMuons)
 
-    event.nLeptonTight_eScaleUp      = len(tightElectrons_ScaleUp) + len(tightMuons)
-    event.nLeptonTight_eResUp      = len(tightElectrons_ResUp) + len(tightMuons)
-    event.nLeptonTight_muTotalUp     = len(tightElectrons)    + len(tightMuons_up)
-    event.nElectronTight_eScaleUp    = len(tightElectrons_ScaleUp)
-    event.nElectronTight_eResUp    = len(tightElectrons_ResUp)
-    event.nMuonTight_muTotalUp       = len(tightMuons_up)
+    event.nLeptonMVA2l      = len(mva2lLeptons)
+    event.nElectronMVA2l    = len(mva2lElectrons)
+    event.nMuonMVA2l        = len(mva2lMuons)
 
-    event.nLeptonTight_eScaleDown      = len(tightElectrons_ScaleDown) + len(tightMuons)
-    event.nLeptonTight_eResDown        = len(tightElectrons_ResDown) + len(tightMuons)
-    event.nLeptonTight_muTotalDown     = len(tightElectrons)      + len(tightMuons_down)
-    event.nElectronTight_eScaleDown    = len(tightElectrons_ScaleDown)
-    event.nElectronTight_eResDown      = len(tightElectrons_ResDown)
-    event.nMuonTight_muTotalDown       = len(tightMuons_down)
+    event.nLeptonMVA2llead      = len(mva2lleadLeptons)
+    event.nElectronMVA2llead    = len(mva2lleadElectrons)
+    event.nMuonMVA2llead        = len(mva2lleadMuons)
 
-    lepEUp = tightElectrons_ScaleUp + tightMuons
-    lepEUp.sort( key = lambda l: -l['pt'] )
-    lt0, lt1       = ( lepEUp + [None,None] )[:2]
-    fill_vector( event, "LeptonTight0_eScaleUp", writeLeptonVarList, lt0 )
+    if not options.skipSystematicVariations:
+        event.nLeptonTight_eScaleUp      = len(tightElectrons_ScaleUp) + len(tightMuons)
+        event.nLeptonTight_eResUp      = len(tightElectrons_ResUp) + len(tightMuons)
+        event.nLeptonTight_muTotalUp     = len(tightElectrons)    + len(tightMuons_up)
+        event.nElectronTight_eScaleUp    = len(tightElectrons_ScaleUp)
+        event.nElectronTight_eResUp    = len(tightElectrons_ResUp)
+        event.nMuonTight_muTotalUp       = len(tightMuons_up)
 
-    lepEUp = tightElectrons_ResUp + tightMuons
-    lepEUp.sort( key = lambda l: -l['pt'] )
-    lt0, lt1       = ( lepEUp + [None,None] )[:2]
-    fill_vector( event, "LeptonTight0_eResUp", writeLeptonVarList, lt0 )
+        event.nLeptonTight_eScaleDown      = len(tightElectrons_ScaleDown) + len(tightMuons)
+        event.nLeptonTight_eResDown        = len(tightElectrons_ResDown) + len(tightMuons)
+        event.nLeptonTight_muTotalDown     = len(tightElectrons)      + len(tightMuons_down)
+        event.nElectronTight_eScaleDown    = len(tightElectrons_ScaleDown)
+        event.nElectronTight_eResDown      = len(tightElectrons_ResDown)
+        event.nMuonTight_muTotalDown       = len(tightMuons_down)
 
-    lepEDown = tightElectrons_ScaleDown + tightMuons
-    lepEDown.sort( key = lambda l: -l['pt'] )
-    lt0, lt1       = ( lepEDown + [None,None] )[:2]
-    fill_vector( event, "LeptonTight0_eScaleDown", writeLeptonVarList, lt0 )
+        lepEUp = tightElectrons_ScaleUp + tightMuons
+        lepEUp.sort( key = lambda l: -l['pt'] )
+        lt0, lt1       = ( lepEUp + [None,None] )[:2]
+        fill_vector( event, "LeptonTight0_eScaleUp", writeLeptonVarList, lt0 )
 
-    lepEDown = tightElectrons_ResDown + tightMuons
-    lepEDown.sort( key = lambda l: -l['pt'] )
-    lt0, lt1       = ( lepEDown + [None,None] )[:2]
-    fill_vector( event, "LeptonTight0_eResDown", writeLeptonVarList, lt0 )
+        lepEUp = tightElectrons_ResUp + tightMuons
+        lepEUp.sort( key = lambda l: -l['pt'] )
+        lt0, lt1       = ( lepEUp + [None,None] )[:2]
+        fill_vector( event, "LeptonTight0_eResUp", writeLeptonVarList, lt0 )
 
-    lepMuUp = tightElectrons + tightMuons_up
-    lepMuUp.sort( key = lambda l: -l['pt'] )
-    lt0, lt1       = ( lepMuUp + [None,None] )[:2]
-    fill_vector( event, "LeptonTight0_muTotalUp", writeLeptonVarList, lt0 )
+        lepEDown = tightElectrons_ScaleDown + tightMuons
+        lepEDown.sort( key = lambda l: -l['pt'] )
+        lt0, lt1       = ( lepEDown + [None,None] )[:2]
+        fill_vector( event, "LeptonTight0_eScaleDown", writeLeptonVarList, lt0 )
 
-    lepMuDown = tightElectrons + tightMuons_down
-    lepMuDown.sort( key = lambda l: -l['pt'] )
-    lt0, lt1       = ( lepMuDown + [None,None] )[:2]
-    fill_vector( event, "LeptonTight0_muTotalDown", writeLeptonVarList, lt0 )
+        lepEDown = tightElectrons_ResDown + tightMuons
+        lepEDown.sort( key = lambda l: -l['pt'] )
+        lt0, lt1       = ( lepEDown + [None,None] )[:2]
+        fill_vector( event, "LeptonTight0_eResDown", writeLeptonVarList, lt0 )
+
+        lepMuUp = tightElectrons + tightMuons_up
+        lepMuUp.sort( key = lambda l: -l['pt'] )
+        lt0, lt1       = ( lepMuUp + [None,None] )[:2]
+        fill_vector( event, "LeptonTight0_muTotalUp", writeLeptonVarList, lt0 )
+
+        lepMuDown = tightElectrons + tightMuons_down
+        lepMuDown.sort( key = lambda l: -l['pt'] )
+        lt0, lt1       = ( lepMuDown + [None,None] )[:2]
+        fill_vector( event, "LeptonTight0_muTotalDown", writeLeptonVarList, lt0 )
 
     event.nLeptonTightNoSieie      = len(tightLeptonsNoSieie)
     event.nElectronTightNoSieie    = len(tightElectronsNoSieie)
@@ -1476,17 +1529,18 @@ def filler( event ):
     event.nElectronTightInvIso = len(tightInvIsoElectrons)
     event.nMuonTightInvIso     = len(tightInvIsoMuons)
 
-    event.nLeptonTightInvIso_eScaleUp    = len(tightInvIsoElectrons_ScaleUp) + len(tightInvIsoMuons)
-    event.nLeptonTightInvIso_muTotalUp   = len(tightInvIsoElectrons) + len(tightInvIsoMuons_up)
-    event.nElectronTightInvIso_eScaleUp  = len(tightInvIsoElectrons_ScaleUp)
-    event.nMuonTightInvIso_muTotalUp     = len(tightInvIsoMuons_up)
+    if not options.skipSystematicVariations:
+        event.nLeptonTightInvIso_eScaleUp    = len(tightInvIsoElectrons_ScaleUp) + len(tightInvIsoMuons)
+        event.nLeptonTightInvIso_muTotalUp   = len(tightInvIsoElectrons) + len(tightInvIsoMuons_up)
+        event.nElectronTightInvIso_eScaleUp  = len(tightInvIsoElectrons_ScaleUp)
+        event.nMuonTightInvIso_muTotalUp     = len(tightInvIsoMuons_up)
 
-    event.nLeptonTightInvIso_eScaleDown    = len(tightInvIsoElectrons_ScaleDown) + len(tightInvIsoMuons)
-    event.nLeptonTightInvIso_eResDown      = len(tightInvIsoElectrons_ResDown) + len(tightInvIsoMuons)
-    event.nLeptonTightInvIso_muTotalDown   = len(tightInvIsoElectrons) + len(tightInvIsoMuons_down)
-    event.nElectronTightInvIso_eScaleDown  = len(tightInvIsoElectrons_ScaleDown)
-    event.nElectronTightInvIso_eResDown    = len(tightInvIsoElectrons_ResDown)
-    event.nMuonTightInvIso_muTotalDown     = len(tightInvIsoMuons_down)
+        event.nLeptonTightInvIso_eScaleDown    = len(tightInvIsoElectrons_ScaleDown) + len(tightInvIsoMuons)
+        event.nLeptonTightInvIso_eResDown      = len(tightInvIsoElectrons_ResDown) + len(tightInvIsoMuons)
+        event.nLeptonTightInvIso_muTotalDown   = len(tightInvIsoElectrons) + len(tightInvIsoMuons_down)
+        event.nElectronTightInvIso_eScaleDown  = len(tightInvIsoElectrons_ScaleDown)
+        event.nElectronTightInvIso_eResDown    = len(tightInvIsoElectrons_ResDown)
+        event.nMuonTightInvIso_muTotalDown     = len(tightInvIsoMuons_down)
 
     event.nLeptonTightNoSieieInvIso      = len(tightInvIsoNoSieieLeptons)
     event.nElectronTightNoSieieInvIso    = len(tightInvIsoNoSieieElectrons)
@@ -1495,16 +1549,17 @@ def filler( event ):
     # check if muons are triggered by muon triggers, electrons by electron triggers
     # for data:  use only SingleMuon dataset for tight muons and SingleElectron/EGamma dataset for tight electrons, set triggered=0 if this is not the case
     event.triggered              = int(Ts.getTriggerDecision( abs(tightLeptons[0]["pdgId"]) )(r))               if tightLeptons              else 0
-    event.triggered_eScaleUp     = int(Ts.getTriggerDecision( abs(tightLeptons_eScaleUp[0]["pdgId"]) )(r))      if tightLeptons_eScaleUp     else 0
-    event.triggered_eScaleDown   = int(Ts.getTriggerDecision( abs(tightLeptons_eScaleDown[0]["pdgId"]) )(r))    if tightLeptons_eScaleDown   else 0
-    event.triggered_eResUp       = int(Ts.getTriggerDecision( abs(tightLeptons_eResUp[0]["pdgId"]) )(r))        if tightLeptons_eResUp       else 0
-    event.triggered_eResDown     = int(Ts.getTriggerDecision( abs(tightLeptons_eResDown[0]["pdgId"]) )(r))      if tightLeptons_eResDown     else 0
-    event.triggered_muTotalUp    = int(Ts.getTriggerDecision( abs(tightLeptons_muup[0]["pdgId"]) )(r))          if tightLeptons_muup         else 0
-    event.triggered_muTotalDown  = int(Ts.getTriggerDecision( abs(tightLeptons_mudown[0]["pdgId"]) )(r))        if tightLeptons_mudown       else 0
-    event.triggeredInvIso        = int(Ts.getTriggerDecision( abs(tightInvIsoLeptons[0]["pdgId"]) )(r))         if tightInvIsoLeptons        else 0
-    event.triggeredNoIso         = int(Ts.getTriggerDecision( abs(tightNoIsoLeptons[0]["pdgId"]) )(r))          if tightNoIsoLeptons         else 0
-    event.triggeredNoSieie       = int(Ts.getTriggerDecision( abs(tightLeptonsNoSieie[0]["pdgId"]) )(r))        if tightLeptonsNoSieie       else 0
-    event.triggeredInvIsoNoSieie = int(Ts.getTriggerDecision( abs(tightInvIsoNoSieieLeptons[0]["pdgId"]) )(r))  if tightInvIsoNoSieieLeptons else 0
+    if not options.skipSystematicVariations:
+        event.triggered_eScaleUp     = int(Ts.getTriggerDecision( abs(tightLeptons_eScaleUp[0]["pdgId"]) )(r))      if tightLeptons_eScaleUp     else 0
+        event.triggered_eScaleDown   = int(Ts.getTriggerDecision( abs(tightLeptons_eScaleDown[0]["pdgId"]) )(r))    if tightLeptons_eScaleDown   else 0
+        event.triggered_eResUp       = int(Ts.getTriggerDecision( abs(tightLeptons_eResUp[0]["pdgId"]) )(r))        if tightLeptons_eResUp       else 0
+        event.triggered_eResDown     = int(Ts.getTriggerDecision( abs(tightLeptons_eResDown[0]["pdgId"]) )(r))      if tightLeptons_eResDown     else 0
+        event.triggered_muTotalUp    = int(Ts.getTriggerDecision( abs(tightLeptons_muup[0]["pdgId"]) )(r))          if tightLeptons_muup         else 0
+        event.triggered_muTotalDown  = int(Ts.getTriggerDecision( abs(tightLeptons_mudown[0]["pdgId"]) )(r))        if tightLeptons_mudown       else 0
+        event.triggeredInvIso        = int(Ts.getTriggerDecision( abs(tightInvIsoLeptons[0]["pdgId"]) )(r))         if tightInvIsoLeptons        else 0
+        event.triggeredNoIso         = int(Ts.getTriggerDecision( abs(tightNoIsoLeptons[0]["pdgId"]) )(r))          if tightNoIsoLeptons         else 0
+        event.triggeredNoSieie       = int(Ts.getTriggerDecision( abs(tightLeptonsNoSieie[0]["pdgId"]) )(r))        if tightLeptonsNoSieie       else 0
+        event.triggeredInvIsoNoSieie = int(Ts.getTriggerDecision( abs(tightInvIsoNoSieieLeptons[0]["pdgId"]) )(r))  if tightInvIsoNoSieieLeptons else 0
 
     # overlap removal
     if isData and event.triggered       and ( (abs(tightLeptons[0]["pdgId"])==11       and isMuonPD) or (abs(tightLeptons[0]["pdgId"])==13       and isElectronPD) ): event.triggered       = 0
@@ -1548,35 +1603,37 @@ def filler( event ):
             g['mother']         = -1
 
     mediumPhotons                     = list( filter( lambda g: recoPhotonSel_medium(g),                                          allPhotons ) )
-    mediumPhotons_ScaleUp             = list( filter( lambda g: recoPhotonSel_medium(g, ptVar="pt_eScaleUp"),                      copy.deepcopy(allPhotons) ) )
-    mediumPhotons_ScaleDown           = list( filter( lambda g: recoPhotonSel_medium(g, ptVar="pt_eScaleDown"),                    copy.deepcopy(allPhotons) ) )
-    mediumPhotons_ResUp               = list( filter( lambda g: recoPhotonSel_medium(g, ptVar="pt_eResUp"),                      copy.deepcopy(allPhotons) ) )
-    mediumPhotons_ResDown             = list( filter( lambda g: recoPhotonSel_medium(g, ptVar="pt_eResDown"),                    copy.deepcopy(allPhotons) ) )
     mediumPhotonsNoChgIsoNoSieie      = list( filter( lambda g: recoPhotonSel_medium(g, removedCuts=["pfRelIso03_chg", "sieie"]), allPhotons ) )
-    mediumPhotonsNoChgIsoNoSieie_ScaleUp   = list( filter( lambda g: recoPhotonSel_medium(g, removedCuts=["pfRelIso03_chg", "sieie"], ptVar="pt_eScaleUp"),   copy.deepcopy(allPhotons) ) )
-    mediumPhotonsNoChgIsoNoSieie_ScaleDown = list( filter( lambda g: recoPhotonSel_medium(g, removedCuts=["pfRelIso03_chg", "sieie"], ptVar="pt_eScaleDown"), copy.deepcopy(allPhotons) ) )
-    mediumPhotonsNoChgIsoNoSieie_ResUp   = list( filter( lambda g: recoPhotonSel_medium(g, removedCuts=["pfRelIso03_chg", "sieie"], ptVar="pt_eResUp"),   copy.deepcopy(allPhotons) ) )
-    mediumPhotonsNoChgIsoNoSieie_ResDown = list( filter( lambda g: recoPhotonSel_medium(g, removedCuts=["pfRelIso03_chg", "sieie"], ptVar="pt_eResDown"), copy.deepcopy(allPhotons) ) )
-    for p in mediumPhotons_ScaleUp:   p["pt"] = p["pt_eScaleUp"]
-    for p in mediumPhotons_ScaleDown: p["pt"] = p["pt_eScaleDown"]
-    for p in mediumPhotonsNoChgIsoNoSieie_ScaleUp:   p["pt"] = p["pt_eScaleUp"]
-    for p in mediumPhotonsNoChgIsoNoSieie_ScaleDown: p["pt"] = p["pt_eScaleDown"]
-    for p in mediumPhotons_ResUp:   p["pt"] = p["pt_eResUp"]
-    for p in mediumPhotons_ResDown: p["pt"] = p["pt_eResDown"]
-    for p in mediumPhotonsNoChgIsoNoSieie_ResUp:   p["pt"] = p["pt_eResUp"]
-    for p in mediumPhotonsNoChgIsoNoSieie_ResDown: p["pt"] = p["pt_eResDown"]
+    if not options.skipSystematicVariations:
+        mediumPhotons_ScaleUp             = list( filter( lambda g: recoPhotonSel_medium(g, ptVar="pt_eScaleUp"),                      copy.deepcopy(allPhotons) ) )
+        mediumPhotons_ScaleDown           = list( filter( lambda g: recoPhotonSel_medium(g, ptVar="pt_eScaleDown"),                    copy.deepcopy(allPhotons) ) )
+        mediumPhotons_ResUp               = list( filter( lambda g: recoPhotonSel_medium(g, ptVar="pt_eResUp"),                      copy.deepcopy(allPhotons) ) )
+        mediumPhotons_ResDown             = list( filter( lambda g: recoPhotonSel_medium(g, ptVar="pt_eResDown"),                    copy.deepcopy(allPhotons) ) )
+        mediumPhotonsNoChgIsoNoSieie_ScaleUp   = list( filter( lambda g: recoPhotonSel_medium(g, removedCuts=["pfRelIso03_chg", "sieie"], ptVar="pt_eScaleUp"),   copy.deepcopy(allPhotons) ) )
+        mediumPhotonsNoChgIsoNoSieie_ScaleDown = list( filter( lambda g: recoPhotonSel_medium(g, removedCuts=["pfRelIso03_chg", "sieie"], ptVar="pt_eScaleDown"), copy.deepcopy(allPhotons) ) )
+        mediumPhotonsNoChgIsoNoSieie_ResUp   = list( filter( lambda g: recoPhotonSel_medium(g, removedCuts=["pfRelIso03_chg", "sieie"], ptVar="pt_eResUp"),   copy.deepcopy(allPhotons) ) )
+        mediumPhotonsNoChgIsoNoSieie_ResDown = list( filter( lambda g: recoPhotonSel_medium(g, removedCuts=["pfRelIso03_chg", "sieie"], ptVar="pt_eResDown"), copy.deepcopy(allPhotons) ) )
+        for p in mediumPhotons_ScaleUp:   p["pt"] = p["pt_eScaleUp"]
+        for p in mediumPhotons_ScaleDown: p["pt"] = p["pt_eScaleDown"]
+        for p in mediumPhotonsNoChgIsoNoSieie_ScaleUp:   p["pt"] = p["pt_eScaleUp"]
+        for p in mediumPhotonsNoChgIsoNoSieie_ScaleDown: p["pt"] = p["pt_eScaleDown"]
+        for p in mediumPhotons_ResUp:   p["pt"] = p["pt_eResUp"]
+        for p in mediumPhotons_ResDown: p["pt"] = p["pt_eResDown"]
+        for p in mediumPhotonsNoChgIsoNoSieie_ResUp:   p["pt"] = p["pt_eResUp"]
+        for p in mediumPhotonsNoChgIsoNoSieie_ResDown: p["pt"] = p["pt_eResDown"]
 
     # DeltaR cleaning
     mediumPhotonsInvLepIso                          = deltaRCleaning( mediumPhotons,                          tightInvIsoLeptons, dRCut=0.4 )
-    mediumPhotonsInvLepIso_ScaleUp                  = deltaRCleaning( mediumPhotons_ScaleUp,                  tightInvIsoElectrons_ScaleUp   + tightInvIsoMuons, dRCut=0.4 )
-    mediumPhotonsInvLepIso_ScaleDown                = deltaRCleaning( mediumPhotons_ScaleDown,                tightInvIsoElectrons_ScaleDown + tightInvIsoMuons, dRCut=0.4 )
-    mediumPhotonsInvLepIso_ResUp                    = deltaRCleaning( mediumPhotons_ResUp,                    tightInvIsoElectrons_ResUp   + tightInvIsoMuons, dRCut=0.4 )
-    mediumPhotonsInvLepIso_ResDown                  = deltaRCleaning( mediumPhotons_ResDown,                  tightInvIsoElectrons_ResDown + tightInvIsoMuons, dRCut=0.4 )
     mediumPhotonsNoChgIsoNoSieieInvLepIso           = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie,           tightInvIsoLeptons, dRCut=0.4 )
-    mediumPhotonsNoChgIsoNoSieieInvLepIso_ScaleUp   = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie_ScaleUp,   tightInvIsoElectrons_ScaleUp   + tightInvIsoMuons, dRCut=0.4 )
-    mediumPhotonsNoChgIsoNoSieieInvLepIso_ScaleDown = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie_ScaleDown, tightInvIsoElectrons_ScaleDown + tightInvIsoMuons, dRCut=0.4 )
-    mediumPhotonsNoChgIsoNoSieieInvLepIso_ResUp     = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie_ResUp,     tightInvIsoElectrons_ResUp   + tightInvIsoMuons, dRCut=0.4 )
-    mediumPhotonsNoChgIsoNoSieieInvLepIso_ResDown   = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie_ResDown,   tightInvIsoElectrons_ResDown + tightInvIsoMuons, dRCut=0.4 )
+    if not options.skipSystematicVariations:
+        mediumPhotonsInvLepIso_ScaleUp                  = deltaRCleaning( mediumPhotons_ScaleUp,                  tightInvIsoElectrons_ScaleUp   + tightInvIsoMuons, dRCut=0.4 )
+        mediumPhotonsInvLepIso_ScaleDown                = deltaRCleaning( mediumPhotons_ScaleDown,                tightInvIsoElectrons_ScaleDown + tightInvIsoMuons, dRCut=0.4 )
+        mediumPhotonsInvLepIso_ResUp                    = deltaRCleaning( mediumPhotons_ResUp,                    tightInvIsoElectrons_ResUp   + tightInvIsoMuons, dRCut=0.4 )
+        mediumPhotonsInvLepIso_ResDown                  = deltaRCleaning( mediumPhotons_ResDown,                  tightInvIsoElectrons_ResDown + tightInvIsoMuons, dRCut=0.4 )
+        mediumPhotonsNoChgIsoNoSieieInvLepIso_ScaleUp   = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie_ScaleUp,   tightInvIsoElectrons_ScaleUp   + tightInvIsoMuons, dRCut=0.4 )
+        mediumPhotonsNoChgIsoNoSieieInvLepIso_ScaleDown = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie_ScaleDown, tightInvIsoElectrons_ScaleDown + tightInvIsoMuons, dRCut=0.4 )
+        mediumPhotonsNoChgIsoNoSieieInvLepIso_ResUp     = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie_ResUp,     tightInvIsoElectrons_ResUp   + tightInvIsoMuons, dRCut=0.4 )
+        mediumPhotonsNoChgIsoNoSieieInvLepIso_ResDown   = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie_ResDown,   tightInvIsoElectrons_ResDown + tightInvIsoMuons, dRCut=0.4 )
 
     mediumPhotonsNoLepIso                = deltaRCleaning( mediumPhotons,                tightNoIsoLeptons, dRCut=0.4 )
     mediumPhotonsNoChgIsoNoSieieNoLepIso = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie, tightNoIsoLeptons, dRCut=0.4 )
@@ -1585,15 +1642,16 @@ def filler( event ):
     mediumPhotonsNoLepSieieInvLepIso = deltaRCleaning( mediumPhotons, tightInvIsoNoSieieLeptons, dRCut=0.4 )
 
     mediumPhotons                     = deltaRCleaning( mediumPhotons,                     tightLeptons, dRCut=0.4 )
-    mediumPhotons_ScaleUp             = deltaRCleaning( mediumPhotons_ScaleUp,             tightElectrons_ScaleUp   + tightMuons, dRCut=0.4 )
-    mediumPhotons_ScaleDown           = deltaRCleaning( mediumPhotons_ScaleDown,           tightElectrons_ScaleDown + tightMuons, dRCut=0.4 )
-    mediumPhotons_ResUp               = deltaRCleaning( mediumPhotons_ResUp,             tightElectrons_ResUp   + tightMuons, dRCut=0.4 )
-    mediumPhotons_ResDown             = deltaRCleaning( mediumPhotons_ResDown,           tightElectrons_ResDown + tightMuons, dRCut=0.4 )
     mediumPhotonsNoChgIsoNoSieie           = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie, tightLeptons, dRCut=0.4 )
-    mediumPhotonsNoChgIsoNoSieie_ScaleUp   = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie_ScaleUp,   tightElectrons_ScaleUp   + tightMuons, dRCut=0.4 )
-    mediumPhotonsNoChgIsoNoSieie_ScaleDown = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie_ScaleDown, tightElectrons_ScaleDown + tightMuons, dRCut=0.4 )
-    mediumPhotonsNoChgIsoNoSieie_ResUp     = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie_ResUp,   tightElectrons_ResUp   + tightMuons, dRCut=0.4 )
-    mediumPhotonsNoChgIsoNoSieie_ResDown   = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie_ResDown, tightElectrons_ResDown + tightMuons, dRCut=0.4 )
+    if not options.skipSystematicVariations:
+        mediumPhotons_ScaleUp             = deltaRCleaning( mediumPhotons_ScaleUp,             tightElectrons_ScaleUp   + tightMuons, dRCut=0.4 )
+        mediumPhotons_ScaleDown           = deltaRCleaning( mediumPhotons_ScaleDown,           tightElectrons_ScaleDown + tightMuons, dRCut=0.4 )
+        mediumPhotons_ResUp               = deltaRCleaning( mediumPhotons_ResUp,             tightElectrons_ResUp   + tightMuons, dRCut=0.4 )
+        mediumPhotons_ResDown             = deltaRCleaning( mediumPhotons_ResDown,           tightElectrons_ResDown + tightMuons, dRCut=0.4 )
+        mediumPhotonsNoChgIsoNoSieie_ScaleUp   = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie_ScaleUp,   tightElectrons_ScaleUp   + tightMuons, dRCut=0.4 )
+        mediumPhotonsNoChgIsoNoSieie_ScaleDown = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie_ScaleDown, tightElectrons_ScaleDown + tightMuons, dRCut=0.4 )
+        mediumPhotonsNoChgIsoNoSieie_ResUp     = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie_ResUp,   tightElectrons_ResUp   + tightMuons, dRCut=0.4 )
+        mediumPhotonsNoChgIsoNoSieie_ResDown   = deltaRCleaning( mediumPhotonsNoChgIsoNoSieie_ResDown, tightElectrons_ResDown + tightMuons, dRCut=0.4 )
 
     # misID electrons
     if mediumPhotons and allLeptons:
@@ -1767,91 +1825,92 @@ def filler( event ):
             event.j1GammadPhi = deltaPhi( goodJets[1]['phi'], mediumPhotons[0]['phi'] )
             event.j1GammadR   = deltaR(   goodJets[1],        mediumPhotons[0] )
 
-    if len(mediumPhotons) > 0 and len(tightLeptons_muup) > 0:
-            event.ltight0GammadPhi_muTotalUp = deltaPhi( tightLeptons_muup[0]['phi'], mediumPhotons[0]['phi'] )
-            event.ltight0GammadR_muTotalUp   = deltaR(   tightLeptons_muup[0],        mediumPhotons[0] )
-    if len(mediumPhotonsNoChgIsoNoSieie) > 0 and len(tightLeptons_muup) > 0:
-            event.ltight0GammaNoSieieNoChgIsodPhi_muTotalUp = deltaPhi( tightLeptons_muup[0]['phi'], mediumPhotonsNoChgIsoNoSieie[0]['phi'] )
-            event.ltight0GammaNoSieieNoChgIsodR_muTotalUp   = deltaR(   tightLeptons_muup[0],        mediumPhotonsNoChgIsoNoSieie[0] )
+    if not options.skipSystematicVariations:
+        if len(mediumPhotons) > 0 and len(tightLeptons_muup) > 0:
+                event.ltight0GammadPhi_muTotalUp = deltaPhi( tightLeptons_muup[0]['phi'], mediumPhotons[0]['phi'] )
+                event.ltight0GammadR_muTotalUp   = deltaR(   tightLeptons_muup[0],        mediumPhotons[0] )
+        if len(mediumPhotonsNoChgIsoNoSieie) > 0 and len(tightLeptons_muup) > 0:
+                event.ltight0GammaNoSieieNoChgIsodPhi_muTotalUp = deltaPhi( tightLeptons_muup[0]['phi'], mediumPhotonsNoChgIsoNoSieie[0]['phi'] )
+                event.ltight0GammaNoSieieNoChgIsodR_muTotalUp   = deltaR(   tightLeptons_muup[0],        mediumPhotonsNoChgIsoNoSieie[0] )
 
-    if len(mediumPhotons) > 0 and len(tightLeptons_mudown) > 0:
-            event.ltight0GammadPhi_muTotalDown = deltaPhi( tightLeptons_mudown[0]['phi'], mediumPhotons[0]['phi'] )
-            event.ltight0GammadR_muTotalDown   = deltaR(   tightLeptons_mudown[0],        mediumPhotons[0] )
-    if len(mediumPhotonsNoChgIsoNoSieie) > 0 and len(tightLeptons_mudown) > 0:
-            event.ltight0GammaNoSieieNoChgIsodPhi_muTotalDown = deltaPhi( tightLeptons_mudown[0]['phi'], mediumPhotonsNoChgIsoNoSieie[0]['phi'] )
-            event.ltight0GammaNoSieieNoChgIsodR_muTotalDown   = deltaR(   tightLeptons_mudown[0],        mediumPhotonsNoChgIsoNoSieie[0] )
+        if len(mediumPhotons) > 0 and len(tightLeptons_mudown) > 0:
+                event.ltight0GammadPhi_muTotalDown = deltaPhi( tightLeptons_mudown[0]['phi'], mediumPhotons[0]['phi'] )
+                event.ltight0GammadR_muTotalDown   = deltaR(   tightLeptons_mudown[0],        mediumPhotons[0] )
+        if len(mediumPhotonsNoChgIsoNoSieie) > 0 and len(tightLeptons_mudown) > 0:
+                event.ltight0GammaNoSieieNoChgIsodPhi_muTotalDown = deltaPhi( tightLeptons_mudown[0]['phi'], mediumPhotonsNoChgIsoNoSieie[0]['phi'] )
+                event.ltight0GammaNoSieieNoChgIsodR_muTotalDown   = deltaR(   tightLeptons_mudown[0],        mediumPhotonsNoChgIsoNoSieie[0] )
 
-    if len(mediumPhotons_ScaleUp) > 0 and len(tightLeptons_eScaleUp) > 0:
-            event.ltight0GammadPhi_eScaleUp = deltaPhi( tightLeptons_eScaleUp[0]['phi'], mediumPhotons_ScaleUp[0]['phi'] )
-            event.ltight0GammadR_eScaleUp   = deltaR(   tightLeptons_eScaleUp[0],        mediumPhotons_ScaleUp[0] )
-    if len(mediumPhotons_ScaleUp) > 0 and len(goodJets) > 0:
-            event.photonJetdR_eScaleUp = min( deltaR( mediumPhotons_ScaleUp[0], j ) for j in goodJets )
-    if len(mediumPhotonsNoChgIsoNoSieie_ScaleUp) > 0 and len(tightLeptons_eScaleUp) > 0:
-            event.ltight0GammaNoSieieNoChgIsodPhi_eScaleUp = deltaPhi( tightLeptons_eScaleUp[0]['phi'], mediumPhotonsNoChgIsoNoSieie_ScaleUp[0]['phi'] )
-            event.ltight0GammaNoSieieNoChgIsodR_eScaleUp   = deltaR(   tightLeptons_eScaleUp[0],        mediumPhotonsNoChgIsoNoSieie_ScaleUp[0] )
-    if len(mediumPhotonsNoChgIsoNoSieie_ScaleUp) > 0 and len(goodNoChgIsoNoSieieJets) > 0:
-            event.photonNoSieieNoChgIsoJetdR_eScaleUp = min( deltaR( mediumPhotonsNoChgIsoNoSieie_ScaleUp[0], j ) for j in goodNoChgIsoNoSieieJets )
+        if len(mediumPhotons_ScaleUp) > 0 and len(tightLeptons_eScaleUp) > 0:
+                event.ltight0GammadPhi_eScaleUp = deltaPhi( tightLeptons_eScaleUp[0]['phi'], mediumPhotons_ScaleUp[0]['phi'] )
+                event.ltight0GammadR_eScaleUp   = deltaR(   tightLeptons_eScaleUp[0],        mediumPhotons_ScaleUp[0] )
+        if len(mediumPhotons_ScaleUp) > 0 and len(goodJets) > 0:
+                event.photonJetdR_eScaleUp = min( deltaR( mediumPhotons_ScaleUp[0], j ) for j in goodJets )
+        if len(mediumPhotonsNoChgIsoNoSieie_ScaleUp) > 0 and len(tightLeptons_eScaleUp) > 0:
+                event.ltight0GammaNoSieieNoChgIsodPhi_eScaleUp = deltaPhi( tightLeptons_eScaleUp[0]['phi'], mediumPhotonsNoChgIsoNoSieie_ScaleUp[0]['phi'] )
+                event.ltight0GammaNoSieieNoChgIsodR_eScaleUp   = deltaR(   tightLeptons_eScaleUp[0],        mediumPhotonsNoChgIsoNoSieie_ScaleUp[0] )
+        if len(mediumPhotonsNoChgIsoNoSieie_ScaleUp) > 0 and len(goodNoChgIsoNoSieieJets) > 0:
+                event.photonNoSieieNoChgIsoJetdR_eScaleUp = min( deltaR( mediumPhotonsNoChgIsoNoSieie_ScaleUp[0], j ) for j in goodNoChgIsoNoSieieJets )
 
-    if len(mediumPhotons_ScaleDown) > 0 and len(tightLeptons_eScaleDown) > 0:
-            event.ltight0GammadPhi_eScaleDown = deltaPhi( tightLeptons_eScaleDown[0]['phi'], mediumPhotons_ScaleDown[0]['phi'] )
-            event.ltight0GammadR_eScaleDown   = deltaR(   tightLeptons_eScaleDown[0],        mediumPhotons_ScaleDown[0] )
-    if len(mediumPhotons_ScaleDown) > 0 and len(goodJets) > 0:
-            event.photonJetdR_eScaleDown = min( deltaR( mediumPhotons_ScaleDown[0], j ) for j in goodJets )
-    if len(mediumPhotonsNoChgIsoNoSieie_ScaleDown) > 0 and len(tightLeptons_eScaleDown) > 0:
-            event.ltight0GammaNoSieieNoChgIsodPhi_eScaleDown = deltaPhi( tightLeptons_eScaleDown[0]['phi'], mediumPhotonsNoChgIsoNoSieie_ScaleDown[0]['phi'] )
-            event.ltight0GammaNoSieieNoChgIsodR_eScaleDown   = deltaR(   tightLeptons_eScaleDown[0],        mediumPhotonsNoChgIsoNoSieie_ScaleDown[0] )
-    if len(mediumPhotonsNoChgIsoNoSieie_ScaleDown) > 0 and len(goodNoChgIsoNoSieieJets) > 0:
-            event.photonNoSieieNoChgIsoJetdR_eScaleDown = min( deltaR( mediumPhotonsNoChgIsoNoSieie_ScaleDown[0], j ) for j in goodNoChgIsoNoSieieJets )
+        if len(mediumPhotons_ScaleDown) > 0 and len(tightLeptons_eScaleDown) > 0:
+                event.ltight0GammadPhi_eScaleDown = deltaPhi( tightLeptons_eScaleDown[0]['phi'], mediumPhotons_ScaleDown[0]['phi'] )
+                event.ltight0GammadR_eScaleDown   = deltaR(   tightLeptons_eScaleDown[0],        mediumPhotons_ScaleDown[0] )
+        if len(mediumPhotons_ScaleDown) > 0 and len(goodJets) > 0:
+                event.photonJetdR_eScaleDown = min( deltaR( mediumPhotons_ScaleDown[0], j ) for j in goodJets )
+        if len(mediumPhotonsNoChgIsoNoSieie_ScaleDown) > 0 and len(tightLeptons_eScaleDown) > 0:
+                event.ltight0GammaNoSieieNoChgIsodPhi_eScaleDown = deltaPhi( tightLeptons_eScaleDown[0]['phi'], mediumPhotonsNoChgIsoNoSieie_ScaleDown[0]['phi'] )
+                event.ltight0GammaNoSieieNoChgIsodR_eScaleDown   = deltaR(   tightLeptons_eScaleDown[0],        mediumPhotonsNoChgIsoNoSieie_ScaleDown[0] )
+        if len(mediumPhotonsNoChgIsoNoSieie_ScaleDown) > 0 and len(goodNoChgIsoNoSieieJets) > 0:
+                event.photonNoSieieNoChgIsoJetdR_eScaleDown = min( deltaR( mediumPhotonsNoChgIsoNoSieie_ScaleDown[0], j ) for j in goodNoChgIsoNoSieieJets )
 
-    if len(mediumPhotons_ResUp) > 0 and len(tightLeptons_eResUp) > 0:
-            event.ltight0GammadPhi_eResUp = deltaPhi( tightLeptons_eResUp[0]['phi'], mediumPhotons_ResUp[0]['phi'] )
-            event.ltight0GammadR_eResUp   = deltaR(   tightLeptons_eResUp[0],        mediumPhotons_ResUp[0] )
-    if len(mediumPhotons_ResUp) > 0 and len(goodJets) > 0:
-            event.photonJetdR_eResUp = min( deltaR( mediumPhotons_ResUp[0], j ) for j in goodJets )
-    if len(mediumPhotonsNoChgIsoNoSieie_ResUp) > 0 and len(tightLeptons_eResUp) > 0:
-            event.ltight0GammaNoSieieNoChgIsodPhi_eResUp = deltaPhi( tightLeptons_eResUp[0]['phi'], mediumPhotonsNoChgIsoNoSieie_ResUp[0]['phi'] )
-            event.ltight0GammaNoSieieNoChgIsodR_eResUp   = deltaR(   tightLeptons_eResUp[0],        mediumPhotonsNoChgIsoNoSieie_ResUp[0] )
-    if len(mediumPhotonsNoChgIsoNoSieie_ResUp) > 0 and len(goodNoChgIsoNoSieieJets) > 0:
-            event.photonNoSieieNoChgIsoJetdR_eResUp = min( deltaR( mediumPhotonsNoChgIsoNoSieie_ResUp[0], j ) for j in goodNoChgIsoNoSieieJets )
+        if len(mediumPhotons_ResUp) > 0 and len(tightLeptons_eResUp) > 0:
+                event.ltight0GammadPhi_eResUp = deltaPhi( tightLeptons_eResUp[0]['phi'], mediumPhotons_ResUp[0]['phi'] )
+                event.ltight0GammadR_eResUp   = deltaR(   tightLeptons_eResUp[0],        mediumPhotons_ResUp[0] )
+        if len(mediumPhotons_ResUp) > 0 and len(goodJets) > 0:
+                event.photonJetdR_eResUp = min( deltaR( mediumPhotons_ResUp[0], j ) for j in goodJets )
+        if len(mediumPhotonsNoChgIsoNoSieie_ResUp) > 0 and len(tightLeptons_eResUp) > 0:
+                event.ltight0GammaNoSieieNoChgIsodPhi_eResUp = deltaPhi( tightLeptons_eResUp[0]['phi'], mediumPhotonsNoChgIsoNoSieie_ResUp[0]['phi'] )
+                event.ltight0GammaNoSieieNoChgIsodR_eResUp   = deltaR(   tightLeptons_eResUp[0],        mediumPhotonsNoChgIsoNoSieie_ResUp[0] )
+        if len(mediumPhotonsNoChgIsoNoSieie_ResUp) > 0 and len(goodNoChgIsoNoSieieJets) > 0:
+                event.photonNoSieieNoChgIsoJetdR_eResUp = min( deltaR( mediumPhotonsNoChgIsoNoSieie_ResUp[0], j ) for j in goodNoChgIsoNoSieieJets )
 
-    if len(mediumPhotons_ResDown) > 0 and len(tightLeptons_eResDown) > 0:
-            event.ltight0GammadPhi_eResDown = deltaPhi( tightLeptons_eResDown[0]['phi'], mediumPhotons_ResDown[0]['phi'] )
-            event.ltight0GammadR_eResDown   = deltaR(   tightLeptons_eResDown[0],        mediumPhotons_ResDown[0] )
-    if len(mediumPhotons_ResDown) > 0 and len(goodJets) > 0:
-            event.photonJetdR_eResDown = min( deltaR( mediumPhotons_ResDown[0], j ) for j in goodJets )
-    if len(mediumPhotonsNoChgIsoNoSieie_ResDown) > 0 and len(tightLeptons_eResDown) > 0:
-            event.ltight0GammaNoSieieNoChgIsodPhi_eResDown = deltaPhi( tightLeptons_eResDown[0]['phi'], mediumPhotonsNoChgIsoNoSieie_ResDown[0]['phi'] )
-            event.ltight0GammaNoSieieNoChgIsodR_eResDown   = deltaR(   tightLeptons_eResDown[0],        mediumPhotonsNoChgIsoNoSieie_ResDown[0] )
-    if len(mediumPhotonsNoChgIsoNoSieie_ResDown) > 0 and len(goodNoChgIsoNoSieieJets) > 0:
-            event.photonNoSieieNoChgIsoJetdR_eResDown = min( deltaR( mediumPhotonsNoChgIsoNoSieie_ResDown[0], j ) for j in goodNoChgIsoNoSieieJets )
+        if len(mediumPhotons_ResDown) > 0 and len(tightLeptons_eResDown) > 0:
+                event.ltight0GammadPhi_eResDown = deltaPhi( tightLeptons_eResDown[0]['phi'], mediumPhotons_ResDown[0]['phi'] )
+                event.ltight0GammadR_eResDown   = deltaR(   tightLeptons_eResDown[0],        mediumPhotons_ResDown[0] )
+        if len(mediumPhotons_ResDown) > 0 and len(goodJets) > 0:
+                event.photonJetdR_eResDown = min( deltaR( mediumPhotons_ResDown[0], j ) for j in goodJets )
+        if len(mediumPhotonsNoChgIsoNoSieie_ResDown) > 0 and len(tightLeptons_eResDown) > 0:
+                event.ltight0GammaNoSieieNoChgIsodPhi_eResDown = deltaPhi( tightLeptons_eResDown[0]['phi'], mediumPhotonsNoChgIsoNoSieie_ResDown[0]['phi'] )
+                event.ltight0GammaNoSieieNoChgIsodR_eResDown   = deltaR(   tightLeptons_eResDown[0],        mediumPhotonsNoChgIsoNoSieie_ResDown[0] )
+        if len(mediumPhotonsNoChgIsoNoSieie_ResDown) > 0 and len(goodNoChgIsoNoSieieJets) > 0:
+                event.photonNoSieieNoChgIsoJetdR_eResDown = min( deltaR( mediumPhotonsNoChgIsoNoSieie_ResDown[0], j ) for j in goodNoChgIsoNoSieieJets )
 
-    if len(mediumPhotons_ScaleUp) > 0   and len(tightLeptons_eScaleUp) > 0:   event.mLtight0Gamma_eScaleUp   = ( get4DVec(tightLeptons_eScaleUp[0]) + get4DVec(mediumPhotons_ScaleUp[0]) ).M()
-    if len(mediumPhotons_ScaleDown) > 0 and len(tightLeptons_eScaleDown) > 0: event.mLtight0Gamma_eScaleDown = ( get4DVec(tightLeptons_eScaleDown[0]) + get4DVec(mediumPhotons_ScaleDown[0]) ).M()
-    if len(mediumPhotons_ResUp) > 0   and len(tightLeptons_eResUp) > 0:   event.mLtight0Gamma_eResUp   = ( get4DVec(tightLeptons_eResUp[0]) + get4DVec(mediumPhotons_ResUp[0]) ).M()
-    if len(mediumPhotons_ResDown) > 0 and len(tightLeptons_eResDown) > 0: event.mLtight0Gamma_eResDown = ( get4DVec(tightLeptons_eResDown[0]) + get4DVec(mediumPhotons_ResDown[0]) ).M()
-    if len(mediumPhotons) > 0 and len(tightLeptons_muup) > 0:       event.mLtight0Gamma_muTotalUp = ( get4DVec(tightLeptons_muup[0]) + get4DVec(mediumPhotons[0]) ).M()
-    if len(mediumPhotons) > 0 and len(tightLeptons_mudown) > 0:     event.mLtight0Gamma_muTotalDown = ( get4DVec(tightLeptons_mudown[0]) + get4DVec(mediumPhotons[0]) ).M()
+        if len(mediumPhotons_ScaleUp) > 0   and len(tightLeptons_eScaleUp) > 0:   event.mLtight0Gamma_eScaleUp   = ( get4DVec(tightLeptons_eScaleUp[0]) + get4DVec(mediumPhotons_ScaleUp[0]) ).M()
+        if len(mediumPhotons_ScaleDown) > 0 and len(tightLeptons_eScaleDown) > 0: event.mLtight0Gamma_eScaleDown = ( get4DVec(tightLeptons_eScaleDown[0]) + get4DVec(mediumPhotons_ScaleDown[0]) ).M()
+        if len(mediumPhotons_ResUp) > 0   and len(tightLeptons_eResUp) > 0:   event.mLtight0Gamma_eResUp   = ( get4DVec(tightLeptons_eResUp[0]) + get4DVec(mediumPhotons_ResUp[0]) ).M()
+        if len(mediumPhotons_ResDown) > 0 and len(tightLeptons_eResDown) > 0: event.mLtight0Gamma_eResDown = ( get4DVec(tightLeptons_eResDown[0]) + get4DVec(mediumPhotons_ResDown[0]) ).M()
+        if len(mediumPhotons) > 0 and len(tightLeptons_muup) > 0:       event.mLtight0Gamma_muTotalUp = ( get4DVec(tightLeptons_muup[0]) + get4DVec(mediumPhotons[0]) ).M()
+        if len(mediumPhotons) > 0 and len(tightLeptons_mudown) > 0:     event.mLtight0Gamma_muTotalDown = ( get4DVec(tightLeptons_mudown[0]) + get4DVec(mediumPhotons[0]) ).M()
 
-    if len(mediumPhotons_ScaleUp) > 0 and len(tightInvIsoLeptons_eScaleUp) > 0:     event.mLinvtight0Gamma_eScaleUp = ( get4DVec(tightInvIsoLeptons_eScaleUp[0]) + get4DVec(mediumPhotons_ScaleUp[0]) ).M()
-    if len(mediumPhotons_ScaleDown) > 0 and len(tightInvIsoLeptons_eScaleDown) > 0: event.mLinvtight0Gamma_eScaleDown = ( get4DVec(tightInvIsoLeptons_eScaleDown[0]) + get4DVec(mediumPhotons_ScaleDown[0]) ).M()
-    if len(mediumPhotons_ResUp) > 0 and len(tightInvIsoLeptons_eResUp) > 0:     event.mLinvtight0Gamma_eResUp = ( get4DVec(tightInvIsoLeptons_eResUp[0]) + get4DVec(mediumPhotons_ResUp[0]) ).M()
-    if len(mediumPhotons_ResDown) > 0 and len(tightInvIsoLeptons_eResDown) > 0: event.mLinvtight0Gamma_eResDown = ( get4DVec(tightInvIsoLeptons_eResDown[0]) + get4DVec(mediumPhotons_ResDown[0]) ).M()
-    if len(mediumPhotons) > 0 and len(tightInvIsoLeptons_muup) > 0:       event.mLinvtight0Gamma_muTotalUp = ( get4DVec(tightInvIsoLeptons_muup[0]) + get4DVec(mediumPhotons[0]) ).M()
-    if len(mediumPhotons) > 0 and len(tightInvIsoLeptons_mudown) > 0:     event.mLinvtight0Gamma_muTotalDown = ( get4DVec(tightInvIsoLeptons_mudown[0]) + get4DVec(mediumPhotons[0]) ).M()
+        if len(mediumPhotons_ScaleUp) > 0 and len(tightInvIsoLeptons_eScaleUp) > 0:     event.mLinvtight0Gamma_eScaleUp = ( get4DVec(tightInvIsoLeptons_eScaleUp[0]) + get4DVec(mediumPhotons_ScaleUp[0]) ).M()
+        if len(mediumPhotons_ScaleDown) > 0 and len(tightInvIsoLeptons_eScaleDown) > 0: event.mLinvtight0Gamma_eScaleDown = ( get4DVec(tightInvIsoLeptons_eScaleDown[0]) + get4DVec(mediumPhotons_ScaleDown[0]) ).M()
+        if len(mediumPhotons_ResUp) > 0 and len(tightInvIsoLeptons_eResUp) > 0:     event.mLinvtight0Gamma_eResUp = ( get4DVec(tightInvIsoLeptons_eResUp[0]) + get4DVec(mediumPhotons_ResUp[0]) ).M()
+        if len(mediumPhotons_ResDown) > 0 and len(tightInvIsoLeptons_eResDown) > 0: event.mLinvtight0Gamma_eResDown = ( get4DVec(tightInvIsoLeptons_eResDown[0]) + get4DVec(mediumPhotons_ResDown[0]) ).M()
+        if len(mediumPhotons) > 0 and len(tightInvIsoLeptons_muup) > 0:       event.mLinvtight0Gamma_muTotalUp = ( get4DVec(tightInvIsoLeptons_muup[0]) + get4DVec(mediumPhotons[0]) ).M()
+        if len(mediumPhotons) > 0 and len(tightInvIsoLeptons_mudown) > 0:     event.mLinvtight0Gamma_muTotalDown = ( get4DVec(tightInvIsoLeptons_mudown[0]) + get4DVec(mediumPhotons[0]) ).M()
 
-    if len(mediumPhotonsNoChgIsoNoSieie_ScaleUp) > 0 and len(tightLeptons_eScaleUp) > 0:     event.mLtight0GammaNoSieieNoChgIso_eScaleUp = ( get4DVec(tightLeptons_eScaleUp[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieie_ScaleUp[0]) ).M()
-    if len(mediumPhotonsNoChgIsoNoSieie_ScaleDown) > 0 and len(tightLeptons_eScaleDown) > 0: event.mLtight0GammaNoSieieNoChgIso_eScaleDown = ( get4DVec(tightLeptons_eScaleDown[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieie_ScaleDown[0]) ).M()
-    if len(mediumPhotonsNoChgIsoNoSieie_ResUp) > 0 and len(tightLeptons_eResUp) > 0:     event.mLtight0GammaNoSieieNoChgIso_eResUp = ( get4DVec(tightLeptons_eResUp[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieie_ResUp[0]) ).M()
-    if len(mediumPhotonsNoChgIsoNoSieie_ResDown) > 0 and len(tightLeptons_eResDown) > 0: event.mLtight0GammaNoSieieNoChgIso_eResDown = ( get4DVec(tightLeptons_eResDown[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieie_ResDown[0]) ).M()
-    if len(mediumPhotonsNoChgIsoNoSieie) > 0 and len(tightLeptons_muup) > 0:       event.mLtight0GammaNoSieieNoChgIso_muTotalUp = ( get4DVec(tightLeptons_muup[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieie[0]) ).M()
-    if len(mediumPhotonsNoChgIsoNoSieie) > 0 and len(tightLeptons_mudown) > 0:     event.mLtight0GammaNoSieieNoChgIso_muTotalDown = ( get4DVec(tightLeptons_mudown[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieie[0]) ).M()
+        if len(mediumPhotonsNoChgIsoNoSieie_ScaleUp) > 0 and len(tightLeptons_eScaleUp) > 0:     event.mLtight0GammaNoSieieNoChgIso_eScaleUp = ( get4DVec(tightLeptons_eScaleUp[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieie_ScaleUp[0]) ).M()
+        if len(mediumPhotonsNoChgIsoNoSieie_ScaleDown) > 0 and len(tightLeptons_eScaleDown) > 0: event.mLtight0GammaNoSieieNoChgIso_eScaleDown = ( get4DVec(tightLeptons_eScaleDown[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieie_ScaleDown[0]) ).M()
+        if len(mediumPhotonsNoChgIsoNoSieie_ResUp) > 0 and len(tightLeptons_eResUp) > 0:     event.mLtight0GammaNoSieieNoChgIso_eResUp = ( get4DVec(tightLeptons_eResUp[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieie_ResUp[0]) ).M()
+        if len(mediumPhotonsNoChgIsoNoSieie_ResDown) > 0 and len(tightLeptons_eResDown) > 0: event.mLtight0GammaNoSieieNoChgIso_eResDown = ( get4DVec(tightLeptons_eResDown[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieie_ResDown[0]) ).M()
+        if len(mediumPhotonsNoChgIsoNoSieie) > 0 and len(tightLeptons_muup) > 0:       event.mLtight0GammaNoSieieNoChgIso_muTotalUp = ( get4DVec(tightLeptons_muup[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieie[0]) ).M()
+        if len(mediumPhotonsNoChgIsoNoSieie) > 0 and len(tightLeptons_mudown) > 0:     event.mLtight0GammaNoSieieNoChgIso_muTotalDown = ( get4DVec(tightLeptons_mudown[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieie[0]) ).M()
 
-    if len(mediumPhotonsNoChgIsoNoSieieInvLepIso_ScaleUp) > 0 and len(tightInvIsoLeptons_eScaleUp) > 0:     event.mLinvtight0GammaNoSieieNoChgIso_eScaleUp = ( get4DVec(tightInvIsoLeptons_eScaleUp[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieieInvLepIso_ScaleUp[0]) ).M()
-    if len(mediumPhotonsNoChgIsoNoSieieInvLepIso_ScaleDown) > 0 and len(tightInvIsoLeptons_eScaleDown) > 0: event.mLinvtight0GammaNoSieieNoChgIso_eScaleDown = ( get4DVec(tightInvIsoLeptons_eScaleDown[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieieInvLepIso_ScaleDown[0]) ).M()
-    if len(mediumPhotonsNoChgIsoNoSieieInvLepIso_ResUp) > 0 and len(tightInvIsoLeptons_eResUp) > 0:     event.mLinvtight0GammaNoSieieNoChgIso_eResUp = ( get4DVec(tightInvIsoLeptons_eResUp[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieieInvLepIso_ResUp[0]) ).M()
-    if len(mediumPhotonsNoChgIsoNoSieieInvLepIso_ResDown) > 0 and len(tightInvIsoLeptons_eResDown) > 0: event.mLinvtight0GammaNoSieieNoChgIso_eResDown = ( get4DVec(tightInvIsoLeptons_eResDown[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieieInvLepIso_ResDown[0]) ).M()
-    if len(mediumPhotonsNoChgIsoNoSieieInvLepIso) > 0 and len(tightInvIsoLeptons_muup) > 0:       event.mLinvtight0GammaNoSieieNoChgIso_muTotalUp = ( get4DVec(tightInvIsoLeptons_muup[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieieInvLepIso[0]) ).M()
-    if len(mediumPhotonsNoChgIsoNoSieieInvLepIso) > 0 and len(tightInvIsoLeptons_mudown) > 0:     event.mLinvtight0GammaNoSieieNoChgIso_muTotalDown = ( get4DVec(tightInvIsoLeptons_mudown[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieieInvLepIso[0]) ).M()
+        if len(mediumPhotonsNoChgIsoNoSieieInvLepIso_ScaleUp) > 0 and len(tightInvIsoLeptons_eScaleUp) > 0:     event.mLinvtight0GammaNoSieieNoChgIso_eScaleUp = ( get4DVec(tightInvIsoLeptons_eScaleUp[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieieInvLepIso_ScaleUp[0]) ).M()
+        if len(mediumPhotonsNoChgIsoNoSieieInvLepIso_ScaleDown) > 0 and len(tightInvIsoLeptons_eScaleDown) > 0: event.mLinvtight0GammaNoSieieNoChgIso_eScaleDown = ( get4DVec(tightInvIsoLeptons_eScaleDown[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieieInvLepIso_ScaleDown[0]) ).M()
+        if len(mediumPhotonsNoChgIsoNoSieieInvLepIso_ResUp) > 0 and len(tightInvIsoLeptons_eResUp) > 0:     event.mLinvtight0GammaNoSieieNoChgIso_eResUp = ( get4DVec(tightInvIsoLeptons_eResUp[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieieInvLepIso_ResUp[0]) ).M()
+        if len(mediumPhotonsNoChgIsoNoSieieInvLepIso_ResDown) > 0 and len(tightInvIsoLeptons_eResDown) > 0: event.mLinvtight0GammaNoSieieNoChgIso_eResDown = ( get4DVec(tightInvIsoLeptons_eResDown[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieieInvLepIso_ResDown[0]) ).M()
+        if len(mediumPhotonsNoChgIsoNoSieieInvLepIso) > 0 and len(tightInvIsoLeptons_muup) > 0:       event.mLinvtight0GammaNoSieieNoChgIso_muTotalUp = ( get4DVec(tightInvIsoLeptons_muup[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieieInvLepIso[0]) ).M()
+        if len(mediumPhotonsNoChgIsoNoSieieInvLepIso) > 0 and len(tightInvIsoLeptons_mudown) > 0:     event.mLinvtight0GammaNoSieieNoChgIso_muTotalDown = ( get4DVec(tightInvIsoLeptons_mudown[0]) + get4DVec(mediumPhotonsNoChgIsoNoSieieInvLepIso[0]) ).M()
 
     if len(mediumPhotonsInvLepIso) > 0:
 
@@ -1885,29 +1944,31 @@ def filler( event ):
 
     event.nPhoton                = len( allPhotons )
     event.nPhotonGood            = len( mediumPhotons )
-    event.nPhotonGood_eScaleUp   = len( mediumPhotons_ScaleUp )
-    event.nPhotonGood_eScaleDown = len( mediumPhotons_ScaleDown )
-    event.nPhotonGood_eResUp   = len( mediumPhotons_ResUp )
-    event.nPhotonGood_eResDown = len( mediumPhotons_ResDown )
     event.nPhotonNoChgIsoNoSieie = len( mediumPhotonsNoChgIsoNoSieie )
-    event.nPhotonNoChgIsoNoSieie_eScaleUp   = len( mediumPhotonsNoChgIsoNoSieie_ScaleUp )
-    event.nPhotonNoChgIsoNoSieie_eScaleDown = len( mediumPhotonsNoChgIsoNoSieie_ScaleDown )
-    event.nPhotonNoChgIsoNoSieie_eResUp   = len( mediumPhotonsNoChgIsoNoSieie_ResUp )
-    event.nPhotonNoChgIsoNoSieie_eResDown = len( mediumPhotonsNoChgIsoNoSieie_ResDown )
+    if not options.skipSystematicVariations:
+        event.nPhotonGood_eScaleUp   = len( mediumPhotons_ScaleUp )
+        event.nPhotonGood_eScaleDown = len( mediumPhotons_ScaleDown )
+        event.nPhotonGood_eResUp   = len( mediumPhotons_ResUp )
+        event.nPhotonGood_eResDown = len( mediumPhotons_ResDown )
+        event.nPhotonNoChgIsoNoSieie_eScaleUp   = len( mediumPhotonsNoChgIsoNoSieie_ScaleUp )
+        event.nPhotonNoChgIsoNoSieie_eScaleDown = len( mediumPhotonsNoChgIsoNoSieie_ScaleDown )
+        event.nPhotonNoChgIsoNoSieie_eResUp   = len( mediumPhotonsNoChgIsoNoSieie_ResUp )
+        event.nPhotonNoChgIsoNoSieie_eResDown = len( mediumPhotonsNoChgIsoNoSieie_ResDown )
 
     event.nPhotonGoodNoLepSieie          = len( mediumPhotonsNoLepSieie )
     event.nPhotonGoodNoLepSieieInvLepIso = len( mediumPhotonsNoLepSieieInvLepIso )
 
     event.nPhotonGoodInvLepIso                       = len( mediumPhotonsInvLepIso )
-    event.nPhotonGoodInvLepIso_eScaleUp              = len( mediumPhotonsInvLepIso_ScaleUp )
-    event.nPhotonGoodInvLepIso_eScaleDown            = len( mediumPhotonsInvLepIso_ScaleDown )
-    event.nPhotonGoodInvLepIso_eResUp                = len( mediumPhotonsInvLepIso_ResUp )
-    event.nPhotonGoodInvLepIso_eResDown              = len( mediumPhotonsInvLepIso_ResDown )
     event.nPhotonNoChgIsoNoSieieInvLepIso            = len( mediumPhotonsNoChgIsoNoSieieInvLepIso )
-    event.nPhotonNoChgIsoNoSieieInvLepIso_eScaleUp   = len( mediumPhotonsNoChgIsoNoSieieInvLepIso_ScaleUp )
-    event.nPhotonNoChgIsoNoSieieInvLepIso_eScaleDown = len( mediumPhotonsNoChgIsoNoSieieInvLepIso_ScaleDown )
-    event.nPhotonNoChgIsoNoSieieInvLepIso_eResUp     = len( mediumPhotonsNoChgIsoNoSieieInvLepIso_ResUp )
-    event.nPhotonNoChgIsoNoSieieInvLepIso_eResDown   = len( mediumPhotonsNoChgIsoNoSieieInvLepIso_ResDown )
+    if not options.skipSystematicVariations:
+        event.nPhotonGoodInvLepIso_eScaleUp              = len( mediumPhotonsInvLepIso_ScaleUp )
+        event.nPhotonGoodInvLepIso_eScaleDown            = len( mediumPhotonsInvLepIso_ScaleDown )
+        event.nPhotonGoodInvLepIso_eResUp                = len( mediumPhotonsInvLepIso_ResUp )
+        event.nPhotonGoodInvLepIso_eResDown              = len( mediumPhotonsInvLepIso_ResDown )
+        event.nPhotonNoChgIsoNoSieieInvLepIso_eScaleUp   = len( mediumPhotonsNoChgIsoNoSieieInvLepIso_ScaleUp )
+        event.nPhotonNoChgIsoNoSieieInvLepIso_eScaleDown = len( mediumPhotonsNoChgIsoNoSieieInvLepIso_ScaleDown )
+        event.nPhotonNoChgIsoNoSieieInvLepIso_eResUp     = len( mediumPhotonsNoChgIsoNoSieieInvLepIso_ResUp )
+        event.nPhotonNoChgIsoNoSieieInvLepIso_eResDown   = len( mediumPhotonsNoChgIsoNoSieieInvLepIso_ResDown )
 
     event.nPhotonGoodNoLepIso            = len( mediumPhotonsNoLepIso )
     event.nPhotonNoChgIsoNoSieieNoLepIso = len( mediumPhotonsNoChgIsoNoSieieNoLepIso )
@@ -1922,35 +1983,36 @@ def filler( event ):
     p0NoChgIsoNoSieie = ( mediumPhotonsNoChgIsoNoSieie + [None] )[0]
     fill_vector( event, "PhotonNoChgIsoNoSieie0",  writePhotonVarList, p0NoChgIsoNoSieie )
 
-    p0Up, p1Up = ( mediumPhotons_ScaleUp + [None,None] )[:2]
-    fill_vector( event, "PhotonGood0_eScaleUp",  writePhotonVarList, p0Up )
+    if not options.skipSystematicVariations:
+        p0Up, p1Up = ( mediumPhotons_ScaleUp + [None,None] )[:2]
+        fill_vector( event, "PhotonGood0_eScaleUp",  writePhotonVarList, p0Up )
 
-    p0Up, p1Up = ( mediumPhotons_ResUp + [None,None] )[:2]
-    fill_vector( event, "PhotonGood0_eResUp",  writePhotonVarList, p0Up )
+        p0Up, p1Up = ( mediumPhotons_ResUp + [None,None] )[:2]
+        fill_vector( event, "PhotonGood0_eResUp",  writePhotonVarList, p0Up )
 
-    p0NoChgIsoNoSieieUp = ( mediumPhotonsNoChgIsoNoSieie_ScaleUp + [None] )[0]
-    fill_vector( event, "PhotonNoChgIsoNoSieie0_eScaleUp",  writePhotonVarList, p0NoChgIsoNoSieieUp )
+        p0NoChgIsoNoSieieUp = ( mediumPhotonsNoChgIsoNoSieie_ScaleUp + [None] )[0]
+        fill_vector( event, "PhotonNoChgIsoNoSieie0_eScaleUp",  writePhotonVarList, p0NoChgIsoNoSieieUp )
 
-    p0NoChgIsoNoSieieUp = ( mediumPhotonsNoChgIsoNoSieie_ResUp + [None] )[0]
-    fill_vector( event, "PhotonNoChgIsoNoSieie0_eResUp",  writePhotonVarList, p0NoChgIsoNoSieieUp )
+        p0NoChgIsoNoSieieUp = ( mediumPhotonsNoChgIsoNoSieie_ResUp + [None] )[0]
+        fill_vector( event, "PhotonNoChgIsoNoSieie0_eResUp",  writePhotonVarList, p0NoChgIsoNoSieieUp )
 
-    p0Down, p1Down = ( mediumPhotons_ScaleDown + [None,None] )[:2]
-    fill_vector( event, "PhotonGood0_eScaleDown",  writePhotonVarList, p0Down )
+        p0Down, p1Down = ( mediumPhotons_ScaleDown + [None,None] )[:2]
+        fill_vector( event, "PhotonGood0_eScaleDown",  writePhotonVarList, p0Down )
 
-    p0Down, p1Down = ( mediumPhotons_ResDown + [None,None] )[:2]
-    fill_vector( event, "PhotonGood0_eResDown",  writePhotonVarList, p0Down )
+        p0Down, p1Down = ( mediumPhotons_ResDown + [None,None] )[:2]
+        fill_vector( event, "PhotonGood0_eResDown",  writePhotonVarList, p0Down )
 
-    p0NoChgIsoNoSieieDown = ( mediumPhotonsNoChgIsoNoSieie_ScaleDown + [None] )[0]
-    fill_vector( event, "PhotonNoChgIsoNoSieie0_eScaleDown",  writePhotonVarList, p0NoChgIsoNoSieieDown )
+        p0NoChgIsoNoSieieDown = ( mediumPhotonsNoChgIsoNoSieie_ScaleDown + [None] )[0]
+        fill_vector( event, "PhotonNoChgIsoNoSieie0_eScaleDown",  writePhotonVarList, p0NoChgIsoNoSieieDown )
 
-    p0NoChgIsoNoSieieDown = ( mediumPhotonsNoChgIsoNoSieie_ResDown + [None] )[0]
-    fill_vector( event, "PhotonNoChgIsoNoSieie0_eResDown",  writePhotonVarList, p0NoChgIsoNoSieieDown )
+        p0NoChgIsoNoSieieDown = ( mediumPhotonsNoChgIsoNoSieie_ResDown + [None] )[0]
+        fill_vector( event, "PhotonNoChgIsoNoSieie0_eResDown",  writePhotonVarList, p0NoChgIsoNoSieieDown )
 
-    p0InvLepIso = ( mediumPhotonsInvLepIso + [None] )[0]
-    fill_vector( event, "PhotonGoodInvLepIso0",  writePhotonVarList, p0InvLepIso )
+        p0InvLepIso = ( mediumPhotonsInvLepIso + [None] )[0]
+        fill_vector( event, "PhotonGoodInvLepIso0",  writePhotonVarList, p0InvLepIso )
 
-    p0NoChgIsoNoSieieInvLepIso = ( mediumPhotonsNoChgIsoNoSieieInvLepIso + [None] )[0]
-    fill_vector( event, "PhotonNoChgIsoNoSieieInvLepIso0",  writePhotonVarList, p0NoChgIsoNoSieieInvLepIso )
+        p0NoChgIsoNoSieieInvLepIso = ( mediumPhotonsNoChgIsoNoSieieInvLepIso + [None] )[0]
+        fill_vector( event, "PhotonNoChgIsoNoSieieInvLepIso0",  writePhotonVarList, p0NoChgIsoNoSieieInvLepIso )
 
     met = {'pt':event.MET_pt, 'phi':event.MET_phi}
 
@@ -1966,41 +2028,42 @@ def filler( event ):
         if len(mediumPhotons) > 0:
             event.mllgammatight = ( get4DVec(tightLeptons[0]) + get4DVec(tightLeptons[1]) + get4DVec(mediumPhotons[0]) ).M()
 
-    if len(tightLeptons_eScaleUp) > 1:
-        event.mlltight_eScaleUp    = ( get4DVec(tightLeptons_eScaleUp[0]) + get4DVec(tightLeptons_eScaleUp[1]) ).M()
-        event.mT_eScaleUp          = mT( tightLeptons_eScaleUp[0], met )
-        if len(mediumPhotons_ScaleUp) > 0:
-            event.mllgammatight_eScaleUp = ( get4DVec(tightLeptons_eScaleUp[0]) + get4DVec(tightLeptons_eScaleUp[1]) + get4DVec(mediumPhotons_ScaleUp[0]) ).M()
+    if not options.skipSystematicVariations:
+        if len(tightLeptons_eScaleUp) > 1:
+            event.mlltight_eScaleUp    = ( get4DVec(tightLeptons_eScaleUp[0]) + get4DVec(tightLeptons_eScaleUp[1]) ).M()
+            event.mT_eScaleUp          = mT( tightLeptons_eScaleUp[0], met )
+            if len(mediumPhotons_ScaleUp) > 0:
+                event.mllgammatight_eScaleUp = ( get4DVec(tightLeptons_eScaleUp[0]) + get4DVec(tightLeptons_eScaleUp[1]) + get4DVec(mediumPhotons_ScaleUp[0]) ).M()
 
-    if len(tightLeptons_eResUp) > 1:
-        event.mlltight_eResUp    = ( get4DVec(tightLeptons_eResUp[0]) + get4DVec(tightLeptons_eResUp[1]) ).M()
-        event.mT_eResUp          = mT( tightLeptons_eResUp[0], met )
-        if len(mediumPhotons_ResUp) > 0:
-            event.mllgammatight_eResUp = ( get4DVec(tightLeptons_eResUp[0]) + get4DVec(tightLeptons_eResUp[1]) + get4DVec(mediumPhotons_ResUp[0]) ).M()
+        if len(tightLeptons_eResUp) > 1:
+            event.mlltight_eResUp    = ( get4DVec(tightLeptons_eResUp[0]) + get4DVec(tightLeptons_eResUp[1]) ).M()
+            event.mT_eResUp          = mT( tightLeptons_eResUp[0], met )
+            if len(mediumPhotons_ResUp) > 0:
+                event.mllgammatight_eResUp = ( get4DVec(tightLeptons_eResUp[0]) + get4DVec(tightLeptons_eResUp[1]) + get4DVec(mediumPhotons_ResUp[0]) ).M()
 
-    if len(tightLeptons_eScaleDown) > 1:
-        event.mlltight_eScaleDown    = ( get4DVec(tightLeptons_eScaleDown[0]) + get4DVec(tightLeptons_eScaleDown[1]) ).M()
-        event.mT_eScaleDown          = mT( tightLeptons_eScaleDown[0], met )
-        if len(mediumPhotons_ScaleDown) > 0:
-            event.mllgammatight_eScaleDown = ( get4DVec(tightLeptons_eScaleDown[0]) + get4DVec(tightLeptons_eScaleDown[1]) + get4DVec(mediumPhotons_ScaleDown[0]) ).M()
+        if len(tightLeptons_eScaleDown) > 1:
+            event.mlltight_eScaleDown    = ( get4DVec(tightLeptons_eScaleDown[0]) + get4DVec(tightLeptons_eScaleDown[1]) ).M()
+            event.mT_eScaleDown          = mT( tightLeptons_eScaleDown[0], met )
+            if len(mediumPhotons_ScaleDown) > 0:
+                event.mllgammatight_eScaleDown = ( get4DVec(tightLeptons_eScaleDown[0]) + get4DVec(tightLeptons_eScaleDown[1]) + get4DVec(mediumPhotons_ScaleDown[0]) ).M()
 
-    if len(tightLeptons_eResDown) > 1:
-        event.mlltight_eResDown    = ( get4DVec(tightLeptons_eResDown[0]) + get4DVec(tightLeptons_eResDown[1]) ).M()
-        event.mT_eResDown          = mT( tightLeptons_eResDown[0], met )
-        if len(mediumPhotons_ResDown) > 0:
-            event.mllgammatight_eResDown = ( get4DVec(tightLeptons_eResDown[0]) + get4DVec(tightLeptons_eResDown[1]) + get4DVec(mediumPhotons_ResDown[0]) ).M()
+        if len(tightLeptons_eResDown) > 1:
+            event.mlltight_eResDown    = ( get4DVec(tightLeptons_eResDown[0]) + get4DVec(tightLeptons_eResDown[1]) ).M()
+            event.mT_eResDown          = mT( tightLeptons_eResDown[0], met )
+            if len(mediumPhotons_ResDown) > 0:
+                event.mllgammatight_eResDown = ( get4DVec(tightLeptons_eResDown[0]) + get4DVec(tightLeptons_eResDown[1]) + get4DVec(mediumPhotons_ResDown[0]) ).M()
 
-    if len(tightLeptons_muup) > 1:
-        event.mlltight_muTotalUp    = ( get4DVec(tightLeptons_muup[0]) + get4DVec(tightLeptons_muup[1]) ).M()
-        event.mT_muTotalDown        = mT( tightLeptons_muup[0], met )
-        if len(mediumPhotons) > 0:
-            event.mllgammatight_muTotalUp = ( get4DVec(tightLeptons_muup[0]) + get4DVec(tightLeptons_muup[1]) + get4DVec(mediumPhotons[0]) ).M()
+        if len(tightLeptons_muup) > 1:
+            event.mlltight_muTotalUp    = ( get4DVec(tightLeptons_muup[0]) + get4DVec(tightLeptons_muup[1]) ).M()
+            event.mT_muTotalDown        = mT( tightLeptons_muup[0], met )
+            if len(mediumPhotons) > 0:
+                event.mllgammatight_muTotalUp = ( get4DVec(tightLeptons_muup[0]) + get4DVec(tightLeptons_muup[1]) + get4DVec(mediumPhotons[0]) ).M()
 
-    if len(tightLeptons_mudown) > 1:
-        event.mlltight_muTotalDown    = ( get4DVec(tightLeptons_mudown[0]) + get4DVec(tightLeptons_mudown[1]) ).M()
-        event.mT_muTotalDown         = mT( tightLeptons_mudown[0], met )
-        if len(mediumPhotons) > 0:
-            event.mllgammatight_muTotalDown = ( get4DVec(tightLeptons_mudown[0]) + get4DVec(tightLeptons_mudown[1]) + get4DVec(mediumPhotons[0]) ).M()
+        if len(tightLeptons_mudown) > 1:
+            event.mlltight_muTotalDown    = ( get4DVec(tightLeptons_mudown[0]) + get4DVec(tightLeptons_mudown[1]) ).M()
+            event.mT_muTotalDown         = mT( tightLeptons_mudown[0], met )
+            if len(mediumPhotons) > 0:
+                event.mllgammatight_muTotalDown = ( get4DVec(tightLeptons_mudown[0]) + get4DVec(tightLeptons_mudown[1]) + get4DVec(mediumPhotons[0]) ).M()
 
     if len(jets) > 0 and len(tightLeptons) > 0:
         event.tightLeptonJetdR = min( deltaR( tightLeptons[0], j ) for j in jets )
