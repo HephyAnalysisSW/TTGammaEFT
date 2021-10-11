@@ -264,6 +264,28 @@ def muonSelector( lepton_selection ):
             return True
         return func
 
+    elif lepton_selection == 'MVA2l':
+        def func(l, leading=False, removedCuts=[], ptVar="pt"):
+            if not "pt" in removedCuts:
+                if leading:
+                    if l[ptVar]         <= 25:            return False
+                else:
+                    if l[ptVar]         <= 15:            return False
+            if not "eta" in removedCuts:
+                if abs(l["eta"])    > 2.4:               return False
+            if not l["mediumId"]:                        return False
+            if l["mvaTOP"] <= -0.45:                        return False
+            if not "vertex" in removedCuts:
+                if not vertexSelector(l):                return False
+#            if not "pfRelIso04_all" in removedCuts:
+#                if l['pfRelIso04_all']  > muonRelIsoCutVeto: return False
+            if not "miniPFRelIso_all" in removedCuts:
+                if l['miniPFRelIso_all']  > 0.4: return False
+            if not "sip3d" in removedCuts:
+                if l["sip3d"]           > 8:             return False
+            return True
+        return func
+
     elif lepton_selection == 'veto2l':
         # muon loose requirement
         def func(l, removedCuts=[], ptVar="pt"):
@@ -296,6 +318,8 @@ def muonSelector( lepton_selection ):
                 if not ( l["isGlobal"] or l["isTracker"] ):          return False
 #            if not "vertex" in removedCuts:
 #                if not vertexSelector(l):                            return False #sync with FNAL
+#            if not "miniPFRelIso_all" in removedCuts:
+#                if l['miniPFRelIso_all']  > 0.4: return False
             if not "pfRelIso04_all" in removedCuts:
                 if l['pfRelIso04_all']  > muonRelIsoCutVeto:                      return False
 #            if not "sip3d" in removedCuts:
@@ -394,6 +418,33 @@ def eleSelector( lepton_selection ):
             return True
         return func
 
+    elif lepton_selection == 'MVA2l':
+        def func(l, leading=False, removedCuts=[], ptVar="pt"):
+            if not barrelEndcapVeto(l):                  return False
+            if not "pt" in removedCuts:
+                if leading:
+                    if l[ptVar]         <= 25:            return False
+                else:
+                    if l[ptVar]         <= 15:            return False
+            if not "eta" in removedCuts:
+                if abs(l["eta"])   >= 2.4:               return False
+#            if not "pfRelIso03_all" in removedCuts:
+#                if abs(l["eta"]) > 1.479:
+#                    if l['pfRelIso03_all']  >  (0.203+(0.963/l["pt"])): return False
+#                else:
+#                    if l['pfRelIso03_all']  >  (0.198+(0.506/l["pt"])): return False
+            if not "miniPFRelIso_all" in removedCuts:
+                if l['miniPFRelIso_all']  > 0.4:          return False
+            if not "sip3d" in removedCuts:
+                if l["sip3d"]           > 8:             return False
+            if not "vertex" in removedCuts:
+                if not vertexSelector(l):                return False
+            if int(l["lostHits"])  >= 2:                 return False
+            if not l["convVeto"]:                        return False
+            if l["mvaTOP"] <= -0.55:                        return False
+            return True
+        return func
+
     elif lepton_selection == 'veto':
         def func(l, removedCuts=[], ptVar="pt"):
             if not barrelEndcapVeto(l):                return False
@@ -402,6 +453,8 @@ def eleSelector( lepton_selection ):
             if not "eta" in removedCuts:
                 if abs(l["eta"])    > 2.4:             return False
             if not electronVIDSelector( l, vidNestedWPBitMap["veto"], removedCuts=removedCuts ): return False
+#            if not "miniPFRelIso_all" in removedCuts:
+#                if l['miniPFRelIso_all']  > 0.4: return False
 #            if not "pfRelIso03_all" in removedCuts:
 #                if l['pfRelIso03_all']  > 0.4:         return False
 #            if not "sip3d" in removedCuts:
@@ -686,3 +739,4 @@ def getGoodMuons(c, collVars=muonVars, mu_selector = alwaysFalse):
 def getGoodElectrons(c, collVars=electronVars, ele_selector = alwaysFalse):
     return [l for l in getElectrons(c, collVars) if ele_selector(l)]
 
+print vidNestedWPBitMapToDict( 609370660 )

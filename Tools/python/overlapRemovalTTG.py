@@ -63,6 +63,14 @@ def photonFromTopDecay( parentList ):
     if parentList[0] == 6:  return False  # photon from top
     return True                           # photon from top decay
 
+def photonFromTWG( parentList ):
+    if not parentList:      return True  # empty list
+    parentList = map( abs, parentList )
+    if not 6 in parentList and not 24 in parentList and not 11 in parentList and not 13 in parentList and not 15 in parentList: return True  # ISR photon
+    if parentList[0] == 6:  return True  # photon from top
+    if parentList[0] == 24 and not 6 in parentList:  return True  # photon from W not from top
+    return False                           # photon from top decay or W decay
+
 def photonFromLepton( parentList ):
     if not parentList:               return False  # empty list
     if hasMesonMother( parentList ): return False

@@ -96,10 +96,11 @@ if os.environ["USER"] in ["lukas.lechner"]: #CBE cluster
 #    cache_directory                     = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache/"
     unfolding_cache_directory           = "/eos/vbc/user/lukas.lechner/TTGammaEFT/cache/"
 
-    combineReleaseLocation              = "/users/lukas.lechner/public/CMSSW_10_2_18/src/tmp/"
+    combineReleaseLocation              = "/users/lukas.lechner/public/CMSSW_10_2_15/src/tmp/"
     cardfileLocation                    = "/eos/vbc/user/lukas.lechner/TTGammaEFT/results/cardfiles/"
 
     dpm_directory                       = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/"
+    dpm_directoryEFT                       = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/nanoTuples/"
 #    dpm_directory                       = "/eos/vbc/user/lukas.lechner/TTGammaEFT/nanoTuples/"
     eos_directory                       = "/eos/vbc/user/lukas.lechner/TTGammaEFT/"
 
