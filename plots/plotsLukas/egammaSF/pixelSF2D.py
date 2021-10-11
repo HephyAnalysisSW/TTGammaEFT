@@ -49,34 +49,36 @@ def drawObjects( lumi_scale, log=False ):
     return [tex2.DrawLatex(*line2), tex.DrawLatex(*line)]
 
 dataDir = "$CMSSW_BASE/src/Analysis/Tools/data/photonSFData/"
+
 if args.year == 2016:
-    g_file = 'g2016_egammaPlots_MWP_PhoSFs_2016_LegacyReReco_New_private.root'
-    g_key  = "EGamma_SF2D"
+    g_file = 'g2016_ScalingFactors_80X_Summer16.root'
+    g_key  = "Scaling_Factors_HasPix_R9 Inclusive"
 elif args.year == 2017:
-    g_file = 'g2017_PhotonsMedium_mod_private_BostonAdded.root'
-    g_key  = "EGamma_SF2D"
+    g_file = 'g2017_PixelSeed_ScaleFactors_2017.root'
+    g_key  = "Medium_ID"
 elif args.year == 2018:
-    g_file = 'g2018_PhotonsMedium_mod_private_BostonAdded.root'
-    g_key  = "EGamma_SF2D"
+    g_file = 'g2018_HasPix_2018_private.root'
+#    g_key  = "uncertainty"
+    g_key  = "scalefactor"
 
 if args.year == 2016:   lumi_scale = 35.92
 elif args.year == 2017: lumi_scale = 41.53
 elif args.year == 2018: lumi_scale = 59.74
 
 sfHist = getObjFromFile( os.path.expandvars( os.path.join( dataDir, g_file ) ), g_key )
-sfHist.Scale(100)
+#sfHist.Scale(100)
 sfHist.SetMarkerSize(1.8)
 sfHist.GetZaxis().SetTitleOffset( 0.9 )
 
-for i in range( sfHist.GetNbinsX() ):
-    for j in range( sfHist.GetNbinsY() ):
-        sfHist.SetBinContent(i+1,j+1, float("%.2f"%sfHist.GetBinError(i+1,j+1)))
+#for i in range( sfHist.GetNbinsX() ):
+#    for j in range( sfHist.GetNbinsY() ):
+#        sfHist.SetBinContent(i+1,j+1, float("%.2f"%sfHist.GetBinError(i+1,j+1)))
 
 
 Plot2D.setDefaults()
 plots = []
-plots.append( Plot2D.fromHisto( "photonIDUnc_%i"%args.year,           [[sfHist]], texX="SuperCluster #eta(#gamma)", texY="p_{T}(#gamma) [GeV]", texZ="Uncertainty [%]" ) )
-#plots.append( Plot2D.fromHisto( "photonIDSF_%i"%args.year,           [[sfHist]], texX="SuperCluster #eta(#gamma)", texY="p_{T}(#gamma) [GeV]", texZ="Scale factor" ) )
+#plots.append( Plot2D.fromHisto( "pixelUnc_%i"%args.year,           [[sfHist]], texY="|#eta(#gamma)|", texX="p_{T}(#gamma) [GeV]", texZ="Uncertainty [%]" ) )
+plots.append( Plot2D.fromHisto( "pixelSF_%i"%args.year,           [[sfHist]], texY="|#eta(#gamma)|", texX="p_{T}(#gamma) [GeV]", texZ="Scale factor" ) )
 
 for plot in plots:
 
@@ -87,7 +89,7 @@ for plot in plots:
 
     plotting.draw2D( plot,
                        plot_directory = plot_directory_,
-                       logX = False, logY = True, logZ = False,
+                       logX = False, logY = False, logZ = False,
                        zRange = (0.84,1.16) if "SF" in plot.name else (0,10),
                        drawObjects = drawObjects( lumi_scale ),
                        copyIndexPHP = True,

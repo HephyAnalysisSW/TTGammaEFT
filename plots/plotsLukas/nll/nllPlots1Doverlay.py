@@ -45,6 +45,7 @@ argParser.add_argument( "--useRegions",         action="store",      nargs='*', 
 argParser.add_argument( "--useChannels",        action="store",      nargs='*', default=None,   type=str, choices=["e", "mu", "all", "comb"], help="Which lepton channels to use?" )
 argParser.add_argument('--withbkg',             action='store_true',                                                                                  help='with bkg?')
 argParser.add_argument('--withEFTUnc',             action='store_true',                                                        help="add EFT uncertainty?")
+argParser.add_argument('--splitScale',             action='store_true',                                                        help="split scale uncertainties in sources")
 args = argParser.parse_args()
 
 if args.year != "RunII": args.year = int(args.year)
@@ -71,6 +72,7 @@ regionNames.sort()
 if args.addDYSF:     regionNames.append("addDYSF")
 if args.addMisIDSF:  regionNames.append("addMisIDSF")
 if args.useChannels:  regionNames.append("_".join([ch for ch in args.useChannels if not "tight" in ch]))
+if args.splitScale:   regionNames.append("splitScale")
 
 regionNamesIncl = copy.deepcopy(regionNames)
 regionNamesIncl.append("incl")
@@ -81,7 +83,7 @@ cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
 print cacheFileName
 
-directory = os.path.join( plot_directory, "nllPlotsPostCWR", str(args.year), "_".join( regionNames ))
+directory = os.path.join( plot_directory, "nllPlotsJHEP", str(args.year), "_".join( regionNames ))
 addon = "expected" if args.expected else "observed"
 if args.plotData: addon += "_check"
 plot_directory_ = os.path.join( directory, addon )
@@ -286,7 +288,7 @@ def plot1D( dat, datIncl, var, xmin, xmax ):
     #if not None in args.zRange:
     xhist.GetYaxis().SetRangeUser( 0, 5.5 )
     xhist.GetXaxis().SetRangeUser( xmin, xmax )
-    xhist.GetXaxis().SetLimits(xmin, xmax)
+#    xhist.GetXaxis().SetLimits(xmin, xmax)
 
 
     func95 = ROOT.TF1("func95",polString, x95min,x95max )

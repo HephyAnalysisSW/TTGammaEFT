@@ -28,7 +28,7 @@ loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTS
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument('--logLevel',           action='store',      default='INFO', nargs='?', choices=loggerChoices,                               help="Log level for logging")
-argParser.add_argument('--plot_directory',     action='store',      default='102X_TTG_ppv49_v1')
+argParser.add_argument('--plot_directory',     action='store',      default='102X_TTG_ppv49_v3')
 argParser.add_argument('--year',               action='store',      default=2016,   type=int,  choices=[2016,2017,2018],                             help="Which year to plot?")
 argParser.add_argument('--mode',               action='store',      default="all", type=str, choices=["genMu", "genE", "all"],                       help="plot lepton mode" )
 argParser.add_argument('--normalize',          action='store_true', default=False,                                                                   help="Normalize yields" )
@@ -53,7 +53,7 @@ elif args.year == 2018:
 elif args.year == "RunII":
     import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
 
-sample = mc_samples.TTGLep
+sample = mc_samples.TTG
 sample.color = ROOT.kRed+1
 
 # Text on the plots
@@ -93,7 +93,7 @@ for i in range(1,hist.GetNbinsX()+1):
     if evt == 0: continue
     print "pdgId", i-26, evt, "%.2f%s"%(evt*100./total, "%")
 
-hist.legendText = "tt#gamma (dilep)"
+hist.legendText = "tt#gamma (total)"
 hist.style = styles.lineStyle( sample.color, width = 3 )
 
 histos     = [[hist]]

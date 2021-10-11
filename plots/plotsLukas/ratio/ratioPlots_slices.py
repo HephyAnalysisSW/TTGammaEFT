@@ -65,17 +65,25 @@ elif args.year == 2018: lumi_scale = 59.74
 elif args.year == "RunII": lumi_scale = 35.92 + 41.53 + 59.74
 
 # Text on the plots
-def drawObjects( lumi_scale ):
+def drawObjects( lumi_scale, log=False ):
     tex = ROOT.TLatex()
     tex.SetNDC()
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
-    line = (0.68, 0.95, "%3.1f fb^{-1} (13 TeV)" % lumi_scale)
-    lines = [
-      (0.15, 0.95, "CMS #bf{#it{Preliminary}}"),
-      line
-    ]
-    return [tex.DrawLatex(*l) for l in lines]
+
+    tex2 = ROOT.TLatex()
+    tex2.SetNDC()
+#    tex2.SetTextSize(0.058)
+    tex2.SetTextSize(0.05)
+    tex2.SetTextAlign(11) # align right
+#    line = (0.65, 0.95, "%3.1f fb^{-1} (13 TeV)" % lumi_scale)
+    line = (0.68, 0.95, "%i fb^{-1} (13 TeV)" % lumi_scale)
+    line2 = (0.235 if not log and (args.selection.startswith("WJets") or args.selection.startswith("TT")) else 0.15, 0.95, "Private Work")
+    line3 = (0.42, 0.95, "#bf{#it{Simulation}}")
+
+#    lines2 = (0.235 if not log and (args.selection.startswith("WJets") or args.selection.startswith("TT")) else 0.15, 0.95, "CMS #bf{#it{Preliminary}}%s"%(" (%s)"%(replaceRegionNaming[args.selection.repl$
+#    line2 = (0.235 if not log and (args.selection.startswith("WJets") or args.selection.startswith("TT")) else 0.15, 0.95, "CMS%s"%(" (%s)"%(replaceRegionNaming[args.selection.replace("fake","SR")] if ar$
+    return [tex2.DrawLatex(*line2), tex.DrawLatex(*line3), tex.DrawLatex(*line)]
 
 cache_dir = os.path.join(cache_directory, "drawHistos", str(args.year), args.selection, args.mode)
 dirDB = MergingDirDB(cache_dir)
@@ -107,23 +115,23 @@ for i, dict in enumerate(slices):
     locals()["all_"+str(i)].color   = dict["color"]
     locals()["all_"+str(i)].setSelectionString( cutInterpreter.cutString( cut ) )
     locals()["all_"+str(i)].name    = "MC"+str(i)
-    locals()["all_"+str(i)].texName = "MC "
+    locals()["all_"+str(i)].texName = ""
     if "sieie" in args.variable:
         cutRange = cut.split("Iso")[1].lower()
         print cutRange
         low, high = map(float,cutRange.split("to")) if "to" in cutRange else ( float(cutRange), None )
-        locals()["all_"+str(i)].texName += "%.2f #leq chg Iso < %.2f"%(low, high) if high else "chg Iso #geq %.2f"%(low)
+        locals()["all_"+str(i)].texName += "%.2f #leq I^{ chg} (#gamma) < %.2f GeV"%(low, high) if high else "I^{ chg} (#gamma) #geq %.2f GeV"%(low)
     elif "chg" in args.variable:
         cutRange = cut.split("Sieie")[1].lower()
         print cutRange
         low, high = map(float,cutRange.split("to")) if "to" in cutRange else ( float(cutRange), None )
-        locals()["all_"+str(i)].texName += "%.3f #leq #sigma_{i#etai#eta} < %.3f"%(low, high) if high else "#sigma_{i#etai#eta} #geq %.3f"%(low)
+        locals()["all_"+str(i)].texName += "%.3f #leq #sigma_{#eta#eta} < %.3f"%(low, high) if high else "#sigma_{#eta#eta} #geq %.3f"%(low)
 
 mc  = [ locals()["all_"+str(i)] for i in range(len(slices)) ]
 print mc
 stackSamples  = [ [s] for s in mc ]
 
-NanoVars         = NanoVariables( args.year )
+NanoVars         = NanoVariables( 2016 )
 photonVariables  = NanoVars.getVariables( "Photon", postprocessed=True, data=False, plot=True )
 
 read_variables = [ "weight/F",
@@ -211,14 +219,15 @@ histos     = [[s.hist]    for s in mc]
 Plot.setDefaults()
 
 plots = []
-plots.append( Plot.fromHisto( args.variable + "_" + args.addCut if args.survey else args.variable, histos, texX = "chg.Iso(#gamma)" if "chg" in args.variable else "#sigma_{i#eta i#eta}", texY = "Number of Events" ) )
+unitBinning = (float(args.binning[2]) - float(args.binning[1])) / float(args.binning[0])
+plots.append( Plot.fromHisto( args.variable + "_" + args.addCut if args.survey else args.variable, histos, texX = "chg.Iso(#gamma)" if "chg" in args.variable else "#sigma_{#eta#eta}(#gamma)", texY = "Events / %.3f units"%unitBinning ) )
 
 selDir = args.selection
 if args.addCut and not args.survey: selDir += "-" + args.addCut
 
 for plot in plots:
 
-    legend = [ (0.2,0.8-0.025*sum(map(len, plot.histos)),0.9,0.9), 2 ]
+    legend = [ (0.22,0.8-0.03*sum(map(len, plot.histos)),0.9,0.88), 1 ]
 
     for log in [True, False]:
         plot_directory_ = os.path.join( plot_directory, "fakeRatio", str(args.year), args.plot_directory, selDir, args.mode, "log" if log else "lin" )
@@ -226,7 +235,7 @@ for plot in plots:
                        plot_directory = plot_directory_,
                        logX = False, logY = log, sorting = True,
                        yRange = (0.3, "auto"),
-                       ratio = {'yRange':(0.1,1.9), 'histos':[(i+1,0) for i in range(len(slices)-1)], 'texY': 'SB/SR', 'yRange':(0.1,1.9)} if plot.name != "ratio" else None,
+                       ratio = {'yRange':(0.1,1.9), 'histos':[(i+1,0) for i in range(len(slices)-1)], 'texY': 'Ratio', 'yRange':(0.1,1.9)} if plot.name != "ratio" else None,
                        scaling = { i+1:0 for i in range(len(slices)-1)} if plot.name != "ratio" else {},
                        drawObjects = drawObjects( lumi_scale ),
                        legend = legend,

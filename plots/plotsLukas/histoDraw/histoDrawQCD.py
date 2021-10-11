@@ -62,9 +62,10 @@ def drawObjects( lumi_scale ):
     tex.SetNDC()
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
-    line = (0.68, 0.95, "%3.1f fb^{-1} (13 TeV)" % lumi_scale)
+    line = (0.68, 0.95, "%i fb^{-1} (13 TeV)" % lumi_scale)
     lines = [
-      (0.15, 0.95, "CMS #bf{#it{Preliminary}} (%s)"%args.selection),
+#      (0.15, 0.95, "CMS #bf{#it{Preliminary}} (%s)"%args.selection),
+      (0.15, 0.95, "Private Work"),
       line
     ]
     return [tex.DrawLatex(*l) for l in lines]
@@ -88,8 +89,8 @@ elif args.year == "RunII":
     import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
     from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
-mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
-#mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.ZG, mc_samples.rest ]
+#mc = [ mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
+mc = [ mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.rest ]
 
 read_variables_MC = ["isTTGamma/I", "isZWGamma/I", "isTGamma/I", "overlapRemoval/I",
                      "reweightPU/F", "reweightPUDown/F", "reweightPUUp/F", "reweightPUVDown/F", "reweightPUVUp/F",
@@ -537,9 +538,9 @@ qcdHist.legendText     = "Multijet"
 
 qcdTemplate            = qcdHist.Clone("QCDTemplate")
 qcdTemplate.style      = styles.fillStyle( color.QCD )
-qcdTemplate.legendText = "Template (%i)"%int(sbInt)
-#if not skipQCD:
-#    qcdTemplate.Scale(1./ qcdTemplate.Integral() )
+qcdTemplate.legendText = "Template"
+if not skipQCD:
+    qcdTemplate.Scale(1./ qcdTemplate.Integral() )
 maxQCD = qcdTemplate.GetMaximum()
 
 if args.photonCat:
@@ -562,7 +563,7 @@ replaceLabel = {
     "PhotonNoChgIsoNoSieie0_r9": "R9(#gamma)",
     "PhotonNoChgIsoNoSieie0_sieie": "#sigma_{i#eta i#eta}(#gamma)",
     "MET_pt": "E^{miss}_{T} [GeV]",
-    "mT": "M_{T} [GeV]",
+    "mT": "m_{T}(W) [GeV]",
     "mLtight0Gamma": "M(#gamma,%s) [GeV]"%lep,
     "LeptonTight0_eta": "#eta(%s)"%lep,
     "LeptonTight0_phi": "#phi(%s)"%lep,
@@ -605,8 +606,8 @@ replaceLabel = {
 }
 
 plots = []
-plots.append( Plot.fromHisto( args.variable,             histos,        texX = replaceLabel[args.variable],                   texY = "Number of Events" ) )
-#plots.append( Plot.fromHisto( args.variable+"_sideband", histos_SB,     texX = args.variable+" (QCD sideband)", texY = "Number of Events" ) )
+plots.append( Plot.fromHisto( args.variable,             histos,        texX = replaceLabel[args.variable],                   texY = "Events" ) )
+plots.append( Plot.fromHisto( args.variable+"_sideband", histos_SB,     texX = replaceLabel[args.variable], texY = "Events" ) )
 
 for plot in plots:
 

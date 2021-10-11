@@ -31,7 +31,7 @@ addSF = True
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",           action="store",      default="INFO", nargs="?", choices=loggerChoices,                        help="Log level for logging")
-argParser.add_argument("--plot_directory",     action="store",      default="102X_TTG_ppv49_v1",                                             help="plot sub-directory")
+argParser.add_argument("--plot_directory",     action="store",      default="102X_TTG_ppv49_vdiss",                                             help="plot sub-directory")
 argParser.add_argument("--selection",          action="store",      default="WJets2",                                                        help="reco region")
 argParser.add_argument("--year",               action="store",      default="2016",   type=str,  choices=["2016","2017","2018","RunII"],                     help="Which year to plot?")
 argParser.add_argument("--mode",               action="store",      default="e",    type=str,  choices=["mu", "e"],                          help="lepton selection")
@@ -49,17 +49,22 @@ logger    = logger.get_logger(    args.logLevel, logFile=None )
 logger_rt = logger_rt.get_logger( args.logLevel, logFile=None )
 
 # Text on the plots
-def drawObjects( lumi_scale ):
+def drawObjects( lumi_scale, log=False ):
     tex = ROOT.TLatex()
     tex.SetNDC()
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
-    line = (0.68, 0.95, "%3.1f fb^{-1} (13 TeV)" % lumi_scale)
-    lines = [
-      (0.15, 0.95, "CMS #bf{#it{Preliminary}} (%s)"%args.selection),
-      line
-    ]
-    return [tex.DrawLatex(*l) for l in lines]
+
+    tex2 = ROOT.TLatex()
+    tex2.SetNDC()
+#    tex2.SetTextSize(0.058)
+    tex2.SetTextSize(0.05)
+    tex2.SetTextAlign(11) # align right
+#    line = (0.65, 0.95, "%3.1f fb^{-1} (13 TeV)" % lumi_scale)
+    line = (0.685, 0.95, "%i fb^{-1} (13 TeV)" % lumi_scale)
+    line2 = (0.235 if not log and (args.selection.startswith("WJets") or args.selection.startswith("TT")) else 0.15, 0.95, "Private Work")
+
+    return [tex2.DrawLatex(*line2), tex.DrawLatex(*line)]
 
 selDir = args.selection
 if args.addCut: selDir += "-" + args.addCut
@@ -304,15 +309,17 @@ else:
     flavHist = qcd.get1DHistoFromDraw( "LeptonTight0_genPartFlav", binning=flavbinning, selectionString=selection, addOverFlowBin="upper" )
     dirDB.add(key, flavHist)
 
-flavHist.style = styles.lineStyle( color.QCD, width=3 )
+flavHist.style = styles.lineStyle( color.QCD, width=2 )
 flavHist.legendText = "QCD (MC, %s)"%args.mode.replace("mu","#mu")
 
-qcd.hist.style = styles.lineStyle( ROOT.kBlue, width=3 )
-qcd.hist.legendText = "QCD Template (MC, %s)"%args.mode.replace("mu","#mu")
+qcd.hist.style = styles.lineStyle( ROOT.kRed, width=2, errors=True )
+#qcd.hist.legendText = "Sim.-based QCD Template"
+qcd.hist.legendText = "QCD0b2 QCD1b2"
 
 qcdTemplate_comp = qcdHist.Clone("QCDTemplate_comp")
-qcdTemplate_comp.style = styles.lineStyle( color.QCD, width=3 )
-qcdTemplate_comp.legendText = "QCD Template (Data, %s)"%args.mode.replace("mu","#mu")
+qcdTemplate_comp.style = styles.lineStyle( ROOT.kBlue, width=3 )
+#qcdTemplate_comp.legendText = "Data-based QCD Template"
+qcdTemplate_comp.legendText = "e channel #mu channel"
 
 # copy template
 qcdTemplate            = qcdHist.Clone("QCDTemplate")
@@ -416,12 +423,13 @@ mTHistos_fit[0].append( hist_other )
 Plot.setDefaults()
 
 plots = []
-plots.append( Plot.fromHisto( "mT",          mTHistos,        texX = "m_{T} [GeV]",                texY = "Number of Events" ) )
-plots.append( Plot.fromHisto( "mT_fit",      mTHistos_fit,    texX = "m_{T} [GeV]",                texY = "Number of Events" ) )
-plots.append( Plot.fromHisto( "mT_sideband", mTHistos_SB,     texX = "m_{T} (QCD sideband) [GeV]", texY = "Number of Events" ) )
-#plots.append( Plot.fromHisto( "mT_template", [[qcdTemplate]], texX = "m_{T} [GeV]",                texY = "Number of Events" ) )
-mcPlot = Plot.fromHisto( "mT_MCcomp", [[qcd.hist], [qcdTemplate_comp]], texX = "m_{T} [GeV]",                texY = "Number of Events" )
-flavPlot = Plot.fromHisto( "genPartFlav_QCD", [[flavHist]], texX = "genPartFlav",                texY = "Number of Events" )
+units = " / 10 GeV"
+plots.append( Plot.fromHisto( "mT",          mTHistos,        texX = "m_{T}(W) [GeV]",                texY = "Events%s"%units ) )
+plots.append( Plot.fromHisto( "mT_fit",      mTHistos_fit,    texX = "m_{T}(W) [GeV]",                texY = "Events%s"%units ) )
+plots.append( Plot.fromHisto( "mT_sideband", mTHistos_SB,     texX = "m_{T}(W) (QCD sideband) [GeV]", texY = "Events%s"%units ) )
+#plots.append( Plot.fromHisto( "mT_template", [[qcdTemplate]], texX = "m_{T} [GeV]",                texY = "Events%s"%units ) )
+mcPlot = Plot.fromHisto( "mT_MCcomp", [[qcd.hist], [qcdTemplate_comp]], texX = "m_{T}(W) [GeV]",                texY = "Events%s"%units )
+flavPlot = Plot.fromHisto( "genPartFlav_QCD", [[flavHist]], texX = "genPartFlav",                texY = "Events%s"%units )
 
 for plot in plots:
 
@@ -430,7 +438,7 @@ for plot in plots:
     elif "template" in plot.name:
         legend = [ (0.2, 0.84, 0.9, 0.9), 1 ]
     else:
-        legend = [ (0.2,0.9-0.025*sum(map(len, plot.histos)),0.9,0.9), 3 ]
+        legend = [ (0.22,0.75,0.9,0.9), 3 ]
 
     for log in [True, False]:
 
@@ -444,8 +452,9 @@ for plot in plots:
             ratio = {'yRange':(0.1,1.9), "histModifications":ratioHistModifications}
         elif plot.name == "mT_sideband":
             ratio = {'histos':[(2,3)], 'logY':log, 'texY': 'Template', 'yRange': (0.03, maxQCD*2) if log else (0.001, maxQCD*1.2), "histModifications":ratioHistModifications}
-        else:
-            ratio = None
+#        else:
+        ratio = {'yRange':(0.1,1.9), "histModifications":ratioHistModifications, "texY":"Sim./Data"}
+#            ratio = None
 
         plot_directory_ = os.path.join( plot_directory, "transferFactor", str(args.year), args.plot_directory, "qcdHistos",  selDir, args.mode, "log" if log else "lin" )
         plotting.draw( plot,
@@ -459,7 +468,7 @@ for plot in plots:
                        copyIndexPHP = True,
                        )
 
-legend = (0.2, 0.78, 0.9, 0.9)
+legend = (0.22, 0.72, 0.9, 0.88)
 for log in [True, False]:
 
     histModifications  = []
@@ -468,7 +477,7 @@ for log in [True, False]:
     ratioHistModifications  = []
     ratioHistModifications += [lambda h: h.GetYaxis().SetTitleOffset(1.6 if log else 2.2)]
 
-    ratio = {'yRange':(0.1,1.9), "histModifications":ratioHistModifications}
+    ratio = {'yRange':(0.1,1.9), "histModifications":ratioHistModifications, "texY":"Sim./Data", 'histos':[(0,1)]}
     plot_directory_ = os.path.join( plot_directory, "transferFactor", str(args.year), args.plot_directory, "qcdHistos",  selDir, args.mode, "log" if log else "lin" )
     plotting.draw( mcPlot,
                    plot_directory = plot_directory_,

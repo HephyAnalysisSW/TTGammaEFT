@@ -14,6 +14,7 @@ import numpy as np
 from plotHelpers                      import *
 import array
 # Analysis
+from Analysis.Tools.u_float    import u_float
 from Analysis.Tools.cardFileWriter.CombineResults    import CombineResults
 import Analysis.Tools.syncer as syncer
 
@@ -99,7 +100,7 @@ if args.expected: add += ["expected"]
 if args.linTest != 1: add += ["linTest"+str(args.linTest)]
 fit      = "_".join( ["postFit" if args.postFit else "preFit"] + add )
 
-plotDirectory = os.path.join(plot_directory, "fitpostCWR_v2", str(args.year), fit, dirName)
+plotDirectory = os.path.join(plot_directory, "fitJHEPv3", str(args.year), fit, dirName)
 cardFile      = os.path.join( cache_directory, "analysis", str(args.year) if args.year != "combined" else "COMBINED", args.carddir, args.cardfile+".txt" )
 logger.info("Plotting from cardfile %s"%cardFile)
 
@@ -144,6 +145,7 @@ if args.substituteCard:
         subCardFile = Results.createRebinnedResults( rebinnedCardFile, skipStatOnly=True, setParameters="r=1,Signal_mu_4p_Bin0_%s=1"%(str(args.year) if args.year != "combined" else "2018") if freezeR else None, options=options )
 
     del Results
+#    subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/cardFiles/defaultSetup/observed/SR3M3_SR4pM3_VG3_VG4p_misDY3_misDY4p_addDYSF_incl_splitScale/SR3_SR4p_addDYSF_incl_splitScale.txt"
     Results     = CombineResults( cardFile=subCardFile, plotDirectory=plotDirectory, year=args.year, bkgOnly=args.bkgOnly, isSearch=False, rebinnedCardFile=rebinnedCardFile )
 
     if args.cacheHistogram:
@@ -259,18 +261,25 @@ def replaceHistoBinning( hists ):
 
 # region plot, sorted/not sorted, w/ or w/o +-1sigma changes in one nuisance
 def plotRegions( sorted=True ):
-#    if args.postFit and not args.substituteCard and not args.bkgSubstracted:
-#        Results.plotPOIScan( rMin=0.5, rMax=1.5, points=200 )
+    if args.postFit and not args.substituteCard and not args.bkgSubstracted:
+        Results.plotPOIScan( rMin=0.5, rMax=1.5, points=200 )
 
     modelUnc = [
             "Tune",
-            "QCDbased",
-            "Scale",
-            "GluonMove",
+#            "QCDbased",
+#            "Scale",
+            "Scale_DD",
+            "Scale_DN",
+            "Scale_ND",
+            "Scale_NU",
+            "Scale_UN",
+            "Scale_UU",
+#            "GluonMove",
             "PDF",
             "ISR",
             "FSR",
-            "erdOn",
+#            "erdOn",
+            "Color",
             ]
 
     if args.postFit and not freezeR:
@@ -352,6 +361,8 @@ def plotRegions( sorted=True ):
             "fake_photon_DD_normalization",
             "Other_normalization",
             "TT_normalization",
+            "tWgamma_normalization",
+            "tWgamma_shape",
             "PU",
             ]
     if args.postFit and not freezeR:
@@ -500,6 +511,23 @@ def plotRegions( sorted=True ):
             if i == 0:
                 hists = {key:hist.Clone(str(i)+dir+key) for key, hist in hists_tmp[dir].iteritems() if not args.plotNuisances or key not in plotNuisances} #copy.deepcopy(hists_tmp)
                 if args.plotNuisances:
+#                    print plotNuisances
+#                    tot = Results.sumNuisanceHistos(hists_tmp[dir], nuisances=plotNuisances, postFit=args.postFit, bkgSubstracted=args.bkgSubstracted)
+#                    hists["MCStat"] = {}
+#                    hists["MCStat"]["up"] = hists["signal" if args.bkgSubstracted else "total"].Clone()
+#                    hists["MCStat"]["down"] = hists["signal" if args.bkgSubstracted else "total"].Clone()
+#                    hists["MCStat"]["up"].Scale(0)
+#                    hists["MCStat"]["down"].Scale(0)
+#                    for i in range(hists["MCStat"]["up"].GetNbinsX()):
+#                        print tot["up"].GetBinContent(i+1), hists["total"].GetBinContent(i+1)
+#                        err = hists["signal" if args.bkgSubstracted else "total"].GetBinError(i+1)**2 - ( tot["up"].GetBinContent(i+1)-hists["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1) )**2
+#                        print i, err, "tot err", hists["signal" if args.bkgSubstracted else "total"].GetBinError(i+1), "sum err", tot["up"].GetBinContent(i+1)-hists["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1), "sum", tot["up"].GetBinContent(i+1), "tot", hists["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1)
+#                        err = math.sqrt(err) if err>0 else 0
+#                        hists["MCStat"]["up"].SetBinContent( i+1, hists["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1) )
+#                        hists["MCStat"]["down"].SetBinContent( i+1, hists["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1) )
+#                        hists["MCStat"]["up"].SetBinError( i+1, err )
+#                        hists["MCStat"]["down"].SetBinError( i+1, err )
+
                     for n in plotNuisances:
                         for i_b in range(hists_tmp[dir][n]["up"].GetNbinsX()):
                             hists_tmp[dir][n]["up"].SetBinError( i_b+1, hists_tmp[dir][n]["up"].GetBinContent( i_b+1 ) - hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].GetBinContent( i_b+1 ) )
@@ -511,19 +539,65 @@ def plotRegions( sorted=True ):
                         hists[n]["up"].style      = hists_tmp[dir][n]["up"].style
                         hists[n]["down"].legendText = hists_tmp[dir][n]["down"].legendText
                         hists[n]["down"].style      = hists_tmp[dir][n]["down"].style
+
             else:
-               for key, hist in hists_tmp[dir].iteritems():
+#                if args.plotNuisances:
+#                    tot = Results.sumNuisanceHistos(hists_tmp[dir], nuisances=plotNuisances, postFit=args.postFit, bkgSubstracted=args.bkgSubstracted)
+#                    mcstatup = {}
+#                    mcstatup = hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].Clone()
+#                    mcstatdown = hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].Clone()
+#                    mcstatup.Scale(0)
+#                    mcstatdown.Scale(0)
+#                    for i in range(mcstatup.GetNbinsX()):
+#                        err = hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].GetBinError(i+1)**2 - ( tot["up"].GetBinContent(i+1)-hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1) )**2
+#                        print i, err, "tot err", hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].GetBinError(i+1), "sum err", tot["up"].GetBinContent(i+1)-hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1), "sum", tot["up"].GetBinContent(i+1), "tot", hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1)
+#                        err = math.sqrt(err) if err>0 else 0
+#                        mcstatup.SetBinContent( i+1, hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1) )
+#                        mcstatdown.SetBinContent( i+1, hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1) )
+#                        mcstatup.SetBinError( i+1, err )
+#                        mcstatdown.SetBinError( i+1, err )
+#                    hists["MCStat"]["up"].Add(mcstatup.Clone(str(i)+dir+"MCStat"+"up"))
+#                    hists["MCStat"]["down"].Add(mcstatdown.Clone(str(i)+dir+"MCStat"+"down"))
+
+                for key, hist in hists_tmp[dir].iteritems():
                     if args.plotNuisances and key in plotNuisances:
                         for i_b in range(hist["up"].GetNbinsX()):
                             hist["up"].SetBinError( i_b+1, hist["up"].GetBinContent( i_b+1 ) - hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].GetBinContent( i_b+1 ) )
                             hist["up"].SetBinContent( i_b+1, hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].GetBinContent( i_b+1 ) )
                             hist["down"].SetBinError( i_b+1, hist["down"].GetBinContent( i_b+1 ) - hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].GetBinContent( i_b+1 ) )
                             hist["down"].SetBinContent( i_b+1, hists_tmp[dir]["signal" if args.bkgSubstracted else "total"].GetBinContent( i_b+1 ) )
+#                        for i_b in range(hists[key]["up"].GetNbinsX()):
+#                            hists[key]["up"].SetBinContent( i_b+1, hists[key]["up"].GetBinContent(i_b+1) + hist["up"].GetBinContent(i_b+1) )
+#                            hists[key]["up"].SetBinError( i_b+1, hists[key]["up"].GetBinError(i_b+1) + hist["up"].GetBinError(i_b+1) ) #100% correlated
+#                            hists[key]["down"].SetBinContent( i_b+1, hists[key]["down"].GetBinContent(i_b+1) + hist["down"].GetBinContent(i_b+1) )
+#                            hists[key]["down"].SetBinError( i_b+1, hists[key]["down"].GetBinError(i_b+1) + hist["down"].GetBinError(i_b+1) ) #100% correlated
+
                         hists[key]["up"].Add(hist["up"].Clone(str(i)+dir+key+"up"))
                         hists[key]["down"].Add(hist["down"].Clone(str(i)+dir+key+"down"))
                     else:
-                        hists[key].Add(hist.Clone(str(i)+dir+key))
+#                        if True or key == "data":
+                            hists[key].Add(hist.Clone(str(i)+dir+key))
+#                        else:
+#                            for i_b in range(hists[key].GetNbinsX()):
+#                                hists[key].SetBinContent( i_b+1, hists[key].GetBinContent(i_b+1) + hist.GetBinContent(i_b+1) )
+#                                hists[key].SetBinError( i_b+1, hists[key].GetBinError(i_b+1) + hist.GetBinError(i_b+1) ) #100% correlated
 
+#        if "MCStat" in hists.keys():
+#            sumHists = {"total":hists["total"].Clone()}
+#            for n in plotNuisances:
+#                sumHists[n] = {"up":hists[n]["up"].Clone(), "down":hists[n]["up"].Clone()}
+#                for i_b in range(hists[n]["up"].GetNbinsX()):
+#                    sumHists[n]["up"].SetBinContent( i_b+1, hists[n]["up"].GetBinContent(i_b+1) + hists[n]["up"].GetBinError(i_b+1) )
+#                    sumHists[n]["down"].SetBinContent( i_b+1, hists[n]["down"].GetBinContent(i_b+1) - hists[n]["down"].GetBinError(i_b+1) )
+#                    sumHists[n]["up"].SetBinError( i_b+1, 0 )
+#                    sumHists[n]["down"].SetBinError( i_b+1, 0 )
+#            tot = Results.sumNuisanceHistos(sumHists, nuisances=plotNuisances, postFit=args.postFit, bkgSubstracted=args.bkgSubstracted)
+#            for i_b in range(hists["MCStat"]["up"].GetNbinsX()):
+#                print hists["total"].GetBinError(i_b), tot["up"].GetBinContent(i_b)-hists["total"].GetBinContent(i_b), hists["MCStat"]["up"].GetBinError(i_b), math.sqrt((tot["up"].GetBinContent(i_b)-hists["total"].GetBinContent(i_b))**2+hists["MCStat"]["up"].GetBinError(i_b)**2)
+##                hists["total"].SetBinError(i_b, math.sqrt((tot["up"].GetBinContent(i_b)-hists["total"].GetBinContent(i_b))**2+hists["MCStat"]["up"].GetBinError(i_b)**2))
+#                hists["MCStat"]["up"].SetBinContent(i_b, hists["MCStat"]["up"].GetBinContent(i_b)+hists["MCStat"]["up"].GetBinError(i_b))
+#                hists["MCStat"]["down"].SetBinContent(i_b, hists["MCStat"]["down"].GetBinContent(i_b)-hists["MCStat"]["up"].GetBinError(i_b))
+#            sys.exit()
         if args.plotNuisances:
             for n in plotNuisances:
                 for i_b in range(hists[n]["up"].GetNbinsX()):
@@ -557,7 +631,10 @@ def plotRegions( sorted=True ):
                 mcstatDown.SetBinContent( i+1, hists["signal" if args.bkgSubstracted else "total"].GetBinContent(i+1) - err )
                 mcstatUp.SetBinError( i+1, 0 )
                 mcstatDown.SetBinError( i+1, 0 )
-            hists["MCStatUnc"] = {"up":mcstatUp, "down":mcstatDown}
+            if "MCStat" in hists.keys():
+                hists["MCStatUnc"] = {"up":hists["MCStat"]["up"], "down":hists["MCStat"]["down"]}
+            else:
+                hists["MCStatUnc"] = {"up":mcstatUp, "down":mcstatDown}
             hists["MCStatUnc"]["up"].legendText = "MC Stat (#pm1#sigma)"
             hists["MCStatUnc"]["down"].legendText = None
             hists["MCStatUnc"]["up"].style = styles.lineStyle( ROOT.kGreen-2, width=2, dashed=True, errors=False )
@@ -600,7 +677,7 @@ def plotRegions( sorted=True ):
         minMax = 0.09 if args.postFit else 0.29
     else:
         minMax = 0.19 if args.postFit else 0.29
-    minMax = 0.06
+#    minMax = 0.06
     if args.bkgSubstracted:
         if "PtUn" in args.cardfile:
             minMax = 0.24 #0.19 if args.postFit else 0.9
@@ -610,9 +687,9 @@ def plotRegions( sorted=True ):
         boxes,     ratio_boxes     = getErrorBoxes(   copy.copy(hists["signal" if args.bkgSubstracted else "total"]), minMax, lineColor=ROOT.kOrange-9, fillColor=ROOT.kOrange-9, hashcode=1001, ratioCenter=ratioCenter )
         boxes_stat, ratio_boxes_stat = [],[] #getErrorBoxes( copy.copy(hists["data"]), minMax, lineColor=ROOT.kBlue-10, fillColor=ROOT.kBlue-10, hashcode=1001, ratioCenter=ratioCenter )
     else:
-        boxes,     ratio_boxes       = getUncertaintyBoxes( copy.copy(hists["signal" if args.bkgSubstracted else "total"]), minMax, lineColor=ROOT.kGray+3, fillColor=ROOT.kGray+3, hashcode=formatSettings(nBins)["hashcode"] )
+        boxes,     ratio_boxes       = getUncertaintyBoxes( copy.copy(hists["signal" if args.bkgSubstracted else "total"]), minMax, lineColor=ROOT.kGray+1, fillColor=ROOT.kGray+1, hashcode=formatSettings(nBins)["hashcode"] )
 
-    hists["data"].style        = styles.errorStyle( ROOT.kBlack )
+    hists["data"].style        = styles.errorStyle( ROOT.kBlack, markerSize = 1 )
     hists["data"].legendText   = "Observed" if not args.bkgSubstracted else "bkg-sub. data (#color[61]{stat}, #color[92]{total} error, %s)"%(ch.replace("mu","#mu") if ch != "all" else "e+#mu")
 #    hists["data"].legendOption = "p" if args.bkgSubstracted else "p"
 
@@ -630,7 +707,7 @@ def plotRegions( sorted=True ):
     else:
         uncHist = hists["data"].Clone()
         uncHist.Scale(0)
-        uncHist.style = styles.hashStyle(hashCode=3244, lineColor = ROOT.kBlack, lineWidth = 1)
+        uncHist.style = styles.hashStyle(hashCode=3244, lineColor = ROOT.kBlack, lineWidth = 1, color=ROOT.kGray+1)
         uncHist.legendText = "Uncertainty"
         uncHist.legendOption = "f"
 
@@ -754,11 +831,85 @@ def plotRegions( sorted=True ):
 
     # get histo list
     plots, ratioHistos = Results.getRegionHistoList( hists, processes=processes, noData=args.bkgSubstracted, addNuisanceHistos=addHists, sorted=sorted and not args.bkgSubstracted, unsortProcesses=True, bkgSubstracted=args.bkgSubstracted, directory="dc_2016" if args.year=="combined" else "Bin0" )
+
+    print plots
+    plots[0].sort( key=lambda h: -h.GetBinContent(1) )
+
+#    for h in plots[1]:
+#        print h
+#        print "3e", h.GetBinContent(1)+h.GetBinContent(2)+h.GetBinContent(3)
+#        print "3mu", h.GetBinContent(4)+h.GetBinContent(5)+h.GetBinContent(6)
+#        print "4e", h.GetBinContent(7)+h.GetBinContent(8)+h.GetBinContent(9)
+#        print "4mu", h.GetBinContent(10)+h.GetBinContent(11)+h.GetBinContent(12)
+#        print
+
+    print hists["data"]
+    
+    for key in ["signal","misID","fakes","other","WG","QCD","ZG","total"]:
+        print "3e",  hists[key].GetBinContent(1)+hists[key].GetBinContent(2)+hists[key].GetBinContent(3), hists[key].GetBinError(1)+hists[key].GetBinError(2)+hists[key].GetBinError(3)
+        print "3mu", hists[key].GetBinContent(4)+hists[key].GetBinContent(5)+hists[key].GetBinContent(6), hists[key].GetBinError(4)+hists[key].GetBinError(5)+hists[key].GetBinError(6)
+        print "4e",  hists[key].GetBinContent(7)+hists[key].GetBinContent(8)+hists[key].GetBinContent(9), hists[key].GetBinError(7)+hists[key].GetBinError(8)+hists[key].GetBinError(9)
+        print "4mu", hists[key].GetBinContent(10)+hists[key].GetBinContent(11)+hists[key].GetBinContent(12), hists[key].GetBinError(10)+hists[key].GetBinError(11)+hists[key].GetBinError(12)
+        print
+        print key, hists[key].GetBinContent(1)+hists[key].GetBinContent(2)+hists[key].GetBinContent(3)+ hists[key].GetBinContent(4)+hists[key].GetBinContent(5)+hists[key].GetBinContent(6)+ hists[key].GetBinContent(7)+hists[key].GetBinContent(8)+hists[key].GetBinContent(9)+ hists[key].GetBinContent(10)+hists[key].GetBinContent(11)+hists[key].GetBinContent(12), hists[key].GetBinError(1)+hists[key].GetBinError(2)+hists[key].GetBinError(3)+ hists[key].GetBinError(4)+hists[key].GetBinError(5)+hists[key].GetBinError(6)+ hists[key].GetBinError(7)+hists[key].GetBinError(8)+hists[key].GetBinError(9)+ hists[key].GetBinError(10)+hists[key].GetBinError(11)+hists[key].GetBinError(12)
+        print
+
+#    print "3e", u_float( hists["misID"].GetBinContent(1), hists["misID"].GetBinError(1) ) +u_float( hists["misID"].GetBinContent(2), hists["misID"].GetBinError(2) ) +u_float( hists["misID"].GetBinContent(3), hists["misID"].GetBinError(3) )
+#    print "3mu", u_float( hists["misID"].GetBinContent(4), hists["signal"].GetBinError(4) ) +u_float( hists["signal"].GetBinContent(5), hists["signal"].GetBinError(5) ) +u_float( hists["signal"].GetBinContent(6), hists["signal"].GetBinError(6) )
+#    print "4e", u_float( hists["signal"].GetBinContent(7), hists["signal"].GetBinError(7) ) +u_float( hists["signal"].GetBinContent(8), hists["signal"].GetBinError(8) ) +u_float( hists["signal"].GetBinContent(9), hists["signal"].GetBinError(9) )
+#    print "4mu", u_float( hists["signal"].GetBinContent(10), hists["signal"].GetBinError(10) ) +u_float( hists["signal"].GetBinContent(11), hists["signal"].GetBinError(11) ) +u_float( hists["signal"].GetBinContent(12), hists["signal"].GetBinError(12) )
+#    print
+
+#    err = 0
+#    for i in range(1,13):
+#        for j in range(1,13):
+#            err += (hists["signal"].GetBinError(i)*hists["signal"].GetBinError(j))
+#    print math.sqrt(err)
+#    print hists["signal"].GetBinError(1) + hists["signal"].GetBinError(2) + hists["signal"].GetBinError(3)+ hists["signal"].GetBinError(4) + hists["signal"].GetBinError(5) + hists["signal"].GetBinError(6)+hists["signal"].GetBinError(7) + hists["signal"].GetBinError(8) + hists["signal"].GetBinError(9)+ hists["signal"].GetBinError(10) + hists["signal"].GetBinError(11) + hists["signal"].GetBinError(12)
+#    print
+#    print "3e", hists["total"].GetBinError(1) + hists["total"].GetBinError(2) + hists["total"].GetBinError(3)
+#    print "3mu", hists["total"].GetBinError(4) + hists["total"].GetBinError(5) + hists["total"].GetBinError(6)
+#    print "4e", hists["total"].GetBinError(7) + hists["total"].GetBinError(8) + hists["total"].GetBinError(9)
+#    print "4mu", hists["total"].GetBinError(10) + hists["total"].GetBinError(11) + hists["total"].GetBinError(12)
+#    print
+
+#    print "3e", u_float( hists["signal"].GetBinContent(1), hists["signal"].GetBinError(1) )
+#    print "3mu", u_float( hists["signal"].GetBinContent(2), hists["signal"].GetBinError(2) )
+#    print "4e", u_float( hists["signal"].GetBinContent(3), hists["signal"].GetBinError(3) )
+#    print "4mu", u_float( hists["signal"].GetBinContent(4), hists["signal"].GetBinError(4) )
+
+#    print "total sum", hists["signal"].GetBinContent(1)+hists["signal"].GetBinContent(2)+hists["signal"].GetBinContent(3)+hists["signal"].GetBinContent(4), hists["signal"].GetBinError(1)+hists["signal"].GetBinError(2)+hists["signal"].GetBinError(3)+hists["signal"].GetBinError(4)
+#    print "total quad", u_float( hists["signal"].GetBinContent(1), hists["signal"].GetBinError(1) )+u_float( hists["signal"].GetBinContent(2), hists["signal"].GetBinError(2) )+u_float( hists["signal"].GetBinContent(3), hists["signal"].GetBinError(3) )+u_float( hists["signal"].GetBinContent(4), hists["signal"].GetBinError(4) )
+    print
+    sys.exit()
+#############
+#    plotsNew = []
+#    for h in plots[0]:
+#        hnew = h.Clone(h.GetName()+"new")
+#        hnew.style = h.style
+#        hnew.legendText = None
+#        for x in range(h.GetNbinsX()):
+#            if x > 19:
+#                h.SetBinContent(x+1, 0)
+#                h.SetBinError(x+1, 0)
+#            else:
+#                hnew.SetBinContent(x+1, 0)
+#                hnew.SetBinError(x+1, 0)
+#        plotsNew.append(hnew)
+#    plotsNew.sort( key=lambda h: -h.GetBinContent(21) )
+#    plots[0] += plotsNew
+#    plots[1][0].SetMarkerSize(2)
+#    tmp1 = plots[0][1]
+#    tmp2 = plots[0][2]
+#    plots[0][2] = tmp1
+#    plots[0][1] = tmp2
+#    print plots
+#    print ratioHistos
 #    plots, ratioHistos = Results.getRegionHistoList( hists, processes=processes, noData=args.bkgSubstracted, addNuisanceHistos=addHists, sorted=False, unsortProcesses=False, bkgSubstracted=args.bkgSubstracted, directory="dc_2016" if args.year=="combined" else "Bin0" )
 
 #    print hists
 
-#    rootfile = ROOT.TFile( "dR_reco.root", "RECREATE")
+#    rootfile = ROOT.TFile( "SR_incl.root", "RECREATE")
 #    for h in hists.values():
 #       h.Write()
 #    rootfile.Close()
@@ -779,20 +930,21 @@ def plotRegions( sorted=True ):
 #                    texY = "Observed - Background" if args.bkgSubstracted else "Events",
                     texY = "Events",
             ),
-            logX = False, logY = True if not args.bkgSubstracted or "PtUnfold" in plotName else False, sorting = False, 
+            logX = False, logY = True if not args.bkgSubstracted or "PtUnfold" in plotName else False, sorting =False, 
 #            logX = False, logY = True if not args.bkgSubstracted or "PtUnfold" in plotName else False, sorting = True, 
             plot_directory    = plotDirectory,
             legend            = [ (0.17, 0.84 if args.bkgSubstracted else formatSettings(nBins)["legylower"], 0.93, 0.9), formatSettings(nBins)["legcolumns"] ] if not differential else [(0.20,0.67,0.85,0.9),1] if args.plotNuisances else (0.20,0.75,0.85,0.9),
             widths            = { "x_width":formatSettings(nBins)["padwidth"], "y_width":formatSettings(nBins)["padheight"], "y_ratio_width":formatSettings(nBins)["padratio"] } if not differential else {},
-#            yRange            = ( 7, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ) if not differential else (30,"auto") if args.bkgSubstracted else "auto",
-            yRange            = ( 23, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ) if not differential else (30,"auto") if args.bkgSubstracted else "auto",
+            yRange            = ( 7, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ) if not differential else (30,"auto") if args.bkgSubstracted else "auto",
+#            yRange            = ( 23, hists["total"].GetMaximum()*formatSettings(nBins)["heightFactor"] ) if not differential else (30,"auto") if args.bkgSubstracted else "auto",
             ratio             = { "yRange": (1-minMax, 1+minMax), "texY":"Uncertainty" if args.bkgSubstracted else "Obs./Pred.", "histos":ratioHistos, "drawObjects":ratio_boxes + ratio_boxes_stat if args.bkgSubstracted else ratio_boxes, "histModifications":ratioHistModifications },
 #            ratio             = { "yRange": (1-minMax, 1+minMax), "texY":"Obs./Pred.", "histos":ratioHistos, "drawObjects":ratio_boxes if args.bkgSubstracted else ratio_boxes, "histModifications":ratioHistModifications },
 #            drawObjects       = drawObjects_ if not differential else drawObjectsDiff(lumi_scale) + boxes + boxes_stat if args.bkgSubstracted else drawObjectsDiff(lumi_scale) + boxes,
             drawObjects       = drawObjects_ if not differential else drawObjectsDiff(lumi_scale) + boxes + boxes_stat if args.bkgSubstracted else drawObjectsDiff(lumi_scale) + boxes,
             histModifications = histModifications,
             copyIndexPHP      = True,
-            extensions        = ["png", "pdf", "root"] if args.bkgSubstracted else ["png"], # pdfs are quite large for sorted histograms (disco plot)
+#            extensions        = ["png", "pdf", "root"] if args.bkgSubstracted else ["png"], # pdfs are quite large for sorted histograms (disco plot)
+            extensions        = ["png", "pdf", "root"],
             redrawHistos      = args.bkgSubstracted,
         )
 
@@ -882,8 +1034,8 @@ def plotImpacts():
     Results.getImpactPlot( expected=args.expected, printPNG=True, cores=args.cores, options=options )
 
 if args.plotRegionPlot or args.cacheHistogram:
-    plotRegions( sorted=True )
-#    plotRegions( sorted=False )
+#    plotRegions( sorted=True )
+    plotRegions( sorted=False )
 if args.plotImpacts and args.postFit:
     plotImpacts()
 if args.plotCovMatrix:

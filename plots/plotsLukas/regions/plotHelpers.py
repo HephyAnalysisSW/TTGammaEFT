@@ -173,7 +173,7 @@ def drawDivisions( labels, misIDPOI=False ):
     diff = (max-min) / nBins
     line = ROOT.TLine()
     line.SetLineWidth(2)
-    line.SetLineStyle(9)
+    line.SetLineStyle(7)
     line2 = ROOT.TLine()
     line2.SetLineWidth(3)
     line2.SetLineStyle(1)
@@ -198,7 +198,7 @@ def drawPTDivisions( labels, ptLabels ):
     lines2 = []
     line = ROOT.TLine()
     line.SetLineWidth(1)
-    line.SetLineStyle(5)
+    line.SetLineStyle(3)
     lines = []
     for i_pt, pt in enumerate(ptLabels):
         if i_pt != nBins-1 and pt != ptLabels[i_pt+1] and labels[i_pt].split(",")[0].replace("WG","VG").replace("ZG","VG").replace("ZG+WG","VG") == labels[i_pt+1].split(",")[0].replace("WG","VG").replace("ZG","VG").replace("ZG+WG","VG"):
@@ -282,7 +282,7 @@ def setPTBinLabels( labels, names, fac=1. ):
             tex.DrawLatex( x, fac, labels[i] )
     return setBinLabel
 
-def getUncertaintyBoxes( totalHist, minMax=0.3, lineColor=ROOT.kGray+3, fillColor=ROOT.kGray+3, hashcode=3144 ):
+def getUncertaintyBoxes( totalHist, minMax=0.3, lineColor=ROOT.kGray+3, fillColor=ROOT.kGray+2, hashcode=3144 ):
     nBins = totalHist.GetNbinsX()
     boxes = []
     ratio_boxes = []
@@ -310,6 +310,7 @@ def getUncertaintyBoxes( totalHist, minMax=0.3, lineColor=ROOT.kGray+3, fillColo
         r_box.SetLineColor(lineColor)
         if hashcode: r_box.SetFillStyle(hashcode)
         r_box.SetFillColor(fillColor)
+        r_box.SetLineWidth(1)
 
         boxes.append( box )
         totalHist.SetBinError(ib, 0)
@@ -323,7 +324,7 @@ def getUncertaintyBoxes( totalHist, minMax=0.3, lineColor=ROOT.kGray+3, fillColo
 
     return boxes, ratio_boxes
 
-def getErrorBoxes( totalHist, minMax=0.3, lineColor=ROOT.kGray+3, fillColor=ROOT.kGray+3, hashcode=3144, ratioCenter=None ):
+def getErrorBoxes( totalHist, minMax=0.3, lineColor=ROOT.kGray+3, fillColor=ROOT.kGray+2, hashcode=3144, ratioCenter=None ):
     nBins = totalHist.GetNbinsX()
     boxes = []
     ratio_boxes = []
@@ -390,7 +391,7 @@ def formatSettings( nBins ):
         settings["ticksize"] = 0.005
     elif nBins>31:
         settings["textsize"] = 36
-        settings["xlabelsize"] = 27
+        settings["xlabelsize"] = 28
         settings["ylabelsize"] = 34
         settings["padwidth"] = 2200
         settings["padheight"] = 1000

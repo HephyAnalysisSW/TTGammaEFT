@@ -48,6 +48,7 @@ argParser.add_argument('--withbkg',             action='store_true',            
 argParser.add_argument('--withEFTUnc',             action='store_true',                                                        help="add EFT uncertainty?")
 argParser.add_argument('--noMCStat',             action='store_true',                                                        help="remove mc stat unc?")
 argParser.add_argument('--noFakeStat',             action='store_true',                                                        help="remove mc stat unc?")
+argParser.add_argument('--splitScale',             action='store_true',                                                        help="split scale uncertainties in sources")
 args = argParser.parse_args()
 
 if args.year != "RunII": args.year = int(args.year)
@@ -77,6 +78,7 @@ if args.inclRegion:  regionNames.append("incl")
 if args.useChannels:  regionNames.append("_".join([ch for ch in args.useChannels if not "tight" in ch]))
 if args.noMCStat:     regionNames.append("noMCStat")
 if args.noFakeStat:     regionNames.append("noFakeStat")
+if args.splitScale:   regionNames.append("splitScale")
 
 baseDir       = os.path.join( cache_directory, "analysis",  str(args.year) if args.year != "RunII" else "COMBINED", "limits", "withbkg" if args.withbkg else "withoutbkg" )
 if args.withEFTUnc: baseDir = os.path.join( baseDir, "withEFTUnc" )
@@ -85,7 +87,7 @@ nllCache      = MergingDirDB( cacheFileName )
 
 print cacheFileName
 
-directory = os.path.join( plot_directory, "nllPlotsPostCWR", str(args.year), "_".join( regionNames ))
+directory = os.path.join( plot_directory, "nllPlotsJHEP", str(args.year), "_".join( regionNames ))
 addon = "expected" if args.expected else "observed"
 if args.plotData: addon += "_check"
 plot_directory_ = os.path.join( directory, addon )

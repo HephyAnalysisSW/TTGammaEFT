@@ -4,6 +4,8 @@ ROOT.gROOT.SetBatch(True)
 ROOT.gStyle.SetHatchesLineWidth(5)
 
 import os, sys, copy
+import numpy as np
+import root_numpy
 from math                             import sqrt
 
 # RootTools
@@ -184,7 +186,7 @@ if args.selection.startswith("SR") and args.year == "RunII":
     misIDSF_val[2017] *= 1.01*1.08
     misIDSF_val[2018] *= 1.05*1.06
     # pulls from datadriven fake estimate
-    fakesSF = 1.15
+    fakesSF = 1.18
 
 #if args.selection.startswith("SR") and args.year == 2018:
 #    misIDSF_val[2018] *= 1.05*1.06
@@ -256,12 +258,15 @@ def drawObjects( lumi_scale, log=False ):
     tex2 = ROOT.TLatex()
     tex2.SetNDC()
     tex2.SetTextSize(0.058)
+#    tex2.SetTextSize(0.055)
     tex2.SetTextAlign(11) # align right
 #    line = (0.65, 0.95, "%3.1f fb^{-1} (13 TeV)" % lumi_scale)
     if isinstance( lumi_scale, int ):
-        line = (0.68, 0.95, "%i fb^{-1} (13 TeV)" % lumi_scale)
+        line = (0.69, 0.95, "%i fb^{-1} (13 TeV)" % lumi_scale)
     else:
         line = (0.68, 0.95, "%3.1f fb^{-1} (13 TeV)" % lumi_scale)
+#    line2 = (0.235 if not log and (args.selection.startswith("WJets") or args.selection.startswith("TT")) else 0.15, 0.95, "Private Work")
+
 #    lines2 = (0.235 if not log and (args.selection.startswith("WJets") or args.selection.startswith("TT")) else 0.15, 0.95, "CMS #bf{#it{Preliminary}}%s"%(" (%s)"%(replaceRegionNaming[args.selection.replace("fake","SR")] if args.selection.replace("fake","SR") in replaceRegionNaming.keys() else args.selection.replace("fake","SR")) if not args.paperPlot else "" )),
     line2 = (0.235 if not log and (args.selection.startswith("WJets") or args.selection.startswith("TT")) else 0.15, 0.95, "CMS%s"%(" (%s)"%(replaceRegionNaming[args.selection.replace("fake","SR")] if args.selection.replace("fake","SR") in replaceRegionNaming.keys() else args.selection.replace("fake","SR")) if not args.paperPlot else "" ))
     return [tex2.DrawLatex(*line2), tex.DrawLatex(*line)]
@@ -334,7 +339,7 @@ elif args.year == "RunII":
     import TTGammaEFT.Samples.nanoTuples_RunII_postProcessed as mc_samples
     from TTGammaEFT.Samples.nanoTuples_RunII_postProcessed import RunII as data_sample
 
-if "WJets" in args.selection:
+if "WJets" in args.selection or args.selection.startswith("TT"):
     mc  = [mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.rest ]
 else:
     mc  = [mc_samples.TTG, mc_samples.Top, mc_samples.DY_LO, mc_samples.WJets, mc_samples.WG, mc_samples.ZG, mc_samples.rest ]
@@ -424,7 +429,7 @@ else:
 lep = args.mode.replace("mu","#mu") if args.mode != "all" else "l"
 replaceLabel = {
     "nBTagGood": "N_{b-tag}",
-    "nElectronTight": "yield",
+    "nElectronTight": "Lepton channel",
     "PhotonNoChgIsoNoSieie0_pfRelIso03_chg*PhotonNoChgIsoNoSieie0_pt": "chg.Iso(#gamma) [GeV]",
     "PhotonNoChgIsoNoSieie0_sieie": "#sigma_{i#eta i#eta}(#gamma)",
     "MET_pt": "E^{miss}_{T} [GeV]",
@@ -528,7 +533,13 @@ if args.variation == "central":
 #    args.overwrite = False
 
     key = ("QCD-DD", "ARincl" if args.inclQCDTF else "AR", args.variable, "_".join(map(str,args.binning)), selection)
-    if not dirDB.contains(key) or args.overwrite:
+
+    wjY = 0
+    dyY = 0
+    qcdY = 0
+    otherY = 0
+    totalY = 0
+    if True or not dirDB.contains(key) or args.overwrite:
         qcdHist = dataHist.Clone("qcd")
         qcdHist.Scale(0)
 
@@ -571,6 +582,9 @@ if args.variation == "central":
                         dataHist_SB_tmp = data_sample.get1DHistoFromDraw( invVariable, binning=args.binning, selectionString=leptonPtEtaCut, addOverFlowBin=None )
                         dirDB.add(key, dataHist_SB_tmp.Clone("dataSB"+mode), overwrite=True)
 
+                    ##############
+                    totalY += dataHist_SB_tmp.Integral()
+
                     qcdHist_tmp = dataHist_SB_tmp.Clone("qcdtmp_%i_%i"%(i_pt,i_eta))
     
                     for s in mc:
@@ -605,6 +619,13 @@ if args.variation == "central":
 #                                    s.hist_SB_tmp.Scale(DYSF_val[args.year].val)
                                 elif "WJets" in s.name:
                                     s.hist_SB_tmp.Scale(WJetsSF_val[args.year].val)
+
+                        if "WJets" in s.name:
+                            wjY    += s.hist_SB_tmp.Integral()
+                        elif "DY" in s.name:
+                            dyY    += s.hist_SB_tmp.Integral()
+                        else:
+                            otherY    += s.hist_SB_tmp.Integral()
 
                         qcdHist_tmp.Add(s.hist_SB_tmp, -1)
 
@@ -655,6 +676,16 @@ if args.variation == "central":
         dirDB.add(key, qcdHist.Clone("QCD"), overwrite=True)
 
 
+
+
+#qcd = totalY-otherY-dyY-wjY
+#print "WJets", wjY, wjY*100/totalY
+#print "DY", dyY, dyY*100/totalY
+#print "other", otherY, otherY*100/totalY
+#print "data", totalY
+#print "qcd", qcd, qcd*100/totalY
+
+#sys.exit()
 
 if args.variation:
     var = args.variable
@@ -754,6 +785,8 @@ for s in mc:
 #                            s.hist[variation][g].Scale(DYSF_val[args.year].val)
                         elif "WJets" in s.name:
                             s.hist[variation][g].Scale(WJetsSF_val[args.year].val)
+#                        elif "Top" in s.name:
+#                            s.hist[variation][g].Scale(1.05)
 
             else:
                 # prepare sub variation command
@@ -847,8 +880,8 @@ empty4.legendText = "LM3p HM3p"
 empty4.style      = styles.lineStyle( ROOT.kWhite, width=0 )
 # add QCD error
 # add QCD error
-#for i in range(qcdHist.GetNbinsX()):
-#    qcdHist.SetBinError(i+1, qcdHist.GetBinContent(i+1)*0.5)
+for i in range(qcdHist.GetNbinsX()):
+    qcdHist.SetBinError(i+1, qcdHist.GetBinContent(i+1)*0.5)
 
 ##########################
 
@@ -947,6 +980,214 @@ totalUncDown = qcdHist.Clone()
 totalUncDown.SetName("totalUncertainty_down")
 totalUncDown.Scale(0)
 
+##################
+# purity
+#lm = 0
+#hm = 0
+#mis = 0
+#lmwg = 0
+#hmwg = 0
+#miswg = 0
+#lmzg = 0
+#hmzg = 0
+#miszg = 0
+#lmmis = 0
+#hmmis = 0
+#mismis = 0
+#hmdat = 0
+#lmdat = 0
+#dat = 0
+#for i_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
+#    if (i_b < 7 and args.mode=="e") or (i_b < 8 and args.mode=="mu"):
+#        lm += total_mc_histo["central"].GetBinContent(i_b)
+#        lmwg += mc_samples.WG.hist["central"]["noChgIsoNoSieiephotoncat0"].GetBinContent(i_b)
+#        lmzg += mc_samples.ZG.hist["central"]["noChgIsoNoSieiephotoncat0"].GetBinContent(i_b)
+#        lmdat   += data_sample.hist.GetBinContent(i_b)
+#        for s in mc:
+#            lmmis += s.hist["central"]["noChgIsoNoSieiephotoncat2"].GetBinContent(i_b)
+#    elif (i_b > 8 and args.mode=="e") or (i_b > 7 and args.mode=="mu"):
+#        hm += total_mc_histo["central"].GetBinContent(i_b)
+#        hmwg += mc_samples.WG.hist["central"]["noChgIsoNoSieiephotoncat0"].GetBinContent(i_b)
+#        hmzg += mc_samples.ZG.hist["central"]["noChgIsoNoSieiephotoncat0"].GetBinContent(i_b)
+#        hmdat   += data_sample.hist.GetBinContent(i_b)
+#        for s in mc:
+#            hmmis += s.hist["central"]["noChgIsoNoSieiephotoncat2"].GetBinContent(i_b)
+#    else:
+#        mis += total_mc_histo["central"].GetBinContent(i_b)
+#        print total_mc_histo["central"].GetBinContent(i_b)
+#        miswg += mc_samples.WG.hist["central"]["noChgIsoNoSieiephotoncat0"].GetBinContent(i_b)
+#        miszg += mc_samples.ZG.hist["central"]["noChgIsoNoSieiephotoncat0"].GetBinContent(i_b)
+#        dat   += data_sample.hist.GetBinContent(i_b)
+#        for s in mc:
+#            if "TTG" in s.name: continue
+#            print s.hist["central"]["noChgIsoNoSieiephotoncat2"].GetBinContent(i_b)
+#            mismis += s.hist["central"]["noChgIsoNoSieiephotoncat2"].GetBinContent(i_b)
+#        print
+#print
+#print "dat", lmdat
+#print "lm", lm
+#print "lm wg", lmwg, lmwg/lm*100
+#print "lm zg", lmzg, lmzg/lm*100
+#print "lm mis", lmmis, lmmis/lm*100
+#print
+#print "dat", hmdat
+#print "hm", hm
+#print "hm wg", hmwg, hmwg/hm*100
+#print "hm zg", hmzg, hmzg/hm*100
+#print "hm mis", hmmis, hmmis/hm*100
+#print
+#print "dat", dat
+#print "mis", mis
+#print "mis wg", miswg, miswg/mis*100 if mis else 0
+#print "mis zg", miszg, miszg/mis*100 if mis else 0
+#print "mis mis", mismis, mismis/mis*100 if mis else 0
+#print#
+
+#sys.exit()
+##################
+
+
+##################
+#chi2 test
+covM             = ROOT.TH2D("cov", "cov", args.binning[0], args.binning[1], args.binning[2], args.binning[0], args.binning[1], args.binning[2])
+invfullCovMatrix = ROOT.TH2D("invcov", "invcov", args.binning[0], args.binning[1], args.binning[2], args.binning[0], args.binning[1], args.binning[2])
+
+# loop over bins & compute shaded uncertainty boxes
+for i_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
+    for j_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
+        total_central_mc_yield_i = total_mc_histo["central"].GetBinContent(i_b)
+        total_central_mc_error_i = total_mc_histo["central"].GetBinError(i_b)
+        total_central_mc_yield_j = total_mc_histo["central"].GetBinContent(j_b)
+        total_central_mc_error_j = total_mc_histo["central"].GetBinError(j_b)
+        if total_central_mc_yield_i<=0: continue
+        if total_central_mc_yield_j<=0: continue
+        cov = 0
+        for systematic in systematics:
+            # Use "central-variation" (factor 1) and 0.5*(varUp-varDown)
+            if "central" in systematic["pair"]: 
+                factor = 1
+            else:
+                factor = 0.5
+            # sum in quadrature
+            variance  = 0
+            variance  = ( factor*(total_mc_histo[systematic["pair"][0]].GetBinContent(i_b) - total_mc_histo[systematic["pair"][1]].GetBinContent(i_b)) )
+            variance *= ( factor*(total_mc_histo[systematic["pair"][0]].GetBinContent(j_b) - total_mc_histo[systematic["pair"][1]].GetBinContent(j_b)) )
+            cov += variance
+        # add MC stat unc
+        if i_b == j_b:
+            cov += (total_central_mc_error_i*total_central_mc_error_j)
+
+        # In case one wants to add uncertainties to specific backgrounds (like x-sec), that can be done here
+        lumiUnc = {2016:0.025, 2017:0.023, 2018:0.025, "RunII":0.018}
+        if args.mode == "mu":  muonExtrapolation = 0.005
+        elif args.mode == "e": muonExtrapolation = 0.
+        else:                  muonExtrapolation = 0.0025
+
+        gammaCat = genCat if args.photonCat else ["all"]
+        for g in gammaCat:
+            variance  = 0
+            variance  = (0.05*mc_samples.Top.hist["central"][g].GetBinContent(i_b)) # TT normalization
+            variance *= (0.05*mc_samples.Top.hist["central"][g].GetBinContent(j_b)) # TT normalization
+            cov += variance
+            if not args.photonCat: # DY is highly anti correlated with misID
+                variance  = 0
+                variance  = (0.08*mc_samples.DY_LO.hist["central"][g].GetBinContent(i_b)) # DY normalization
+                variance *= (0.08*mc_samples.DY_LO.hist["central"][g].GetBinContent(j_b)) # DY normalization
+                cov += variance
+                if args.selection.startswith("SR"):
+                    variance  = 0
+                    variance  = (0.08*mc_samples.DY_LO.hist["central"][g].GetBinContent(i_b)) # DY extrapolation
+                    variance *= (0.08*mc_samples.DY_LO.hist["central"][g].GetBinContent(j_b)) # DY extrapolation
+                    cov += variance
+            if not "WJets" in args.selection and not args.selection.startswith("TT"):
+                variance  = 0
+                variance  = (0.07*mc_samples.WG.hist["central"][g].GetBinContent(i_b)) # WG normalization
+                variance *= (0.07*mc_samples.WG.hist["central"][g].GetBinContent(j_b)) # WG normalization
+                cov  += variance
+                variance  = 0
+                variance  = (0.10*mc_samples.ZG.hist["central"][g].GetBinContent(i_b)) # ZG normalization
+                variance *= (0.10*mc_samples.ZG.hist["central"][g].GetBinContent(j_b)) # ZG normalization
+                cov += variance
+                variance  = 0
+                variance  = (0.01*mc_samples.TTG.hist["central"][g].GetBinContent(i_b)) # mockup for PDF
+                variance *= (0.01*mc_samples.TTG.hist["central"][g].GetBinContent(j_b)) # mockup for PDF
+                cov += variance
+                variance  = 0
+                variance  = (0.005*mc_samples.TTG.hist["central"][g].GetBinContent(i_b)) # mockup for Scale
+                variance *= (0.005*mc_samples.TTG.hist["central"][g].GetBinContent(j_b)) # mockup for Scale
+                cov += variance
+                variance  = 0
+                variance  = (0.01*mc_samples.TTG.hist["central"][g].GetBinContent(i_b)) # mockup for color reconnection
+                variance *= (0.01*mc_samples.TTG.hist["central"][g].GetBinContent(j_b)) # mockup for color reconnection
+                cov += variance
+            variance  = 0
+            variance  = (0.30*mc_samples.rest.hist["central"][g].GetBinContent(i_b)) # other normalization
+            variance *= (0.30*mc_samples.rest.hist["central"][g].GetBinContent(j_b)) # other normalization
+            cov += variance
+            variance  = 0
+            variance  = (muonExtrapolation*total_central_mc_yield_i) # muon ID extrapolation unc
+            variance *= (muonExtrapolation*total_central_mc_yield_j) # muon ID extrapolation unc
+            cov += variance
+            variance  = 0
+            variance  = (lumiUnc[args.year]*total_central_mc_yield_i) # lumi
+            variance *= (lumiUnc[args.year]*total_central_mc_yield_j) # lumi
+            cov += variance
+        if args.photonCat:
+            for s in mc:
+                variance  = 0
+                variance  = (0.12*s.hist["central"]["noChgIsoNoSieiephotoncat2"].GetBinContent(i_b)) # misID normalization
+                variance *= (0.12*s.hist["central"]["noChgIsoNoSieiephotoncat2"].GetBinContent(j_b)) # misID normalization
+                cov += variance
+                variance  = 0
+                variance  = (0.05*s.hist["central"]["noChgIsoNoSieiephotoncat134"].GetBinContent(i_b)) # fake normalization
+                variance *= (0.05*s.hist["central"]["noChgIsoNoSieiephotoncat134"].GetBinContent(j_b)) # fake normalization
+                cov += variance
+
+        variance  = 0
+        variance  = (0.5*qcdHist.GetBinContent(i_b)) # qcd
+        variance *= (0.5*qcdHist.GetBinContent(j_b)) # qcd
+        cov += variance
+
+        if i_b == j_b:
+            cov += sqrt(data_histo_list[0].GetBinContent(i_b)) * sqrt(data_histo_list[0].GetBinContent(j_b))
+        covM.SetBinContent(i_b,j_b,cov)
+
+#for i_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
+#    print i_b, sqrt(covM.GetBinContent(i_b,i_b)), sqrt(covM.GetBinContent(i_b,i_b))/total_mc_histo["central"].GetBinContent(i_b)
+
+#sys.exit()
+
+invfullMatrix = root_numpy.hist2array(covM, include_overflow=False, copy=True, return_edges=False)
+invfullMatrix = np.linalg.inv( invfullMatrix )
+invfullCovMatrix = root_numpy.array2hist(invfullMatrix, invfullCovMatrix)
+chi2 = 0
+for i_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
+    for j_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
+
+            yi = 0
+            yj = 0
+            for s in mc_histo_list["central"]:
+                    yi += s.GetBinContent(i_b)
+                    yj += s.GetBinContent(j_b)
+
+#            if i_b == j_b: print i_b, yi, data_histo_list[0].GetBinContent(i_b), yi-data_histo_list[0].GetBinContent(i_b)
+            yi -= data_histo_list[0].GetBinContent(i_b)
+            yj -= data_histo_list[0].GetBinContent(j_b)
+#            print i_b, j_b, yi, yj
+
+#            yi = total_mc_histo["central"].GetBinContent(i_b) - data_histo_list[0].GetBinContent(i_b)
+#            yj = total_mc_histo["central"].GetBinContent(j_b) - data_histo_list[0].GetBinContent(j_b)
+
+            invCov = invfullCovMatrix.GetBinContent(i_b, j_b)
+#            print i_b, j_b, yi, yj, invCov
+            chi2 += yi * invCov * yj
+
+print "chi2", args.binning[0], chi2
+sys.exit()
+##################
+
+
+
 # loop over bins & compute shaded uncertainty boxes
 for i_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
 # Only positive yields
@@ -980,7 +1221,7 @@ for i_b in range(1, 1 + total_mc_histo["central"].GetNbinsX() ):
                 variance += (0.08*mc_samples.DY_LO.hist["central"][g].GetBinContent(i_b))**2 # DY normalization
                 if args.selection.startswith("SR"):
                     variance += (0.08*mc_samples.DY_LO.hist["central"][g].GetBinContent(i_b))**2 # DY extrapolation
-            if not "WJets" in args.selection:
+            if not "WJets" in args.selection and not args.selection.startswith("TT"):
                 variance += (0.07*mc_samples.WG.hist["central"][g].GetBinContent(i_b))**2 # WG normalization
                 variance += (0.10*mc_samples.ZG.hist["central"][g].GetBinContent(i_b))**2 # ZG normalization
                 variance += (0.01*mc_samples.TTG.hist["central"][g].GetBinContent(i_b))**2 # mockup for PDF
@@ -1051,7 +1292,10 @@ for log in [True, False]:
         else:
             ratio = {'yRange':(0.76,1.24), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
 #        ratio = {'yRange':(0.76,1.24), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications, 'histos':[(1,0)]}
-        ratio = {'yRange':(0.76,1.24), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications, 'histos':[(1,0)]}
+#        ratio = {'yRange':(0.76,1.24), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications, 'histos':[(1,0)]}
+        ratio = {'yRange':(0.81,1.29), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications, 'histos':[(1,0)]}
+#        ratio = {'yRange':(0.66,1.34), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications, 'histos':[(1,0)]}
+#        ratio = {'yRange':(0.51,1.49), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications, 'histos':[(1,0)]}
 
 #        ratio = {'yRange':(0.51,1.49), "drawObjects":ratio_boxes, "texY":"Obs./Pred.", "histModifications":ratioHistModifications}
         print args.selection
@@ -1067,7 +1311,7 @@ for log in [True, False]:
                        logX = False, logY = log, sorting = not ((args.mode == "e" and plot.name == "mLtight0Gamma" and args.photonCat) or args.splitWG) ,
 #                       logX = False, logY = log, sorting = False ,
                        yRange = (7, 1e5) if plot.name == "PhotonGood0_pt" and args.mode =="all" and args.year == 2016 and log and args.selection == "SR3p" else (3,"auto"),
-                       ratio = ratio if not args.selection.startswith("SR") else None,
+                       ratio = ratio, # if not args.selection.startswith("SR") else None,
 #                       drawObjects = drawObjects( lumi_scale ),
                        drawObjects = drawObjects( lumi_scale, log=log ) + boxes,
                        legend = legend,

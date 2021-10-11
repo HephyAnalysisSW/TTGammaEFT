@@ -48,16 +48,14 @@ def drawObjects( lumi_scale, log=False ):
     line2 = (0.15, 0.95, "Private Work")
     return [tex2.DrawLatex(*line2), tex.DrawLatex(*line)]
 
-dataDir = "$CMSSW_BASE/src/Analysis/Tools/data/photonSFData/"
+dataDir = "$CMSSW_BASE/src/Analysis/Tools/data/L1Prefiring/"
+
 if args.year == 2016:
-    g_file = 'g2016_egammaPlots_MWP_PhoSFs_2016_LegacyReReco_New_private.root'
-    g_key  = "EGamma_SF2D"
+    g_file = 'L1prefiring_jetpt_2016BtoH.root'
+    g_key  = 'L1prefiring_jetpt_2016BtoH'
 elif args.year == 2017:
-    g_file = 'g2017_PhotonsMedium_mod_private_BostonAdded.root'
-    g_key  = "EGamma_SF2D"
-elif args.year == 2018:
-    g_file = 'g2018_PhotonsMedium_mod_private_BostonAdded.root'
-    g_key  = "EGamma_SF2D"
+    g_file = 'L1prefiring_jetpt_2017BtoF.root'
+    g_key  = 'L1prefiring_jetpt_2017BtoF'
 
 if args.year == 2016:   lumi_scale = 35.92
 elif args.year == 2017: lumi_scale = 41.53
@@ -67,28 +65,25 @@ sfHist = getObjFromFile( os.path.expandvars( os.path.join( dataDir, g_file ) ), 
 sfHist.Scale(100)
 sfHist.SetMarkerSize(1.8)
 sfHist.GetZaxis().SetTitleOffset( 0.9 )
-
-for i in range( sfHist.GetNbinsX() ):
-    for j in range( sfHist.GetNbinsY() ):
-        sfHist.SetBinContent(i+1,j+1, float("%.2f"%sfHist.GetBinError(i+1,j+1)))
+sfHist.GetYaxis().SetRangeUser( 30, 500 )
+sfHist.GetXaxis().SetRangeUser( -4, 4 )
 
 
 Plot2D.setDefaults()
 plots = []
-plots.append( Plot2D.fromHisto( "photonIDUnc_%i"%args.year,           [[sfHist]], texX="SuperCluster #eta(#gamma)", texY="p_{T}(#gamma) [GeV]", texZ="Uncertainty [%]" ) )
-#plots.append( Plot2D.fromHisto( "photonIDSF_%i"%args.year,           [[sfHist]], texX="SuperCluster #eta(#gamma)", texY="p_{T}(#gamma) [GeV]", texZ="Scale factor" ) )
+plots.append( Plot2D.fromHisto( "prefireSF_%i"%args.year,           [[sfHist]], texX="#eta(jet)", texY="EM p_{T}(jet) [GeV]", texZ="Prefiring probability [%]" ) )
 
 for plot in plots:
 
-    plot.drawOption = "COLZTEXT"
+    plot.drawOption = "COLZ"
     legend = (0.2,0.75,0.9,0.9)
 
-    plot_directory_ = os.path.join( plot_directory, "PhotonID", str(args.year) )
+    plot_directory_ = os.path.join( plot_directory, "Prefire", str(args.year) )
 
     plotting.draw2D( plot,
                        plot_directory = plot_directory_,
-                       logX = False, logY = True, logZ = False,
-                       zRange = (0.84,1.16) if "SF" in plot.name else (0,10),
+                       logX = False, logY = False, logZ = False,
+                       zRange = (0,100),
                        drawObjects = drawObjects( lumi_scale ),
                        copyIndexPHP = True,
 #                       oldColors = True,

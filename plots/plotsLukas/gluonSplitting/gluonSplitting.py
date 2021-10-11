@@ -29,8 +29,8 @@ loggerChoices = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE", "NOTS
 import argparse
 argParser = argparse.ArgumentParser(description = "Argument parser")
 argParser.add_argument("--logLevel",           action="store",      default="INFO", nargs="?", choices=loggerChoices,                        help="Log level for logging")
-argParser.add_argument("--plot_directory",     action="store",      default="102X_TTG_ppv47_v2",                                             help="plot sub-directory")
-argParser.add_argument("--year",               action="store",      default="2016",   type=str,  choices=["2016","2017","2018","RunII"],                     help="Which year to plot?")
+argParser.add_argument("--plot_directory",     action="store",      default="102X_TTG_ppv49_v1",                                             help="plot sub-directory")
+argParser.add_argument("--year",               action="store",      default="RunII",   type=str,  choices=["2016","2017","2018","RunII"],                     help="Which year to plot?")
 argParser.add_argument("--selection",          action="store",      default="SR3p", type=str,                                              help="reco region")
 argParser.add_argument("--addCut",             action="store",      default=None, type=str,                                                  help="additional cuts")
 argParser.add_argument("--mode",               action="store",      default="all",  type=str,  choices=["mu", "eetight", "mumutight", "e", "all"],                   help="lepton selection")
@@ -45,17 +45,34 @@ logger    = logger.get_logger(    args.logLevel, logFile=None )
 logger_rt = logger_rt.get_logger( args.logLevel, logFile=None )
 
 # Text on the plots
-def drawObjects( lumi_scale ):
+def drawObjects( lumi_scale, log=False ):
     tex = ROOT.TLatex()
     tex.SetNDC()
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
-    line = (0.68, 0.95, "%3.1f fb^{-1} (13 TeV)" % lumi_scale)
-    lines = [
-      (0.15, 0.95, "CMS #bf{#it{Preliminary}}"),
-      line
-    ]
-    return [tex.DrawLatex(*l) for l in lines]
+
+    tex2 = ROOT.TLatex()
+    tex2.SetNDC()
+    tex2.SetTextSize(0.058)
+    tex2.SetTextAlign(11) # align right
+    if isinstance( lumi_scale, int ):
+        line = (0.69, 0.95, "%i fb^{-1} (13 TeV)" % lumi_scale)
+    else:
+        line = (0.68, 0.95, "%3.1f fb^{-1} (13 TeV)" % lumi_scale)
+    line2 = (0.15, 0.95, "Private Work")
+    return [tex2.DrawLatex(*line2), tex.DrawLatex(*line)]
+
+#def drawObjects( lumi_scale ):
+#    tex = ROOT.TLatex()
+#    tex.SetNDC()
+#    tex.SetTextSize(0.04)
+#    tex.SetTextAlign(11) # align right
+#    line = (0.68, 0.95, "%3.1f fb^{-1} (13 TeV)" % lumi_scale)
+#    lines = [
+#      (0.15, 0.95, "CMS #bf{#it{Preliminary}}"),
+#      line
+#    ]
+#    return [tex.DrawLatex(*l) for l in lines]
 
 # Sample definition
 os.environ["gammaSkim"]="False" #always false for QCD estimate
@@ -124,14 +141,14 @@ sample0b.hist = sample0b.get1DHistoFromDraw( variable, binning=binning, selectio
 sample1b.hist = sample1b.get1DHistoFromDraw( variable, binning=binning, selectionString=selection )
 sample2pb.hist = sample2pb.get1DHistoFromDraw( variable, binning=binning, selectionString=selection )
 
-sample0b.hist.style         = styles.fillStyle( ROOT.kBlue+2 )
-sample0b.hist.legendText    = sample.texName + " (0 gen-b)"
+sample0b.hist.style         = styles.fillStyle( ROOT.kAzure-2 )
+sample0b.hist.legendText    = sample.texName + " (0 b^{gen})"
 
 sample1b.hist.style         = styles.fillStyle( ROOT.kOrange+1 )
-sample1b.hist.legendText    = sample.texName + " (1 gen-b)"
+sample1b.hist.legendText    = sample.texName + " (1 b^{gen})"
 
 sample2pb.hist.style         = styles.fillStyle( ROOT.kRed-2 )
-sample2pb.hist.legendText    = sample.texName + " (#geq 2 gen-b)"
+sample2pb.hist.legendText    = sample.texName + " (#geq 2 b^{gen})"
 
 histos     = [[sample0b.hist, sample1b.hist, sample2pb.hist][::-1]]
 
@@ -143,14 +160,14 @@ for h in histos[0]:
 Plot.setDefaults()
 
 plots = []
-plots.append( Plot.fromHisto( sample.name + "_" + variable,             histos,        texX = "N_{b-tag}",                   texY = "Number of Events" ) )
+plots.append( Plot.fromHisto( sample.name + "_" + variable,             histos,        texX = "N_{b}",                   texY = "Events" ) )
 
 selDir = args.selection
 if args.addCut: selDir += "-" + args.addCut
 
 for plot in plots:
 
-    legend = [ (0.2,0.9-0.025*sum(map(len, plot.histos)),0.9,0.9), 3 ]
+    legend = [ (0.6,0.6,0.9,0.9), 1 ]
 
     for log in [True, False]:
 
@@ -161,7 +178,7 @@ for plot in plots:
         plotting.draw( plot,
                        plot_directory = plot_directory_,
                        logX = False, logY = log, sorting = False,
-                       yRange = (0.3, "auto"),
+                       yRange = (6, "auto"),
 #                       ratio = {'histos':[(2,1)], 'texY': 'stitched/incl'},
                        drawObjects = drawObjects( lumi_scale ),
                        legend = legend,

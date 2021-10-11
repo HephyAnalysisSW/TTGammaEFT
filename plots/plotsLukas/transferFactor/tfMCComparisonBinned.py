@@ -73,7 +73,7 @@ for nJet in [(2,2), (3,3), (4,-1)]:
     print "1b"
     print estimate1b0p._nJetScaleFactor(args.mode, setup1b0p, evalForNJet=nJetLow, overwrite=True)
 
-sys.exit()
+#sys.exit()
 
 
 cachedTF       = {}
@@ -213,22 +213,32 @@ for x in cachedTF["1b"]["2"].keys():
     for y in cachedTF["1b"]["2"][x].keys():
         print args.year, args.mode, "1b", "2jet", x, y, cachedTF["1b"]["2"][x][y]
 
-sys.exit()
+#sys.exit()
 
 # Text on the plots
-def drawObjects( lumi_scale, btags ):
+def drawObjects( lumi_scale, btags, log=False ):
     tex = ROOT.TLatex()
     tex.SetNDC()
     tex.SetTextSize(0.04)
     tex.SetTextAlign(11) # align right
-    sel = ""
+
+    tex2 = ROOT.TLatex()
+    tex2.SetNDC()
+#    tex2.SetTextSize(0.058)
+    tex2.SetTextSize(0.05)
+    tex2.SetTextAlign(11) # align right
+
     if btags == 0: sel = "0#gamma0b"
     if btags == 1: sel = "0#gamma1b"
-    lines = [
-      (0.15, 0.95, 'CMS #bf{#it{Preliminary}} (%s)'%sel),
-      (0.68, 0.95, '%3.1f fb^{-1} (13 TeV)' % lumi_scale),
-    ]
-    return [tex.DrawLatex(*l) for l in lines]
+
+#    line = (0.65, 0.95, "%3.1f fb^{-1} (13 TeV)" % lumi_scale)
+    line = (0.68, 0.95, "%i fb^{-1} (13 TeV)" % lumi_scale)
+    line2 = (0.15, 0.95, "Private Work")
+#    line3 = (0.42, 0.95, "#bf{#it{Simulation}}")
+
+#    lines2 = (0.235 if not log and (args.selection.startswith("WJets") or args.selection.startswith("TT")) else 0.15, 0.95, "CMS #bf{#it{Preliminary}}%s"%(" (%s)"%(replaceRegionNaming[args.selection.repl$
+#    line2 = (0.235 if not log and (args.selection.startswith("WJets") or args.selection.startswith("TT")) else 0.15, 0.95, "CMS%s"%(" (%s)"%(replaceRegionNaming[args.selection.replace("fake","SR")] if ar$
+    return [tex2.DrawLatex(*line2), tex.DrawLatex(*line)]
 
 def legMod( legend ):
 #    nullhist = ROOT.TH1F("null","null", 3, 2, 5)
@@ -236,7 +246,7 @@ def legMod( legend ):
 #       nullhist.SetBinContent( j, 100 )
 #    nullhist.style = styles.lineStyle( ROOT.kGreen-2, width=3, errors=False )
 #    nullhist.legendText = "lin. fit for N_{jet} corr."
-    legend.AddEntry(line0b, "lin. fit for N_{jet} corr.", "l")
+    legend.AddEntry(line0b, "Lin. fit", "l")
 
 
 def drawPlots( plot, btags ):
@@ -261,7 +271,7 @@ def drawPlots( plot, btags ):
                    redrawHistos = True,
                  )
 
-color = [ ROOT.kAzure-3, ROOT.kRed-3, ROOT.kGreen-2, ROOT.kOrange ]
+color = [ ROOT.kBlue, ROOT.kRed, ROOT.kGreen-2, ROOT.kOrange ]
 hists       = {}
 hists2D     = {}
 legAddon = " (corr)" if args.nJetCorrected else ""
@@ -276,10 +286,10 @@ for i_eta, eta in enumerate(etaBins[:-1] + ["incl"]):
             hists["%ib"%b]   = {}
             hists["%ib"%b]["nJ"] = ROOT.TH1F("hist%ib_nJ"%(b), "hist%ib_nJ"%(b), 3, 2, 5)
             hists["%ib"%b]["nJ"].style = styles.errorStyle( color[0], width=3 )
-            hists["%ib"%b]["nJ"].legendText = "fitted TF, N_{b-jets}=%i%s"%(b,legAddon)
+            hists["%ib"%b]["nJ"].legendText = "Data-based TF N_{b}=#geq%i"%(b)
             hists["%ib"%b]["nJMC"] = ROOT.TH1F("hist%ib_nJMC"%(b), "hist%ib_nJMC"%(b), 3, 2, 5)
             hists["%ib"%b]["nJMC"].style = styles.errorStyle( color[1], width=3 )
-            hists["%ib"%b]["nJMC"].legendText = "Multijet MC TF, N_{b-jets}=%i%s"%(b,legAddon)
+            hists["%ib"%b]["nJMC"].legendText = "Sim.-based TF"
 
             addon = args.mode.replace("mu", "#mu")
 #            addon += "#geq1 b-tag" if b==1 else "0 b-tag"
@@ -292,7 +302,7 @@ for i_eta, eta in enumerate(etaBins[:-1] + ["incl"]):
 
             hists["%ib"%b]["nJUsed"] = ROOT.TH1F("hist%ib_nJUsed"%(b), "hist%ib_nJUsed"%(b), 3, 2, 5)
             hists["%ib"%b]["nJUsed"].style = styles.lineStyle( ROOT.kBlack, width=3, errors=False )
-            hists["%ib"%b]["nJUsed"].legendText = "used TF (%s)"%addon
+            hists["%ib"%b]["nJUsed"].legendText = "Used TF, %s channel"%addon
 
         for b in range(2):
                 for j in range(2,5):
@@ -317,7 +327,7 @@ for i_eta, eta in enumerate(etaBins[:-1] + ["incl"]):
             label += "_pT%sTo%s"%(ptLow, ptHigh) if ptHigh and float(ptHigh) >= 0 else "_pT%s"%ptLow
             label += "_eta%sTo%s"%(etaLow, etaHigh) if etaHigh and float(etaHigh) >= 0 else "_eta%s"%etaLow
             plots["%ib"%b]   = {}
-            plots["%ib"%b]["nJ"] = Plot.fromHisto( "QCDTFnJet_"+label,    [[hists["%ib"%b]["nJUsed"]]] + [[hists["%ib"%b]["nJ"]]]  + [[hists["%ib"%b]["nJMC"]]], texX="N_{jets}", texY="Multijet Transferfactor" )
+            plots["%ib"%b]["nJ"] = Plot.fromHisto( "QCDTFnJet_"+label,    [[hists["%ib"%b]["nJUsed"]]] + [[hists["%ib"%b]["nJ"]]]  + [[hists["%ib"%b]["nJMC"]]], texX="N_{j}", texY="QCD multijet transfer factor" )
 
         for b in range(2):
             drawPlots( plots["%ib"%b]["nJ"], b )

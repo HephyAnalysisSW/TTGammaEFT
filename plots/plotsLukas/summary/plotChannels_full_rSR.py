@@ -27,35 +27,35 @@ args = argParser.parse_args()
 res = [\
     {   'name': 'e+jets, 3 jets',
         'tex': 'e+jets',
-        'limits': {'total':0.112, 'stat':0.023, 'syst':0.109, 'center':1.088, 'theory':0.167}
+        'limits': {'total':0.091, 'stat':0.009, 'syst':0.091, 'center':0.990, 'theory':0.167}
     },
     {   'name': 'mu+jets, 3 jets',
         'tex': '#mu+jets',
-        'limits': {'total':0.096, 'stat':0.017, 'syst':0.094, 'center':0.971, 'theory':0.167}
+        'limits': {'total':0.078, 'stat':0.009, 'syst':0.077, 'center':0.952, 'theory':0.175}
     },
     {   'name': 'l+jets, 3 jets',
         'tex': 'l+jets',
-        'limits': {'total':0.093, 'stat':0.014, 'syst':0.092, 'center':0.983, 'theory':0.167}
+        'limits': {'total':0.076, 'stat':0.009, 'syst':0.075, 'center':0.958, 'theory':0.175}
     },
     {   'name': 'e+jets, 4 jets',
         'tex': 'e+jets',
-        'limits': {'total':0.078, 'stat':0.018, 'syst':0.076, 'center':1.044, 'theory':0.179}
+        'limits': {'total':0.072, 'stat':0.009, 'syst':0.071, 'center':1.030, 'theory':0.175}
     },
     {   'name': 'mu+jets, 4 jets',
         'tex': '#mu+jets',
-        'limits': {'total':0.070, 'stat':0.014, 'syst':0.069, 'center':1.078, 'theory':0.179}
+        'limits': {'total':0.067, 'stat':0.009, 'syst':0.066, 'center':1.055, 'theory':0.175}
     },
     {   'name': 'l+jets, 4 jets',
         'tex': 'l+jets',
-        'limits': {'total':0.068, 'stat':0.011, 'syst':0.067, 'center':1.059, 'theory':0.179}
+        'limits': {'total':0.065, 'stat':0.009, 'syst':0.064, 'center':1.043, 'theory':0.175}
     },
     {   'name': 'e+jets, combined',
         'tex': 'e+jets',
-        'limits': {'total':0.076, 'stat':0.014, 'syst':0.075, 'center':1.048, 'theory':0.175}
+        'limits': {'total':0.067, 'stat':0.009, 'syst':0.066, 'center':1.027, 'theory':0.175}
     },
     {   'name': 'mu+jets, combined',
         'tex': '#mu+jets',
-        'limits': {'total':0.065, 'stat':0.011, 'syst':0.064, 'center':1.048, 'theory':0.175}
+        'limits': {'total':0.063, 'stat':0.009, 'syst':0.062, 'center':1.033, 'theory':0.175}
     },
     {   'name': 'l+jets, combined',
         'tex': 'l+jets',
@@ -329,5 +329,5 @@ if args.testGrayscale:
     postFix += '_gray'
 
 for e in [".png",".pdf",".root"]:
-    cans.Print(plotDir+"summaryResult_full"+e)
+    cans.Print(plotDir+"summaryResult_full_rSR"+e)
 

@@ -49,6 +49,7 @@ argParser.add_argument('--smooth',             action='store_true',             
 argParser.add_argument('--withbkg',             action='store_true',                                                                                  help='with bkg?')
 argParser.add_argument('--withEFTUnc',             action='store_true',                                                        help="add EFT uncertainty?")
 argParser.add_argument('--binMultiplier',      action='store',      default=3,                 type=int,                                             help='bin multiplication factor')
+argParser.add_argument('--splitScale',             action='store_true',                                                        help="split scale uncertainties in sources")
 args = argParser.parse_args()
 
 if args.year != "RunII": args.year = int(args.year)
@@ -79,6 +80,7 @@ if args.addDYSF:     regionNames.append("addDYSF")
 if args.addMisIDSF:  regionNames.append("addMisIDSF")
 if args.inclRegion:  regionNames.append("incl")
 if args.useChannels:  regionNames.append("_".join([ch for ch in args.useChannels if not "tight" in ch]))
+if args.splitScale:   regionNames.append("splitScale")
 
 baseDir       = os.path.join( cache_directory, "analysis",  str(args.year) if args.year != "RunII" else "COMBINED", "limits", "withbkg" if args.withbkg else "withoutbkg" )
 if args.withEFTUnc: baseDir = os.path.join( baseDir, "withEFTUnc" )
@@ -86,7 +88,7 @@ cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
 print cacheFileName
 
-directory = os.path.join( plot_directory, "nllPlotsPostCWR", str(args.year), "_".join( regionNames ))
+directory = os.path.join( plot_directory, "nllPlotsJHEP", str(args.year), "_".join( regionNames ))
 addon = "expected" if args.expected else "observed"
 plot_directory_ = os.path.join( directory, addon )
 
@@ -105,8 +107,8 @@ yRange = eftParameterRange[args.variables[1]]
 
 xRange = [ el for el in xRange if abs(el) <= 0.6 ]
 yRange = [ el for el in yRange if abs(el) <= 0.6 ]
-xRange += [ 0.7 ]
-yRange += [ 0.7 ]
+#xRange += [ 0.7 ]
+#yRange += [ 0.7 ]
 
 
 #xRange       = np.linspace( -1.0, 1.0, 30, endpoint=False)
@@ -140,6 +142,8 @@ def getNllData( varx, vary ):
 #    print nll
 
     nll = nll["nll"] + nll["nll0"]
+    print "ctZ", str(dict["ctZ"]), "ctZI", str(dict["ctZI"]), nll
+    
 
     return float(nll)  
 
@@ -163,6 +167,8 @@ else:
     bfx, bfy = allResults[0][0], allResults[0][1]
     print allResults[0]
 
+print bfx, bfy
+#sys.exit()
 #nllData  = [ (x, y, -2*(nll - sm_nll) if -2*(nll - sm_nll) < 20 and -2*(nll - sm_nll) > 0 else 20) for x, y, nll in nllData ]
 nllData  = [ (x, y, 2*(nll - sm_nll) ) for x, y, nll in nllData ]
 with open("ctZ_ctZI_2D_obs.dat","w") as f:
@@ -216,8 +222,12 @@ ybins = len(yRange)
 nxbins   = max( 1, min( 500, xbins*args.binMultiplier ) )
 nybins   = max( 1, min( 500, ybins*args.binMultiplier ) )
 
-#re-bin
 hist = a.GetHistogram().Clone()
+
+#smoothing
+if args.smooth: hist.Smooth()
+
+#re-bin
 a.SetNpx( nxbins )
 a.SetNpy( nybins )
 hist = a.GetHistogram().Clone()
@@ -225,9 +235,12 @@ hist = a.GetHistogram().Clone()
 #smoothing
 if args.smooth: hist.Smooth()
 
+
 cans = ROOT.TCanvas("can_%s"%title,"",500,500)
 
-contours = [2.28, 5.99]# (68%, 95%) for 2D
+#contours = [2.28, 5.99] # (68%, 95%) for 2D
+contours = [2.3, 5.99] # (68%, 95%) for 2D
+
 if args.contours:
     histsForCont = hist.Clone()
     c_contlist = ((ctypes.c_double)*(len(contours)))(*contours)

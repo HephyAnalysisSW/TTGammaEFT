@@ -35,7 +35,7 @@ argParser.add_argument("--plotYear",             action="store",                
 argParser.add_argument("--postFit",              action="store_true",                            help="Apply pulls?")
 argParser.add_argument("--preliminary",          action="store_true",                            help="Run expected?")
 argParser.add_argument("--year",                 action="store",      type=str, default="2016",    help="Which year?")
-argParser.add_argument("--bestfit",                 action="store",      type=str, default="ctZ_-0.25_ctZI_-0.083",    help="Which fit point")
+argParser.add_argument("--bestfit",                 action="store",      type=str, default="ctZ_-0.283_ctZI_-0.017",    help="Which fit point")
 args = argParser.parse_args()
 
 # logger
@@ -48,33 +48,32 @@ args.year = "combined"
 lumi_scale = int(35.92 + 41.53 + 59.74)
 
 #bf = "ctZ_-0.25_ctZI_-0.083"
-plotDirectory = "/mnt/hephy/cms/lukas.lechner/www/TTGammaEFT/fitEFT/combined/v8/%s/%s"%(args.bestfit, "postfit" if args.postFit else "prefit")
+plotDirectory = "/mnt/hephy/cms/lukas.lechner/www/TTGammaEFT/fitEFTJHEP/combined/v1/%s/%s"%(args.bestfit, "postfit" if args.postFit else "prefit")
 #options = "--rMin 0.99 --rMax 1.01 --cminDefaultMinimizerTolerance=0.1 --cminDefaultMinimizerStrategy=0 --freezeParameters r"
 
 # replace the combineResults object by the substituted card object
-cardFile      = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF/ctZ_0_ctZI_0.txt"
+cardFile      = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_splitScale/ctZ_0_ctZI_0.txt"
 #cardFile      = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF/ctZ_0_ctZI_0.txt"
 Results = CombineResults( cardFile=cardFile, plotDirectory=plotDirectory, year=args.year, bkgOnly=False, isSearch=False )
 
-#rebinCard = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldAll_SR4pPtUnfoldAll_addDYSF_addMisIDSF/ctZ_0_ctZI_0.txt"
-##subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldAll_SR4pPtUnfoldAll_addDYSF_addMisIDSF/ctZ_0_ctZI_0.txt"
+#rebinCard = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldAll_SR4pPtUnfoldAll_addDYSF_splitScale/ctZ_0_ctZI_0.txt"
+##subCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldAll_SR4pPtUnfoldAll_addDYSF_splitScale/ctZ_0_ctZI_0.txt"
 #subCardFile = Results.createRebinnedResults( rebinCard, skipStatOnly=True, setParameters="r=1", options=options )
 #Results     = CombineResults( cardFile=subCardFile, plotDirectory=plotDirectory, year=args.year, bkgOnly=False, isSearch=False, rebinnedCardFile=rebinCard )
-
-bfcardFile    = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF/%s.txt"%args.bestfit
+bfcardFile    = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_splitScale/%s.txt"%args.bestfit
 Resultsbf = CombineResults( cardFile=bfcardFile, plotDirectory=plotDirectory, year=args.year, bkgOnly=False, isSearch=False )
 
-cardFilem045    = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF/ctZ_-0.45_ctZI_0.txt"
+cardFilem045    = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_splitScale/ctZ_-0.45_ctZI_0.txt"
 Resultsm045 = CombineResults( cardFile=cardFilem045, plotDirectory=plotDirectory, year=args.year, bkgOnly=False, isSearch=False )
 
-cardFileI045    = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF/ctZ_0_ctZI_0.45.txt"
+cardFileI045    = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_splitScale/ctZ_0_ctZI_0.45.txt"
 ResultsI045 = CombineResults( cardFile=cardFileI045, plotDirectory=plotDirectory, year=args.year, bkgOnly=False, isSearch=False )
 
-cardFile045    = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_addMisIDSF/ctZ_0.45_ctZI_0.txt"
+cardFile045    = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldEFT_SR4pPtUnfoldEFT_VG3_VG4p_misDY3_misDY4p_addDYSF_splitScale/ctZ_0.45_ctZI_0.txt"
 Results045 = CombineResults( cardFile=cardFile045, plotDirectory=plotDirectory, year=args.year, bkgOnly=False, isSearch=False )
 
-#bfrebinCard = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldAll_SR4pPtUnfoldAll_addDYSF_addMisIDSF/ctZ_-0.25_ctZI_-0.083.txt"
-##bfsubCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldAll_SR4pPtUnfoldAll_addDYSF_addMisIDSF/ctZ_-0.25_ctZI_-0.083.txt"
+#bfrebinCard = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldAll_SR4pPtUnfoldAll_addDYSF_splitScale/ctZ_-0.25_ctZI_-0.083.txt"
+##bfsubCardFile = "/scratch-cbe/users/lukas.lechner/TTGammaEFT/cache_read/analysis/COMBINED/limits/withbkg/cardFiles/defaultSetup/observed/SR3PtUnfoldAll_SR4pPtUnfoldAll_addDYSF_splitScale/ctZ_-0.25_ctZI_-0.083.txt"
 #bfsubCardFile = Resultsbf.createRebinnedResults( bfrebinCard, skipStatOnly=True, setParameters="r=1", options=options )
 #Resultsbf     = CombineResults( cardFile=bfsubCardFile, plotDirectory=plotDirectory, year=args.year, bkgOnly=False, isSearch=False, rebinnedCardFile=bfrebinCard )
 
@@ -264,7 +263,7 @@ def plotRegions( sorted=True ):
 
     hists["data"].style        = styles.errorStyle( ROOT.kBlack )
     hists["data"].legendText   = "Observed"
-#    hists["data"].legendOption = "p"
+    hists["data"].legendOption = "p"
 
     data_copy = hists["data"].Clone()
     data_copy.style        = styles.errorStyle( ROOT.kBlack )
@@ -329,7 +328,7 @@ def plotRegions( sorted=True ):
         plots, ratioHistos = Results.getRegionHistoList( hists, processes=processes, noData=False, sorted=not differential, unsortProcesses=True, bkgSubstracted=False, directory="dc_2016" )
 
 
-#    rootfile = ROOT.TFile( "eft_pt_3mu.root", "RECREATE")
+#    rootfile = ROOT.TFile( "eft_pt_4pe.root", "RECREATE")
 #    for h in hists.values() + [bfEFTHist,EFTHist045,EFTHistI045,EFTHistm045]:
 #       h.Write()
 #    rootfile.Close()

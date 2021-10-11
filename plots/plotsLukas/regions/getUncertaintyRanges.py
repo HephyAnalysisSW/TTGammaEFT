@@ -152,6 +152,12 @@ for i_c, c in enumerate(channels):
                 hists["WGamma"]["sys"] = hists[c][n]["sys"].Clone()
             else:
                 hists["WGamma"]["sys"].Add(hists[c][n]["sys"] )
+        if "tWgamma" in n:
+            if not "tWGamma" in hists.keys():
+                hists["tWGamma"] = {}
+                hists["tWGamma"]["sys"] = hists[c][n]["sys"].Clone()
+            else:
+                hists["tWGamma"]["sys"].Add(hists[c][n]["sys"] )
         if "ZGamma" in n:
             if not "ZGamma" in hists.keys():
                 hists["ZGamma"] = {}
@@ -190,7 +196,8 @@ for i_c, c in enumerate(channels):
             else:
                 hists["fake_photon"]["sys"].Add(hists[c][n]["sys"] )
 
-        if "erdOn" in n or "QCDbased" in n or  "GluonMove" in n:
+#        if "erdOn" in n or "QCDbased" in n or  "GluonMove" in n:
+        if "Color" in n:
             if not "color" in hists.keys():
                 hists["color"] = {}
                 hists["color"]["sys"] = hists[c][n]["sys"].Clone()
@@ -198,7 +205,7 @@ for i_c, c in enumerate(channels):
                 hists["color"]["sys"].Add(hists[c][n]["sys"] )
 
 
-nuisances += ["JEC","JER","Luminosity","MisID","WGamma","ZGamma","muon_ID","Trigger","pixelSeed","flavor","fake_photon","color","QCD"]
+nuisances += ["JEC","JER","Luminosity","MisID","tWGamma","WGamma","ZGamma","muon_ID","Trigger","pixelSeed","flavor","fake_photon","color","QCD"]
 
 for n in nuisances:
     for i in range( hists[n]["sys"].GetNbinsX() ):
@@ -252,17 +259,25 @@ resultprefit = {}
 
 modelUnc = [
             "Tune",
-            "QCDbased",
-            "Scale",
-            "GluonMove",
+#            "QCDbased",
+            "color",
+#            "Scale",
+            "Scale_DD",
+            "Scale_DN",
+            "Scale_ND",
+            "Scale_NU",
+            "Scale_UN",
+            "Scale_UU",
+#            "GluonMove",
             "PDF",
             "Parton_Showering",
-            "erdOn",
+#            "erdOn",
 ]
 
 bkgUnc = [
             "WGamma_nJet_dependence",
             "WGamma_normalization",
+            "tWGamma_normalization",
             "WGamma_pT_Bin1",
             "WGamma_pT_Bin2",
             "ZGamma_nJet_dependence",

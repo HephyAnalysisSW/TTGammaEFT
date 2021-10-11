@@ -45,6 +45,7 @@ argParser.add_argument( "--useRegions",         action="store",      nargs='*', 
 argParser.add_argument( "--useChannels",        action="store",      nargs='*', default=None,   type=str, choices=["e", "mu", "all", "comb"], help="Which lepton channels to use?" )
 argParser.add_argument('--withbkg',             action='store_true',                                                                                  help='with bkg?')
 argParser.add_argument('--withEFTUnc',             action='store_true',                                                        help="add EFT uncertainty?")
+argParser.add_argument('--splitScale',             action='store_true',                                                        help="split scale uncertainties in sources")
 args = argParser.parse_args()
 
 if args.year != "RunII": args.year = int(args.year)
@@ -72,6 +73,7 @@ if args.addDYSF:     regionNames.append("addDYSF")
 if args.addMisIDSF:  regionNames.append("addMisIDSF")
 if args.inclRegion:  regionNames.append("incl")
 if args.useChannels:  regionNames.append("_".join([ch for ch in args.useChannels if not "tight" in ch]))
+if args.splitScale:   regionNames.append("splitScale")
 
 regionNamesExp = copy.deepcopy(regionNames)
 #regionNamesExp.append("incl")
@@ -81,7 +83,7 @@ if args.withEFTUnc: baseDir = os.path.join( baseDir, "withEFTUnc" )
 cacheFileName = os.path.join( baseDir, "calculatednll" )
 nllCache      = MergingDirDB( cacheFileName )
 
-directory = os.path.join( plot_directory, "nllPlotsPostCWR", str(args.year), "_".join( regionNames ))
+directory = os.path.join( plot_directory, "nllPlotsJHEP", str(args.year), "_".join( regionNames ))
 addon = "comb"
 if args.plotData: addon += "_check"
 plot_directory_ = os.path.join( directory, addon )
@@ -266,6 +268,15 @@ def plot1D( dat, datExp, var, xmin, xmax ):
         x95pmax = func.GetX( 3.84, xm2, xmax )
 
 
+
+    print "68min", x68min
+    print "68max", x68max
+    print "68min", x68pmin
+    print "68max", x68pmax
+    print "95min", x95min
+    print "95max", x95max
+    sys.exit()
+
     xhist.SetLineWidth(0)
 
     func.SetFillColor(ROOT.kWhite)
@@ -302,7 +313,7 @@ def plot1D( dat, datExp, var, xmin, xmax ):
     #if not None in args.zRange:
     xhist.GetYaxis().SetRangeUser( 0, 5.5 )
     xhist.GetXaxis().SetRangeUser( xmin, xmax )
-    xhist.GetXaxis().SetLimits(xmin, xmax)
+#    xhist.GetXaxis().SetLimits(xmin, xmax)
 
 
     func95 = ROOT.TF1("func95",polString, x95min,x95max )
