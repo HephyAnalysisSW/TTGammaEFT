@@ -59,7 +59,7 @@ dirs["TTG"]              = ["TTGLep_LO", "TTGLep_ptG100To200_LO", "TTGLep_ptG200
 directories = { key : [ os.path.join( data_directory_, postprocessing_directory_, dir) for dir in dirs[key] ] for key in dirs.keys() }
 
 # Samples
-TTG_NLO         = getMCSample(name="TTG_NLO",          redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTGNLO"], noCheckProxy=True, fromDPM=fromDPM)
+#TTG_NLO         = getMCSample(name="TTG_NLO",          redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTGNLO"], noCheckProxy=True, fromDPM=fromDPM)
 TTG             = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTG"], noCheckProxy=True, fromDPM=fromDPM)
 TTGSemiLep      = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTGSemiLep"], noCheckProxy=True, fromDPM=fromDPM)
 TTGLep          = getMCSample(name="TTG",              redirector=redirector, color=color.TTG,             texName="t#bar{t}#gamma",    directory=directories["TTGLep"], noCheckProxy=True, fromDPM=fromDPM)

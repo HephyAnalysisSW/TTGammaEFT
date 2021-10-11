@@ -1,3 +1,4 @@
+import os
 from RootTools.core.standard import *
 
 from TTGammaEFT.Samples.nanoTuples_Run2016_14Dec2018_semilep_postProcessed import Run2016
@@ -13,11 +14,17 @@ import TTGammaEFT.Samples.nanoTuples_Summer16_private_v6_semilep_postProcessed a
 import TTGammaEFT.Samples.nanoTuples_Fall17_private_v6_semilep_postProcessed   as Fall17
 import TTGammaEFT.Samples.nanoTuples_Autumn18_private_v6_semilep_postProcessed as Autumn18
 
-TTG           = Sample.combine( "TTG",          [Summer16.TTG, Fall17.TTG, Autumn18.TTG] )
-TTG.texName="t#bar{t}#gamma"
+#TTG           = Sample.combine( "TTG",          [Summer16.TTG, Fall17.TTG, Autumn18.TTG] )
+#TTG.texName="t#bar{t}#gamma"
 
-TT_pow           = Sample.combine( "TT_pow",          [Summer16.TT_pow, Fall17.TT_pow, Autumn18.TT_pow] )
-TT_pow.texName="t#bar{t}"
+#TT_pow           = Sample.combine( "TT_pow",          [Summer16.TT_pow, Fall17.TT_pow, Autumn18.TT_pow] )
+#TT_pow.texName="t#bar{t}"
 
-TTG_NLO           = Sample.combine( "TTG_NLO",          [Summer16.TTG_NLO, Fall17.TTG_NLO, Autumn18.TTG_NLO] )
-TTG_NLO.texName="t#bar{t}#gamma"
+#TTG_NLO           = Sample.combine( "TTG_NLO",          [Summer16.TTG_NLO, Fall17.TTG_NLO, Autumn18.TTG_NLO] )
+#TTG_NLO.texName="t#bar{t}#gamma"
+
+TTGSemiLep           = Sample.combine( "TTG",          [Summer16.TTGSemiLep, Fall17.TTGSemiLep, Autumn18.TTGSemiLep] )
+TTGSemiLep.texName="t#bar{t}#gamma"
+
+TTGLep           = Sample.combine( "TTG",          [Summer16.TTGLep, Fall17.TTGLep, Autumn18.TTGLep] )
+TTGLep.texName="t#bar{t}#gamma"

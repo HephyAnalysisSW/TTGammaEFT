@@ -83,4 +83,3 @@ allSamples = Herwig
 
 for s in allSamples:
     s.isData = False
-    print s.das

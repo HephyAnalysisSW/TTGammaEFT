@@ -15,6 +15,15 @@ import TTGammaEFT.Samples.nanoTuples_Autumn18_private_semilep_postProcessed as A
 
 TTG           = Sample.combine( "TTG",          [Summer16.TTG, Fall17.TTG, Autumn18.TTG] )
 TTG.texName="t#bar{t}#gamma"
+
+TTG_NLO           = Sample.combine( "TTG_NLO",          [Summer16.TTG_NLO, Fall17.TTG_NLO, Autumn18.TTG_NLO] )
+TTG_NLO.texName="t#bar{t}#gamma (NLO)"
+
+TTGLep           = Sample.combine( "TTG",          [Summer16.TTGLep, Fall17.TTGLep, Autumn18.TTGLep] )
+TTGLep.texName="t#bar{t}#gamma"
+TTGSemiLep           = Sample.combine( "TTG",          [Summer16.TTGSemiLep, Fall17.TTGSemiLep, Autumn18.TTGSemiLep] )
+TTGSemiLep.texName="t#bar{t}#gamma"
+
 TTG_Herwigpp  = Sample.combine( "TTG_Herwigpp",        [Summer16.TTG_Herwig, Summer16.TTG_Herwig,Summer16.TTG_Herwig] )
 TTG_Herwigpp.texName="t#bar{t}#gamma"
 TTG_Herwig7  = Sample.combine( "TTG_Herwig7",          [Fall17.TTG_Herwig, Fall17.TTG_Herwig,Fall17.TTG_Herwig] )

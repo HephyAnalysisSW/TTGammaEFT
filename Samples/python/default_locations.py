@@ -13,20 +13,21 @@ class postprocessing_locations:
     MC2017_semilep  = "TTGammaEFT_PP_2017_TTG_private_v49/semilep/"
     MC2018_semilep  = "TTGammaEFT_PP_2018_TTG_private_v49/semilep/"
 
-    MC2016_semilep_private = "TTGammaEFT_PP_2016_TTG_private_v49_priv/semilep/"
-    MC2017_semilep_private = "TTGammaEFT_PP_2017_TTG_private_v49_priv/semilep/"
-    MC2018_semilep_private = "TTGammaEFT_PP_2018_TTG_private_v49_priv/semilep/"
+    MC2016_semilep_private = "TTGammaEFT_PP_2016_TTG_private_v52_priv/semilep/"
+    MC2017_semilep_private = "TTGammaEFT_PP_2017_TTG_private_v52_priv/semilep/"
+    MC2018_semilep_private = "TTGammaEFT_PP_2018_TTG_private_v52_priv/semilep/"
 
     Run2016_semilep = "TTGammaEFT_PP_2016_TTG_Data_v49/semilep/"
     Run2017_semilep = "TTGammaEFT_PP_2017_TTG_Data_v49/semilep/"
     Run2018_semilep = "TTGammaEFT_PP_2018_TTG_Data_v49/semilep/"
 
-    MC2016_incl  = "TTGammaEFT_PP_2016_TTG_private_v49/inclusive/"
-    MC2017_incl  = "TTGammaEFT_PP_2017_TTG_private_v49/inclusive/"
-    MC2018_incl  = "TTGammaEFT_PP_2018_TTG_private_v49/inclusive/"
+    MC2016_incl  = "TTGammaEFT_PP_2016_TTG_private_v50/inclusive/"
+    MC2017_incl  = "TTGammaEFT_PP_2017_TTG_private_v50/inclusive/"
+    MC2018_incl  = "TTGammaEFT_PP_2018_TTG_private_v50/inclusive/"
 
     Herwig          = "TTGammaEFT_PP_Herwig_TTG_v4/gen/"
     EFT             = "TTGammaEFT_PP_EFT_TTG_v14/gen/"
+    twg             = "TTGammaEFT_PP_tWg_TTG_v1/gen/"
 #    EFT             = "TTGammaEFT_PP_EFT_TTG_v7/gen/"
     MCSync_semilep  = "TTGammaEFT_PP_Sync_TTG_private_v48/inclusive/"
 
