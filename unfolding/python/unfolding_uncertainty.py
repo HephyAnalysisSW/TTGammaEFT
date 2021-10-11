@@ -70,7 +70,7 @@ def drawHeader():
     return [tex.DrawLatex(*line), tex.DrawLatex(*line)]
 
 # Text on the plots
-def drawObjects( offset=0, cmsOffset=0 ):
+def drawObjects( offset=0, cmsOffset=0, supplementary=False ):
     tex = ROOT.TLatex()
     tex.SetNDC()
     tex.SetTextSize(0.04)
@@ -82,8 +82,10 @@ def drawObjects( offset=0, cmsOffset=0 ):
     tex2.SetTextAlign(11) # align right
 
     line = (0.68-offset, 0.95, "%i fb{}^{-1} (13 TeV)"%settings.lumi_factor) 
-    line2 = (0.15+cmsOffset, 0.95, "CMS")
-    return [tex2.DrawLatex(*line2), tex.DrawLatex(*line)]
+#    line2 = (0.15+cmsOffset, 0.95, "CMS")
+    line2 = (0.15+cmsOffset, 0.95, "Private Work")
+    line3 = (0.25+cmsOffset, 0.95, "%s"%("" if not supplementary else " #bf{#it{Supplementary}}"))
+    return [tex2.DrawLatex(*line2), tex.DrawLatex(*line3), tex.DrawLatex(*line)]
 
 if args.small: args.plot_directory += "_small"
 
@@ -98,7 +100,7 @@ cache_dir = os.path.join(cache_directory, "unfolding", year_str, "matrix")
 dirDB     = MergingDirDB(cache_dir)
 
 # specifics from the arguments
-plot_directory_ = os.path.join( plot_directory, "unfolding", args.plot_directory+"_Herwigv21", args.settings + "_" + args.useMatrix if args.useMatrix else args.settings)
+plot_directory_ = os.path.join( plot_directory, "unfoldingJHEP", args.plot_directory+"_Herwigv4", args.settings + "_" + args.useMatrix if args.useMatrix else args.settings)
 copyIndexPHP( plot_directory_ )
 copyIndexPHP( plot_directory_ + "/uncertainties/" )
 copyIndexPHP( plot_directory_ + "/uncertainties_unfolded/" )
@@ -130,18 +132,18 @@ def draw( plot, **kwargs):
         logX = False, sorting = False,
         #yRange         = (0.5, 1.5) ,
         #scaling        = {0:1} if len(plot.stack)==2 else {},
-        legend         = [ (0.20,0.75,0.9,0.91), 2 ],
+#        legend         = [ (0.20,0.75,0.9,0.91), 2 ],
         drawObjects    = drawObjects(),
         copyIndexPHP   = True, 
         redrawHistos = True,
         **kwargs
       )
-def draw2D( plot, logZ, **kwargs):
+def draw2D( plot, logZ, supplementary, **kwargs):
     plotting.draw2D( plot,
                      plot_directory = plot_directory_,
                      logX = False, logY = False, logZ = logZ,
                      copyIndexPHP = True,  
-                     drawObjects    = drawObjects(offset=0.1),
+                     drawObjects    = drawObjects(offset=0.1, supplementary=supplementary),
                      **kwargs
                     )
 
@@ -584,6 +586,11 @@ if args.useMatrix:
 #else:
 #    matrix = sys_matrix["nominal"]
 
+#rootfile = ROOT.TFile( "unfoldingMatrix_%s.root"%args.settings, "RECREATE")
+#matrix.SetName("matrix")
+#matrix.Write()
+#rootfile.Close()
+#sys.exit()
 
 gen_sel = cutInterpreter.cutString(settings.fiducial_selection)
 #data_dir = "/eos/vbc/user/lukas.lechner/TTGammaEFT/nanoTuples/postprocessed/TTGammaEFT_PP_2017_TTG_private_v49/inclusive"
@@ -607,10 +614,13 @@ if "dRlg" in args.settings:
 
 gen_weight = "weight*(35.92+41.53+59.74)*%f"%norm
 
+print "normalization P8", TTG_P8.getYieldFromDraw( selectionString=gen_sel, weightString=gen_weight )["val"]/(35.92+41.53+59.74)
 fiducial_spectrum_Hpp = TTG_Hpp.get1DHistoFromDraw( genVar, binning=array.array('d', settings.fiducial_thresholds), selectionString=gen_sel, weightString=gen_weight, addOverFlowBin="upper", binningIsExplicit=True )
+print "normalization Hpp", TTG_Hpp.getYieldFromDraw( selectionString=gen_sel, weightString=gen_weight )["val"]/(35.92+41.53+59.74)
 fiducial_spectrum_Hpp.GetXaxis().SetTitle(settings.tex_gen)
 
 fiducial_spectrum_H7 = TTG_H7.get1DHistoFromDraw( genVar, binning=array.array('d', settings.fiducial_thresholds), selectionString=gen_sel, weightString=gen_weight, addOverFlowBin="upper", binningIsExplicit=True )
+print "normalization H7", TTG_H7.getYieldFromDraw( selectionString=gen_sel, weightString=gen_weight )["val"]/(35.92+41.53+59.74)
 fiducial_spectrum_H7.GetXaxis().SetTitle(settings.tex_gen)
 
 # Unfolding matrix
@@ -621,9 +631,9 @@ else:
     s_str = " +%3.2f*(year-2016)"%(settings.max_reco_val-settings.min_reco_val)
 
 plot_matrix = Plot2D.fromHisto("unfolding_matrix_lin", [[matrix]], texY = settings.tex_gen, texX = settings.tex_reco + s_str )
-draw2D( plot_matrix, False, widths = {'x_width':500+250*(len(settings.years)-1)}, zRange = (0,sys_matrix["nominal"].GetMaximum()) )
+draw2D( plot_matrix, False, False, widths = {'x_width':500+250*(len(settings.years)-1)}, zRange = (0,sys_matrix["nominal"].GetMaximum()) )
 plot_matrix = Plot2D.fromHisto("unfolding_matrix", [[matrix]], texY = settings.tex_gen, texX = settings.tex_reco + s_str )
-draw2D( plot_matrix, True, widths = {'x_width':500+250*(len(settings.years)-1)}, zRange = (1,sys_matrix["nominal"].GetMaximum()) )
+draw2D( plot_matrix, True, False, widths = {'x_width':500+250*(len(settings.years)-1)}, zRange = (1,sys_matrix["nominal"].GetMaximum()) )
 
 # Efficiency Histogram
 efficiency_base = matrix.ProjectionY()
@@ -716,6 +726,22 @@ for logY in [False]:
     plot.stack = None
     draw(plot, logY = logY)
 
+#rootfile = ROOT.TFile( "efficiency_%s.root"%args.settings, "RECREATE")
+#purity.SetName("purity")
+#purity.Write()
+#efficiency.SetName("efficiency")
+#efficiency.Write()
+#reco_spectrum_subtracted.SetName("foutSubtracted")
+#reco_fout_spectrum.SetName("fout")
+#reco_spectrum.SetName("reco")
+#reco_spectrum_subtracted.Write()
+#reco_fout_spectrum.Write()
+#reco_spectrum.Write()
+#rootfile.Close()
+#sys.exit()
+
+
+
 stuff = []
 def getOutput( unfold, input_spectrum, name = "unfolded_spectrum", tau = 0.): 
     #if isinstance( unfold, ROOT.TUnfoldDensity ):
@@ -776,22 +802,27 @@ scan_tgraph_best = ROOT.TGraph(1, array.array('d', [ best_logtau ]), array.array
 canv = ROOT.TCanvas("canv_tau")
 
 scan_tgraph.SetTitle("Optimization of Regularization Parameter, #tau : Scan of correlation coefficient")
-scan_tgraph.SetLineColor(ROOT.kBlue+3)
+scan_tgraph.SetLineColor(ROOT.kRed+2)
 scan_tgraph.Draw()
-scan_tgraph.GetXaxis().SetTitle("log_{10}(#tau)")
-scan_tgraph.GetYaxis().SetTitle("Avg. correlation coefficient")
+scan_tgraph.GetXaxis().SetTitle("log(#tau)")
+scan_tgraph.GetYaxis().SetTitle("Avg. corr. coefficient")
 
-scan_tgraph_best.SetLineColor(ROOT.kRed+1)
-scan_tgraph_best.SetMarkerColor(ROOT.kRed+1)
-scan_tgraph_best.Draw("* same")
+scan_tgraph.GetXaxis().SetTitleSize(0.05)
+scan_tgraph.GetXaxis().SetLabelSize(0.04)
+scan_tgraph.GetYaxis().SetTitleSize(0.05)
+scan_tgraph.GetYaxis().SetLabelSize(0.04)
+
+#scan_tgraph_best.SetLineColor(ROOT.kRed+1)
+#scan_tgraph_best.SetMarkerColor(ROOT.kRed+1)
+#scan_tgraph_best.Draw("* same")
 
 leg = ROOT.TLegend(0.2, 0.6, 0.7, 0.89)
 leg.SetFillColor(0)
 leg.SetFillStyle(0)
 leg.SetBorderSize(0)
-leg.SetTextSize(0.026)
-leg.AddEntry(scan_tgraph, '#rho', 'l')
-leg.AddEntry(scan_tgraph_best, 'minimum #tau = %6.4f'% list_rho[pos_min], 'P')
+leg.SetTextSize(0.05)
+#leg.AddEntry(scan_tgraph, '#rho', 'l')
+leg.AddEntry(scan_tgraph_best, '#tau_{min} = %6.4f'% 10**best_logtau, 'P')
 leg.Draw()
 
 for ext in ['pdf','png','root']:
@@ -799,17 +830,21 @@ for ext in ['pdf','png','root']:
 
 hs = []
 colors = [ROOT.kBlue, ROOT.kRed+1, ROOT.kGreen+1]
-for i_tau, tau in enumerate( [  0, 10**best_logtau, 10**-1] ):
+for i_tau, tau in enumerate( [  0, 10**best_logtau] ):
     h = getOutput(unfold_nom_sys, reco_spectrum_subtracted, tau=tau)
-    h.legendText = ( "log(#tau) = %6.4f" % log(tau,10) if tau > 0 else  "log(#tau) = -#infty" )
-    h.style = styles.lineStyle( colors[i_tau], width=2 )
+    h.Scale(1./settings.lumi_factor)
+    h.legendText = ( "#tau = 0" if i_tau == 0 else "#tau = %6.4f"%10**best_logtau )
+    h.style = styles.lineStyle( colors[i_tau], width=3 )
     hs.append( h )
-for logY in [True]:
-    plot = Plot.fromHisto( name = 'unfolding_tau_comparison' + ('_log' if logY else ''),  histos = [[ h ] for h in hs], texX = "p_{T}", texY = "Events" )
+for logY in [True, False]:
+    plot = Plot.fromHisto( name = 'unfolding_tau_comparison' + ('_log' if logY else ''),  histos = [[ h ] for h in hs], texX = settings.tex_unf, texY = settings.texY )
     plot.stack = None
     draw(plot, logY = logY,
-         ratio = {'yRange': (0.92, 1.08), 'texY':'wrt #tau=0', 'histos':[(1,0)]},
+         ratio = {'yRange': (0.92, 1.08), 'texY':'#tau_{min}/#tau=0', 'histos':[(1,0)]},
+         yRange = (41,250), #settings.y_range,
+         legend  = [ (0.60,0.6,0.9,0.91), 1 ],
         )
+
 
 # closure 
 for logY in [True, False]:
@@ -872,7 +907,7 @@ h7empty.legendText = "Herwig7"
 empties.append(h7empty)
 
 hppempty = empty.Clone()
-hppempty.style = styles.lineStyle( ROOT.kGreen+2, width = 3, dashed=True)
+hppempty.style = styles.lineStyle( ROOT.kGreen+2, width = 3, dotted=True)
 hppempty.legendText = "Herwig++"
 empties.append(hppempty)
 
@@ -1021,6 +1056,58 @@ for logY in [True, False]:
 
 #########
 
+#####
+# stress test
+nominal_input = unfolding_signal_input_subtracted.Clone()
+unfolded_nominal = getOutput(unfold['nominal' if not args.useMatrix else args.useMatrix], nominal_input, "unfolded_nominal").Clone()
+unfolded_nominal.Scale(1./settings.lumi_factor)
+unfolded_nominal.style = styles.lineStyle( ROOT.kBlack, width = 3 )
+unfolded_nominal.legendText = "nominal"
+
+nreco = int(nominal_input.GetNbinsX()/3.)
+p2_input = unfolding_signal_input_subtracted.Clone()
+for i in range(nreco):
+    pt = nominal_input.GetBinLowEdge(i+1)
+    fac = 1+0.001*(pt-20)
+    print pt, fac
+    p2_input.SetBinContent(i+1, p2_input.GetBinContent(i+1)*fac)
+    p2_input.SetBinContent(nreco+i+1, p2_input.GetBinContent(nreco+i+1)*fac)
+    p2_input.SetBinContent(2*nreco+i+1, p2_input.GetBinContent(2*nreco+i+1)*fac)
+unfolded_p2 = getOutput(unfold['nominal' if not args.useMatrix else args.useMatrix], p2_input, "unfolded_p2").Clone()
+unfolded_p2.Scale(1./settings.lumi_factor)
+unfolded_p2.style = styles.lineStyle( ROOT.kRed, width = 2 )
+unfolded_p2.legendText = "Scale = 0.1%s * (p^{reco}_{T}-20 GeV)"%"%"
+
+p4_input = unfolding_signal_input_subtracted.Clone()
+for i in range(nreco):
+    pt = nominal_input.GetBinLowEdge(i+1)
+    fac = 1+0.002*(pt-20)
+    p4_input.SetBinContent(i+1, p4_input.GetBinContent(i+1)*fac)
+    p4_input.SetBinContent(nreco+i+1, p4_input.GetBinContent(nreco+i+1)*fac)
+    p4_input.SetBinContent(2*nreco+i+1, p4_input.GetBinContent(2*nreco+i+1)*fac)
+unfolded_p4 = getOutput(unfold['nominal' if not args.useMatrix else args.useMatrix], p4_input, "unfolded_p4").Clone()
+unfolded_p4.Scale(1./settings.lumi_factor)
+unfolded_p4.style = styles.lineStyle( ROOT.kBlue, width = 2 )
+unfolded_p4.legendText = "Scale = 0.2%s * (p^{reco}_{T}-20 GeV)"%"%"
+
+# closure 
+for logY in [True, False]:
+    plot = Plot.fromHisto( name = 'unfolding_stressTest' + ('_log' if logY else ''),  histos = [[ h ] for h in [unfolded_nominal, unfolded_p2, unfolded_p4]], texX = settings.tex_unf, texY = settings.texY )
+    plot.stack = None
+
+    plotting.draw(plot,
+        plot_directory = plot_directory_,
+        logX = False, logY = logY, sorting = False, 
+        legend         = (0.22,0.63,0.83,0.9),
+        ratio = {'yRange': (0.51, 1.49), 'texY':'Scaled/Nominal', 'histos':[(1,0),(2,0)]},
+        drawObjects = drawObjects(cmsOffset=0.03),
+    )
+
+
+#sys.exit()
+#####
+
+
 # unfolding the data
 unfolding_signal_output = getOutput(unfold['nominal' if not args.useMatrix else args.useMatrix], unfolding_signal_input_subtracted, "unfolding_signal_input_subtracted_x").Clone()
 unfolding_signal_output.Scale(1./settings.lumi_factor)
@@ -1072,7 +1159,7 @@ fiducial_spectrum_H7.style = styles.lineStyle( ROOT.kBlack, width = 3, dashed=Tr
 #fiducial_spectrum_H7.legendText = "Herwig7"
 
 fiducial_spectrum_Hpp.Scale(1./settings.lumi_factor)
-fiducial_spectrum_Hpp.style = styles.lineStyle( ROOT.kGreen+2, width = 3, dashed=True)
+fiducial_spectrum_Hpp.style = styles.lineStyle( ROOT.kGreen+2, width = 3, dotted=True)
 #fiducial_spectrum_Hpp.style = styles.lineStyle( ROOT.kAzure-3, width = 3, dashed=True)
 #fiducial_spectrum_Hpp.legendText = "Herwig++"
 
@@ -1324,13 +1411,23 @@ if "RunII" in args.settings:
     diagHistos = [] #, stat_unfolded]
     output_covMatrixStat = ROOT.TH2D( "output_covMatrix_stat", "output_covMatrix_stat", len(settings.fiducial_thresholds)-1, array.array('d', settings.fiducial_thresholds), len(settings.fiducial_thresholds)-1, array.array('d', settings.fiducial_thresholds) )
     output_covMatrixStat = fillCovarianceHisto( copy.deepcopy(systHistsStat), copy.deepcopy(diagHistos), settings.corrFitObjStat, output_covMatrixStat )
-    output_covMatrixStat.GetZaxis().SetTitle("Covariance [fb]")
-    plot_covMatrixStat = Plot2D.fromHisto("covMatrix_stat_lin", [[output_covMatrixStat]], texY = settings.tex_unf, texX = settings.tex_unf )
-    draw2D( plot_covMatrixStat, False )
-    zlow, zhigh = settings.covZRange
+    output_covMatrixStat.GetZaxis().SetTitle("Covariance [fb^{2}]")
+    output_covMatrixStat.SetMarkerSize(1.8)
+    output_covMatrixStat.GetZaxis().SetTitleOffset( 0.9 )
+
+    for i in range( 1, output_covMatrixStat.GetNbinsX()+1 ): 
+        for j in range( 1, output_covMatrixStat.GetNbinsY()+1 ): 
+            if output_covMatrixStat.GetBinContent(i,j)<settings.covZRangeStat[0]:
+                output_covMatrixStat.SetBinContent(i,j, settings.covZRangeStat[0])
+
+    plot_covMatrixStat = Plot2D.fromHisto("covMatrix_stat_lin", [[output_covMatrixStat]], texY = settings.tex_unf, texX = settings.tex_unf, texZ="Covariance [fb^{2}]" )
+#    plot_covMatrixStat.drawOption = "COLZTEXT"
+    draw2D( plot_covMatrixStat, False, supplementary=True )
+    zlow, zhigh = settings.covZRangeStat
     output_covMatrixStat.GetZaxis().SetRangeUser( zlow, zhigh )
-    plot_covMatrixStat = Plot2D.fromHisto("covMatrix_stat", [[output_covMatrixStat]], texY = settings.tex_unf, texX = settings.tex_unf )
-    draw2D( plot_covMatrixStat, True )
+    plot_covMatrixStat = Plot2D.fromHisto("covMatrix_stat", [[output_covMatrixStat]], texY = settings.tex_unf, texX = settings.tex_unf, texZ="Covariance [fb^{2}]" )
+#    plot_covMatrixStat.drawOption = "COLZTEXT"
+    draw2D( plot_covMatrixStat, True, supplementary=True )
 
     mcStatUp = unfolding_signal_output.Clone()
     mcStatDown = unfolding_signal_output.Clone()
@@ -1365,12 +1462,22 @@ output_covMatrix.Scale(0)
 
 output_covMatrix = fillCovarianceHisto( copy.deepcopy(systHists), copy.deepcopy(diagHistos), settings.corrFitObj, output_covMatrix )
 output_covMatrix.GetZaxis().SetTitle("Covariance [fb]")
-plot_covMatrix = Plot2D.fromHisto("covMatrix_lin", [[output_covMatrix]], texY = settings.tex_unf, texX = settings.tex_unf )
-draw2D( plot_covMatrix, False )
+output_covMatrix.SetMarkerSize(1.8)
+output_covMatrix.GetZaxis().SetTitleOffset( 0.9 )
+
+for i in range( 1, output_covMatrix.GetNbinsX()+1 ): 
+    for j in range( 1, output_covMatrix.GetNbinsY()+1 ): 
+        if output_covMatrix.GetBinContent(i,j)<settings.covZRange[0]:
+            output_covMatrix.SetBinContent(i,j, settings.covZRange[0])
+
+plot_covMatrix = Plot2D.fromHisto("covMatrix_lin", [[output_covMatrix]], texY = settings.tex_unf, texX = settings.tex_unf, texZ="Covariance [fb^{2}]" )
+#plot_covMatrix.drawOption = "COLZTEXT"
+draw2D( plot_covMatrix, False,  supplementary=True )
 zlow, zhigh = settings.covZRange
 output_covMatrix.GetZaxis().SetRangeUser( zlow, zhigh )
-plot_covMatrix = Plot2D.fromHisto("covMatrix", [[output_covMatrix]], texY = settings.tex_unf, texX = settings.tex_unf )
-draw2D( plot_covMatrix, True )
+plot_covMatrix = Plot2D.fromHisto("covMatrix", [[output_covMatrix]], texY = settings.tex_unf, texX = settings.tex_unf, texZ="Covariance [fb^{2}]" )
+#plot_covMatrix.drawOption = "COLZTEXT"
+draw2D( plot_covMatrix, True,  supplementary=True )
 
 rootfile = ROOT.TFile( "covMatrix_%s.root"%args.settings, "RECREATE")
 output_covMatrix.Write()
@@ -1393,7 +1500,7 @@ output_corr_matrix.GetZaxis().SetRangeUser( 0, 100 )
 output_corr_matrix.GetZaxis().SetTitleOffset( 0.9 )
 plot_corr_matrix = Plot2D.fromHisto("corrMatrix", [[output_corr_matrix]], texY = settings.tex_unf, texX = settings.tex_unf, texZ="Correlation [%s]  "%"%" )
 plot_corr_matrix.drawOption = "COLZTEXT"
-draw2D( plot_corr_matrix, False )
+draw2D( plot_corr_matrix, False, False )
 
 rootfile = ROOT.TFile( "corrMatrix_%s.root"%args.settings, "RECREATE")
 output_corr_matrix.Write()
@@ -1783,7 +1890,7 @@ if "RunII" in args.settings:
     output_corr_matrixStat.GetZaxis().SetTitle("Correlation [%s]  "%"%")
     plot_corr_matrixStat = Plot2D.fromHisto("corrMatrix_stat", [[output_corr_matrixStat]], texY = settings.tex_unf, texX = settings.tex_unf, texZ="Correlation [%s]  "%"%" )
     plot_corr_matrixStat.drawOption = "COLZTEXT"
-    draw2D( plot_corr_matrixStat, False )
+    draw2D( plot_corr_matrixStat, False, True )
 
 
 
@@ -1799,12 +1906,22 @@ if "RunII" in args.settings:
     output_covMatrixSyst = output_covMatrix.Clone("covMatrix_syst")
     output_covMatrixSyst.Add(output_covMatrixStat, -1)
     output_covMatrixSyst.GetZaxis().SetTitle("Covariance [fb]")
-    plot_covMatrixSyst = Plot2D.fromHisto("covMatrix_syst_lin", [[output_covMatrixSyst]], texY = settings.tex_unf, texX = settings.tex_unf )
-    draw2D( plot_covMatrixSyst, False )
+    output_covMatrixSyst.SetMarkerSize(1.8)
+    output_covMatrixSyst.GetZaxis().SetTitleOffset( 0.9 )
+
+    for i in range( 1, output_covMatrixSyst.GetNbinsX()+1 ): 
+        for j in range( 1, output_covMatrixSyst.GetNbinsY()+1 ): 
+            if output_covMatrixSyst.GetBinContent(i,j)<settings.covZRange[0]:
+                output_covMatrixSyst.SetBinContent(i,j, settings.covZRange[0])
+
+    plot_covMatrixSyst = Plot2D.fromHisto("covMatrix_syst_lin", [[output_covMatrixSyst]], texY = settings.tex_unf, texX = settings.tex_unf, texZ="Covariance [fb^{2}]" )
+#    plot_covMatrixSyst.drawOption = "COLZTEXT"
+    draw2D( plot_covMatrixSyst, False,  supplementary=True )
     zlow, zhigh = settings.covZRange
     output_covMatrixSyst.GetZaxis().SetRangeUser( zlow, zhigh )
-    plot_covMatrixSyst = Plot2D.fromHisto("covMatrix_syst", [[output_covMatrixSyst]], texY = settings.tex_unf, texX = settings.tex_unf )
-    draw2D( plot_covMatrixSyst, True )
+    plot_covMatrixSyst = Plot2D.fromHisto("covMatrix_syst", [[output_covMatrixSyst]], texY = settings.tex_unf, texX = settings.tex_unf, texZ="Covariance [fb^{2}]" )
+#    plot_covMatrixSyst.drawOption = "COLZTEXT"
+    draw2D( plot_covMatrixSyst, True,  supplementary=True )
 
 
     # output correlation matrix syst
@@ -1824,7 +1941,7 @@ if "RunII" in args.settings:
     output_corr_matrixSyst.GetZaxis().SetTitle("Correlation [%s]"%"%")
     plot_corr_matrixSyst = Plot2D.fromHisto("corrMatrix_syst", [[output_corr_matrixSyst]], texY = settings.tex_unf, texX = settings.tex_unf, texZ="Correlation [%s]  "%"%" )
     plot_corr_matrixSyst.drawOption = "COLZTEXT"
-    draw2D( plot_corr_matrixSyst, False )
+    draw2D( plot_corr_matrixSyst, False, False )
 
 
     rootfile = ROOT.TFile( "covMatrix_syst_%s.root"%args.settings, "RECREATE")
@@ -1845,12 +1962,12 @@ if "RunII" in args.settings:
         output_covMatrixTrueSyst.SetBinContent( i, i, covDiag )
 
     output_covMatrixTrueSyst.GetZaxis().SetTitle("Covariance [fb]")
-    plot_covMatrixTrueSyst = Plot2D.fromHisto("covMatrix_truesyst_lin", [[output_covMatrixTrueSyst]], texY = settings.tex_unf, texX = settings.tex_unf )
-    draw2D( plot_covMatrixTrueSyst, False )
+    plot_covMatrixTrueSyst = Plot2D.fromHisto("covMatrix_truesyst_lin", [[output_covMatrixTrueSyst]], texY = settings.tex_unf, texX = settings.tex_unf, texZ="Covariance [fb^{2}]" )
+    draw2D( plot_covMatrixTrueSyst, False, supplementary=True )
     zlow, zhigh = settings.covZRange
     output_covMatrixTrueSyst.GetZaxis().SetRangeUser( zlow, zhigh )
-    plot_covMatrixTrueSyst = Plot2D.fromHisto("covMatrix_truesyst", [[output_covMatrixTrueSyst]], texY = settings.tex_unf, texX = settings.tex_unf )
-    draw2D( plot_covMatrixTrueSyst, True )
+    plot_covMatrixTrueSyst = Plot2D.fromHisto("covMatrix_truesyst", [[output_covMatrixTrueSyst]], texY = settings.tex_unf, texX = settings.tex_unf, texZ="Covariance [fb^{2}]" )
+    draw2D( plot_covMatrixTrueSyst, True, supplementary=True )
 
 
     # output correlation matrix syst w removed diag entries
@@ -1867,7 +1984,7 @@ if "RunII" in args.settings:
     output_corr_matrixTrueSyst.GetZaxis().SetTitle("Correlation [%s]"%"%")
     plot_corr_matrixTrueSyst = Plot2D.fromHisto("corrMatrix_truesyst", [[output_corr_matrixTrueSyst]], texY = settings.tex_unf, texX = settings.tex_unf, texZ="Correlation [%s]  "%"%" )
     plot_corr_matrixTrueSyst.drawOption = "COLZTEXT"
-    draw2D( plot_corr_matrixTrueSyst, False )
+    draw2D( plot_corr_matrixTrueSyst, False, False )
 
     rootfile = ROOT.TFile( "corrMatrix_truesyst_%s.root"%args.settings, "RECREATE")
     output_corr_matrixTrueSyst.Write()
@@ -1889,11 +2006,11 @@ if "RunII" in args.settings:
 
     output_covMatrixTheory.GetZaxis().SetTitle("Covariance [fb]")
     plot_covMatrixTheory = Plot2D.fromHisto("covMatrix_theory_lin", [[output_covMatrixTheory]], texY = settings.tex_unf, texX = settings.tex_unf )
-    draw2D( plot_covMatrixTheory, False )
+    draw2D( plot_covMatrixTheory, False, False )
     zlow, zhigh = settings.covZRange
     output_covMatrixTheory.GetZaxis().SetRangeUser( zlow, zhigh )
     plot_covMatrixTheory = Plot2D.fromHisto("covMatrix_theory", [[output_covMatrixTheory]], texY = settings.tex_unf, texX = settings.tex_unf )
-    draw2D( plot_covMatrixTheory, True )
+    draw2D( plot_covMatrixTheory, True, False )
 
 
     fullTheoryCovMatrix = output_covMatrix.Clone("covMatrix_full")
@@ -1909,24 +2026,37 @@ if "RunII" in args.settings:
 #            print i,j,invfullTheoryCovMatrix.GetBinContent(i,j)
 
     plot_covMatrixInvFull = Plot2D.fromHisto("covMatrix_inv_full_lin", [[invfullTheoryCovMatrix]], texY = settings.tex_unf, texX = settings.tex_unf )
-    draw2D( plot_covMatrixInvFull, False )
+    draw2D( plot_covMatrixInvFull, False, False )
 #    zlow, zhigh = settings.covZRange
     invfullTheoryCovMatrix.GetZaxis().SetRangeUser( zlow, zhigh )
     plot_covMatrixInvFull = Plot2D.fromHisto("covMatrix_inv_full", [[invfullTheoryCovMatrix]], texY = settings.tex_unf, texX = settings.tex_unf )
-    draw2D( plot_covMatrixInvFull, True )
+    draw2D( plot_covMatrixInvFull, True, False )
 
     chi2 = 0
+    chi2Hpp = 0
+    chi2H7 = 0
     for i in range( 1, unfolding_signal_output.GetNbinsX()+1 ):
         for j in range( 1, unfolding_signal_output.GetNbinsX()+1 ):
             yi = unfolding_signal_output.GetBinContent(i) - fiducial_spectrum.GetBinContent(i)
             yj = unfolding_signal_output.GetBinContent(j) - fiducial_spectrum.GetBinContent(j)
+
+            yihpp = unfolding_signal_output.GetBinContent(i) - fiducial_spectrum_Hpp.GetBinContent(i)
+            yjhpp = unfolding_signal_output.GetBinContent(j) - fiducial_spectrum_Hpp.GetBinContent(j)
+
+            yih7 = unfolding_signal_output.GetBinContent(i) - fiducial_spectrum_H7.GetBinContent(i)
+            yjh7 = unfolding_signal_output.GetBinContent(j) - fiducial_spectrum_H7.GetBinContent(j)
+
             invCov = invfullTheoryCovMatrix.GetBinContent(i, j)
 #            print i,j,yi,yj,invCov, yi * invCov * yj
             chi2 += yi * invCov * yj
+            chi2Hpp += yihpp * invCov * yjhpp
+            chi2H7 += yih7 * invCov * yjh7
 
     print
     print
-    print "Chi2", chi2
+    print "Chi2 Pythia", chi2
+    print "Chi2 Herwigpp", chi2Hpp
+    print "Chi2 Herwig7", chi2H7
     print
     print
 
@@ -1942,7 +2072,7 @@ probability_matrix = matrix.Clone()
 unfold['nominal' if not args.useMatrix else args.useMatrix].GetProbabilityMatrix(probability_matrix,mapping)
 probability_TMatrix = get_TMatrixD( probability_matrix )
 plot_probability_matrix = Plot2D.fromHisto("probability_matrix", [[probability_matrix]], texY = plot_matrix.texY, texX = plot_matrix.texX )
-draw2D( plot_probability_matrix, True )
+draw2D( plot_probability_matrix, True, False )
 
 # output covariance matrix
 output_covariance_matrix = ROOT.TH2D("output_covariance_matrix", "output_covariance_matrix", len(settings.fiducial_thresholds)-1, array.array('d', settings.fiducial_thresholds), len(settings.fiducial_thresholds)-1, array.array('d', settings.fiducial_thresholds) )
@@ -1950,7 +2080,7 @@ unfold['nominal' if not args.useMatrix else args.useMatrix].GetEmatrix( output_c
 output_covariance_TMatrix = get_TMatrixD( output_covariance_matrix )
 
 plot_output_covariance_matrix = Plot2D.fromHisto("output_covariance_matrix", [[output_covariance_matrix]], texY = settings.tex_unf, texX = settings.tex_unf )
-draw2D( plot_output_covariance_matrix, True )
+draw2D( plot_output_covariance_matrix, True, False )
 
 # output correlation matrix
 output_correlation_matrix = output_covariance_matrix.Clone("output_correlation_matrix")
@@ -1965,7 +2095,7 @@ output_correlation_matrix.GetZaxis().SetTitle("Correlation [%s]"%"%")
 output_correlation_matrix.Scale(100)
 output_correlation_matrix.GetZaxis().SetRangeUser( 0, 100 )
 plot_output_correlation_matrix = Plot2D.fromHisto("output_correlation_matrix", [[output_correlation_matrix]], texY = settings.tex_unf, texX = settings.tex_unf )
-draw2D( plot_output_correlation_matrix, False )
+draw2D( plot_output_correlation_matrix, False, False )
 
 # input inverse covariance matrix
 input_inverse_covariance_matrix = ROOT.TH2D("input_inverse_covariance_matrix", "input_inverse_covariance_matrix", len(settings.reco_thresholds)-1, array.array('d', settings.reco_thresholds), len(settings.reco_thresholds)-1, array.array('d', settings.reco_thresholds) )
@@ -1973,7 +2103,7 @@ unfold['nominal' if not args.useMatrix else args.useMatrix].GetInputInverseEmatr
 input_inverse_covariance_TMatrix = get_TMatrixD( input_inverse_covariance_matrix )
 
 plot_input_inverse_covariance_matrix = Plot2D.fromHisto("input_inverse_covariance_matrix", [[input_inverse_covariance_matrix]], texY = settings.tex_reco, texX = settings.tex_reco )
-draw2D( plot_input_inverse_covariance_matrix, True )
+draw2D( plot_input_inverse_covariance_matrix, True, False )
 
 # input covariance matrix
 input_inverse_covariance_TMatrix = get_TMatrixD( input_inverse_covariance_matrix )
@@ -1984,7 +2114,7 @@ for i in range( input_covariance_matrix.GetNbinsX() ):
     for j in range( input_covariance_matrix.GetNbinsY() ):
         input_covariance_matrix.SetBinContent(i+1,j+1,input_covariance_TMatrix[i][j]) 
 plot_input_covariance_matrix = Plot2D.fromHisto("input_covariance_matrix", [[input_covariance_matrix]], texY = settings.tex_reco, texX = settings.tex_reco )
-draw2D( plot_input_covariance_matrix, True )
+draw2D( plot_input_covariance_matrix, True, False )
 
 input_correlation_matrix = input_covariance_matrix.Clone("input_correlation_matrix")
 for i in range( 1, input_correlation_matrix.GetNbinsX()+1 ): 
@@ -1996,7 +2126,7 @@ for i in range( 1, input_correlation_matrix.GetNbinsX()+1 ):
 
 input_correlation_matrix.GetZaxis().SetRangeUser( -0.2, 1 )
 plot_input_correlation_matrix = Plot2D.fromHisto("input_correlation_matrix", [[input_correlation_matrix]], texY = settings.tex_reco, texX = settings.tex_reco )
-draw2D( plot_input_correlation_matrix, False )
+draw2D( plot_input_correlation_matrix, False, False )
 
 # check condition number # https://www.youtube.com/watch?v=AULOC--qUOI
 
