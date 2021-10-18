@@ -325,7 +325,7 @@ def convertMlgHistToYaml( rootfile, label, variable, channel ):
 
 def convertCRPlotToYaml():
 
-    tab = Table("Figure 6")
+    tab = Table("Figure 5")
 
     reader = RootFileReader("../regionPlots/CR_incl.root")
 
@@ -473,7 +473,7 @@ def convertCRPlotToYaml():
 
 def convertSRPlotToYaml():
 
-    tab = Table("Figure 7")
+    tab = Table("Figure 6")
 
     reader = RootFileReader("../regionPlots/SR_incl.root")
 

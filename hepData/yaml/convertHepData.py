@@ -197,7 +197,7 @@ submission.add_table(tabSF)
 
 tableF5 = convertCRPlotToYaml()
 tableF5.description = "Predicted and observed yields in the control regions in the $N_{jet}= 3$ and $\geq 4$ seletions using the post-fit values of the nuisance parameters."
-tableF5.location = "Data from Figure 6"
+tableF5.location = "Data from Figure 5"
 tableF5.add_image("../figures/regions_VG3e_VG3mu_VG4pe_VG4pmu_misDY3_misDY4p.png")
 #tableF5.keywords()
 tableF5.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
@@ -213,7 +213,7 @@ submission.add_table(tableF5)
 
 tableF6 = convertSRPlotToYaml()
 tableF6.description = "Predicted and observed yields in the signal regions in the $N_{jet}= 3$ and $\geq 4$ seletions using the post-fit values of the nuisance parameters."
-tableF6.location = "Data from Figure 7"
+tableF6.location = "Data from Figure 6"
 tableF6.add_image("../figures/regions_SR3eM3_SR3muM3_SR4peM3_SR4pmuM3.png")
 #tableF6.keywords()
 tableF6.keywords["reactions"] = ["P P --> TOP TOPBAR X", "P P --> TOP TOPBAR GAMMA"]
@@ -546,10 +546,10 @@ submission.add_table(tableCorrdR)
 ###
 ### EFT interval
 ###
-tabcl = Table("Table 9")
+tabcl = Table("Table 8")
 
 tabcl.description = "Summary of the one-dimensional intervals at 68 and 95% CL."
-tabcl.location = "Table 9"
+tabcl.location = "Table 8"
 
 clType = Variable( "Wilson coefficient", is_independent=True, is_binned=False)
 clType.values = [ "$c_{tZ}$ (expected)", "$c_{tZ}$ (profiled, expected)", "$c^{I}_{tZ}$ (expected)", "$c^{I}_{tZ}$ (profiled, expected)", "$c_{tZ}$ (observed)", "$c_{tZ}$ (profiled, observed)", "$c^{I}_{tZ}$ (observed)", "$c^{I}_{tZ}$ (profiled, observed)"]
