@@ -168,13 +168,6 @@ The NLL values are cached and are extracted in the plot scripts found in
 plots/plotsLukas/nll/
 ```  
 
-#### Gridpacks:  
-  
-Code taken from the TTXPheno/gridpacks repository. Cards available there!  
-Available gridpacks, pkl files, customize cards and STDOUTs stored at:  
-```  
-/afs/hephy.at/data/llechner01/TopEFT/gridpacks/<date>/<process>/order<poly order>/  
-```  
 
 #### Instructions for CMSSW
 
