@@ -597,6 +597,8 @@ def wrapper():
         default_ZG_gluon_unc    = 0.12 # only on the fraction of 2 gen b-jets in the SR
         default_WG_gluon_unc    = 0.04 # only on the fraction of 2 gen b-jets in the SR
         c.addUncertainty( "Gluon_splitting",      shapeString )
+#        c.addUncertainty( "WGamma_shape",      shapeString )
+#        c.addUncertainty( "ZGamma_shape",      shapeString )
 
         default_Other_unc    = 0.30
         c.addUncertainty( "Other_normalization",      shapeString )
@@ -673,7 +675,7 @@ def wrapper():
 #                        setup.split_processes['TT_pow_had'][0].initCache( setup.defaultCacheDir() )
 #                        setup.split_processes['TT_pow_misID'][0].initCache( setup.defaultCacheDir() )
             for i_r, r in enumerate(setup.regions):
-                if setup.signalregion and i_r > 0: continue
+#                if setup.signalregion and i_r > 0: continue
                 for i_ch, channel in enumerate(setup.channels):
                     if (args.useChannels and channel not in args.useChannels and setup.signalregion): continue
                     if args.parameters:
@@ -769,12 +771,12 @@ def wrapper():
                         expected = u_float(0.,0.)
 
                         for e in pList:
-                            if setup.signalregion:
-                                exp_yield = e.cachedEstimate( r, channel, setup )
-                                for i_r2, r2 in enumerate(setup.regions[1:]):
-                                    exp_yield += e.cachedEstimate( r2, channel, setup )
-                            else:
-                                exp_yield = e.cachedEstimate( r, channel, setup )
+#                            if setup.signalregion:
+                            exp_yield = e.cachedEstimate( r, channel, setup )
+#                                for i_r2, r2 in enumerate(setup.regions[1:]):
+#                                    exp_yield += e.cachedEstimate( r2, channel, setup )
+#                            else:
+#                                exp_yield = e.cachedEstimate( r, channel, setup )
 
                             # no MC stat uncertainty for data-driven methods
                             if e.name.count( "QCD" ):
@@ -843,8 +845,8 @@ def wrapper():
                             if args.stressTest and signal and setup.signalregion:
                                 # scale the expected observation with some additional signal
                                 pt, _ = r.vals["PhotonGood0_pt" if "PhotonGood0_pt" in r.vals.keys() else sigVar]
-                                print "pppppppppppppppppppppppppppppt", i_r
-                                print pt
+#                                print "pppppppppppppppppppppppppppppt", i_r
+#                                print pt
                                 total_exp_bkg += exp_yield.val*args.stressTest*(pt-20)
 
                             if args.parameters:
@@ -884,7 +886,7 @@ def wrapper():
                         sr3, sr4, sre, srmu, sr3e, sr3mu, sr4e, sr4mu = 0, 0, 0, 0, 0, 0, 0, 0
                         wjets4p, wg4p, qcd0b4p, qcd1b4p= 0, 0, 0, 0
                         dyGenUnc, ttGenUnc, vgGenUnc, wjetsGenUnc, otherGenUnc, lowSieieUnc, highSieieUnc, misIDPtUnc, twgUnc, twgShape = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-                        gluon, hadFakes17Unc, hadFakesUnc, wg, zg, misID4p, dy4p, zg4p, misIDUnc, qcdUnc, qcd0bUnc, qcd1bUnc, vgUnc, wgUnc, zgUnc, dyUnc, misExUnc, ttUnc, wjetsUnc, other0pUnc, otherUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                        wgshape, zgshape, gluon, hadFakes17Unc, hadFakesUnc, wg, zg, misID4p, dy4p, zg4p, misIDUnc, qcdUnc, qcd0bUnc, qcd1bUnc, vgUnc, wgUnc, zgUnc, dyUnc, misExUnc, ttUnc, wjetsUnc, other0pUnc, otherUnc = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
                         scaleSourceUnc = {}
                         if args.splitScale:
@@ -1185,9 +1187,13 @@ def wrapper():
                                     zg += y_scale * default_ZG_unc
                                     if setup.signalregion:
                                         gluon += y_scale * default_ZG_gluon_unc
+#                                        if args.inclRegion and i_r > 1:
+#                                            zgshape += y_scale * 0.05
 
                                 if e.name.count( "WG" ) and setup.signalregion:
                                     gluon += y_scale * default_WG_gluon_unc
+#                                    if args.inclRegion and i_r > 1:
+#                                        wgshape += y_scale * 0.05
 
                                 if e.name.count( "ZG" ) and ("4" in setup.name or "3p" in setup.name):
                                     zg4p += y_scale * default_ZG4p_unc * ratio["4p"]
@@ -1400,6 +1406,8 @@ def wrapper():
                         addUnc( c, "ZGamma_nJet_dependence%s"%vgCorr, binname, pName, zg4p, expected.val, signal )
                         addUnc( c, "WGamma_nJet_dependence%s"%vgCorr, binname, pName, wg4p, expected.val, signal )
                         addUnc( c, "Gluon_splitting", binname, pName, gluon, expected.val, signal )
+#                        addUnc( c, "WGamma_shape", binname, pName, wgshape, expected.val, signal )
+#                        addUnc( c, "ZGamma_shape", binname, pName, zgshape, expected.val, signal )
 
                         if setup.signalregion:
                             addUnc( c, "fake_photon_DD_normalization", binname, pName, hadFakesUnc, expected.val, signal )
@@ -1441,13 +1449,13 @@ def wrapper():
                             c.specifyObservation( binname, int( round( total_exp_bkg, 0 ) ) )
                             logger.info( "Expected observation: %s", int( round( total_exp_bkg, 0 ) ) )
                     else:
-                        if setup.signalregion:
-                            o = observation.cachedObservation(r, channel, setup).val
-                            for i_r2, r2 in enumerate(setup.regions[1:]):
-                                o += observation.cachedObservation(r2, channel, setup).val
-                            c.specifyObservation( binname,  int(o) )
-                        else:
-                            c.specifyObservation( binname,  int( observation.cachedObservation(r, channel, setup).val )  if not "null" in setup.name.lower() else 0 )
+#                        if setup.signalregion:
+#                            o = observation.cachedObservation(r, channel, setup).val
+#                            for i_r2, r2 in enumerate(setup.regions[1:]):
+#                                o += observation.cachedObservation(r2, channel, setup).val
+#                            c.specifyObservation( binname,  int(o) )
+#                        else:
+                        c.specifyObservation( binname,  int( observation.cachedObservation(r, channel, setup).val )  if not "null" in setup.name.lower() else 0 )
                         logger.info( "Observation: %s", int( observation.cachedObservation(r, channel, setup).val )  if not "null" in setup.name.lower() else 0 )
 
                     #if mute and total_exp_bkg <= 0.01:
