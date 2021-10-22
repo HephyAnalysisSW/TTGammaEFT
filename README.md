@@ -134,11 +134,39 @@ The combined RunII results are created with the same commands but running the ru
 Analysis/python/run/run_limit_combined.sh
 ```  
 
+Plots are created in
+```  
+plots/plotsLukas/regions/
+```  
+
 
 ##### EFT:   
+For EFT, the same caches are used as above, however additional gen-level caches are needed for the reweighting of the affected yields.
+Commands for caching EFT yields are found in
+```  
+Analysis/python/run/run_EFTestimate.sh
+```  
+PDF and Scale uncertainties without normalization (acceptence effects) are needed for EFT fits. These caches are filled in running the same PDF/Scale command as above, with the additional --notNormalized command
+```  
+Analysis/python/run/runPDFandScale.sh
+```  
 
+Once this is done, EFT cardfiles can be created using the regions VG3, VG4p, misDY3, misDY4p, SR3PtUnfoldEFT, and SR4pPtUnfoldEFT and the same run_limit.py scripts as above. In adding --parameters ctZ X ctZI X, the script runs the EFT fit. Adding --withbkg also reweights the single-top background. The commands are found in  
+```  
+Analysis/python/run/run_limit_EFT_2lcomb_1D.sh   
+Analysis/python/run/run_limit_EFT_2lcomb_2D.sh   
+```  
+And in 
+```  
+Analysis/python/run/run_limit_EFT_2lcomb_1D_comb.sh   
+Analysis/python/run/run_limit_EFT_2lcomb_2D_comb.sh   
+```  
+for the combined RunII fit.
 
-
+The NLL values are cached and are extracted in the plot scripts found in
+```  
+plots/plotsLukas/nll/
+```  
 
 #### Gridpacks:  
   
